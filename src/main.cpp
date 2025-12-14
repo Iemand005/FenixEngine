@@ -343,16 +343,28 @@ int main()
     indices[i] = objectLoader.LoadedIndices[i];
   }
 
+  stbi_set_flip_vertically_on_load(true);  
   int width, height, nrChannels;
   unsigned char *data = stbi_load("resources/textures/Terminatrix_Head.png", &width, &height, &nrChannels, 0);
+  if (!data) {
+    std::cerr << "Failed to load texture" << std::endl;
+    return -1;
+  }
 
   unsigned int texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
   glGenerateMipmap(GL_TEXTURE_2D);
 
-  // stbi_image_free(data);
+  stbi_image_free(data);
 
   char *vertexShaderSource;
   loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
@@ -435,6 +447,8 @@ int main()
   int modelLoc = glGetUniformLocation(shaderProgram, "model");
   int viewLoc = glGetUniformLocation(shaderProgram, "view");
   int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+  int texLoc = glGetUniformLocation(shaderProgram, "ourTexture");
+  glUniform1i(texLoc, 0);
 
   glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
