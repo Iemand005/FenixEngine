@@ -15,6 +15,9 @@
 
 #include "OBJ_Loader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -40,7 +43,7 @@ struct Vector2
     X = 0.0f;
     Y = 0.0f;
   }
-  
+
   Vector2(float X, float Y)
   {
     this->X = X;
@@ -73,14 +76,14 @@ struct Vector3
   float X;
   float Y;
   float Z;
-  
+
   Vector3()
   {
     X = 0.0f;
     Y = 0.0f;
     Z = 0.0f;
   }
-  
+
   Vector3(float X, float Y, float Z)
   {
     this->X = X;
@@ -92,7 +95,7 @@ struct Vector3
   {
     return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
   }
-  
+
   bool operator!=(const Vector3 &other) const
   {
     return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
@@ -155,6 +158,15 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
   direction.y = sin(glm::radians(pitch));
   direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
   cameraFront = glm::normalize(direction);
+}
+
+void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+  fov -= (float)yoffset;
+  if (fov < 1.0f)
+    fov = 1.0f;
+  if (fov > 45.0f)
+    fov = 45.0f;
 }
 
 void startMouseCapture(GLFWwindow *window)
@@ -306,10 +318,9 @@ int main()
   //     Vertex(-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f)   // top left
   // };
 
-
   objl::Loader objectLoader;
 
-  bool success = objectLoader.LoadFile("resources/models/teapot.obj");
+  bool success = objectLoader.LoadFile("resources/models/Headz.obj");
 
   int vertexCount = objectLoader.LoadedVertices.size();
 
@@ -319,25 +330,10 @@ int main()
   {
     objl::Vertex v = objectLoader.LoadedVertices[i];
     Vertex vertex = Vertex(v.Position.X, v.Position.Y, v.Position.Z,
-                                 v.Normal.X, v.Normal.Y, v.Normal.Z,
-                                 v.TextureCoordinate.X, v.TextureCoordinate.Y);
+                           v.Normal.X, v.Normal.Y, v.Normal.Z,
+                           v.TextureCoordinate.X, v.TextureCoordinate.Y);
     vertices[i] = vertex;
   }
-
-  // unsigned int indices[] = {
-  //     // note that we start from 0!
-  //     0, 1, 3,
-  //     1, 2, 3,
-  //     4, 5, 7,
-  //     5, 6, 7,
-  //     3, 2, 7,
-  //     2, 6, 7,
-  //     0, 1, 4,
-  //     1, 5, 4,
-  //     0, 3, 4,
-  //     3, 7, 4,
-  //     1, 2, 5,
-  //     2, 6, 5};
 
   unsigned int indexCount = objectLoader.LoadedIndices.size();
   unsigned int *indices = new unsigned int[indexCount];
@@ -346,6 +342,17 @@ int main()
   {
     indices[i] = objectLoader.LoadedIndices[i];
   }
+
+  int width, height, nrChannels;
+  unsigned char *data = stbi_load("resources/textures/Terminatrix_Head.png", &width, &height, &nrChannels, 0);
+
+  unsigned int texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  // stbi_image_free(data);
 
   char *vertexShaderSource;
   loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
@@ -401,12 +408,16 @@ int main()
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+
   glEnable(GL_DEPTH_TEST);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  glfwSetScrollCallback(window, scrollCallback);
   startMouseCapture(window);
 
   IMGUI_CHECKVERSION();
@@ -425,7 +436,7 @@ int main()
   int viewLoc = glGetUniformLocation(shaderProgram, "view");
   int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-  // glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
 
   while (!glfwWindowShouldClose(window))
@@ -447,7 +458,11 @@ int main()
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
+
+    // glBindVertexArray(VAO);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
