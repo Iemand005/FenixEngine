@@ -1,5 +1,8 @@
 #include <cstdio>
 #include <iostream>
+#include <fstream>
+#include <string>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -10,6 +13,30 @@ void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+}
+
+int loadShaderFile(char **shaderText, const char *fileName) {
+
+  std::ifstream file(fileName);
+
+  if (!file.is_open()) {
+    std::cerr << "Failed to open file." << std::endl;
+    return -1;
+  }
+
+  std::string line;
+  std::string vertexShaderSource;
+  while (std::getline(file, line)) {
+    vertexShaderSource += line + "\n";
+  }
+
+  const char *shaderCode = vertexShaderSource.c_str();
+  *shaderText = new char[vertexShaderSource.length() + 1];
+  std::strcpy(*shaderText, shaderCode);
+
+  file.close();
+
+  return 0;
 }
 
 int main()
@@ -51,12 +78,15 @@ int main()
       1, 2, 3  // second triangle
   };
 
-  const char *vertexShaderSource = "#version 330 core\n"
-                                   "layout (location = 0) in vec3 aPos;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                   "}\0";
+  // const char *vertexShaderSource = "#version 330 core\n"
+  //                                  "layout (location = 0) in vec3 aPos;\n"
+  //                                  "void main()\n"
+  //                                  "{\n"
+  //                                  "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+  //                                  "}\0";
+
+  char* vertexShaderSource;
+  loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
 
   // Create and compile vertex shader
   unsigned int vertexShader;
@@ -70,7 +100,7 @@ int main()
                                      "out vec4 FragColor;\n"
                                      "void main()\n"
                                      "{\n"
-                                     "   FragColor = vec4(1.0f, 0.5ff, 0.2f, 1.0f);\n"
+                                     "   FragColor = vec4(1.0f, 0.0f, 0.2f, 1.0f);\n"
                                      "}\0";
 
   unsigned int fragmentShader;
