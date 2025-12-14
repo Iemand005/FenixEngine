@@ -69,73 +69,74 @@ int main()
 
   glViewport(0, 0, 800, 600);
 
-  // float vertices[] = {
-  //     0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
-  //     0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-  //     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-  //     -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,   // top left
-
-  //     0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
-  //     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-  //     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-  //     -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
-  // };
   float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
+      0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,   // top left
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+      0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
+      0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+      -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
+  };
+//   float vertices[] = {
+//     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+//      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+//     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+//     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+//     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//      0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
+//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+//      0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+//     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+// };
   unsigned int indices[] = {
       // note that we start from 0!
-      0, 1, 3, // first triangle
-      1, 2, 3,  // second triangle
-      
-      4, 5, 7, // first triangle
-      5, 6, 7,  // second triangle
-
-      8, 9, 11, // first triangle
-      9, 10, 11,  // second triangle
-
-      12, 13, 15, // first triangle
-      13, 14, 15,  // second triangle
+      0, 1, 3,
+      1, 2, 3,
+      4, 5, 7,
+      5, 6, 7,
+      3, 2, 7,
+      2, 6, 7,
+      0, 1, 4,
+      1, 5, 4,
+      0, 3, 4,
+      3, 7, 4,
+      1, 2, 5,
+      2, 6, 5
     };
 
   // const char *vertexShaderSource = "#version 330 core\n"
@@ -199,13 +200,17 @@ int main()
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexSize * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
+  glEnable(GL_DEPTH_TEST);  
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
     glUseProgram(shaderProgram);
 
@@ -243,7 +248,8 @@ int main()
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     glfwSwapBuffers(window);
