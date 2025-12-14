@@ -230,7 +230,8 @@ public:
 
   Shader(std::string fileName, GLenum shaderType)
   {
-    loadShaderFile(fileName);
+    if (!loadShaderFile(fileName))
+      return;
 
     this->Id = glCreateShader(shaderType);
 
@@ -239,7 +240,7 @@ public:
     glCompileShader(this->Id);
   }
 
-  int loadShaderFile(std::string fileName)
+  bool loadShaderFile(std::string fileName)
   {
 
     std::ifstream file(fileName.c_str());
@@ -247,39 +248,14 @@ public:
     if (!file.is_open())
     {
       std::cerr << "Failed to open file." << std::endl;
-      std::error_code ec;
-      file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-      try
-      {
-        file.open(fileName);
-      }
-      catch (const std::ios_base::failure &e)
-      {
-        ec = e.code();
-        std::cerr << "Error opening file: " << fileName << std::endl;
-        std::cerr << "Error code: " << ec.value() << std::endl;
-        std::cerr << "Error message: " << ec.message() << std::endl;
-        std::cerr << "Exception: " << e.what() << std::endl;
-      }
-      return -1;
+      return false;
     }
 
-    std::string line;
-    // std::string shaderSource;
-    shaderText = "";
-    while (std::getline(file, line))
-    {
-      shaderText += line + "\n";
-    }
-
-    // const char *shaderCode = shaderSource.c_str();
-    // shaderText = new char[shaderSource.length() + 1];
-    // std::strcpy(shaderText, shaderCode);
+    shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
     file.close();
 
-    return 0;
+    return true;
   }
 
   void deleteShader()
@@ -309,6 +285,116 @@ public:
     vertexShader->deleteShader();
     fragmentShader->deleteShader();
   }
+
+  void use()
+  {
+    glUseProgram(this->Id);
+  }
+};
+
+class Model
+{
+  Vertex *vertices;
+  unsigned int *indices;
+
+  unsigned int vertexCount;
+  unsigned int indexCount;
+
+public:
+  Model() {}
+
+  Model(std::string objFilePath)
+  {
+    loadObj(objFilePath);
+
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+    
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
+
+    int vertexStride = sizeof(Vertex);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+  }
+
+  bool loadObj(std::string objFilePath)
+  {
+    objl::Loader objectLoader;
+
+    bool success = objectLoader.LoadFile(objFilePath);
+    if (!success)
+      return false;
+
+    int vertexCount = objectLoader.LoadedVertices.size();
+
+    Vertex *vertices = new Vertex[vertexCount];
+
+    for (int i = 0; i < vertexCount; i++)
+    {
+      objl::Vertex v = objectLoader.LoadedVertices[i];
+      vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+    }
+
+    unsigned int indexCount = objectLoader.LoadedIndices.size();
+    unsigned int *indices = new unsigned int[indexCount];
+
+    for (size_t i = 0; i < objectLoader.LoadedIndices.size(); i++)
+      indices[i] = objectLoader.LoadedIndices[i];
+
+    return true;
+  }
+};
+
+class Camera {
+private:
+    glm::vec3 position;
+    glm::vec3 front;
+    glm::vec3 up;
+    glm::mat4 viewMatrix;
+    glm::mat4 projectionMatrix;
+
+public:
+    Camera(glm::vec3 pos, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far)
+        : position(pos), front
+}
+
+class Scene {
+private:
+    std::vector<std::unique_ptr<Model>> models;
+    
+public:
+    void addModel(std::unique_ptr<Model> model) {
+        models.push_back(std::move(model));
+    }
+    
+    void render(Shader& shader, const Camera& camera) {
+        // Set view/projection matrices (same for all models)
+        shader.use();
+        shader.setMat4("view", camera.getViewMatrix());
+        shader.setMat4("projection", camera.getProjectionMatrix());
+        
+        // Render each model by binding its VAO
+        for(auto& model : models) {
+            model->render(shader);  // ← Inside: glBindVertexArray(model->VAO)
+        }
+    }
 };
 
 int drawImGui()
@@ -337,7 +423,6 @@ int main()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
   printf("Hello, TestEngine!\n");
 
@@ -405,55 +490,24 @@ int main()
 
   stbi_image_free(data);
 
-  // char *vertexShaderSource;
-  // loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
-
-  // // Create and compile vertex shader
-  // unsigned int vertexShader;
-  // vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-  // glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  // glCompileShader(vertexShader);
-
-  // // Compile fragment shader
-  // char *fragmentShaderSource;
-  // loadShaderFile(&fragmentShaderSource, "FragmentShader.glsl");
-
-  // unsigned int fragmentShader;
-  // fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  // glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  // glCompileShader(fragmentShader);
-
-  // // Create shader program
-  // unsigned int shaderProgram;
-  // shaderProgram = glCreateProgram();
-
-  // glAttachShader(shaderProgram, vertexShader);
-  // glAttachShader(shaderProgram, fragmentShader);
-  // glLinkProgram(shaderProgram);
-
-  // glDeleteShader(vertexShader);
-  // glDeleteShader(fragmentShader);
-
   Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
   Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
 
-  unsigned int shaderProgram = ShaderProgram(&vertexShader, &fragmentShader).Id;
 
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
+  ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
 
+  
   unsigned int VAO;
   glGenVertexArrays(1, &VAO);
-
-  unsigned int EBO;
-  glGenBuffers(1, &EBO);
-
   glBindVertexArray(VAO);
-
+  
+  unsigned int VBO;
+  glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-
+  
+  unsigned int EBO;
+  glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
 
@@ -466,6 +520,9 @@ int main()
 
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void *)(6 * sizeof(float)));
   glEnableVertexAttribArray(2);
+
+  glBindVertexArray(0);
+  
 
   glEnable(GL_DEPTH_TEST);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -487,11 +544,12 @@ int main()
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  glUseProgram(shaderProgram);
-  int modelLoc = glGetUniformLocation(shaderProgram, "model");
-  int viewLoc = glGetUniformLocation(shaderProgram, "view");
-  int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-  int texLoc = glGetUniformLocation(shaderProgram, "ourTexture");
+  // glUseProgram(shaderProgram.Id);
+  shaderProgram.use();
+  int modelLoc = glGetUniformLocation(shaderProgram.Id, "model");
+  int viewLoc = glGetUniformLocation(shaderProgram.Id, "view");
+  int projectionLoc = glGetUniformLocation(shaderProgram.Id, "projection");
+  int texLoc = glGetUniformLocation(shaderProgram.Id, "ourTexture");
   glUniform1i(texLoc, 0);
 
   // glEnable(GL_CULL_FACE);
