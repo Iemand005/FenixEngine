@@ -6,6 +6,12 @@
       "command": "cl.exe",
       "args": [
         "${workspaceFolder}/src/glad.c",
+        "${workspaceFolder}/src/imgui/imgui.cpp",
+        "${workspaceFolder}/src/imgui/imgui_draw.cpp",
+        "${workspaceFolder}/src/imgui/imgui_tables.cpp",
+        "${workspaceFolder}/src/imgui/imgui_widgets.cpp",
+        "${workspaceFolder}/src/imgui/imgui_impl_glfw.cpp",
+        "${workspaceFolder}/src/imgui/imgui_impl_opengl3.cpp",
         "${workspaceFolder}/src/main.cpp",
         "/Zi",
         "/EHsc",

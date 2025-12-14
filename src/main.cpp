@@ -9,10 +9,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "imgui\imgui.h"
+#include "imgui\imgui_impl_glfw.h"
+#include "imgui\imgui_impl_opengl3.h"
+
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+
+float fov = 45.0f;
 
 void processInput(GLFWwindow *window)
 {
@@ -91,6 +97,7 @@ int loadShaderFile(char **shaderText, const char *fileName)
 int main()
 {
   glfwInit();
+  const char* glsl_version = "#version 330 core";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -126,49 +133,7 @@ int main()
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
       -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
   };
-  //   float vertices[] = {
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-  //      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-  //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-  //     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-  //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  //     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  //      0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-  //      0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-  //     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-  // };
   unsigned int indices[] = {
       // note that we start from 0!
       0, 1, 3,
@@ -183,13 +148,6 @@ int main()
       3, 7, 4,
       1, 2, 5,
       2, 6, 5};
-
-  // const char *vertexShaderSource = "#version 330 core\n"
-  //                                  "layout (location = 0) in vec3 aPos;\n"
-  //                                  "void main()\n"
-  //                                  "{\n"
-  //                                  "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-  //                                  "}\0";
 
   char *vertexShaderSource;
   loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
@@ -253,6 +211,18 @@ int main()
   glfwSetCursorPosCallback(window, mouseCallback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+  IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
@@ -277,7 +247,7 @@ int main()
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
     // projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 
     int modelLoc = glGetUniformLocation(shaderProgram, "model");
@@ -293,6 +263,17 @@ int main()
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
+    ImGui_ImplOpenGL3_NewFrame();
+ImGui_ImplGlfw_NewFrame();
+ImGui::NewFrame();
+
+ImGui::Begin("Window");
+ImGui::Text("Hello, World!"); // Easy text rendering
+ImGui::End();
+
+ImGui::Render();
+ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
     glfwPollEvents();
