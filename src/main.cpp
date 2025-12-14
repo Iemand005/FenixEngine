@@ -9,10 +9,56 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+
 void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+
+  const float cameraSpeed = 0.005f; // adjust accordingly
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    cameraPos += cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    cameraPos -= cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+float lastX = 400, lastY = 300;
+
+float yaw = -90.0f;
+float pitch = 0.0f;
+
+void mouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+  lastX = xpos;
+  lastY = ypos;
+
+  const float sensitivity = 0.1f;
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  yaw += xoffset;
+  pitch += yoffset;
+
+  if (pitch > 89.0f)
+    pitch = 89.0f;
+  if (pitch < -89.0f)
+    pitch = -89.0f;
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(direction);
 }
 
 int loadShaderFile(char **shaderText, const char *fileName)
@@ -73,56 +119,56 @@ int main()
       0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
       0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
       -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,   // top left
+      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,  // top left
 
       0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
       0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
       -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
   };
-//   float vertices[] = {
-//     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  //   float vertices[] = {
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  //      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  //     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-//     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  //     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//      0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //      0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //      0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//      0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  //      0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  //      0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  //     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  //     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-//     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-// };
+  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  //      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //      0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  //     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+  //     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+  // };
   unsigned int indices[] = {
       // note that we start from 0!
       0, 1, 3,
@@ -136,8 +182,7 @@ int main()
       0, 3, 4,
       3, 7, 4,
       1, 2, 5,
-      2, 6, 5
-    };
+      2, 6, 5};
 
   // const char *vertexShaderSource = "#version 330 core\n"
   //                                  "layout (location = 0) in vec3 aPos;\n"
@@ -200,8 +245,13 @@ int main()
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexSize * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  glEnable(GL_DEPTH_TEST);  
+  glEnable(GL_DEPTH_TEST);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+  glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+  glfwSetCursorPosCallback(window, mouseCallback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -211,7 +261,6 @@ int main()
     // glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
     glUseProgram(shaderProgram);
 
     float timeValue = glfwGetTime();
@@ -219,20 +268,13 @@ int main()
     int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
     glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
-    // glm::mat4 trans = glm::mat4(1.0f);
-    // trans = glm::rotate(trans, glm::radians(timeValue * 1000), glm::vec3(0.0, 1.0, 1.0));
-    // trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-    // unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
-    // glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
     glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
