@@ -80,12 +80,9 @@ void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     stopMouseCapture(window);
-  // glfwSetInputMode(window, GLFW_CURSOR, glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
   ;
-  // glfwSetWindowShouldClose(window, true);
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     startMouseCapture(window);
-  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   const float cameraSpeed = 0.005f; // adjust accordingly
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -204,7 +201,8 @@ int main()
       0, 3, 4,
       3, 7, 4,
       1, 2, 5,
-      2, 6, 5};
+      2, 6, 5
+    };
 
   char *vertexShaderSource;
   loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
@@ -261,25 +259,21 @@ int main()
   glEnableVertexAttribArray(1);
 
   glEnable(GL_DEPTH_TEST);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
   glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-  // glfwSetCursorPosCallback(window, mouseCallback);
-  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   startMouseCapture(window);
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-  // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -288,16 +282,19 @@ int main()
   int viewLoc = glGetUniformLocation(shaderProgram, "view");
   int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
+  glEnable(GL_CULL_FACE);
+  // glCullFace(GL_FRONT);
+
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
 
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
