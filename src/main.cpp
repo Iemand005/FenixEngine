@@ -13,6 +13,8 @@
 #include "imgui\imgui_impl_glfw.h"
 #include "imgui\imgui_impl_opengl3.h"
 
+#include "OBJ_Loader.h"
+
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -27,6 +29,107 @@ float pitch = 0.0f;
 
 int windowWidth = 800.0f;
 int windowHeight = 600.0f;
+
+struct Vector2
+{
+  float X;
+  float Y;
+
+  Vector2()
+  {
+    X = 0.0f;
+    Y = 0.0f;
+  }
+  
+  Vector2(float X, float Y)
+  {
+    this->X = X;
+    this->Y = Y;
+  }
+  bool operator==(const Vector2 &other) const
+  {
+    return (this->X == other.X && this->Y == other.Y);
+  }
+  bool operator!=(const Vector2 &other) const
+  {
+    return !(this->X == other.X && this->Y == other.Y);
+  }
+  Vector2 operator+(const Vector2 &right) const
+  {
+    return Vector2(this->X + right.X, this->Y + right.Y);
+  }
+  Vector2 operator-(const Vector2 &right) const
+  {
+    return Vector2(this->X - right.X, this->Y - right.Y);
+  }
+  Vector2 operator*(const float &other) const
+  {
+    return Vector2(this->X * other, this->Y * other);
+  }
+};
+
+struct Vector3
+{
+  float X;
+  float Y;
+  float Z;
+  
+  Vector3()
+  {
+    X = 0.0f;
+    Y = 0.0f;
+    Z = 0.0f;
+  }
+  
+  Vector3(float X, float Y, float Z)
+  {
+    this->X = X;
+    this->Y = Y;
+    this->Z = Z;
+  }
+
+  bool operator==(const Vector3 &other) const
+  {
+    return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+  }
+  
+  bool operator!=(const Vector3 &other) const
+  {
+    return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+  }
+  Vector3 operator+(const Vector3 &right) const
+  {
+    return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
+  }
+  Vector3 operator-(const Vector3 &right) const
+  {
+    return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
+  }
+  Vector3 operator*(const float &other) const
+  {
+    return Vector3(this->X * other, this->Y * other, this->Z * other);
+  }
+  Vector3 operator/(const float &other) const
+  {
+    return Vector3(this->X / other, this->Y / other, this->Z / other);
+  }
+};
+
+struct Vertex
+{
+  Vector3 Position;
+  Vector3 Normal;
+  Vector2 TextureCoordinate;
+
+  Vertex() {}
+
+  Vertex(float X, float Y, float Z, float NX, float NY, float NZ, float U, float V)
+  {
+    this->Position = Vector3(X, Y, Z);
+    this->Normal = Vector3(NX, NY, NZ);
+    this->TextureCoordinate = Vector2(U, V);
+  }
+};
 
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
@@ -176,33 +279,73 @@ int main()
 
   glViewport(0, 0, 800, 600);
 
-  float vertices[] = {
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
-      0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,  // top left
+  // float vertices[] = {
 
-      0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
-      0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-      -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
-  };
+  //     0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
+  //     0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+  //     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+  //     -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,  // top left
 
-  unsigned int indices[] = {
-      // note that we start from 0!
-      0, 1, 3,
-      1, 2, 3,
-      4, 5, 7,
-      5, 6, 7,
-      3, 2, 7,
-      2, 6, 7,
-      0, 1, 4,
-      1, 5, 4,
-      0, 3, 4,
-      3, 7, 4,
-      1, 2, 5,
-      2, 6, 5
-    };
+  //     0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
+  //     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+  //     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+  //     -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
+  // };
+
+  // Vertex vertices[] = {
+  //     // Front face
+  //     Vertex(0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),   // top right
+  //     Vertex(0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f),  // bottom right
+  //     Vertex(-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f), // bottom left
+  //     Vertex(-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f),  // top left
+
+  //     // Back face
+  //     Vertex(0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),   // top right
+  //     Vertex(0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f),  // bottom right
+  //     Vertex(-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f), // bottom left
+  //     Vertex(-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f)   // top left
+  // };
+
+
+  objl::Loader objectLoader;
+
+  bool success = objectLoader.LoadFile("resources/models/teapot.obj");
+
+  int vertexCount = objectLoader.LoadedVertices.size();
+
+  Vertex *vertices = new Vertex[vertexCount];
+
+  for (int i = 0; i < vertexCount; i++)
+  {
+    objl::Vertex v = objectLoader.LoadedVertices[i];
+    Vertex vertex = Vertex(v.Position.X, v.Position.Y, v.Position.Z,
+                                 v.Normal.X, v.Normal.Y, v.Normal.Z,
+                                 v.TextureCoordinate.X, v.TextureCoordinate.Y);
+    vertices[i] = vertex;
+  }
+
+  // unsigned int indices[] = {
+  //     // note that we start from 0!
+  //     0, 1, 3,
+  //     1, 2, 3,
+  //     4, 5, 7,
+  //     5, 6, 7,
+  //     3, 2, 7,
+  //     2, 6, 7,
+  //     0, 1, 4,
+  //     1, 5, 4,
+  //     0, 3, 4,
+  //     3, 7, 4,
+  //     1, 2, 5,
+  //     2, 6, 5};
+
+  unsigned int indexCount = objectLoader.LoadedIndices.size();
+  unsigned int *indices = new unsigned int[indexCount];
+
+  for (size_t i = 0; i < objectLoader.LoadedIndices.size(); i++)
+  {
+    indices[i] = objectLoader.LoadedIndices[i];
+  }
 
   char *vertexShaderSource;
   loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
@@ -246,20 +389,20 @@ int main()
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
 
-  int vertexSize = 6;
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexSize * sizeof(float), (void *)0);
+  int vertexStride = sizeof(Vertex);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)0);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexSize * sizeof(float), (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   glEnable(GL_DEPTH_TEST);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
@@ -282,7 +425,7 @@ int main()
   int viewLoc = glGetUniformLocation(shaderProgram, "view");
   int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
 
   while (!glfwWindowShouldClose(window))
@@ -306,7 +449,7 @@ int main()
 
     glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     drawImGui();
