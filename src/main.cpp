@@ -20,28 +20,13 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
 float fov = 45.0f;
 
-void processInput(GLFWwindow *window)
-{
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetInputMode(window, GLFW_CURSOR, glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-    ;
-    // glfwSetWindowShouldClose(window, true);
-
-  const float cameraSpeed = 0.005f; // adjust accordingly
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    cameraPos += cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    cameraPos -= cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
 float lastX = 400, lastY = 300;
 
 float yaw = -90.0f;
 float pitch = 0.0f;
+
+int windowWidth = 800.0f;
+int windowHeight = 600.0f;
 
 void mouseCallback(GLFWwindow *window, double xpos, double ypos)
 {
@@ -69,10 +54,60 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
   cameraFront = glm::normalize(direction);
 }
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void startMouseCapture(GLFWwindow *window)
 {
-    glViewport(0, 0, width, height);
-}  
+  glfwSetCursorPosCallback(window, mouseCallback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void stopMouseCapture(GLFWwindow *window)
+{
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  glfwSetCursorPosCallback(window, NULL);
+}
+
+void enableWireframeMode()
+{
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+void disableWireframeMode()
+{
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void processInput(GLFWwindow *window)
+{
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    stopMouseCapture(window);
+  // glfwSetInputMode(window, GLFW_CURSOR, glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+  ;
+  // glfwSetWindowShouldClose(window, true);
+  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    startMouseCapture(window);
+  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  const float cameraSpeed = 0.005f; // adjust accordingly
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    cameraPos += cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    cameraPos -= cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    enableWireframeMode();
+  if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    disableWireframeMode();
+}
+
+void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+{
+  windowWidth = width;
+  windowHeight = height;
+  glViewport(0, 0, width, height);
+}
 
 int loadShaderFile(char **shaderText, const char *fileName)
 {
@@ -98,6 +133,21 @@ int loadShaderFile(char **shaderText, const char *fileName)
 
   file.close();
 
+  return 0;
+}
+
+int drawImGui()
+{
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
+
+  ImGui::Begin("Window");
+  ImGui::Text("Hello, World!");
+  ImGui::End();
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   return 0;
 }
 
@@ -215,9 +265,10 @@ int main()
 
   glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);  
-  glfwSetCursorPosCallback(window, mouseCallback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  // glfwSetCursorPosCallback(window, mouseCallback);
+  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  startMouseCapture(window);
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -232,40 +283,28 @@ int main()
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
+  glUseProgram(shaderProgram);
+  int modelLoc = glGetUniformLocation(shaderProgram, "model");
+  int viewLoc = glGetUniformLocation(shaderProgram, "view");
+  int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    // glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glUseProgram(shaderProgram);
-
-    float timeValue = glfwGetTime();
-    float greenValue = sin(timeValue) / 2.0f + 0.5f;
-    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-    glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-    glm::mat4 view = glm::mat4(1.0f);
-    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-    glm::mat4 projection;
-    projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
-    // projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
-    int modelLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-    int viewLoc = glGetUniformLocation(shaderProgram, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-    int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindVertexArray(VAO);
@@ -273,16 +312,7 @@ int main()
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ImGui::Begin("Window");
-    ImGui::Text("Hello, World!");
-    ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    drawImGui();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
