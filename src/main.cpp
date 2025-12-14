@@ -221,32 +221,95 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
   glViewport(0, 0, width, height);
 }
 
-int loadShaderFile(char **shaderText, const char *fileName)
+class Shader
 {
+public:
+  unsigned int Id;
 
-  std::ifstream file(fileName);
+  std::string shaderText;
 
-  if (!file.is_open())
+  Shader(std::string fileName, GLenum shaderType)
   {
-    std::cerr << "Failed to open file." << std::endl;
-    return -1;
+    loadShaderFile(fileName);
+
+    this->Id = glCreateShader(shaderType);
+
+    const char *shaderString = shaderText.c_str();
+    glShaderSource(this->Id, 1, &shaderString, NULL);
+    glCompileShader(this->Id);
   }
 
-  std::string line;
-  std::string vertexShaderSource;
-  while (std::getline(file, line))
+  int loadShaderFile(std::string fileName)
   {
-    vertexShaderSource += line + "\n";
+
+    std::ifstream file(fileName.c_str());
+
+    if (!file.is_open())
+    {
+      std::cerr << "Failed to open file." << std::endl;
+      std::error_code ec;
+      file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+      try
+      {
+        file.open(fileName);
+      }
+      catch (const std::ios_base::failure &e)
+      {
+        ec = e.code();
+        std::cerr << "Error opening file: " << fileName << std::endl;
+        std::cerr << "Error code: " << ec.value() << std::endl;
+        std::cerr << "Error message: " << ec.message() << std::endl;
+        std::cerr << "Exception: " << e.what() << std::endl;
+      }
+      return -1;
+    }
+
+    std::string line;
+    // std::string shaderSource;
+    shaderText = "";
+    while (std::getline(file, line))
+    {
+      shaderText += line + "\n";
+    }
+
+    // const char *shaderCode = shaderSource.c_str();
+    // shaderText = new char[shaderSource.length() + 1];
+    // std::strcpy(shaderText, shaderCode);
+
+    file.close();
+
+    return 0;
   }
 
-  const char *shaderCode = vertexShaderSource.c_str();
-  *shaderText = new char[vertexShaderSource.length() + 1];
-  std::strcpy(*shaderText, shaderCode);
+  void deleteShader()
+  {
+    glDeleteShader(this->Id);
+  }
 
-  file.close();
+  void attachToProgram(unsigned int programId)
+  {
+    glAttachShader(programId, this->Id);
+  }
+};
 
-  return 0;
-}
+class ShaderProgram
+{
+public:
+  unsigned int Id;
+
+  ShaderProgram(Shader *vertexShader, Shader *fragmentShader)
+  {
+    Id = glCreateProgram();
+
+    vertexShader->attachToProgram(Id);
+    fragmentShader->attachToProgram(Id);
+    glLinkProgram(Id);
+
+    vertexShader->deleteShader();
+    fragmentShader->deleteShader();
+  }
+};
 
 int drawImGui()
 {
@@ -266,6 +329,9 @@ int drawImGui()
 
 int main()
 {
+
+  // for (uint64_t n1 = 1, n2 = 1, r = 0;; n1 = n2, n2 = r) std::cout << (r = n1 + n2) << std::endl;
+
   glfwInit();
   const char *glsl_version = "#version 330 core";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -303,9 +369,7 @@ int main()
   for (int i = 0; i < vertexCount; i++)
   {
     objl::Vertex v = objectLoader.LoadedVertices[i];
-    Vertex vertex = Vertex(v.Position.X, v.Position.Y, v.Position.Z,
-                           v.Normal.X, v.Normal.Y, v.Normal.Z,
-                           v.TextureCoordinate.X, v.TextureCoordinate.Y);
+    Vertex vertex = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
     vertices[i] = vertex;
   }
 
@@ -317,10 +381,11 @@ int main()
     indices[i] = objectLoader.LoadedIndices[i];
   }
 
-  stbi_set_flip_vertically_on_load(true);  
+  stbi_set_flip_vertically_on_load(true);
   int width, height, nrChannels;
   unsigned char *data = stbi_load("resources/textures/Terminatrix_Head.png", &width, &height, &nrChannels, 0);
-  if (!data) {
+  if (!data)
+  {
     std::cerr << "Failed to load texture" << std::endl;
     return -1;
   }
@@ -340,35 +405,40 @@ int main()
 
   stbi_image_free(data);
 
-  char *vertexShaderSource;
-  loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
+  // char *vertexShaderSource;
+  // loadShaderFile(&vertexShaderSource, "VertexShader.glsl");
 
-  // Create and compile vertex shader
-  unsigned int vertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  // // Create and compile vertex shader
+  // unsigned int vertexShader;
+  // vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
+  // glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  // glCompileShader(vertexShader);
 
-  // Compile fragment shader
-  char *fragmentShaderSource;
-  loadShaderFile(&fragmentShaderSource, "FragmentShader.glsl");
+  // // Compile fragment shader
+  // char *fragmentShaderSource;
+  // loadShaderFile(&fragmentShaderSource, "FragmentShader.glsl");
 
-  unsigned int fragmentShader;
-  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
+  // unsigned int fragmentShader;
+  // fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  // glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+  // glCompileShader(fragmentShader);
 
-  // Create shader program
-  unsigned int shaderProgram;
-  shaderProgram = glCreateProgram();
+  // // Create shader program
+  // unsigned int shaderProgram;
+  // shaderProgram = glCreateProgram();
 
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
+  // glAttachShader(shaderProgram, vertexShader);
+  // glAttachShader(shaderProgram, fragmentShader);
+  // glLinkProgram(shaderProgram);
 
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
+  // glDeleteShader(vertexShader);
+  // glDeleteShader(fragmentShader);
+
+  Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
+  Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
+
+  unsigned int shaderProgram = ShaderProgram(&vertexShader, &fragmentShader).Id;
 
   unsigned int VBO;
   glGenBuffers(1, &VBO);
@@ -424,7 +494,7 @@ int main()
   int texLoc = glGetUniformLocation(shaderProgram, "ourTexture");
   glUniform1i(texLoc, 0);
 
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
 
   while (!glfwWindowShouldClose(window))
