@@ -250,6 +250,7 @@ int loadShaderFile(char **shaderText, const char *fileName)
 
 int drawImGui()
 {
+  return 0;
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
@@ -290,33 +291,6 @@ int main()
   }
 
   glViewport(0, 0, 800, 600);
-
-  // float vertices[] = {
-
-  //     0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
-  //     0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-  //     -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-  //     -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f,  // top left
-
-  //     0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,   // top right
-  //     0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-  //     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-  //     -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f   // top left
-  // };
-
-  // Vertex vertices[] = {
-  //     // Front face
-  //     Vertex(0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),   // top right
-  //     Vertex(0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f),  // bottom right
-  //     Vertex(-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f), // bottom left
-  //     Vertex(-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f),  // top left
-
-  //     // Back face
-  //     Vertex(0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f),   // top right
-  //     Vertex(0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f),  // bottom right
-  //     Vertex(-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f), // bottom left
-  //     Vertex(-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f)   // top left
-  // };
 
   objl::Loader objectLoader;
 
@@ -474,9 +448,6 @@ int main()
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-
-    // glBindVertexArray(VAO);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
