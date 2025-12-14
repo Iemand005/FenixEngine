@@ -70,10 +70,10 @@ int main()
   glViewport(0, 0, 800, 600);
 
   float vertices[] = {
-      0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // top right
-      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-      -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f   // top left
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,   // top right
+      0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f   // top left
   };
   unsigned int indices[] = {
       // note that we start from 0!
@@ -167,20 +167,21 @@ int main()
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
+    model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
     glm::mat4 view = glm::mat4(1.0f);
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    // projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 
     int modelLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-
-(view));
     int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
