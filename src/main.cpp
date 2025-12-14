@@ -23,7 +23,9 @@ float fov = 45.0f;
 void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
+    glfwSetInputMode(window, GLFW_CURSOR, glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_NORMAL ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+    ;
+    // glfwSetWindowShouldClose(window, true);
 
   const float cameraSpeed = 0.005f; // adjust accordingly
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -67,6 +69,11 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
   cameraFront = glm::normalize(direction);
 }
 
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}  
+
 int loadShaderFile(char **shaderText, const char *fileName)
 {
 
@@ -97,7 +104,7 @@ int loadShaderFile(char **shaderText, const char *fileName)
 int main()
 {
   glfwInit();
-  const char* glsl_version = "#version 330 core";
+  const char *glsl_version = "#version 330 core";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -208,20 +215,22 @@ int main()
 
   glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
+  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);  
   glfwSetCursorPosCallback(window, mouseCallback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
 
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -265,15 +274,15 @@ int main()
     glBindVertexArray(0);
 
     ImGui_ImplOpenGL3_NewFrame();
-ImGui_ImplGlfw_NewFrame();
-ImGui::NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-ImGui::Begin("Window");
-ImGui::Text("Hello, World!"); // Easy text rendering
-ImGui::End();
+    ImGui::Begin("Window");
+    ImGui::Text("Hello, World!");
+    ImGui::End();
 
-ImGui::Render();
-ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
     glfwPollEvents();
