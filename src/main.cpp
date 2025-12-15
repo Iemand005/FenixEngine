@@ -199,7 +199,7 @@ void processInput(GLFWwindow *window, float deltaTime)
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     startMouseCapture(window);
 
-  const float cameraSpeed = 0.05f * deltaTime; // adjust accordingly
+  const float cameraSpeed = 0.005f * deltaTime; // adjust accordingly
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     cameraPos += cameraSpeed * cameraFront;
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -428,14 +428,16 @@ public:
     this->render(shader, this->modelMatrix);
   }
 
-  void prepareRender(ShaderProgram &shader) {
+  void prepareRender(ShaderProgram &shader)
+  {
     shader.use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->texture);
     glBindVertexArray(this->VAO);
   }
 
-  void endRender() {
+  void endRender()
+  {
     glBindVertexArray(0);
   }
 
@@ -448,10 +450,12 @@ public:
     this->endRender();
   }
 
-  void renderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
+  void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices)
+  {
     this->prepareRender(shader);
 
-    for (const auto& modelMatrix : modelMatrices) {
+    for (const auto &modelMatrix : modelMatrices)
+    {
       shader.setMat4("model", modelMatrix);
       glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
     }
@@ -491,25 +495,164 @@ private:
   std::vector<std::unique_ptr<Model>> models;
 
 public:
-  void addModel(std::unique_ptr<Model> model) {
+
+  Scene() {
+    models = std::vector<std::unique_ptr<Model>>();
+  }
+
+  void addModel(std::unique_ptr<Model> model)
+  {
     models.push_back(std::move(model));
   }
 
-  void prepareRender(ShaderProgram &shader, const Camera &camera) {
+  void prepareRender(ShaderProgram &shader, const Camera &camera)
+  {
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("projection", camera.getProjectionMatrix());
   }
 
-  void render(ShaderProgram &shader, const Camera &camera) {
+  void render(ShaderProgram &shader, const Camera &camera)
+  {
     this->prepareRender(shader, camera);
 
     for (auto &model : models)
       model->render(shader);
   }
 
-  const std::vector<std::unique_ptr<Model>>& getModels() const {
+  const std::vector<std::unique_ptr<Model>> &getModels() const
+  {
     return models;
+  }
+};
+
+class Window
+{
+public:
+  int width;
+  int height;
+  GLFWwindow *window;
+  std::unique_ptr<Scene> scene;
+  ShaderProgram *shaderProgram;
+
+  Window(int width, int height) : width(width), height(height)
+  {
+    glfwInit();
+    const char *glsl_version = "#version 330 core";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    this->window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
+    if (window == NULL)
+    {
+      std::cout << "Failed to create GLFW window" << std::endl;
+      glfwTerminate();
+      return;
+    }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return;
+    }
+
+    glViewport(0, 0, 800, 600);
+
+    Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
+    Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
+
+    this->shaderProgram = new ShaderProgram(&vertexShader, &fragmentShader);
+
+    // this->shaderProgram = std::make_unique<ShaderProgram>(shaderProgram);
+
+    glEnable(GL_DEPTH_TEST);
+
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    startMouseCapture(window);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    this->scene = std::make_unique<Scene>();
+    std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
+    model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    this->scene->addModel(std::move(model));
+
+    glEnable(GL_CULL_FACE);
+    //glCullFace(GL_FRONT);
+
+    Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+  }
+
+  double getDeltaTime()
+  {
+    return glfwGetTime();
+  }
+
+  void setClearColor(float r, float g, float b, float a) {
+    glClearColor(r, g, b, a);
+  }
+
+  void clear() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
+
+  void redraw() {
+    this->clear();
+
+    scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+
+    // const auto &models = scene.getModels();
+
+    // scene->prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+
+    // models[0]->renderInstanced(shaderProgram, modelMatrices);
+
+    glfwSwapBuffers(this->window);
+    glfwPollEvents();
+  }
+
+  void processInput()
+  {
+    double deltaTime = getDeltaTime();
+
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+      stopMouseCapture(window);
+    ;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+      startMouseCapture(window);
+
+    const float cameraSpeed = 0.005f * deltaTime; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+      cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+      cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+      cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+      enableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+      disableWireframeMode();
+  }
+
+  bool shouldClose()
+  {
+    return glfwWindowShouldClose(this->window);
   }
 };
 
@@ -534,106 +677,105 @@ int main()
 
   // for (uint64_t n1 = 1, n2 = 1, r = 0;; n1 = n2, n2 = r) std::cout << (r = n1 + n2) << std::endl;
 
-  glfwInit();
-  const char *glsl_version = "#version 330 core";
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // glfwInit();
+  // const char *glsl_version = "#version 330 core";
+  // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  printf("Hello, TestEngine!\n");
+  // printf("Hello, TestEngine!\n");
 
-  GLFWwindow *window = glfwCreateWindow(800, 600, "TestEngine", NULL, NULL);
-  if (window == NULL)
+  // GLFWwindow *window = glfwCreateWindow(800, 600, "TestEngine", NULL, NULL);
+  // if (window == NULL)
+  // {
+  //   std::cout << "Failed to create GLFW window" << std::endl;
+  //   glfwTerminate();
+  //   return -1;
+  // }
+  // glfwMakeContextCurrent(window);
+
+  // if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+  // {
+  //   std::cout << "Failed to initialize GLAD" << std::endl;
+  //   return -1;
+  // }
+
+  // glViewport(0, 0, 800, 600);
+
+  // Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
+  // Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
+
+  // ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
+
+  // glEnable(GL_DEPTH_TEST);
+  // // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+  // glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+  // glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  // glfwSetScrollCallback(window, scrollCallback);
+  // startMouseCapture(window);
+
+  // IMGUI_CHECKVERSION();
+  // ImGui::CreateContext();
+  // ImGuiIO &io = ImGui::GetIO();
+  // (void)io;
+  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+  // ImGui::StyleColorsDark();
+
+  // ImGui_ImplGlfw_InitForOpenGL(window, true);
+  // ImGui_ImplOpenGL3_Init(glsl_version);
+
+  // // glUseProgram(shaderProgram.Id);
+  // shaderProgram.use();
+
+  // Scene scene;
+  // std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
+  // model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+  // scene.addModel(std::move(model));
+
+  // glEnable(GL_CULL_FACE);
+  // // glCullFace(GL_FRONT);
+
+  // Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+
+  // std::vector<glm::mat4> modelMatrices;
+  // modelMatrices.reserve(1000);
+
+  // for (size_t z = 0; z < 10; z++)
+  //   for (size_t y = 0; y < 10; y++)
+  //     for (size_t x = 0; x < 10; x++)
+  //       modelMatrices.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f * z)));
+
+  Window windowc(800, 600);
+
+  while (!windowc.shouldClose())
   {
-    std::cout << "Failed to create GLFW window" << std::endl;
-    glfwTerminate();
-    return -1;
-  }
-  glfwMakeContextCurrent(window);
-
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-  {
-    std::cout << "Failed to initialize GLAD" << std::endl;
-    return -1;
+    // processInput(windowc.window, glfwGetTime());
+    windowc.processInput();
+    windowc.redraw();
   }
 
-  glViewport(0, 0, 800, 600);
+  // while (!glfwWindowShouldClose(window))
+  // {
+  //   processInput(window, glfwGetTime());
 
-  Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
-  Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
+  //   // scene.clear();
 
-  ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
+  //   scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-  glEnable(GL_DEPTH_TEST);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  //   const auto &models = scene.getModels();
 
-  glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+  //   scene.prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-  glfwSetScrollCallback(window, scrollCallback);
-  startMouseCapture(window);
+  //   models[0]->renderInstanced(shaderProgram, modelMatrices);
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  //   drawImGui();
 
-  ImGui::StyleColorsDark();
-
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init(glsl_version);
-
-  // glUseProgram(shaderProgram.Id);
-  shaderProgram.use();
-
-  Scene scene;
-  std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
-  model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-  // model->modelMatrix = glm::translate(model->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-  scene.addModel(std::move(model));
-
-  glEnable(GL_CULL_FACE);
-  // glCullFace(GL_FRONT);
-
-  Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-
-  while (!glfwWindowShouldClose(window))
-  {
-    processInput(window, glfwGetTime());
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
-
-    const auto& models = scene.getModels();
-
-
-    // for (size_t z = 0; z < 10; z++)
-
-    // for (size_t y = 0; y < 10; y++)
-    //   for (size_t x = 0; x < 10; x++) {
-    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
-    //     models[0]->render(shaderProgram, modelMatrix);
-    //   }
-    scene.prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
-    std::vector<glm::mat4> modelMatrices;
-    modelMatrices.reserve(1000);
-    
-    for (size_t z = 0; z < 10; z++)
-        for (size_t y = 0; y < 10; y++)
-            for (size_t x = 0; x < 10; x++) {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f * z));
-                modelMatrices.push_back(model);
-            }
-    models[0]->renderInstanced(shaderProgram, modelMatrices);
-
-    drawImGui();
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-  }
+  //   glfwSwapBuffers(window);
+  //   glfwPollEvents();
+  // }
 
   glfwTerminate();
   return 0;
