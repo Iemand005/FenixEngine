@@ -438,49 +438,40 @@ class Model
     return true;
   }
 
-  glm::mat4 getModelMatrix()
-  {
+  glm::mat4 getModelMatrix() {
     return this->modelMatrix;
   }
 
-  void render(ShaderProgram &shader)
-  {
+  void render(ShaderProgram &shader) {
     this->render(shader, this->getModelMatrix());
   }
 
-  void prepareRender(ShaderProgram &shader)
-  {
+  void prepareRender(ShaderProgram &shader) {
     shader.use();
+    glBindVertexArray(this->VAO);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->texture);
-    glBindVertexArray(this->VAO);
   }
 
-  void endRender()
-  {
-    glBindVertexArray(0);
+  void draw() {
+    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
   }
 
-  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
-  {
+  void render(ShaderProgram &shader, glm::mat4 modelMatrix) {
     this->prepareRender(shader);
     shader.setMat4("model", modelMatrix);
 
-    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
-    this->endRender();
+    this->draw();
   }
 
-  void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices)
-  {
+  void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices) {
     this->prepareRender(shader);
 
-    for (const auto &modelMatrix : modelMatrices)
-    {
+    for (const auto &modelMatrix : modelMatrices) {
       shader.setMat4("model", modelMatrix);
-      glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+      this->draw();
     }
-
-    this->endRender();
   }
 };
 
@@ -493,49 +484,37 @@ public:
   Vector3 rotation;
   Vector3 velocity;
   Vector3 acceleration;
-  
+
   Object() : Model() {}
 
   Object(std::string objFilePath, std::string textureFilePath) : Model(objFilePath, textureFilePath) {}
 
-  void applyForce(const Vector3 &force)
-  {
+  void applyForce(const Vector3 &force) {
     this->acceleration = this->acceleration + force;
   }
 
-  void applyAcceleration(const Vector3 &acceleration)
-  {
+  void applyAcceleration(const Vector3 &acceleration) {
     this->velocity = this->velocity + acceleration;
   }
 
-  void applyGravity(const Vector3 &gravity, double deltaTime)
-  {
+  void applyGravity(const Vector3 &gravity, double deltaTime) {
     this->applyAcceleration(gravity * deltaTime);
   }
 
-  void update(double deltaTime)
-  {
+  void update(double deltaTime) {
     this->applyAcceleration(this->acceleration);
     this->position = this->position + this->velocity * static_cast<float>(deltaTime);
   }
 
-  glm::mat4 getModelMatrix()
-  {
+  glm::mat4 getModelMatrix() {
     return glm::translate(this->modelMatrix, glm::vec3(this->position.X, this->position.Y, this->position.Z));
   }
 
-  void render(ShaderProgram &shader)
-  {
-    this->render(shader, this->getModelMatrix());
-  }
-
-  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
-  {
+  void render(ShaderProgram &shader) {
     this->prepareRender(shader);
-    shader.setMat4("model", modelMatrix);
-
-    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
-    this->endRender();
+    shader.setMat4("model", this->getModelMatrix());
+  
+    this->draw();
   }
 };
 
@@ -549,17 +528,14 @@ private:
   glm::mat4 projectionMatrix;
 
 public:
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up}
-  {
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up} {
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
   }
-  glm::mat4 getViewMatrix() const
-  {
+  glm::mat4 getViewMatrix() const {
     return viewMatrix;
   }
-  glm::mat4 getProjectionMatrix() const
-  {
+  glm::mat4 getProjectionMatrix() const {
     return projectionMatrix;
   }
 };
@@ -569,17 +545,14 @@ class Scene
 private:
   std::vector<std::unique_ptr<Object>> objects;
   Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
-    Timer timer;
-
+  Timer timer;
 
 public:
-  Scene()
-  {
+  Scene() {
     objects = std::vector<std::unique_ptr<Object>>();
   }
 
-  void addModel(std::unique_ptr<Object> object)
-  {
+  void addModel(std::unique_ptr<Object> object) {
     objects.push_back(std::move(object));
   }
 
@@ -596,33 +569,30 @@ public:
 
     for (auto &model : objects)
       model->render(shader);
+
+    this->endRender();
   }
 
-  void update()
-  {
+  void endRender() {
+    glBindVertexArray(0);
+  }
+
+  void update() {
     timer.update();
-    for (auto &object : objects)
-    {
+    for (auto &object : objects) {
       object->applyGravity(gravity, timer.deltaTime);
-      // Update position based on velocity and deltaTime
-      // object->setPosition(object->getPosition() + object->getVelocity() * static_cast<float>(deltaTime));
       object->update(timer.deltaTime);
     }
+    resolveCollisions();
   }
 
-  void resolveCollisions()
-  {
+  void resolveCollisions() {
     for (auto &object : objects)
     {
-      if (object->getPosition().Y < 0.0f)
+      if (object->position.Y < 0.0f)
       {
-        Vector3 pos = object->getPosition();
-        pos.Y = 0.0f;
-        object->setPosition(pos);
-
-        Vector3 vel = object->getVelocity();
-        vel.Y = -vel.Y * 0.5f; // simple bounce with damping
-        object->setVelocity(vel);
+        object->position.Y = 0.0f;
+        object->velocity.Y *= -0.5f;
       }
     }
   }
@@ -747,7 +717,7 @@ public:
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
       startMouseCapture();
 
-    const float cameraSpeed = 0.05f * deltaTime; // adjust accordingly
+    const float cameraSpeed = 0.005f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
       cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -756,6 +726,10 @@ public:
       cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
       cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+      cameraPos += cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+      cameraPos -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
