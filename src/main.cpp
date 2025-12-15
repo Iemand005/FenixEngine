@@ -9,16 +9,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define USE_IMGUI 0
+
+#if USE_IMGUI
 #include "imgui\imgui.h"
 #include "imgui\imgui_impl_glfw.h"
 #include "imgui\imgui_impl_opengl3.h"
+#endif
 
 #include "OBJ_Loader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define USE_IMGUI 1
 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -510,6 +513,9 @@ public:
   ShaderProgram *shaderProgram;
   FPSCounter fpsCounter;
 
+    std::vector<glm::mat4> modelMatrices;
+
+
   float lastUpdateTime = 0.0f;
 
   Window(int width, int height) : width(width), height(height)
@@ -549,6 +555,15 @@ public:
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
     startMouseCapture();
+
+    modelMatrices.reserve(1000);
+    
+    // for (size_t z = 0; z < 10; z++)
+        for (size_t y = 0; y < 500; y++)
+            for (size_t x = 0; x < 500; x++) {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f));
+                modelMatrices.push_back(model);
+            }
 
 #if USE_IMGUI
     IMGUI_CHECKVERSION();
@@ -593,7 +608,21 @@ public:
   {
     this->clear();
 
-    scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+    // scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+
+    const auto& models = scene->getModels();
+
+
+    // for (size_t z = 0; z < 10; z++)
+
+    // for (size_t y = 0; y < 10; y++)
+    //   for (size_t x = 0; x < 10; x++) {
+    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
+    //     models[0]->render(shaderProgram, modelMatrix);
+    //   }
+    scene->prepareRender(*shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 10000.0f));
+    
+    models[0]->renderInstanced(*shaderProgram, modelMatrices);
 
 // const auto &models = scene.getModels();
 
@@ -619,7 +648,7 @@ public:
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
       startMouseCapture();
 
-    const float cameraSpeed = 0.005f * deltaTime; // adjust accordingly
+    const float cameraSpeed = 0.5f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
       cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
