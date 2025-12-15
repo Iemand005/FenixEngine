@@ -1030,6 +1030,8 @@ int main()
 {
   Window window(800, 600);
 
+  glm::vec3 playerHeight = glm::vec3(0.0f, 6.5f, 0.0f);
+
   while (!window.shouldClose())
   {
     ImGui_ImplOpenGL3_NewFrame();
@@ -1038,7 +1040,7 @@ int main()
 
     window.processInput();
     window.player->rotation.y = -yaw + 90.0f;
-    glm::vec3 pos = window.player->position + glm::vec3(0.0f, 6.5f, 0.0f);
+    glm::vec3 pos = window.player->position + playerHeight;
     cameraPos = pos - cameraFront * 5.0f ;
     window.playerCamera->setPos(cameraPos);
     cameraTarget = pos;
