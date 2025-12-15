@@ -628,6 +628,15 @@ public:
     for (auto &mesh : meshes)
       mesh.render(shader, this->getModelMatrix());
   }
+
+  std::shared_ptr<Object> clone() const
+  {
+    auto newObj = std::make_shared<Object>();
+    newObj->meshes = this->meshes;
+    newObj->scale = this->scale;
+    newObj->modelMatrix = this->modelMatrix;
+    return newObj;
+  }
 };
 
 class Camera
@@ -979,6 +988,12 @@ public:
       // this->player->acceleration.y = 10.0f;
       this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
       canJump = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+      std::shared_ptr<Object> newObj = std::make_shared<Object>("resources/models/citizen.obj", 0.1f);
+      newObj->position = this->player->position + horizontalFront * 2.0f;
+      this->scene->addModel(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
