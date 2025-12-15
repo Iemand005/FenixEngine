@@ -315,17 +315,21 @@ class Model
 
   unsigned int vertexCount;
   unsigned int indexCount;
-  
+
   unsigned int VAO = 0;
   unsigned int VBO = 0;
   unsigned int EBO = 0;
   unsigned int texture = 0;
 
 public:
+  glm::mat4 modelMatrix;
+
   Model() {}
 
   Model(std::string objFilePath, std::string textureFilePath)
   {
+    modelMatrix = glm::mat4(1.0f);
+
     loadObj(objFilePath);
     loadTexture(textureFilePath);
 
@@ -421,11 +425,13 @@ public:
 
   void render(ShaderProgram &shader)
   {
-    glm::mat4 model = glm::mat4(1.0f);
+    this->render(shader, this->modelMatrix);
+  }
 
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
+  {
 
-    shader.setMat4("model", model);
+    shader.setMat4("model", modelMatrix);
 
     shader.use();
     glActiveTexture(GL_TEXTURE0);
@@ -467,13 +473,11 @@ private:
   std::vector<std::unique_ptr<Model>> models;
 
 public:
-  void addModel(std::unique_ptr<Model> model)
-  {
+  void addModel(std::unique_ptr<Model> model) {
     models.push_back(std::move(model));
   }
 
-  void render(ShaderProgram &shader, const Camera &camera)
-  {
+  void render(ShaderProgram &shader, const Camera &camera) {
     // Set view/projection matrices (same for all models)
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
@@ -481,6 +485,10 @@ public:
 
     for (auto &model : models)
       model->render(shader);
+  }
+
+  std::vector<std::unique_ptr<Model>> getModels() {
+    return models;
   }
 };
 
@@ -632,13 +640,17 @@ int main()
   shaderProgram.use();
 
   Scene scene;
+  // for (int i = 0; i < 10; i++) {
   std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
+  model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+  model->modelMatrix = glm::translate(model->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
   scene.addModel(std::move(model));
-  // int modelLoc = glGetUniformLocation(shaderProgram.Id, "model");
-  // int viewLoc = glGetUniformLocation(shaderProgram.Id, "view");
-  // int projectionLoc = glGetUniformLocation(shaderProgram.Id, "projection");
-  // int texLoc = glGetUniformLocation(shaderProgram.Id, "ourTexture");
-  // glUniform1i(texLoc, 0);
+  // }
+
+  // std::unique_ptr<Model> model2 = std::make_unique<Model>("resources/models/cube.obj", "resources/textures/Terminatrix_Head.png");
+  // model2->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+  // model2->modelMatrix = glm::translate(model2->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
+  // scene.addModel(std::move(model2));
 
   // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
@@ -671,6 +683,10 @@ int main()
     // glBindVertexArray(0);
 
     scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+
+    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+    auto models = scene.getModels();
+    // models[0].get()->render(shaderProgram, modelMatrix);
 
     drawImGui();
 
