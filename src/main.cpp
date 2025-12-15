@@ -18,6 +18,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define USE_IMGUI 1
+
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -25,7 +27,7 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
 float fov = 45.0f;
 
-float lastX = 400, lastY = 300;
+float lastX = 0, lastY = 0;
 
 float yaw = -90.0f;
 float pitch = 0.0f;
@@ -134,19 +136,36 @@ struct Vertex
   }
 };
 
-void mouseCallback(GLFWwindow *window, double xpos, double ypos)
+struct FPSCounter {
+  double lastTime = 0.0;
+  double frameTime = 0.0;
+
+  void update()
+  {
+    double currentTime = glfwGetTime();
+    frameTime = currentTime - lastTime;
+    lastTime = currentTime;
+  }
+};
+
+void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
-  float xoffset = xpos - lastX;
-  float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-  lastX = xpos;
-  lastY = ypos;
+  float xOffset = xPos - lastX;
+  float yOffset = lastY - yPos;
+  if (lastX == 0 && lastY == 0)
+  {
+    xOffset = 0;
+    yOffset = 0;
+  }
+  lastX = xPos;
+  lastY = yPos;
 
   const float sensitivity = 0.1f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
+  xOffset *= sensitivity;
+  yOffset *= sensitivity;
 
-  yaw += xoffset;
-  pitch += yoffset;
+  yaw += xOffset;
+  pitch += yOffset;
 
   if (pitch > 89.0f)
     pitch = 89.0f;
@@ -160,58 +179,13 @@ void mouseCallback(GLFWwindow *window, double xpos, double ypos)
   cameraFront = glm::normalize(direction);
 }
 
-void scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+void scrollCallback(GLFWwindow *window, double xoffset, double yOffset)
 {
-  fov -= (float)yoffset;
+  fov -= (float)yOffset;
   if (fov < 1.0f)
     fov = 1.0f;
   if (fov > 45.0f)
     fov = 45.0f;
-}
-
-void startMouseCapture(GLFWwindow *window)
-{
-  glfwSetCursorPosCallback(window, mouseCallback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-}
-
-void stopMouseCapture(GLFWwindow *window)
-{
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  glfwSetCursorPosCallback(window, NULL);
-}
-
-void enableWireframeMode()
-{
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-}
-
-void disableWireframeMode()
-{
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-void processInput(GLFWwindow *window, float deltaTime)
-{
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    stopMouseCapture(window);
-  ;
-  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    startMouseCapture(window);
-
-  const float cameraSpeed = 0.005f * deltaTime; // adjust accordingly
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    cameraPos += cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    cameraPos -= cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-    enableWireframeMode();
-  if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-    disableWireframeMode();
 }
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height)
@@ -495,8 +469,8 @@ private:
   std::vector<std::unique_ptr<Model>> models;
 
 public:
-
-  Scene() {
+  Scene()
+  {
     models = std::vector<std::unique_ptr<Model>>();
   }
 
@@ -534,6 +508,9 @@ public:
   GLFWwindow *window;
   std::unique_ptr<Scene> scene;
   ShaderProgram *shaderProgram;
+  FPSCounter fpsCounter;
+
+  float lastUpdateTime = 0.0f;
 
   Window(int width, int height) : width(width), height(height)
   {
@@ -565,16 +542,15 @@ public:
 
     this->shaderProgram = new ShaderProgram(&vertexShader, &fragmentShader);
 
-    // this->shaderProgram = std::make_unique<ShaderProgram>(shaderProgram);
-
     glEnable(GL_DEPTH_TEST);
 
     glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
-    startMouseCapture(window);
+    startMouseCapture();
 
+#if USE_IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
@@ -585,6 +561,7 @@ public:
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+#endif
 
     this->scene = std::make_unique<Scene>();
     std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
@@ -592,7 +569,7 @@ public:
     this->scene->addModel(std::move(model));
 
     glEnable(GL_CULL_FACE);
-    //glCullFace(GL_FRONT);
+    // glCullFace(GL_FRONT);
 
     Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
   }
@@ -602,24 +579,31 @@ public:
     return glfwGetTime();
   }
 
-  void setClearColor(float r, float g, float b, float a) {
+  void setClearColor(float r, float g, float b, float a)
+  {
     glClearColor(r, g, b, a);
   }
 
-  void clear() {
+  void clear()
+  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  void redraw() {
+  void redraw()
+  {
     this->clear();
 
     scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-    // const auto &models = scene.getModels();
+// const auto &models = scene.getModels();
 
-    // scene->prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+// scene->prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-    // models[0]->renderInstanced(shaderProgram, modelMatrices);
+// models[0]->renderInstanced(shaderProgram, modelMatrices);
+#if USE_IMGUI
+    fpsCounter.update();
+    drawImGui();
+#endif
 
     glfwSwapBuffers(this->window);
     glfwPollEvents();
@@ -630,10 +614,10 @@ public:
     double deltaTime = getDeltaTime();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      stopMouseCapture(window);
+      stopMouseCapture();
     ;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-      startMouseCapture(window);
+      startMouseCapture();
 
     const float cameraSpeed = 0.005f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -650,133 +634,68 @@ public:
       disableWireframeMode();
   }
 
+  void enableWireframeMode()
+  {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  }
+
+  void disableWireframeMode()
+  {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+
+  void startMouseCapture()
+  {
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
+
+  void stopMouseCapture()
+  {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetCursorPosCallback(window, NULL);
+  }
+
   bool shouldClose()
   {
     return glfwWindowShouldClose(this->window);
   }
+
+  void destroy()
+  {
+    glfwDestroyWindow(this->window);
+    glfwTerminate();
+  }
+
+#if USE_IMGUI
+  int drawImGui()
+  {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Window");
+    ImGui::Text("Hello, World!");
+    ImGui::Text("FPS %d", 1.0f / fpsCounter.frameTime);
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    return 0;
+  }
+#endif
 };
-
-int drawImGui()
-{
-  return 0;
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-
-  ImGui::Begin("Window");
-  ImGui::Text("Hello, World!");
-  ImGui::End();
-
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  return 0;
-}
 
 int main()
 {
+  Window window(800, 600);
 
-  // for (uint64_t n1 = 1, n2 = 1, r = 0;; n1 = n2, n2 = r) std::cout << (r = n1 + n2) << std::endl;
-
-  // glfwInit();
-  // const char *glsl_version = "#version 330 core";
-  // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  // printf("Hello, TestEngine!\n");
-
-  // GLFWwindow *window = glfwCreateWindow(800, 600, "TestEngine", NULL, NULL);
-  // if (window == NULL)
-  // {
-  //   std::cout << "Failed to create GLFW window" << std::endl;
-  //   glfwTerminate();
-  //   return -1;
-  // }
-  // glfwMakeContextCurrent(window);
-
-  // if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-  // {
-  //   std::cout << "Failed to initialize GLAD" << std::endl;
-  //   return -1;
-  // }
-
-  // glViewport(0, 0, 800, 600);
-
-  // Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
-  // Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
-
-  // ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
-
-  // glEnable(GL_DEPTH_TEST);
-  // // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  // glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-
-  // glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-  // glfwSetScrollCallback(window, scrollCallback);
-  // startMouseCapture(window);
-
-  // IMGUI_CHECKVERSION();
-  // ImGui::CreateContext();
-  // ImGuiIO &io = ImGui::GetIO();
-  // (void)io;
-  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-  // ImGui::StyleColorsDark();
-
-  // ImGui_ImplGlfw_InitForOpenGL(window, true);
-  // ImGui_ImplOpenGL3_Init(glsl_version);
-
-  // // glUseProgram(shaderProgram.Id);
-  // shaderProgram.use();
-
-  // Scene scene;
-  // std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
-  // model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-  // scene.addModel(std::move(model));
-
-  // glEnable(GL_CULL_FACE);
-  // // glCullFace(GL_FRONT);
-
-  // Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-
-  // std::vector<glm::mat4> modelMatrices;
-  // modelMatrices.reserve(1000);
-
-  // for (size_t z = 0; z < 10; z++)
-  //   for (size_t y = 0; y < 10; y++)
-  //     for (size_t x = 0; x < 10; x++)
-  //       modelMatrices.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f * z)));
-
-  Window windowc(800, 600);
-
-  while (!windowc.shouldClose())
+  while (!window.shouldClose())
   {
-    // processInput(windowc.window, glfwGetTime());
-    windowc.processInput();
-    windowc.redraw();
+    window.processInput();
+    window.redraw();
   }
 
-  // while (!glfwWindowShouldClose(window))
-  // {
-  //   processInput(window, glfwGetTime());
-
-  //   // scene.clear();
-
-  //   scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
-
-  //   const auto &models = scene.getModels();
-
-  //   scene.prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
-
-  //   models[0]->renderInstanced(shaderProgram, modelMatrices);
-
-  //   drawImGui();
-
-  //   glfwSwapBuffers(window);
-  //   glfwPollEvents();
-  // }
-
-  glfwTerminate();
+  window.destroy();
   return 0;
 }
