@@ -617,7 +617,7 @@ public:
 
   glm::mat4 getModelMatrix()
   {
-    return glm::scale(glm::rotate(glm::translate(this->modelMatrix, this->position), this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)), this->scale);
+    return glm::scale(glm::rotate(glm::translate(this->modelMatrix, this->position), glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)), this->scale);
   }
 
   void render(ShaderProgram &shader)
@@ -635,12 +635,63 @@ private:
   glm::vec3 up;
   glm::mat4 viewMatrix;
   glm::mat4 projectionMatrix;
+  float fov, aspect, nearDist, farDist;
+  unsigned int frustumVAO = 0, frustumVBO = 0;
+  std::vector<glm::vec3> frustumVertices;
 
 public:
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up}
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(near), farDist(far)
   {
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
+
+    // Compute frustum vertices
+    glm::vec3 right = glm::normalize(glm::cross(front, up));
+    float tanHalfFov = tan(glm::radians(fov / 2.0f));
+    float nearHeight = 2 * tanHalfFov * nearDist;
+    float nearWidth = nearHeight * aspect;
+    float farHeight = 2 * tanHalfFov * farDist;
+    float farWidth = farHeight * aspect;
+
+    glm::vec3 nearCenter = position + front * nearDist;
+    glm::vec3 farCenter = position + front * farDist;
+
+    glm::vec3 nearTopLeft = nearCenter + up * (nearHeight / 2) - right * (nearWidth / 2);
+    glm::vec3 nearTopRight = nearCenter + up * (nearHeight / 2) + right * (nearWidth / 2);
+    glm::vec3 nearBottomLeft = nearCenter - up * (nearHeight / 2) - right * (nearWidth / 2);
+    glm::vec3 nearBottomRight = nearCenter - up * (nearHeight / 2) + right * (nearWidth / 2);
+
+    glm::vec3 farTopLeft = farCenter + up * (farHeight / 2) - right * (farWidth / 2);
+    glm::vec3 farTopRight = farCenter + up * (farHeight / 2) + right * (farWidth / 2);
+    glm::vec3 farBottomLeft = farCenter - up * (farHeight / 2) - right * (farWidth / 2);
+    glm::vec3 farBottomRight = farCenter - up * (farHeight / 2) + right * (farWidth / 2);
+
+    frustumVertices = {
+        // near plane
+        nearTopLeft, nearTopRight,
+        nearTopRight, nearBottomRight,
+        nearBottomRight, nearBottomLeft,
+        nearBottomLeft, nearTopLeft,
+        // far plane
+        farTopLeft, farTopRight,
+        farTopRight, farBottomRight,
+        farBottomRight, farBottomLeft,
+        farBottomLeft, farTopLeft,
+        // sides
+        nearTopLeft, farTopLeft,
+        nearTopRight, farTopRight,
+        nearBottomRight, farBottomRight,
+        nearBottomLeft, farBottomLeft
+    };
+
+    glGenVertexArrays(1, &frustumVAO);
+    glBindVertexArray(frustumVAO);
+    glGenBuffers(1, &frustumVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, frustumVBO);
+    glBufferData(GL_ARRAY_BUFFER, frustumVertices.size() * sizeof(glm::vec3), frustumVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
   }
   glm::mat4 getViewMatrix() const
   {
@@ -649,6 +700,16 @@ public:
   glm::mat4 getProjectionMatrix() const
   {
     return projectionMatrix;
+  }
+  void render(ShaderProgram &shader) const
+  {
+    if (frustumVAO == 0) return;
+    shader.use();
+    glm::mat4 model = glm::mat4(1.0f);
+    shader.setMat4("model", model);
+    glBindVertexArray(frustumVAO);
+    glDrawArrays(GL_LINES, 0, frustumVertices.size());
+    glBindVertexArray(0);
   }
 };
 
@@ -679,6 +740,8 @@ private:
 
     for (auto &model : objects)
       model->render(shader);
+
+    camera.render(shader);
 
     this->endRender();
   }
@@ -848,8 +911,8 @@ public:
   {
     scene->update();
 
-    this->player->position = cameraPos + cameraFront * 2.0f;
-    this->player->rotation.y = yaw + 90.0f;
+    this->player->position = cameraPos + cameraFront * 2.0f + glm::vec3(0.0f, -10.5f, 0.0f);
+    // this->player->rotation.y = yaw / 360.0f + 90.0f;
   }
 
   void processInput()
@@ -955,6 +1018,7 @@ int main()
     ImGui::NewFrame();
 
     window.processInput();
+    window.player->rotation.y = -yaw + 90.0f;
     window.redraw();
     window.update();
   }
