@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define USE_IMGUI 0
+#define USE_IMGUI 1
 
 #if USE_IMGUI
 #include "imgui\imgui.h"
@@ -147,6 +147,18 @@ struct FPSCounter {
   {
     double currentTime = glfwGetTime();
     frameTime = currentTime - lastTime;
+    lastTime = currentTime;
+  }
+};
+
+struct Timer {
+  double lastTime = 0.0;
+  double deltaTime = 0.0;
+
+  void update()
+  {
+    double currentTime = glfwGetTime();
+    deltaTime = currentTime - lastTime;
     lastTime = currentTime;
   }
 };
@@ -400,9 +412,14 @@ public:
     return true;
   }
 
+  glm::mat4 getModelMatrix()
+  {
+    return this->modelMatrix;
+  }
+
   void render(ShaderProgram &shader)
   {
-    this->render(shader, this->modelMatrix);
+    this->render(shader, this->getModelMatrix());
   }
 
   void prepareRender(ShaderProgram &shader)
@@ -441,6 +458,46 @@ public:
   }
 };
 
+class Object : public Model
+{
+private:
+  Vector3 position;
+  Vector3 rotation;
+  Vector3 velocity;
+  Vector3 acceleration;
+
+public:
+  Object() : Model() {}
+
+  Object(std::string objFilePath, std::string textureFilePath) : Model(objFilePath, textureFilePath) {}
+
+  void applyForce(const Vector3 &force)
+  {
+    this->acceleration = this->acceleration + force;
+  }
+
+  void applyAcceleration(const Vector3 &acceleration)
+  {
+    this->velocity = this->velocity + acceleration;
+  }
+
+  void applyGravity(const Vector3 &gravity, double deltaTime)
+  {
+    this->applyAcceleration(gravity * deltaTime);
+  }
+
+  void update(double deltaTime)
+  {
+    this->applyAcceleration(this->acceleration);
+    this->position = this->position + this->velocity * static_cast<float>(deltaTime);
+  }
+
+  glm::mat4 getModelMatrix()
+  {
+    return glm::translate(this->modelMatrix, glm::vec3(this->position.X, this->position.Y, this->position.Z));
+  }
+};
+
 class Camera
 {
 private:
@@ -469,17 +526,20 @@ public:
 class Scene
 {
 private:
-  std::vector<std::unique_ptr<Model>> models;
+  std::vector<std::unique_ptr<Object>> objects;
+  Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
+    Timer timer;
+
 
 public:
   Scene()
   {
-    models = std::vector<std::unique_ptr<Model>>();
+    objects = std::vector<std::unique_ptr<Object>>();
   }
 
-  void addModel(std::unique_ptr<Model> model)
+  void addModel(std::unique_ptr<Object> object)
   {
-    models.push_back(std::move(model));
+    objects.push_back(std::move(object));
   }
 
   void prepareRender(ShaderProgram &shader, const Camera &camera)
@@ -493,13 +553,25 @@ public:
   {
     this->prepareRender(shader, camera);
 
-    for (auto &model : models)
+    for (auto &model : objects)
       model->render(shader);
   }
 
-  const std::vector<std::unique_ptr<Model>> &getModels() const
+  void update()
   {
-    return models;
+    timer.update();
+    for (auto &object : objects)
+    {
+      object->applyGravity(gravity, timer.deltaTime);
+      // Update position based on velocity and deltaTime
+      // object->setPosition(object->getPosition() + object->getVelocity() * static_cast<float>(deltaTime));
+      object->update(timer.deltaTime);
+    }
+  }
+
+  const std::vector<std::unique_ptr<Object>> &getModels() const
+  {
+    return objects;
   }
 };
 
@@ -516,7 +588,8 @@ public:
     std::vector<glm::mat4> modelMatrices;
 
 
-  float lastUpdateTime = 0.0f;
+
+  double lastUpdateTime = 0.0f;
 
   Window(int width, int height) : width(width), height(height)
   {
@@ -556,14 +629,14 @@ public:
     glfwSetScrollCallback(window, scrollCallback);
     startMouseCapture();
 
-    modelMatrices.reserve(1000);
+    // modelMatrices.reserve(1000);
     
-    // for (size_t z = 0; z < 10; z++)
-        for (size_t y = 0; y < 500; y++)
-            for (size_t x = 0; x < 500; x++) {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f));
-                modelMatrices.push_back(model);
-            }
+    // // for (size_t z = 0; z < 10; z++)
+    //     for (size_t y = 0; y < 10; y++)
+    //         for (size_t x = 0; x < 10; x++) {
+    //             glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f));
+    //             modelMatrices.push_back(model);
+    //         }
 
 #if USE_IMGUI
     IMGUI_CHECKVERSION();
@@ -579,7 +652,7 @@ public:
 #endif
 
     this->scene = std::make_unique<Scene>();
-    std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
+    std::unique_ptr<Object> model = std::make_unique<Object>("resources/models/cube.obj", "resources/textures/Terminatrix_Head.png");
     model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
     this->scene->addModel(std::move(model));
 
@@ -608,21 +681,21 @@ public:
   {
     this->clear();
 
-    // scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+    scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-    const auto& models = scene->getModels();
+    // const auto& models = scene->getModels();
 
 
-    // for (size_t z = 0; z < 10; z++)
+    // // for (size_t z = 0; z < 10; z++)
 
-    // for (size_t y = 0; y < 10; y++)
-    //   for (size_t x = 0; x < 10; x++) {
-    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
-    //     models[0]->render(shaderProgram, modelMatrix);
-    //   }
-    scene->prepareRender(*shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 10000.0f));
+    // // for (size_t y = 0; y < 10; y++)
+    // //   for (size_t x = 0; x < 10; x++) {
+    // //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
+    // //     models[0]->render(shaderProgram, modelMatrix);
+    // //   }
+    // scene->prepareRender(*shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 10000.0f));
     
-    models[0]->renderInstanced(*shaderProgram, modelMatrices);
+    // models[0]->renderInstanced(*shaderProgram, modelMatrices);
 
 // const auto &models = scene.getModels();
 
@@ -636,6 +709,13 @@ public:
 
     glfwSwapBuffers(this->window);
     glfwPollEvents();
+
+    
+  }
+
+  void update()
+  {
+    scene->update();
   }
 
   void processInput()
@@ -705,7 +785,7 @@ public:
 
     ImGui::Begin("Window");
     ImGui::Text("Hello, World!");
-    ImGui::Text("FPS %d", 1.0f / fpsCounter.frameTime);
+    ImGui::Text("FPS %d", fpsCounter.lastTime);
     ImGui::End();
 
     ImGui::Render();
@@ -723,6 +803,7 @@ int main()
   {
     window.processInput();
     window.redraw();
+    window.update();
   }
 
   window.destroy();
