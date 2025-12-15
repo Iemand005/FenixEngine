@@ -122,6 +122,11 @@ int windowHeight = 600.0f;
 //   }
 // };
 
+struct AABB
+{
+  glm::vec3 min, max;
+};
+
 struct Vertex
 {
   glm::vec3 Position;
@@ -637,6 +642,32 @@ public:
     newObj->modelMatrix = this->modelMatrix;
     return newObj;
   }
+
+  AABB getAABB() const
+  {
+    if (meshes.empty()) return {position, position};
+    glm::vec3 min = glm::vec3(FLT_MAX), max = glm::vec3(-FLT_MAX);
+    glm::mat4 model = getModelMatrix();
+    for (auto &mesh : meshes)
+    {
+      for (auto &vertex : mesh.vertices)
+      {
+        glm::vec3 worldPos = model * glm::vec4(vertex.Position, 1.0f);
+        min = glm::min(min, worldPos);
+        max = glm::max(max, worldPos);
+      }
+    }
+    return {min, max};
+  }
+
+  bool collidesWith(const Object &other) const
+  {
+    AABB a = getAABB();
+    AABB b = other.getAABB();
+    return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+           (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+           (a.min.z <= b.max.z && a.max.z >= b.min.z);
+  }
 };
 
 class Camera
@@ -959,14 +990,14 @@ public:
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       stopMouseCapture();
-    // if (ImGui::GetIO().WantCaptureMouse)
-    // {
-    //     stopMouseCapture();
-    // }
-    // else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    // {
-    //     startMouseCapture();
-    // }
+    if (ImGui::GetIO().WantCaptureMouse)
+    {
+        stopMouseCapture();
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        startMouseCapture();
+    }
     
     const float cameraSpeed = 10.0f * deltaTime;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
@@ -991,7 +1022,7 @@ public:
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
-      std::shared_ptr<Object> newObj = std::make_shared<Object>("resources/models/citizen.obj", 0.1f);
+      std::shared_ptr<Object> newObj = this->player->clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
       this->scene->addModel(newObj);
     }
