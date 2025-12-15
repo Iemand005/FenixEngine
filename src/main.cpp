@@ -617,7 +617,7 @@ public:
 
   glm::mat4 getModelMatrix()
   {
-    return glm::scale(glm::translate(this->modelMatrix, this->position), this->scale);
+    return glm::scale(glm::rotate(glm::translate(this->modelMatrix, this->position), this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)), this->scale);
   }
 
   void render(ShaderProgram &shader)
