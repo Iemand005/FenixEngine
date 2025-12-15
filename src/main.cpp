@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define USE_IMGUI 0
+#define USE_IMGUI 1
 
 #if USE_IMGUI
 #include "imgui\imgui.h"
@@ -21,7 +21,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -139,7 +138,8 @@ struct Vertex
   }
 };
 
-struct FPSCounter {
+struct FPSCounter
+{
   double lastTime = 0.0;
   double frameTime = 0.0;
 
@@ -147,6 +147,19 @@ struct FPSCounter {
   {
     double currentTime = glfwGetTime();
     frameTime = currentTime - lastTime;
+    lastTime = currentTime;
+  }
+};
+
+struct Timer
+{
+  double lastTime = 0.0;
+  double deltaTime = 0.0;
+
+  void update()
+  {
+    double currentTime = glfwGetTime();
+    deltaTime = currentTime - lastTime;
     lastTime = currentTime;
   }
 };
@@ -256,16 +269,39 @@ public:
   int projectionLoc;
   int texLoc;
 
-  ShaderProgram(Shader *vertexShader, Shader *fragmentShader)
+  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
+  {
+    Shader vertexShader(vertexShaderFile, GL_VERTEX_SHADER);
+    Shader fragmentShader(fragmentShaderFile, GL_FRAGMENT_SHADER);
+
+    Id = glCreateProgram();
+
+    vertexShader.attachToProgram(Id);
+    fragmentShader.attachToProgram(Id);
+
+    glLinkProgram(Id);
+
+    vertexShader.deleteShader();
+    fragmentShader.deleteShader();
+
+    modelLoc = glGetUniformLocation(this->Id, "model");
+    viewLoc = glGetUniformLocation(this->Id, "view");
+    projectionLoc = glGetUniformLocation(this->Id, "projection");
+    texLoc = glGetUniformLocation(this->Id, "ourTexture");
+    glUniform1i(texLoc, 0);
+  }
+
+  ShaderProgram(Shader &vertexShader, Shader &fragmentShader)
   {
     Id = glCreateProgram();
 
-    vertexShader->attachToProgram(Id);
-    fragmentShader->attachToProgram(Id);
+    vertexShader.attachToProgram(Id);
+    fragmentShader.attachToProgram(Id);
+
     glLinkProgram(Id);
 
-    vertexShader->deleteShader();
-    fragmentShader->deleteShader();
+    vertexShader.deleteShader();
+    fragmentShader.deleteShader();
 
     modelLoc = glGetUniformLocation(this->Id, "model");
     viewLoc = glGetUniformLocation(this->Id, "view");
@@ -287,10 +323,9 @@ public:
 
 class Model
 {
-  Vertex *vertices;
-  unsigned int *indices;
+  std::vector<Vertex> vertices;
+  std::vector<unsigned int> indices;
 
-  unsigned int vertexCount;
   unsigned int indexCount;
 
   unsigned int VAO = 0;
@@ -303,15 +338,29 @@ public:
 
   Model() {}
 
+  Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+  {
+    this->vertices = vertices;
+    this->indices = indices;
+    this->indexCount = indices.size();
+    modelMatrix = glm::mat4(1.0f);
+    init();
+  }
+
   Model(std::string objFilePath, std::string textureFilePath)
   {
     modelMatrix = glm::mat4(1.0f);
 
-    loadObj(objFilePath);
-    loadTexture(textureFilePath);
+    if (!loadObj(objFilePath) || !loadTexture(textureFilePath)) {
+      std::cerr << "Failed to load model or texture" << std::endl;
+      return;
+    }
 
-    
+    init();
+  }
 
+  void init()
+  {
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -319,12 +368,12 @@ public:
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
     this->VBO = VBO;
 
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
     this->EBO = EBO;
 
     int vertexStride = sizeof(Vertex);
@@ -348,19 +397,19 @@ public:
     if (!success)
       return false;
 
-    this->vertexCount = objectLoader.LoadedVertices.size();
-    this->vertices = new Vertex[this->vertexCount];
+    this->vertices = std::vector<Vertex>(objectLoader.LoadedVertices.size());
 
-    for (int i = 0; i < this->vertexCount; i++)
+    objectLoader.LoadedMeshes[0];
+
+    for (int i = 0; i < this->vertices.size(); i++)
     {
       objl::Vertex v = objectLoader.LoadedVertices[i];
       this->vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
     }
 
-    this->indexCount = objectLoader.LoadedIndices.size();
-    this->indices = new unsigned int[this->indexCount];
+    this->indices = std::vector<unsigned int>(objectLoader.LoadedIndices.size());
 
-    for (size_t i = 0; i < objectLoader.LoadedIndices.size(); i++)
+    for (size_t i = 0; i < this->indices.size(); i++)
       this->indices[i] = objectLoader.LoadedIndices[i];
 
     return true;
@@ -378,8 +427,10 @@ public:
     return true;
   }
 
-  bool loadTexture(std::string textureFilePath)
+  bool loadTexture(std::string textureFilePath = NULL)
   {
+    // if (textureFilePath == NULL)
+    //   return false;
     int width, height, nrChannels;
     unsigned char *data;
     if (!loadTextureFile(textureFilePath, width, height, nrChannels, data))
@@ -402,22 +453,29 @@ public:
     return true;
   }
 
+  glm::mat4 getModelMatrix()
+  {
+    return this->modelMatrix;
+  }
+
   void render(ShaderProgram &shader)
   {
-    this->render(shader, this->modelMatrix);
+    this->render(shader, this->getModelMatrix());
   }
 
   void prepareRender(ShaderProgram &shader)
   {
+    if (VAO == 0) return;
     shader.use();
+    glBindVertexArray(this->VAO);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->texture);
-    glBindVertexArray(this->VAO);
   }
 
-  void endRender()
+  void draw()
   {
-    glBindVertexArray(0);
+    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
   }
 
   void render(ShaderProgram &shader, glm::mat4 modelMatrix)
@@ -425,8 +483,7 @@ public:
     this->prepareRender(shader);
     shader.setMat4("model", modelMatrix);
 
-    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
-    this->endRender();
+    this->draw();
   }
 
   void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices)
@@ -436,10 +493,58 @@ public:
     for (const auto &modelMatrix : modelMatrices)
     {
       shader.setMat4("model", modelMatrix);
-      glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+      this->draw();
     }
+  }
+};
 
-    this->endRender();
+class Object : public Model
+{
+private:
+public:
+  Vector3 position;
+  Vector3 rotation;
+  Vector3 velocity;
+  Vector3 acceleration;
+
+  Object() : Model() {}
+
+  Object(std::string objFilePath, std::string textureFilePath) : Model(objFilePath, textureFilePath) {}
+
+  Object(std::vector<Vertex> vertices, std::vector<unsigned int> indices) : Model(vertices, indices) {}
+
+  void applyForce(const Vector3 &force)
+  {
+    this->acceleration = this->acceleration + force;
+  }
+
+  void applyAcceleration(const Vector3 &acceleration)
+  {
+    this->velocity = this->velocity + acceleration;
+  }
+
+  void applyGravity(const Vector3 &gravity, double deltaTime)
+  {
+    this->applyAcceleration(gravity * deltaTime);
+  }
+
+  void update(double deltaTime)
+  {
+    this->applyAcceleration(this->acceleration);
+    this->position = this->position + this->velocity * static_cast<float>(deltaTime);
+  }
+
+  glm::mat4 getModelMatrix()
+  {
+    return glm::translate(this->modelMatrix, glm::vec3(this->position.X, this->position.Y, this->position.Z));
+  }
+
+  void render(ShaderProgram &shader)
+  {
+    this->prepareRender(shader);
+    shader.setMat4("model", this->getModelMatrix());
+
+    this->draw();
   }
 };
 
@@ -471,17 +576,19 @@ public:
 class Scene
 {
 private:
-  std::vector<std::unique_ptr<Model>> models;
+  std::vector<std::unique_ptr<Object>> objects;
+  Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
+  Timer timer;
 
 public:
   Scene()
   {
-    models = std::vector<std::unique_ptr<Model>>();
+    objects = std::vector<std::unique_ptr<Object>>();
   }
 
-  void addModel(std::unique_ptr<Model> model)
+  void addModel(std::unique_ptr<Object> object)
   {
-    models.push_back(std::move(model));
+    objects.push_back(std::move(object));
   }
 
   void prepareRender(ShaderProgram &shader, const Camera &camera)
@@ -495,13 +602,43 @@ public:
   {
     this->prepareRender(shader, camera);
 
-    for (auto &model : models)
+    for (auto &model : objects)
       model->render(shader);
+
+    this->endRender();
   }
 
-  const std::vector<std::unique_ptr<Model>> &getModels() const
+  void endRender()
   {
-    return models;
+    glBindVertexArray(0);
+  }
+
+  void update()
+  {
+    timer.update();
+    for (auto &object : objects)
+    {
+      object->applyGravity(gravity, timer.deltaTime);
+      object->update(timer.deltaTime);
+    }
+    resolveCollisions();
+  }
+
+  void resolveCollisions()
+  {
+    for (auto &object : objects)
+    {
+      if (object->position.Y < 0.0f)
+      {
+        object->position.Y = 0.0f;
+        object->velocity.Y *= -0.9f;
+      }
+    }
+  }
+
+  const std::vector<std::unique_ptr<Object>> &getModels() const
+  {
+    return objects;
   }
 };
 
@@ -512,62 +649,28 @@ public:
   int height;
   GLFWwindow *window;
   std::unique_ptr<Scene> scene;
-  ShaderProgram *shaderProgram;
+  ShaderProgram *shader;
   FPSCounter fpsCounter;
 
-    std::vector<glm::mat4> modelMatrices;
-
-
-  float lastUpdateTime = 0.0f;
+  double lastUpdateTime = 0.0f;
 
   Window(int width, int height) : width(width), height(height)
   {
-    glfwInit();
-    const char *glsl_version = "#version 330 core";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    this->window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
-    if (window == NULL)
-    {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
+    if (!initGlfw())
       return;
-    }
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return;
-    }
-
-    glViewport(0, 0, 800, 600);
-
-    Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
-    Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
-
-    this->shaderProgram = new ShaderProgram(&vertexShader, &fragmentShader);
-
+    glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    // glCullFace(GL_FRONT);
 
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    this->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetScrollCallback(window, scrollCallback);
+    this->shader = new ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
+
     startMouseCapture();
 
-    modelMatrices.reserve(1000);
-    
-    // for (size_t z = 0; z < 10; z++)
-        for (size_t y = 0; y < 500; y++)
-            for (size_t x = 0; x < 500; x++) {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f));
-                modelMatrices.push_back(model);
-            }
-
 #if USE_IMGUI
+    const char *glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
@@ -580,15 +683,86 @@ public:
     ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
 
-    this->scene = std::make_unique<Scene>();
-    std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
-    model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    loadModels();
+  }
+
+  bool initGlfw()
+  {
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
+    if (window == NULL)
+    {
+      std::cout << "Failed to create GLFW window" << std::endl;
+      glfwTerminate();
+      return false;
+    }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return false;
+    }
+
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    return true;
+  }
+
+  void loadModels()
+  {
+    // this->scene = std::make_unique<Scene>();
+    // std::unique_ptr<Object> model = std::make_unique<Object>("resources/models/collisions.obj", "resources/textures/Terminatrix_Head.png");
+    // model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 10.0f, 0.0f));
+    // this->scene->addModel(std::move(model));
+    loadOBJ("resources/models/collisions.obj");
+  }
+
+  void loadModel(std::string objFilePath)
+  {
+
+    std::unique_ptr<Object> model = std::make_unique<Object>(objFilePath, "resources/textures/Terminatrix_Head.png");
     this->scene->addModel(std::move(model));
+  }
 
-    glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);
+  bool loadOBJ(const char *path)
+  {
+    objl::Loader objectLoader;
 
-    Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    bool success = objectLoader.LoadFile(path);
+    if (!success)
+      return false;
+
+    auto models = std::vector<std::unique_ptr<Model>>(objectLoader.LoadedMeshes.size());
+
+    for (auto &mesh : objectLoader.LoadedMeshes)
+    {
+      std::cout << "Mesh Name: " << mesh.MeshName << std::endl;
+      std::cout << "Vertices: " << mesh.Vertices.size() << std::endl;
+      std::cout << "Indices: " << mesh.Indices.size() << std::endl;
+
+      auto vertices = std::vector<Vertex>(mesh.Vertices.size());
+      auto indices = std::vector<unsigned int>(mesh.Indices.size());
+
+      for (int i = 0; i < mesh.Vertices.size(); i++)
+      {
+        objl::Vertex v = objectLoader.LoadedVertices[i];
+        vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+      }
+
+      for (size_t i = 0; i < indices.size(); i++)
+        indices[i] = objectLoader.LoadedIndices[i];
+
+      std::unique_ptr<Object> model = std::make_unique<Object>(vertices, indices);
+      model->loadTexture(mesh.MeshMaterial.map_Kd);
+      this->scene->addModel(std::move(model));
+    }
+
+    return true;
   }
 
   double getDeltaTime()
@@ -610,27 +784,8 @@ public:
   {
     this->clear();
 
-    // scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+    scene->render(*(this->shader), Camera(cameraPos, cameraFront, cameraUp, fov, (float)width / (float)height, 0.1f, 100.0f));
 
-    const auto& models = scene->getModels();
-
-
-    // for (size_t z = 0; z < 10; z++)
-
-    // for (size_t y = 0; y < 10; y++)
-    //   for (size_t x = 0; x < 10; x++) {
-    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
-    //     models[0]->render(shaderProgram, modelMatrix);
-    //   }
-    scene->prepareRender(*shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 10000.0f));
-    
-    models[0]->renderInstanced(*shaderProgram, modelMatrices);
-
-// const auto &models = scene.getModels();
-
-// scene->prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
-
-// models[0]->renderInstanced(shaderProgram, modelMatrices);
 #if USE_IMGUI
     fpsCounter.update();
     drawImGui();
@@ -640,17 +795,21 @@ public:
     glfwPollEvents();
   }
 
+  void update()
+  {
+    scene->update();
+  }
+
   void processInput()
   {
     double deltaTime = getDeltaTime();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       stopMouseCapture();
-    ;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
       startMouseCapture();
 
-    const float cameraSpeed = 0.5f * deltaTime; // adjust accordingly
+    const float cameraSpeed = 0.005f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
       cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -659,6 +818,10 @@ public:
       cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
       cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+      cameraPos += cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+      cameraPos -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
@@ -708,7 +871,8 @@ public:
 
     ImGui::Begin("Window");
     ImGui::Text("Hello, World!");
-    ImGui::Text("FPS %d", 1.0f / fpsCounter.frameTime);
+    ImGui::Text("FPS %d", fpsCounter.lastTime);
+    ImGui::Button("Start", ImVec2(50, 20));
     ImGui::End();
 
     ImGui::Render();
@@ -727,6 +891,7 @@ int main()
   {
     window.processInput();
     window.redraw();
+    window.update();
   }
 
   window.destroy();
