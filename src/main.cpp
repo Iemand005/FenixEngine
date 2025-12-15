@@ -535,6 +535,8 @@ public:
 
   std::vector<Mesh> meshes;
 
+  bool isStatic = false;
+
   Object() {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
     rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -607,6 +609,8 @@ public:
 
   void update(double deltaTime)
   {
+    if (isStatic)
+      return;
     this->applyAcceleration(this->acceleration);
     this->position = this->position + this->velocity * static_cast<float>(deltaTime);
   }
@@ -651,17 +655,17 @@ public:
 class Scene
 {
 private:
-  std::vector<std::unique_ptr<Object>> objects;
+  std::vector<std::shared_ptr<Object>> objects;
   glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
   Timer timer;
   
   public:
   Scene() {
-    objects = std::vector<std::unique_ptr<Object>>();
+    objects = std::vector<std::shared_ptr<Object>>();
   }
 
-  void addModel(std::unique_ptr<Object> object) {
-    objects.push_back(std::move(object));
+  void addModel(std::shared_ptr<Object> object) {
+    objects.push_back(object);
   }
 
   void prepareRender(ShaderProgram &shader, const Camera &camera) {
@@ -699,12 +703,12 @@ private:
       if (object->position.y < 0.0f)
       {
         object->position.y = 0.0f;
-        object->velocity.y *= -0.9f;
+        object->velocity.y *= -0.1f;
       }
     }
   }
 
-  const std::vector<std::unique_ptr<Object>> &getModels() const {
+  const std::vector<std::shared_ptr<Object>> &getModels() const {
     return objects;
   }
 
@@ -723,6 +727,8 @@ public:
   ShaderProgram *shader;
   FPSCounter fpsCounter;
 
+  std::shared_ptr<Object> player;
+
   double lastUpdateTime = 0.0f;
 
   Window(int width, int height) : width(width), height(height) {
@@ -733,7 +739,7 @@ public:
     glEnable(GL_CULL_FACE);
     // glCullFace(GL_FRONT);
 
-    this->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
     this->scene = std::make_unique<Scene>();
     this->shader = new ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
@@ -788,50 +794,21 @@ public:
 
   void loadModels()
   {
-    loadOBJ("resources/models/collisiontest.obj");
-    loadOBJ("resources/models/citizen.obj", 0.1f);
+    loadStaticOBJ("resources/models/collisiontest.obj");
+    this->player = loadOBJ("resources/models/citizen.obj", 0.1f);
+    this->player->position = glm::vec3(0.0f, 100.0f, 0.0f);
   }
 
-  bool loadOBJ(std::string path, float scale = 1.0f)
-  {
-    // objl::Loader objectLoader;
+  std::shared_ptr<Object> loadOBJ(std::string path, float scale = 1.0f) {
+    std::shared_ptr<Object> model = std::make_shared<Object>(path, scale);
+    this->scene->addModel(model);
+    return model;
+  }
 
-    // bool success = objectLoader.LoadFile(path);
-    // if (!success)
-    //   return false;
-
-    // // auto meshes = std::vector<std::unique_ptr<Mesh>>(objectLoader.LoadedMeshes.size());
-    // auto model = std::make_unique<Object>();
-
-    // for (auto &loadedMesh : objectLoader.LoadedMeshes)
-    // {
-    //   std::cout << "Mesh Name: " << loadedMesh.MeshName << std::endl;
-    //   std::cout << "Vertices: " << loadedMesh.Vertices.size() << std::endl;
-    //   std::cout << "Indices: " << loadedMesh.Indices.size() << std::endl;
-
-    //   auto vertices = std::vector<Vertex>(loadedMesh.Vertices.size());
-    //   auto indices = std::vector<unsigned int>(loadedMesh.Indices.size());
-
-    //   for (int i = 0; i < loadedMesh.Vertices.size(); i++)
-    //   {
-    //     objl::Vertex v = loadedMesh.Vertices[i];
-    //     vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
-    //   }
-
-    //   for (size_t i = 0; i < indices.size(); i++)
-    //     indices[i] = loadedMesh.Indices[i];
-
-    //   Mesh mesh(vertices, indices);
-    //   mesh.loadTexture(loadedMesh.MeshMaterial.map_Kd);
-
-    //   model->meshes.push_back(mesh);
-    // }
-
-    // model->scale = glm::vec3(scale);
-
-    // this->scene->addModel(std::move(model));
-
-    this->scene->addModel(std::make_unique<Object>(path, scale));
+  bool loadStaticOBJ(std::string path, float scale = 1.0f) {
+    std::shared_ptr<Object> model = std::make_shared<Object>(path, scale);
+    model->isStatic = true;
+    this->scene->addModel(model);
 
     return true;
   }
@@ -952,7 +929,7 @@ public:
     if (ImGui::Button("Test Button")) {
         std::cout << "Button clicked!" << std::endl;
     }
-    Object *model = scene->getModels().at(1).get();
+    Object *model = this->player.get();
     ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
     ImGui::End();
 
