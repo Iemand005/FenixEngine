@@ -191,7 +191,7 @@ void disableWireframeMode()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, float deltaTime)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     stopMouseCapture(window);
@@ -199,7 +199,7 @@ void processInput(GLFWwindow *window)
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     startMouseCapture(window);
 
-  const float cameraSpeed = 0.005f; // adjust accordingly
+  const float cameraSpeed = 0.05f * deltaTime; // adjust accordingly
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     cameraPos += cameraSpeed * cameraFront;
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -428,17 +428,35 @@ public:
     this->render(shader, this->modelMatrix);
   }
 
-  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
-  {
-
-    shader.setMat4("model", modelMatrix);
-
+  void prepareRender(ShaderProgram &shader) {
     shader.use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->texture);
     glBindVertexArray(this->VAO);
-    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+  }
+
+  void endRender() {
     glBindVertexArray(0);
+  }
+
+  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
+  {
+    this->prepareRender(shader);
+    shader.setMat4("model", modelMatrix);
+
+    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+    this->endRender();
+  }
+
+  void renderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
+    this->prepareRender(shader);
+
+    for (const auto& modelMatrix : modelMatrices) {
+      shader.setMat4("model", modelMatrix);
+      glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+    }
+
+    this->endRender();
   }
 };
 
@@ -477,17 +495,20 @@ public:
     models.push_back(std::move(model));
   }
 
-  void render(ShaderProgram &shader, const Camera &camera) {
-    // Set view/projection matrices (same for all models)
+  void prepareRender(ShaderProgram &shader, const Camera &camera) {
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("projection", camera.getProjectionMatrix());
+  }
+
+  void render(ShaderProgram &shader, const Camera &camera) {
+    this->prepareRender(shader, camera);
 
     for (auto &model : models)
       model->render(shader);
   }
 
-  std::vector<std::unique_ptr<Model>> getModels() {
+  const std::vector<std::unique_ptr<Model>>& getModels() const {
     return models;
   }
 };
@@ -538,83 +559,10 @@ int main()
 
   glViewport(0, 0, 800, 600);
 
-  objl::Loader objectLoader;
-
-  bool success = objectLoader.LoadFile("resources/models/Headz.obj");
-
-  int vertexCount = objectLoader.LoadedVertices.size();
-
-  Vertex *vertices = new Vertex[vertexCount];
-
-  for (int i = 0; i < vertexCount; i++)
-  {
-    objl::Vertex v = objectLoader.LoadedVertices[i];
-    Vertex vertex = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
-    vertices[i] = vertex;
-  }
-
-  unsigned int indexCount = objectLoader.LoadedIndices.size();
-  unsigned int *indices = new unsigned int[indexCount];
-
-  for (size_t i = 0; i < objectLoader.LoadedIndices.size(); i++)
-  {
-    indices[i] = objectLoader.LoadedIndices[i];
-  }
-
-  stbi_set_flip_vertically_on_load(true);
-  int width, height, nrChannels;
-  unsigned char *data = stbi_load("resources/textures/Terminatrix_Head.png", &width, &height, &nrChannels, 0);
-  if (!data)
-  {
-    std::cerr << "Failed to load texture" << std::endl;
-    return -1;
-  }
-
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  stbi_image_free(data);
-
   Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
   Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
 
   ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
-
-  unsigned int VAO;
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-
-  unsigned int EBO;
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
-
-  int vertexStride = sizeof(Vertex);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
-  glBindVertexArray(0);
 
   glEnable(GL_DEPTH_TEST);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -640,53 +588,46 @@ int main()
   shaderProgram.use();
 
   Scene scene;
-  // for (int i = 0; i < 10; i++) {
   std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
   model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-  model->modelMatrix = glm::translate(model->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
+  // model->modelMatrix = glm::translate(model->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
   scene.addModel(std::move(model));
-  // }
 
-  // std::unique_ptr<Model> model2 = std::make_unique<Model>("resources/models/cube.obj", "resources/textures/Terminatrix_Head.png");
-  // model2->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-  // model2->modelMatrix = glm::translate(model2->modelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-  // scene.addModel(std::move(model2));
-
-  // glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
 
   Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
   while (!glfwWindowShouldClose(window))
   {
-    processInput(window);
+    processInput(window, glfwGetTime());
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // glm::mat4 model = glm::mat4(1.0f);
-
-    // model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
-    // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-    // glm::mat4 projection = glm::perspective(glm::radians(fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
-
-    // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    // glBindTexture(GL_TEXTURE_2D, texture);
-    // glBindVertexArray(VAO);
-
-    // glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
-    // glBindVertexArray(0);
-
     scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
-    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
-    auto models = scene.getModels();
-    // models[0].get()->render(shaderProgram, modelMatrix);
+    const auto& models = scene.getModels();
+
+
+    // for (size_t z = 0; z < 10; z++)
+
+    // for (size_t y = 0; y < 10; y++)
+    //   for (size_t x = 0; x < 10; x++) {
+    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
+    //     models[0]->render(shaderProgram, modelMatrix);
+    //   }
+    scene.prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+    std::vector<glm::mat4> modelMatrices;
+    modelMatrices.reserve(1000);
+    
+    for (size_t z = 0; z < 10; z++)
+        for (size_t y = 0; y < 10; y++)
+            for (size_t x = 0; x < 10; x++) {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f * z));
+                modelMatrices.push_back(model);
+            }
+    models[0]->renderInstanced(shaderProgram, modelMatrices);
 
     drawImGui();
 
