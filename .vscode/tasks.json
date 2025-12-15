@@ -20,14 +20,9 @@
         "/nologo",
         "/I${workspaceFolder}\\include",
         "/std:c++17",
-        "gdi32.lib",
         "/link",
         "/LIBPATH:${workspaceFolder}\\lib",
-        "glfw3.lib",
-        "opengl32.lib",
-        "shell32.lib",
-        "opengl32.lib",
-        "user32.lib",
+        "gdi32.lib", "glfw3.lib", "opengl32.lib", "shell32.lib", "opengl32.lib", "user32.lib",
       ],
       "options": {
         "cwd": "${fileDirname}"

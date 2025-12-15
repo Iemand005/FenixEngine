@@ -37,104 +37,104 @@ float pitch = 0.0f;
 int windowWidth = 800.0f;
 int windowHeight = 600.0f;
 
-struct Vector2
-{
-  float X;
-  float Y;
+// struct Vector2
+// {
+//   float X;
+//   float Y;
 
-  Vector2()
-  {
-    X = 0.0f;
-    Y = 0.0f;
-  }
+//   Vector2()
+//   {
+//     X = 0.0f;
+//     Y = 0.0f;
+//   }
 
-  Vector2(float X, float Y)
-  {
-    this->X = X;
-    this->Y = Y;
-  }
-  bool operator==(const Vector2 &other) const
-  {
-    return (this->X == other.X && this->Y == other.Y);
-  }
-  bool operator!=(const Vector2 &other) const
-  {
-    return !(this->X == other.X && this->Y == other.Y);
-  }
-  Vector2 operator+(const Vector2 &right) const
-  {
-    return Vector2(this->X + right.X, this->Y + right.Y);
-  }
-  Vector2 operator-(const Vector2 &right) const
-  {
-    return Vector2(this->X - right.X, this->Y - right.Y);
-  }
-  Vector2 operator*(const float &other) const
-  {
-    return Vector2(this->X * other, this->Y * other);
-  }
-};
+//   Vector2(float X, float Y)
+//   {
+//     this->X = X;
+//     this->Y = Y;
+//   }
+//   bool operator==(const Vector2 &other) const
+//   {
+//     return (this->X == other.X && this->Y == other.Y);
+//   }
+//   bool operator!=(const Vector2 &other) const
+//   {
+//     return !(this->X == other.X && this->Y == other.Y);
+//   }
+//   Vector2 operator+(const Vector2 &right) const
+//   {
+//     return Vector2(this->X + right.X, this->Y + right.Y);
+//   }
+//   Vector2 operator-(const Vector2 &right) const
+//   {
+//     return Vector2(this->X - right.X, this->Y - right.Y);
+//   }
+//   Vector2 operator*(const float &other) const
+//   {
+//     return Vector2(this->X * other, this->Y * other);
+//   }
+// };
 
-struct Vector3
-{
-  float X;
-  float Y;
-  float Z;
+// struct Vector3
+// {
+//   float X;
+//   float Y;
+//   float Z;
 
-  Vector3()
-  {
-    X = 0.0f;
-    Y = 0.0f;
-    Z = 0.0f;
-  }
+//   Vector3()
+//   {
+//     X = 0.0f;
+//     Y = 0.0f;
+//     Z = 0.0f;
+//   }
 
-  Vector3(float X, float Y, float Z)
-  {
-    this->X = X;
-    this->Y = Y;
-    this->Z = Z;
-  }
+//   Vector3(float X, float Y, float Z)
+//   {
+//     this->X = X;
+//     this->Y = Y;
+//     this->Z = Z;
+//   }
 
-  bool operator==(const Vector3 &other) const
-  {
-    return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
-  }
+//   bool operator==(const Vector3 &other) const
+//   {
+//     return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+//   }
 
-  bool operator!=(const Vector3 &other) const
-  {
-    return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
-  }
-  Vector3 operator+(const Vector3 &right) const
-  {
-    return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
-  }
-  Vector3 operator-(const Vector3 &right) const
-  {
-    return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
-  }
-  Vector3 operator*(const float &other) const
-  {
-    return Vector3(this->X * other, this->Y * other, this->Z * other);
-  }
-  Vector3 operator/(const float &other) const
-  {
-    return Vector3(this->X / other, this->Y / other, this->Z / other);
-  }
-};
+//   bool operator!=(const Vector3 &other) const
+//   {
+//     return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+//   }
+//   Vector3 operator+(const Vector3 &right) const
+//   {
+//     return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
+//   }
+//   Vector3 operator-(const Vector3 &right) const
+//   {
+//     return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
+//   }
+//   Vector3 operator*(const float &other) const
+//   {
+//     return Vector3(this->X * other, this->Y * other, this->Z * other);
+//   }
+//   Vector3 operator/(const float &other) const
+//   {
+//     return Vector3(this->X / other, this->Y / other, this->Z / other);
+//   }
+// };
 
 struct Vertex
 {
-  Vector3 Position;
-  Vector3 Normal;
-  Vector2 TextureCoordinate;
+  glm::vec3 Position;
+  glm::vec3 Normal;
+  glm::vec2 TextureCoordinate;
 
   Vertex() {}
 
-  Vertex(float X, float Y, float Z, float NX, float NY, float NZ, float U, float V)
+  Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
   {
-    this->Position = Vector3(X, Y, Z);
-    this->Normal = Vector3(NX, NY, NZ);
-    this->TextureCoordinate = Vector2(U, V);
+    this->Position = glm::vec3(x, y, z);
+    this->Normal = glm::vec3(nx, ny, nz);
+    this->TextureCoordinate = glm::vec2(u, v);
   }
 };
 
@@ -164,8 +164,20 @@ struct Timer
   }
 };
 
+// void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+//     // Forward to ImGui FIRST
+//     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    
+//     // Only process your own input if ImGui doesn't want it
+//     ImGuiIO& io = ImGui::GetIO();
+//     if (!io.WantCaptureMouse) {
+//         // Your mouse handling code
+//     }
+// }
+
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
+  // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
   float xOffset = xPos - lastX;
   float yOffset = lastY - yPos;
   if (lastX == 0 && lastY == 0)
@@ -321,8 +333,7 @@ public:
   }
 };
 
-class Model
-{
+class Mesh {
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
 
@@ -336,9 +347,9 @@ class Model
 public:
   glm::mat4 modelMatrix;
 
-  Model() {}
+  Mesh() {}
 
-  Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+  Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
   {
     this->vertices = vertices;
     this->indices = indices;
@@ -347,7 +358,7 @@ public:
     init();
   }
 
-  Model(std::string objFilePath, std::string textureFilePath)
+  Mesh(std::string objFilePath, std::string textureFilePath)
   {
     modelMatrix = glm::mat4(1.0f);
 
@@ -398,8 +409,6 @@ public:
       return false;
 
     this->vertices = std::vector<Vertex>(objectLoader.LoadedVertices.size());
-
-    objectLoader.LoadedMeshes[0];
 
     for (int i = 0; i < this->vertices.size(); i++)
     {
@@ -498,34 +507,102 @@ public:
   }
 };
 
-class Object : public Model
+// class Model {
+// public:
+//   std::vector<Mesh> meshes;
+
+//   glm::mat4 modelMatrix;
+
+
+//   Model() {
+//     meshes = std::vector<Mesh>();
+
+//     modelMatrix = glm::mat4(1.0f);
+//   }
+// };
+
+class Object
 {
 private:
 public:
-  Vector3 position;
-  Vector3 rotation;
-  Vector3 velocity;
-  Vector3 acceleration;
+  glm::vec3 position;
+  glm::vec3 rotation;
+  glm::vec3 velocity;
+  glm::vec3 acceleration;
+  
+  glm::vec3 scale;
+  glm::mat4 modelMatrix;
 
-  Object() : Model() {}
+  std::vector<Mesh> meshes;
 
-  Object(std::string objFilePath, std::string textureFilePath) : Model(objFilePath, textureFilePath) {}
+  Object() {
+    position = glm::vec3(0.0f, 0.0f, 0.0f);
+    rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
+    scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    modelMatrix = glm::mat4(1.0f);
+    meshes = std::vector<Mesh>();
+  }
 
-  Object(std::vector<Vertex> vertices, std::vector<unsigned int> indices) : Model(vertices, indices) {}
+  Object(Mesh mesh) : Object() {
+    meshes.push_back(mesh);
+  }
 
-  void applyForce(const Vector3 &force)
+  Object(std::string objFilePath, float scale = 1.0f) : Object() {
+    loadOBJ(objFilePath, scale);
+  }
+
+  bool loadOBJ(std::string path, float scale = 1.0f)
+  {
+    objl::Loader objectLoader;
+
+    bool success = objectLoader.LoadFile(path);
+    if (!success)
+      return false;
+
+    for (auto &loadedMesh : objectLoader.LoadedMeshes)
+    {
+      std::cout << "Mesh Name: " << loadedMesh.MeshName << std::endl;
+      std::cout << "Vertices: " << loadedMesh.Vertices.size() << std::endl;
+      std::cout << "Indices: " << loadedMesh.Indices.size() << std::endl;
+
+      auto vertices = std::vector<Vertex>(loadedMesh.Vertices.size());
+      auto indices = std::vector<unsigned int>(loadedMesh.Indices.size());
+
+      for (int i = 0; i < loadedMesh.Vertices.size(); i++)
+      {
+        objl::Vertex v = loadedMesh.Vertices[i];
+        vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+      }
+
+      for (size_t i = 0; i < indices.size(); i++)
+        indices[i] = loadedMesh.Indices[i];
+
+      Mesh mesh(vertices, indices);
+      mesh.loadTexture(loadedMesh.MeshMaterial.map_Kd);
+
+      this->meshes.push_back(mesh);
+    }
+
+    this->scale = glm::vec3(scale);
+
+    return true;
+  }
+
+  void applyForce(const glm::vec3 &force)
   {
     this->acceleration = this->acceleration + force;
   }
 
-  void applyAcceleration(const Vector3 &acceleration)
+  void applyAcceleration(const glm::vec3 &acceleration)
   {
     this->velocity = this->velocity + acceleration;
   }
 
-  void applyGravity(const Vector3 &gravity, double deltaTime)
+  void applyGravity(const glm::vec3 &gravity, double deltaTime)
   {
-    this->applyAcceleration(gravity * deltaTime);
+    this->applyAcceleration(gravity * glm::vec3(deltaTime));
   }
 
   void update(double deltaTime)
@@ -536,15 +613,13 @@ public:
 
   glm::mat4 getModelMatrix()
   {
-    return glm::translate(this->modelMatrix, glm::vec3(this->position.X, this->position.Y, this->position.Z));
+    return glm::scale(glm::translate(this->modelMatrix, this->position), this->scale);
   }
 
   void render(ShaderProgram &shader)
   {
-    this->prepareRender(shader);
-    shader.setMat4("model", this->getModelMatrix());
-
-    this->draw();
+    for (auto &mesh : meshes)
+      mesh.render(shader, this->getModelMatrix());
   }
 };
 
@@ -577,7 +652,7 @@ class Scene
 {
 private:
   std::vector<std::unique_ptr<Object>> objects;
-  Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
+  glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
   Timer timer;
   
   public:
@@ -621,10 +696,10 @@ private:
   void resolveCollisions() {
     for (auto &object : objects)
     {
-      if (object->position.Y < 0.0f)
+      if (object->position.y < 0.0f)
       {
-        object->position.Y = 0.0f;
-        object->velocity.Y *= -0.9f;
+        object->position.y = 0.0f;
+        object->velocity.y *= -0.9f;
       }
     }
   }
@@ -650,8 +725,7 @@ public:
 
   double lastUpdateTime = 0.0f;
 
-  Window(int width, int height) : width(width), height(height)
-  {
+  Window(int width, int height) : width(width), height(height) {
     if (!initGlfw())
       return;
     glViewport(0, 0, width, height);
@@ -683,8 +757,7 @@ public:
     loadModels();
   }
 
-  bool initGlfw()
-  {
+  bool initGlfw() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -709,58 +782,56 @@ public:
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
+    // glfwSetMouseButtonCallback(window, mouseButtonCallback);
     return true;
   }
 
   void loadModels()
   {
-    // this->scene = std::make_unique<Scene>();
-    // std::unique_ptr<Object> model = std::make_unique<Object>("resources/models/collisions.obj", "resources/textures/Terminatrix_Head.png");
-    // model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 10.0f, 0.0f));
-    // this->scene->addModel(std::move(model));
     loadOBJ("resources/models/collisiontest.obj");
+    loadOBJ("resources/models/citizen.obj", 0.1f);
   }
 
-  void loadModel(std::string objFilePath)
+  bool loadOBJ(std::string path, float scale = 1.0f)
   {
+    // objl::Loader objectLoader;
 
-    std::unique_ptr<Object> model = std::make_unique<Object>(objFilePath, "resources/textures/Terminatrix_Head.png");
-    this->scene->addModel(std::move(model));
-  }
+    // bool success = objectLoader.LoadFile(path);
+    // if (!success)
+    //   return false;
 
-  bool loadOBJ(const char *path)
-  {
-    objl::Loader objectLoader;
+    // // auto meshes = std::vector<std::unique_ptr<Mesh>>(objectLoader.LoadedMeshes.size());
+    // auto model = std::make_unique<Object>();
 
-    bool success = objectLoader.LoadFile(path);
-    if (!success)
-      return false;
+    // for (auto &loadedMesh : objectLoader.LoadedMeshes)
+    // {
+    //   std::cout << "Mesh Name: " << loadedMesh.MeshName << std::endl;
+    //   std::cout << "Vertices: " << loadedMesh.Vertices.size() << std::endl;
+    //   std::cout << "Indices: " << loadedMesh.Indices.size() << std::endl;
 
-    auto models = std::vector<std::unique_ptr<Model>>(objectLoader.LoadedMeshes.size());
+    //   auto vertices = std::vector<Vertex>(loadedMesh.Vertices.size());
+    //   auto indices = std::vector<unsigned int>(loadedMesh.Indices.size());
 
-    for (auto &mesh : objectLoader.LoadedMeshes)
-    // auto mesh = objectLoader.LoadedMeshes[2];
-    {
-      std::cout << "Mesh Name: " << mesh.MeshName << std::endl;
-      std::cout << "Vertices: " << mesh.Vertices.size() << std::endl;
-      std::cout << "Indices: " << mesh.Indices.size() << std::endl;
+    //   for (int i = 0; i < loadedMesh.Vertices.size(); i++)
+    //   {
+    //     objl::Vertex v = loadedMesh.Vertices[i];
+    //     vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+    //   }
 
-      auto vertices = std::vector<Vertex>(mesh.Vertices.size());
-      auto indices = std::vector<unsigned int>(mesh.Indices.size());
+    //   for (size_t i = 0; i < indices.size(); i++)
+    //     indices[i] = loadedMesh.Indices[i];
 
-      for (int i = 0; i < mesh.Vertices.size(); i++)
-      {
-        objl::Vertex v = mesh.Vertices[i];
-        vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
-      }
+    //   Mesh mesh(vertices, indices);
+    //   mesh.loadTexture(loadedMesh.MeshMaterial.map_Kd);
 
-      for (size_t i = 0; i < indices.size(); i++)
-        indices[i] = mesh.Indices[i];
+    //   model->meshes.push_back(mesh);
+    // }
 
-      std::unique_ptr<Object> model = std::make_unique<Object>(vertices, indices);
-      model->loadTexture(mesh.MeshMaterial.map_Kd);
-      this->scene->addModel(std::move(model));
-    }
+    // model->scale = glm::vec3(scale);
+
+    // this->scene->addModel(std::move(model));
+
+    this->scene->addModel(std::make_unique<Object>(path, scale));
 
     return true;
   }
@@ -777,7 +848,7 @@ public:
 
   void clear()
   {
-    glClearColor(0.1f, 0.0f, 0.0f, 1.0f);
+    // glClearColor(0.1f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
@@ -785,7 +856,7 @@ public:
   {
     this->clear();
 
-    scene->render(*(this->shader), Camera(cameraPos, cameraFront, cameraUp, fov, (float)width / (float)height, 0.1f, 100.0f));
+    scene->render(*(this->shader), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
 #if USE_IMGUI
     fpsCounter.update();
@@ -807,8 +878,14 @@ public:
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       stopMouseCapture();
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-      startMouseCapture();
+    // if (ImGui::GetIO().WantCaptureMouse)
+    // {
+    //     stopMouseCapture();
+    // }
+    // else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    // {
+    //     startMouseCapture();
+    // }
 
     const float cameraSpeed = 10.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -866,14 +943,17 @@ public:
   int drawImGui()
   {
     glDisable(GL_DEPTH_TEST);
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
 
     ImGui::Begin("Window");
+    ImGui::SetWindowFocus();
     ImGui::Text("Hello, World!");
     ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
     ImGui::Button("Start", ImVec2(50, 20));
+    if (ImGui::Button("Test Button")) {
+        std::cout << "Button clicked!" << std::endl;
+    }
+    Object *model = scene->getModels().at(1).get();
+    ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
     ImGui::End();
 
     ImGui::Render();
@@ -890,6 +970,10 @@ int main()
 
   while (!window.shouldClose())
   {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
     window.processInput();
     window.redraw();
     window.update();
