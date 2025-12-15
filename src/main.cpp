@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define USE_IMGUI 1
+#define USE_IMGUI 0
 
 #if USE_IMGUI
 #include "imgui\imgui.h"
@@ -151,18 +151,6 @@ struct FPSCounter {
   }
 };
 
-struct Timer {
-  double lastTime = 0.0;
-  double deltaTime = 0.0;
-
-  void update()
-  {
-    double currentTime = glfwGetTime();
-    deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
-  }
-};
-
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
   float xOffset = xPos - lastX;
@@ -268,40 +256,16 @@ public:
   int projectionLoc;
   int texLoc;
 
-  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
-  {
-    Shader vertexShader(vertexShaderFile, GL_VERTEX_SHADER);
-    Shader fragmentShader(fragmentShaderFile, GL_FRAGMENT_SHADER);
-
-    Id = glCreateProgram();
-
-    vertexShader.attachToProgram(Id);
-    fragmentShader.attachToProgram(Id);
-
-    glLinkProgram(Id);
-
-    vertexShader.deleteShader();
-    fragmentShader.deleteShader();
-
-    modelLoc = glGetUniformLocation(this->Id, "model");
-    viewLoc = glGetUniformLocation(this->Id, "view");
-    projectionLoc = glGetUniformLocation(this->Id, "projection");
-    texLoc = glGetUniformLocation(this->Id, "ourTexture");
-    glUniform1i(texLoc, 0);
-
-  }
-
-  ShaderProgram(Shader &vertexShader, Shader &fragmentShader)
+  ShaderProgram(Shader *vertexShader, Shader *fragmentShader)
   {
     Id = glCreateProgram();
 
-    vertexShader.attachToProgram(Id);
-    fragmentShader.attachToProgram(Id);
-
+    vertexShader->attachToProgram(Id);
+    fragmentShader->attachToProgram(Id);
     glLinkProgram(Id);
 
-    vertexShader.deleteShader();
-    fragmentShader.deleteShader();
+    vertexShader->deleteShader();
+    fragmentShader->deleteShader();
 
     modelLoc = glGetUniformLocation(this->Id, "model");
     viewLoc = glGetUniformLocation(this->Id, "view");
@@ -327,24 +291,26 @@ class Model
   unsigned int *indices;
 
   unsigned int vertexCount;
-  
+  unsigned int indexCount;
+
   unsigned int VAO = 0;
   unsigned int VBO = 0;
   unsigned int EBO = 0;
   unsigned int texture = 0;
-  
-  public:
-  unsigned int indexCount;
+
+public:
   glm::mat4 modelMatrix;
 
   Model() {}
 
-  Model(std::string objFilePath, std::string textureFilePath = nullptr)
+  Model(std::string objFilePath, std::string textureFilePath)
   {
     modelMatrix = glm::mat4(1.0f);
 
     loadObj(objFilePath);
     loadTexture(textureFilePath);
+
+    
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -412,10 +378,8 @@ class Model
     return true;
   }
 
-  bool loadTexture(std::string textureFilePath = NULL)
+  bool loadTexture(std::string textureFilePath)
   {
-    // if (textureFilePath == NULL)
-    //   return false;
     int width, height, nrChannels;
     unsigned char *data;
     if (!loadTextureFile(textureFilePath, width, height, nrChannels, data))
@@ -438,83 +402,44 @@ class Model
     return true;
   }
 
-  glm::mat4 getModelMatrix() {
-    return this->modelMatrix;
+  void render(ShaderProgram &shader)
+  {
+    this->render(shader, this->modelMatrix);
   }
 
-  void render(ShaderProgram &shader) {
-    this->render(shader, this->getModelMatrix());
-  }
-
-  void prepareRender(ShaderProgram &shader) {
+  void prepareRender(ShaderProgram &shader)
+  {
     shader.use();
-    glBindVertexArray(this->VAO);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->texture);
+    glBindVertexArray(this->VAO);
   }
 
-  void draw() {
-    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+  void endRender()
+  {
+    glBindVertexArray(0);
   }
 
-  void render(ShaderProgram &shader, glm::mat4 modelMatrix) {
+  void render(ShaderProgram &shader, glm::mat4 modelMatrix)
+  {
     this->prepareRender(shader);
     shader.setMat4("model", modelMatrix);
 
-    this->draw();
+    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+    this->endRender();
   }
 
-  void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices) {
+  void renderInstanced(ShaderProgram &shader, const std::vector<glm::mat4> &modelMatrices)
+  {
     this->prepareRender(shader);
 
-    for (const auto &modelMatrix : modelMatrices) {
+    for (const auto &modelMatrix : modelMatrices)
+    {
       shader.setMat4("model", modelMatrix);
-      this->draw();
+      glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
     }
-  }
-};
 
-class Object : public Model
-{
-private:
-
-public:
-  Vector3 position;
-  Vector3 rotation;
-  Vector3 velocity;
-  Vector3 acceleration;
-
-  Object() : Model() {}
-
-  Object(std::string objFilePath, std::string textureFilePath) : Model(objFilePath, textureFilePath) {}
-
-  void applyForce(const Vector3 &force) {
-    this->acceleration = this->acceleration + force;
-  }
-
-  void applyAcceleration(const Vector3 &acceleration) {
-    this->velocity = this->velocity + acceleration;
-  }
-
-  void applyGravity(const Vector3 &gravity, double deltaTime) {
-    this->applyAcceleration(gravity * deltaTime);
-  }
-
-  void update(double deltaTime) {
-    this->applyAcceleration(this->acceleration);
-    this->position = this->position + this->velocity * static_cast<float>(deltaTime);
-  }
-
-  glm::mat4 getModelMatrix() {
-    return glm::translate(this->modelMatrix, glm::vec3(this->position.X, this->position.Y, this->position.Z));
-  }
-
-  void render(ShaderProgram &shader) {
-    this->prepareRender(shader);
-    shader.setMat4("model", this->getModelMatrix());
-  
-    this->draw();
+    this->endRender();
   }
 };
 
@@ -528,14 +453,17 @@ private:
   glm::mat4 projectionMatrix;
 
 public:
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up} {
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up}
+  {
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
   }
-  glm::mat4 getViewMatrix() const {
+  glm::mat4 getViewMatrix() const
+  {
     return viewMatrix;
   }
-  glm::mat4 getProjectionMatrix() const {
+  glm::mat4 getProjectionMatrix() const
+  {
     return projectionMatrix;
   }
 };
@@ -543,17 +471,17 @@ public:
 class Scene
 {
 private:
-  std::vector<std::unique_ptr<Object>> objects;
-  Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
-  Timer timer;
+  std::vector<std::unique_ptr<Model>> models;
 
 public:
-  Scene() {
-    objects = std::vector<std::unique_ptr<Object>>();
+  Scene()
+  {
+    models = std::vector<std::unique_ptr<Model>>();
   }
 
-  void addModel(std::unique_ptr<Object> object) {
-    objects.push_back(std::move(object));
+  void addModel(std::unique_ptr<Model> model)
+  {
+    models.push_back(std::move(model));
   }
 
   void prepareRender(ShaderProgram &shader, const Camera &camera)
@@ -567,38 +495,13 @@ public:
   {
     this->prepareRender(shader, camera);
 
-    for (auto &model : objects)
+    for (auto &model : models)
       model->render(shader);
-
-    this->endRender();
   }
 
-  void endRender() {
-    glBindVertexArray(0);
-  }
-
-  void update() {
-    timer.update();
-    for (auto &object : objects) {
-      object->applyGravity(gravity, timer.deltaTime);
-      object->update(timer.deltaTime);
-    }
-    resolveCollisions();
-  }
-
-  void resolveCollisions() {
-    for (auto &object : objects)
-    {
-      if (object->position.Y < 0.0f)
-      {
-        object->position.Y = 0.0f;
-        object->velocity.Y *= -0.5f;
-      }
-    }
-  }
-
-  const std::vector<std::unique_ptr<Object>> &getModels() const {
-    return objects;
+  const std::vector<std::unique_ptr<Model>> &getModels() const
+  {
+    return models;
   }
 };
 
@@ -609,27 +512,62 @@ public:
   int height;
   GLFWwindow *window;
   std::unique_ptr<Scene> scene;
-  ShaderProgram *shader;
+  ShaderProgram *shaderProgram;
   FPSCounter fpsCounter;
 
-  double lastUpdateTime = 0.0f;
+    std::vector<glm::mat4> modelMatrices;
 
-  Window(int width, int height) : width(width), height(height) {
-    if (!initGlfw())
+
+  float lastUpdateTime = 0.0f;
+
+  Window(int width, int height) : width(width), height(height)
+  {
+    glfwInit();
+    const char *glsl_version = "#version 330 core";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    this->window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
+    if (window == NULL)
+    {
+      std::cout << "Failed to create GLFW window" << std::endl;
+      glfwTerminate();
       return;
-    glViewport(0, 0, width, height);
+    }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return;
+    }
+
+    glViewport(0, 0, 800, 600);
+
+    Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
+    Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
+
+    this->shaderProgram = new ShaderProgram(&vertexShader, &fragmentShader);
+
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);
 
-    this->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
 
-    this->shader = new ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
-
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetScrollCallback(window, scrollCallback);
     startMouseCapture();
 
+    modelMatrices.reserve(1000);
+    
+    // for (size_t z = 0; z < 10; z++)
+        for (size_t y = 0; y < 500; y++)
+            for (size_t x = 0; x < 500; x++) {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f + 2.0f * x, 3.0f * y, 2.0f));
+                modelMatrices.push_back(model);
+            }
+
 #if USE_IMGUI
-    const char *glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
@@ -642,59 +580,57 @@ public:
     ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
 
-    loadModels();
-  }
-
-  bool initGlfw() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
-    if (window == NULL)
-    {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return false;
-    }
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return false;
-    }
-
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetScrollCallback(window, scrollCallback);
-    return true;
-  }
-
-  void loadModels() {
     this->scene = std::make_unique<Scene>();
-    std::unique_ptr<Object> model = std::make_unique<Object>("resources/models/cube.obj", "resources/textures/Terminatrix_Head.png");
+    std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
     model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
     this->scene->addModel(std::move(model));
+
+    glEnable(GL_CULL_FACE);
+    // glCullFace(GL_FRONT);
+
+    Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
   }
 
-  double getDeltaTime() {
+  double getDeltaTime()
+  {
     return glfwGetTime();
   }
 
-  void setClearColor(float r, float g, float b, float a) {
+  void setClearColor(float r, float g, float b, float a)
+  {
     glClearColor(r, g, b, a);
   }
 
-  void clear() {
+  void clear()
+  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  void redraw() {
+  void redraw()
+  {
     this->clear();
 
-    scene->render(*(this->shader), Camera(cameraPos, cameraFront, cameraUp, fov, (float)width / (float)height, 0.1f, 100.0f));
+    // scene->render(*(this->shaderProgram), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
+    const auto& models = scene->getModels();
+
+
+    // for (size_t z = 0; z < 10; z++)
+
+    // for (size_t y = 0; y < 10; y++)
+    //   for (size_t x = 0; x < 10; x++) {
+    //     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0 + 2.0f * x, 3.0f * y, 2.0f * z));
+    //     models[0]->render(shaderProgram, modelMatrix);
+    //   }
+    scene->prepareRender(*shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 10000.0f));
+    
+    models[0]->renderInstanced(*shaderProgram, modelMatrices);
+
+// const auto &models = scene.getModels();
+
+// scene->prepareRender(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+
+// models[0]->renderInstanced(shaderProgram, modelMatrices);
 #if USE_IMGUI
     fpsCounter.update();
     drawImGui();
@@ -704,11 +640,8 @@ public:
     glfwPollEvents();
   }
 
-  void update() {
-    scene->update();
-  }
-
-  void processInput() {
+  void processInput()
+  {
     double deltaTime = getDeltaTime();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -717,7 +650,7 @@ public:
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
       startMouseCapture();
 
-    const float cameraSpeed = 0.005f * deltaTime;
+    const float cameraSpeed = 0.5f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
       cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -726,69 +659,74 @@ public:
       cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
       cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      cameraPos += cameraUp * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      cameraPos -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
   }
 
-  void enableWireframeMode() {
+  void enableWireframeMode()
+  {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   }
 
-  void disableWireframeMode() {
+  void disableWireframeMode()
+  {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 
-  void startMouseCapture() {
+  void startMouseCapture()
+  {
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
-  void stopMouseCapture() {
+  void stopMouseCapture()
+  {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetCursorPosCallback(window, NULL);
   }
 
-  bool shouldClose() {
+  bool shouldClose()
+  {
     return glfwWindowShouldClose(this->window);
   }
 
-  void destroy() {
+  void destroy()
+  {
     glfwDestroyWindow(this->window);
     glfwTerminate();
   }
 
 #if USE_IMGUI
-  int drawImGui() {
+  int drawImGui()
+  {
+    glDisable(GL_DEPTH_TEST);
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Window");
     ImGui::Text("Hello, World!");
-    ImGui::Text("FPS %d", fpsCounter.lastTime);
+    ImGui::Text("FPS %d", 1.0f / fpsCounter.frameTime);
     ImGui::End();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    glEnable(GL_DEPTH_TEST);
     return 0;
   }
 #endif
 };
 
-int main(){
+int main()
+{
   Window window(800, 600);
 
   while (!window.shouldClose())
   {
     window.processInput();
     window.redraw();
-    window.update();
   }
 
   window.destroy();
