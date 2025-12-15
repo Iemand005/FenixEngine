@@ -579,27 +579,23 @@ private:
   std::vector<std::unique_ptr<Object>> objects;
   Vector3 gravity = Vector3(0.0f, -9.81f, 0.0f);
   Timer timer;
-
-public:
-  Scene()
-  {
+  
+  public:
+  Scene() {
     objects = std::vector<std::unique_ptr<Object>>();
   }
 
-  void addModel(std::unique_ptr<Object> object)
-  {
+  void addModel(std::unique_ptr<Object> object) {
     objects.push_back(std::move(object));
   }
 
-  void prepareRender(ShaderProgram &shader, const Camera &camera)
-  {
+  void prepareRender(ShaderProgram &shader, const Camera &camera) {
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("projection", camera.getProjectionMatrix());
   }
 
-  void render(ShaderProgram &shader, const Camera &camera)
-  {
+  void render(ShaderProgram &shader, const Camera &camera) {
     this->prepareRender(shader, camera);
 
     for (auto &model : objects)
@@ -608,13 +604,11 @@ public:
     this->endRender();
   }
 
-  void endRender()
-  {
+  void endRender() {
     glBindVertexArray(0);
   }
 
-  void update()
-  {
+  void update() {
     timer.update();
     for (auto &object : objects)
     {
@@ -624,8 +618,7 @@ public:
     resolveCollisions();
   }
 
-  void resolveCollisions()
-  {
+  void resolveCollisions() {
     for (auto &object : objects)
     {
       if (object->position.Y < 0.0f)
@@ -636,9 +629,12 @@ public:
     }
   }
 
-  const std::vector<std::unique_ptr<Object>> &getModels() const
-  {
+  const std::vector<std::unique_ptr<Object>> &getModels() const {
     return objects;
+  }
+
+  double getDeltaTime() {
+    return timer.deltaTime;
   }
 };
 
@@ -665,6 +661,7 @@ public:
 
     this->setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
+    this->scene = std::make_unique<Scene>();
     this->shader = new ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
 
     startMouseCapture();
@@ -702,6 +699,8 @@ public:
     }
     glfwMakeContextCurrent(window);
 
+    glfwSwapInterval(1); // Enable vsync
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
       std::cout << "Failed to initialize GLAD" << std::endl;
@@ -719,7 +718,7 @@ public:
     // std::unique_ptr<Object> model = std::make_unique<Object>("resources/models/collisions.obj", "resources/textures/Terminatrix_Head.png");
     // model->modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.5f, 10.0f, 0.0f));
     // this->scene->addModel(std::move(model));
-    loadOBJ("resources/models/collisions.obj");
+    loadOBJ("resources/models/collisiontest.obj");
   }
 
   void loadModel(std::string objFilePath)
@@ -740,6 +739,7 @@ public:
     auto models = std::vector<std::unique_ptr<Model>>(objectLoader.LoadedMeshes.size());
 
     for (auto &mesh : objectLoader.LoadedMeshes)
+    // auto mesh = objectLoader.LoadedMeshes[2];
     {
       std::cout << "Mesh Name: " << mesh.MeshName << std::endl;
       std::cout << "Vertices: " << mesh.Vertices.size() << std::endl;
@@ -750,12 +750,12 @@ public:
 
       for (int i = 0; i < mesh.Vertices.size(); i++)
       {
-        objl::Vertex v = objectLoader.LoadedVertices[i];
+        objl::Vertex v = mesh.Vertices[i];
         vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
       }
 
       for (size_t i = 0; i < indices.size(); i++)
-        indices[i] = objectLoader.LoadedIndices[i];
+        indices[i] = mesh.Indices[i];
 
       std::unique_ptr<Object> model = std::make_unique<Object>(vertices, indices);
       model->loadTexture(mesh.MeshMaterial.map_Kd);
@@ -777,6 +777,7 @@ public:
 
   void clear()
   {
+    glClearColor(0.1f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
@@ -802,14 +803,14 @@ public:
 
   void processInput()
   {
-    double deltaTime = getDeltaTime();
+    double deltaTime = scene->getDeltaTime();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       stopMouseCapture();
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
       startMouseCapture();
 
-    const float cameraSpeed = 0.005f * deltaTime;
+    const float cameraSpeed = 10.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
       cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -871,7 +872,7 @@ public:
 
     ImGui::Begin("Window");
     ImGui::Text("Hello, World!");
-    ImGui::Text("FPS %d", fpsCounter.lastTime);
+    ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
     ImGui::Button("Start", ImVec2(50, 20));
     ImGui::End();
 
