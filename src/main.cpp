@@ -847,6 +847,9 @@ public:
   void update()
   {
     scene->update();
+
+    this->player->position = cameraPos + cameraFront * 2.0f;
+    this->player->rotation.y = yaw + 90.0f;
   }
 
   void processInput()
