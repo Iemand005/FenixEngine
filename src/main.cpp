@@ -274,6 +274,11 @@ class ShaderProgram
 public:
   unsigned int Id;
 
+  int modelLoc;
+  int viewLoc;
+  int projectionLoc;
+  int texLoc;
+
   ShaderProgram(Shader *vertexShader, Shader *fragmentShader)
   {
     Id = glCreateProgram();
@@ -284,11 +289,22 @@ public:
 
     vertexShader->deleteShader();
     fragmentShader->deleteShader();
+
+    modelLoc = glGetUniformLocation(this->Id, "model");
+    viewLoc = glGetUniformLocation(this->Id, "view");
+    projectionLoc = glGetUniformLocation(this->Id, "projection");
+    texLoc = glGetUniformLocation(this->Id, "ourTexture");
+    glUniform1i(texLoc, 0);
   }
 
   void use()
   {
     glUseProgram(this->Id);
+  }
+
+  void setMat4(const std::string &name, const glm::mat4 &mat) const
+  {
+    glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
   }
 };
 
@@ -299,27 +315,34 @@ class Model
 
   unsigned int vertexCount;
   unsigned int indexCount;
+  
+  unsigned int VAO = 0;
+  unsigned int VBO = 0;
+  unsigned int EBO = 0;
+  unsigned int texture = 0;
 
 public:
   Model() {}
 
-  Model(std::string objFilePath)
+  Model(std::string objFilePath, std::string textureFilePath)
   {
     loadObj(objFilePath);
+    loadTexture(textureFilePath);
 
-    unsigned int VAO;
+    unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    
-    unsigned int VBO;
+    this->VAO = VAO;
+
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-    
-    unsigned int EBO;
+    this->VBO = VBO;
+
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(int), indices, GL_STATIC_DRAW);
+    this->EBO = EBO;
 
     int vertexStride = sizeof(Vertex);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void *)0);
@@ -342,59 +365,123 @@ public:
     if (!success)
       return false;
 
-    int vertexCount = objectLoader.LoadedVertices.size();
+    this->vertexCount = objectLoader.LoadedVertices.size();
+    this->vertices = new Vertex[this->vertexCount];
 
-    Vertex *vertices = new Vertex[vertexCount];
-
-    for (int i = 0; i < vertexCount; i++)
+    for (int i = 0; i < this->vertexCount; i++)
     {
       objl::Vertex v = objectLoader.LoadedVertices[i];
-      vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+      this->vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
     }
 
-    unsigned int indexCount = objectLoader.LoadedIndices.size();
-    unsigned int *indices = new unsigned int[indexCount];
+    this->indexCount = objectLoader.LoadedIndices.size();
+    this->indices = new unsigned int[this->indexCount];
 
     for (size_t i = 0; i < objectLoader.LoadedIndices.size(); i++)
-      indices[i] = objectLoader.LoadedIndices[i];
+      this->indices[i] = objectLoader.LoadedIndices[i];
 
     return true;
   }
+
+  bool loadTextureFile(std::string textureFilePath, int &width, int &height, int &nrChannels, unsigned char *&data)
+  {
+    stbi_set_flip_vertically_on_load(true);
+    data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
+    if (!data)
+    {
+      std::cerr << "Failed to load texture" << std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  bool loadTexture(std::string textureFilePath)
+  {
+    int width, height, nrChannels;
+    unsigned char *data;
+    if (!loadTextureFile(textureFilePath, width, height, nrChannels, data))
+      return false;
+
+    glGenTextures(1, &this->texture);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return true;
+  }
+
+  void render(ShaderProgram &shader)
+  {
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+    shader.setMat4("model", model);
+
+    shader.use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+    glBindVertexArray(this->VAO);
+    glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+  }
 };
 
-class Camera {
+class Camera
+{
 private:
-    glm::vec3 position;
-    glm::vec3 front;
-    glm::vec3 up;
-    glm::mat4 viewMatrix;
-    glm::mat4 projectionMatrix;
+  glm::vec3 position;
+  glm::vec3 front;
+  glm::vec3 up;
+  glm::mat4 viewMatrix;
+  glm::mat4 projectionMatrix;
 
 public:
-    Camera(glm::vec3 pos, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far)
-        : position(pos), front
-}
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float near, float far) : position(position), front{front}, up{up}
+  {
+    viewMatrix = glm::lookAt(position, position + front, up);
+    projectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
+  }
+  glm::mat4 getViewMatrix() const
+  {
+    return viewMatrix;
+  }
+  glm::mat4 getProjectionMatrix() const
+  {
+    return projectionMatrix;
+  }
+};
 
-class Scene {
+class Scene
+{
 private:
-    std::vector<std::unique_ptr<Model>> models;
-    
+  std::vector<std::unique_ptr<Model>> models;
+
 public:
-    void addModel(std::unique_ptr<Model> model) {
-        models.push_back(std::move(model));
-    }
-    
-    void render(Shader& shader, const Camera& camera) {
-        // Set view/projection matrices (same for all models)
-        shader.use();
-        shader.setMat4("view", camera.getViewMatrix());
-        shader.setMat4("projection", camera.getProjectionMatrix());
-        
-        // Render each model by binding its VAO
-        for(auto& model : models) {
-            model->render(shader);  // ← Inside: glBindVertexArray(model->VAO)
-        }
-    }
+  void addModel(std::unique_ptr<Model> model)
+  {
+    models.push_back(std::move(model));
+  }
+
+  void render(ShaderProgram &shader, const Camera &camera)
+  {
+    // Set view/projection matrices (same for all models)
+    shader.use();
+    shader.setMat4("view", camera.getViewMatrix());
+    shader.setMat4("projection", camera.getProjectionMatrix());
+
+    for (auto &model : models)
+      model->render(shader);
+  }
 };
 
 int drawImGui()
@@ -493,19 +580,17 @@ int main()
   Shader vertexShader("VertexShader.glsl", GL_VERTEX_SHADER);
   Shader fragmentShader("FragmentShader.glsl", GL_FRAGMENT_SHADER);
 
-
   ShaderProgram shaderProgram(&vertexShader, &fragmentShader);
 
-  
   unsigned int VAO;
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
-  
+
   unsigned int VBO;
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-  
+
   unsigned int EBO;
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -522,7 +607,6 @@ int main()
   glEnableVertexAttribArray(2);
 
   glBindVertexArray(0);
-  
 
   glEnable(GL_DEPTH_TEST);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -546,14 +630,20 @@ int main()
 
   // glUseProgram(shaderProgram.Id);
   shaderProgram.use();
-  int modelLoc = glGetUniformLocation(shaderProgram.Id, "model");
-  int viewLoc = glGetUniformLocation(shaderProgram.Id, "view");
-  int projectionLoc = glGetUniformLocation(shaderProgram.Id, "projection");
-  int texLoc = glGetUniformLocation(shaderProgram.Id, "ourTexture");
-  glUniform1i(texLoc, 0);
+
+  Scene scene;
+  std::unique_ptr<Model> model = std::make_unique<Model>("resources/models/Headz.obj", "resources/textures/Terminatrix_Head.png");
+  scene.addModel(std::move(model));
+  // int modelLoc = glGetUniformLocation(shaderProgram.Id, "model");
+  // int viewLoc = glGetUniformLocation(shaderProgram.Id, "view");
+  // int projectionLoc = glGetUniformLocation(shaderProgram.Id, "projection");
+  // int texLoc = glGetUniformLocation(shaderProgram.Id, "ourTexture");
+  // glUniform1i(texLoc, 0);
 
   // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
+
+  Camera camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -562,23 +652,25 @@ int main()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 model = glm::mat4(1.0f);
+    // glm::mat4 model = glm::mat4(1.0f);
 
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+    // model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    // glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    // glm::mat4 projection = glm::perspective(glm::radians(fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    // glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(VAO);
+    // glBindTexture(GL_TEXTURE_2D, texture);
+    // glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    // glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
+    // glBindVertexArray(0);
+
+    scene.render(shaderProgram, Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
 
     drawImGui();
 
