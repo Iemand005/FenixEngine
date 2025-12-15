@@ -537,6 +537,8 @@ public:
 
   bool isStatic = false;
 
+  bool touchedGround = false;
+
   Object() {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
     rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -613,6 +615,7 @@ public:
       return;
     this->applyAcceleration(this->acceleration);
     this->position = this->position + this->velocity * static_cast<float>(deltaTime);
+    this->acceleration = glm::vec3(0.0f);
   }
 
   glm::mat4 getModelMatrix()
@@ -784,6 +787,11 @@ private:
       {
         object->position.y = 0.0f;
         object->velocity.y *= -0.1f;
+
+        object->touchedGround = true;
+      }
+      else {
+        object->touchedGround = false;
       }
     }
   }
@@ -811,6 +819,8 @@ public:
   std::shared_ptr<Object> player;
 
   double lastUpdateTime = 0.0f;
+
+  bool canJump = true;
 
   Window(int width, int height) : width(width), height(height) {
     if (!initGlfw())
@@ -860,7 +870,7 @@ public:
     }
     glfwMakeContextCurrent(window);
 
-    glfwSwapInterval(1); // Enable vsync
+    glfwSwapInterval(0); // Enable vsync
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -948,20 +958,28 @@ public:
     // {
     //     startMouseCapture();
     // }
-
+    
     const float cameraSpeed = 10.0f * deltaTime;
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
+    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-      this->player->position += cameraSpeed * cameraFront;
+      this->player->position += cameraSpeed * horizontalFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-      this->player->position -= cameraSpeed * cameraFront;
+      this->player->position -= cameraSpeed * horizontalFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-      this->player->position -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+      this->player->position -= right * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-      this->player->position += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+      this->player->position += right * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
       this->player->position += cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
       this->player->position -= cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
+      
+      // this->player->acceleration.y = 10.0f;
+      this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
+      canJump = false;
+    }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
@@ -1010,8 +1028,7 @@ public:
     ImGui::SetWindowFocus();
     ImGui::Text("Hello, World!");
     ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
-    ImGui::Button("Start", ImVec2(50, 20));
-    if (ImGui::Button("Test Button")) {
+    if (ImGui::Button("Start", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
     }
     Object *model = this->player.get();
@@ -1038,6 +1055,9 @@ int main()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    if (window.player->touchedGround) {
+      window.canJump = true;
+    }
     window.processInput();
     window.player->rotation.y = -yaw + 90.0f;
     glm::vec3 pos = window.player->position + playerHeight;
