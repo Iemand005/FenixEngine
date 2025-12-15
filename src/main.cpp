@@ -1038,9 +1038,13 @@ int main()
 
     window.processInput();
     window.player->rotation.y = -yaw + 90.0f;
-    cameraPos = window.player->position - cameraFront * 5.0f;
+    glm::vec3 pos = window.player->position + glm::vec3(0.0f, 6.5f, 0.0f);
+    cameraPos = pos - cameraFront * 5.0f ;
     window.playerCamera->setPos(cameraPos);
-    // cameraTarget = window.player->position;
+    cameraTarget = pos;
+
+    window.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
+    // window.playerCamera->setPos(cameraPos);
     
     window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
     // cameraFront = glm::normalize(cameraTarget - cameraPos);
