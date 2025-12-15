@@ -642,32 +642,6 @@ public:
     newObj->modelMatrix = this->modelMatrix;
     return newObj;
   }
-
-  AABB getAABB() const
-  {
-    if (meshes.empty()) return {position, position};
-    glm::vec3 min = glm::vec3(FLT_MAX), max = glm::vec3(-FLT_MAX);
-    glm::mat4 model = getModelMatrix();
-    for (auto &mesh : meshes)
-    {
-      for (auto &vertex : mesh.vertices)
-      {
-        glm::vec3 worldPos = model * glm::vec4(vertex.Position, 1.0f);
-        min = glm::min(min, worldPos);
-        max = glm::max(max, worldPos);
-      }
-    }
-    return {min, max};
-  }
-
-  bool collidesWith(const Object &other) const
-  {
-    AABB a = getAABB();
-    AABB b = other.getAABB();
-    return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
-           (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-           (a.min.z <= b.max.z && a.max.z >= b.min.z);
-  }
 };
 
 class Camera
