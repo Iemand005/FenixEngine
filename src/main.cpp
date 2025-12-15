@@ -649,8 +649,8 @@ public:
     glm::vec3 right = glm::normalize(glm::cross(front, up));
     float tanHalfFov = tan(glm::radians(fov / 2.0f));
     float nearHeight = 2 * tanHalfFov * nearDist;
-    float nearWidth = nearHeight * aspect;
     float farHeight = 2 * tanHalfFov * farDist;
+    float nearWidth = nearHeight * aspect;
     float farWidth = farHeight * aspect;
 
     glm::vec3 nearCenter = position + front * nearDist;
@@ -692,6 +692,23 @@ public:
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
+  }
+
+  void setAspect(float aspect)
+  {
+    this->aspect = aspect;
+    projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
+  }
+
+  void setPos(const glm::vec3 &pos)
+  {
+    this->position = pos;
+    viewMatrix = glm::lookAt(position, position + front, up);
+  }
+  void setFront(const glm::vec3 &front)
+  {
+    this->front = front;
+    viewMatrix = glm::lookAt(position, position + front, up);
   }
   glm::mat4 getViewMatrix() const
   {
@@ -787,6 +804,7 @@ public:
   int height;
   GLFWwindow *window;
   std::unique_ptr<Scene> scene;
+  std::unique_ptr<Camera> playerCamera;
   ShaderProgram *shader;
   FPSCounter fpsCounter;
 
@@ -806,6 +824,7 @@ public:
 
     this->scene = std::make_unique<Scene>();
     this->shader = new ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
+    this->playerCamera = std::make_unique<Camera>(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
     startMouseCapture();
 
@@ -859,7 +878,7 @@ public:
   {
     loadStaticOBJ("resources/models/collisiontest.obj");
     this->player = loadOBJ("resources/models/citizen.obj", 0.1f);
-    this->player->position = glm::vec3(0.0f, 100.0f, 0.0f);
+    // this->player->position = cameraPos - cameraFront * 5.0f;
   }
 
   std::shared_ptr<Object> loadOBJ(std::string path, float scale = 1.0f) {
@@ -896,7 +915,7 @@ public:
   {
     this->clear();
 
-    scene->render(*(this->shader), Camera(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f));
+    scene->render(*(this->shader), *(this->playerCamera));
 
 #if USE_IMGUI
     fpsCounter.update();
@@ -911,7 +930,7 @@ public:
   {
     scene->update();
 
-    this->player->position = cameraPos + cameraFront * 2.0f + glm::vec3(0.0f, -10.5f, 0.0f);
+    // this->player->position = cameraPos + cameraFront * 2.0f + glm::vec3(0.0f, -6.5f, 0.0f);
     // this->player->rotation.y = yaw / 360.0f + 90.0f;
   }
 
@@ -932,17 +951,17 @@ public:
 
     const float cameraSpeed = 10.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-      cameraPos += cameraSpeed * cameraFront;
+      this->player->position += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-      cameraPos -= cameraSpeed * cameraFront;
+      this->player->position -= cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-      cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+      this->player->position -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+      this->player->position += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      cameraPos += cameraUp * cameraSpeed;
+      this->player->position += cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      cameraPos -= cameraUp * cameraSpeed;
+      this->player->position -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
@@ -1019,6 +1038,12 @@ int main()
 
     window.processInput();
     window.player->rotation.y = -yaw + 90.0f;
+    cameraPos = window.player->position - cameraFront * 5.0f;
+    window.playerCamera->setPos(cameraPos);
+    // cameraTarget = window.player->position;
+    
+    window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
+    // cameraFront = glm::normalize(cameraTarget - cameraPos);
     window.redraw();
     window.update();
   }
