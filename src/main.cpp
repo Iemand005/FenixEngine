@@ -628,7 +628,7 @@ public:
     // if (isStatic || !needsUpdate)
     //   return;
     this->applyAcceleration(this->acceleration);
-    this->position = this->position + this->velocity * static_cast<float>(deltaTime) + (float)deltaTime;
+    this->position = this->position + this->velocity * static_cast<float>(deltaTime) + glm::radians(0.0001f);
     this->acceleration = glm::vec3(0.0f);
   }
 
@@ -656,14 +656,14 @@ public:
     return newObj;
   }
 
-  void lookAt(const glm::vec3 &target, double deltaTime = 0.016)
+  void lookAt(const glm::vec3 &target)
   {
-    // glm::vec3 direction = glm::normalize(target - this->position);
-    // float pitch = glm::degrees(asin(direction.y));
-    // float yaw = glm::degrees(atan2(direction.z, direction.x));
+    glm::vec3 direction = glm::normalize(target - this->position);
+    float pitch = glm::degrees(asin(direction.y));
+    float yaw = glm::degrees(atan2(direction.z, direction.x));
 
-    // this->rotation.x = 10.0f * deltaTime;
-    // this->rotation.y = target.y * 100.0f + 100.0f;
+    this->rotation.x = pitch;
+    this->rotation.y = yaw - 90.0f;
   }
 };
 
@@ -865,7 +865,7 @@ public:
 
   std::shared_ptr<Character> player;
 
-  std::vector<Character> npcs;
+  std::vector<std::shared_ptr<Character>> npcs;
 
   double lastUpdateTime = 0.0f;
 
@@ -887,7 +887,7 @@ public:
 
     startMouseCapture();
 
-    this->npcs = std::vector<Character>();
+    this->npcs = std::vector<std::shared_ptr<Character>>();
 
 #if USE_IMGUI
     const char *glsl_version = "#version 330 core";
@@ -948,9 +948,9 @@ public:
     obj2->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
 
     // Look at player
-    obj2->lookAt(this->player->position, scene->getDeltaTime());
+    obj2->lookAt(this->player->position);
 
-    npcs.push_back(*obj2);
+    npcs.push_back(obj2);
     // for (int i = 0; i < 10; i++) {
     //   for (int j = 0; j < 5; j++) {
     //   auto object = obj2->clone();
@@ -1125,8 +1125,8 @@ public:
     ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
     for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i].position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i].rotation.x, -180.0f, 180.0f);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
     }
     ImGui::End();
 
@@ -1166,9 +1166,7 @@ int main()
     window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
 
     for (auto &npc : window.npcs) {
-      npc.lookAt(pos);
-      npc.rotation.y += 180.0f;
-      npc.rotation.z += 10.0f;
+      npc->lookAt(pos);
     }
     // cameraFront = glm::normalize(cameraTarget - cameraPos);
     window.redraw();
