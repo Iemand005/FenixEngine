@@ -467,18 +467,15 @@ public:
     return true;
   }
 
-  glm::mat4 getModelMatrix()
-  {
+  glm::mat4 getModelMatrix() {
     return this->modelMatrix;
   }
 
-  void render(ShaderProgram &shader)
-  {
+  void render(ShaderProgram &shader) {
     this->render(shader, this->getModelMatrix());
   }
 
-  void prepareRender(ShaderProgram &shader)
-  {
+  void prepareRender(ShaderProgram &shader) {
     if (VAO == 0) return;
     shader.use();
     glBindVertexArray(this->VAO);
@@ -509,6 +506,11 @@ public:
       shader.setMat4("model", modelMatrix);
       this->draw();
     }
+  }
+
+  std::vector<Vertex> getVertices()
+  {
+    return this->vertices;
   }
 };
 
@@ -542,7 +544,12 @@ public:
 
   bool isStatic = false;
 
+  bool needsUpdate = true;
+
   bool touchedGround = false;
+
+
+  // bool needsUpdate = true;
 
   Object() {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -602,11 +609,13 @@ public:
   void applyForce(const glm::vec3 &force)
   {
     this->acceleration = this->acceleration + force;
+    this->needsUpdate = true;
   }
 
   void applyAcceleration(const glm::vec3 &acceleration)
   {
     this->velocity = this->velocity + acceleration;
+    this->needsUpdate = true;
   }
 
   void applyGravity(const glm::vec3 &gravity, double deltaTime)
@@ -616,7 +625,7 @@ public:
 
   void update(double deltaTime)
   {
-    if (isStatic)
+    if (isStatic || !needsUpdate)
       return;
     this->applyAcceleration(this->acceleration);
     this->position = this->position + this->velocity * static_cast<float>(deltaTime);
@@ -625,7 +634,11 @@ public:
 
   glm::mat4 getModelMatrix()
   {
-    return glm::scale(glm::rotate(glm::translate(this->modelMatrix, this->position), glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)), this->scale);
+    glm::mat4 model = glm::translate(this->modelMatrix, this->position);
+    model = glm::rotate(model, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::scale(model, this->scale);
+    return model;
   }
 
   void render(ShaderProgram &shader)
@@ -642,6 +655,23 @@ public:
     newObj->modelMatrix = this->modelMatrix;
     return newObj;
   }
+
+  void lookAt(const glm::vec3 &target)
+  {
+    // glm::vec3 direction = glm::normalize(target - this->position);
+    // float pitch = glm::degrees(asin(direction.y));
+    // float yaw = glm::degrees(atan2(direction.z, direction.x));
+
+    this->rotation.x = 10.0f;
+    this->rotation.y = target.y * 100.0f + 100.0f;
+  }
+};
+
+class Character : public Object
+{
+public:
+
+  
 };
 
 class Camera
@@ -803,6 +833,9 @@ private:
         object->velocity.y *= -0.1f;
 
         object->touchedGround = true;
+
+        if (object->velocity.y < 0.01f && object->velocity.y > -0.01f)
+          object->needsUpdate = false;
       }
       else {
         object->touchedGround = false;
@@ -830,7 +863,9 @@ public:
   ShaderProgram *shader;
   FPSCounter fpsCounter;
 
-  std::shared_ptr<Object> player;
+  std::shared_ptr<Character> player;
+
+  std::vector<Character> npcs;
 
   double lastUpdateTime = 0.0f;
 
@@ -901,7 +936,24 @@ public:
   void loadModels()
   {
     loadStaticOBJ("resources/models/collisiontest.obj");
-    this->player = loadOBJ("resources/models/citizen.obj", 0.1f);
+    this->player = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+
+    auto obj2 = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+    obj2->position = glm::vec3(5.0f, 0.0f, 0.0f);
+
+    obj2->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
+    obj2->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
+
+    // Look at player
+    obj2->lookAt(this->player->position);
+
+    npcs.push_back(*obj2);
+    // for (int i = 0; i < 10; i++) {
+    //   for (int j = 0; j < 5; j++) {
+    //   auto object = obj2->clone();
+    //   object->position = glm::vec3(i * 2.0f, j * 5.0f, 0.0f);
+    // }
+  // }
     // this->player->position = cameraPos - cameraFront * 5.0f;
   }
 
@@ -914,6 +966,7 @@ public:
   bool loadStaticOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<Object> model = std::make_shared<Object>(path, scale);
     model->isStatic = true;
+    model->needsUpdate = false;
     this->scene->addModel(model);
 
     return true;
@@ -998,6 +1051,8 @@ public:
     {
       std::shared_ptr<Object> newObj = this->player->clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
+      glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
+      newObj->rotation.y = atan2(dir.x, dir.z) * 180.0f / 3.141592653589793f;
       this->scene->addModel(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
@@ -1048,6 +1103,17 @@ public:
     ImGui::SetWindowFocus();
     ImGui::Text("Hello, World!");
     ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
+    ImGui::Text("Objects: %zu", this->scene->getModels().size());
+    size_t totalVertices = 0;
+    for (auto &obj : this->scene->getModels())
+      for (auto &mesh : obj->meshes)
+        totalVertices += mesh.getVertices().size();
+    ImGui::Text("Vertices: %zu", totalVertices);
+    size_t needsUpdateCount = 0;
+    for (auto &obj : this->scene->getModels()) {
+        if (obj->needsUpdate) needsUpdateCount++;
+    }
+    ImGui::Text("Needs Update: %zu", needsUpdateCount);
     if (ImGui::Button("Start", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
     }
@@ -1089,6 +1155,10 @@ int main()
     // window.playerCamera->setPos(cameraPos);
     
     window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
+
+    for (auto &npc : window.npcs) {
+      npc.lookAt(pos);
+    }
     // cameraFront = glm::normalize(cameraTarget - cameraPos);
     window.redraw();
     window.update();
