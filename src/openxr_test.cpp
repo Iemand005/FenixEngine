@@ -320,6 +320,26 @@ int main()
     return 1;
   }
 
+  uint32_t blendModeCount = 0;
+xrEnumerateEnvironmentBlendModes(
+    instance, 
+    systemId, 
+    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 
+    0, 
+    &blendModeCount, 
+    nullptr
+);
+
+std::vector<XrEnvironmentBlendMode> blendModes(blendModeCount);
+xrEnumerateEnvironmentBlendModes(
+    instance, 
+    systemId, 
+    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+    blendModeCount, 
+    &blendModeCount, 
+    blendModes.data()
+);
+
   bool running = true;
 
   initSwapchain(session);
@@ -438,6 +458,7 @@ int main()
     endInfo.displayTime = frameState.predictedDisplayTime;
     endInfo.layerCount = 1; // MUST be > 0 to see in headset!
     endInfo.layers = layers;
+    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
     outputError(xrEndFrame(session, &endInfo));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
