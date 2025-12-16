@@ -1337,7 +1337,6 @@ int main()
       {
         std::cout << "Player intersects with NPC" << std::endl;
         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
-        return 666;
       }
     }
     window.redraw();

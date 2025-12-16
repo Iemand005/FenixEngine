@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "C/C++: cl.exe build and debug active file",
+      "name": "C/C++: cl.exe build and debug main",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder}\\build\\main.exe",
@@ -10,7 +10,19 @@
       "cwd": "${fileDirname}",
       "environment": [],
       "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build active file"
+      "preLaunchTask": "C/C++: cl.exe build main"
+    },
+    {
+      "name": "C/C++: cl.exe build and debug OpenXR Windows",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\openxr.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "C/C++: cl.exe build OpenXR Windows"
     }
   ],
   "version": "2.0.0"
