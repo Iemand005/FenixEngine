@@ -520,19 +520,6 @@ public:
   }
 };
 
-// class Model {
-// public:
-//   std::vector<Mesh> meshes;
-
-//   glm::mat4 modelMatrix;
-
-//   Model() {
-//     meshes = std::vector<Mesh>();
-
-//     modelMatrix = glm::mat4(1.0f);
-//   }
-// };
-
 class Object
 {
 private:

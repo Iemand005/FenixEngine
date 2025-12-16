@@ -21,6 +21,8 @@
 #include <iostream>
 #include <cstring>
 
+#include "engine.h"
+
 void outputError(XrResult result)
 {
   if (XR_SUCCEEDED(result))
@@ -343,6 +345,14 @@ int main()
   initSwapchain(session);
 
   initCube();
+
+  auto scene = std::make_unique<fe::Scene>();
+  auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
+
+  std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
+  model->isStatic = true;
+  model->needsUpdate = false;
+  scene->addModel(model);
 
   glEnable(GL_DEPTH_TEST);
 
