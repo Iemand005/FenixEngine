@@ -7,3 +7,6 @@
 [submodule "third_party/assimp"]
 	path = third_party/assimp
 	url = https://github.com/assimp/assimp
+[submodule "third_party/OpenXR-SDK"]
+	path = third_party/OpenXR-SDK
+	url = https://github.com/KhronosGroup/OpenXR-SDK.git
