@@ -553,6 +553,14 @@ public:
 
   bool touchedGround = false;
 
+  bool touchedOtherObject = false;
+
+  AABB aabb;
+
+  unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
+
+  std::vector<glm::vec3> boundingBoxVertices;
+
   // bool needsUpdate = true;
 
   Object()
@@ -569,6 +577,7 @@ public:
   Object(Mesh mesh) : Object()
   {
     meshes.push_back(mesh);
+    calculateBoundingBox();
   }
 
   Object(std::string objFilePath, float scale = 1.0f) : Object()
@@ -610,6 +619,8 @@ public:
 
     this->scale = glm::vec3(scale);
 
+    calculateBoundingBox();
+
     return true;
   }
 
@@ -645,6 +656,55 @@ public:
     this->acceleration = glm::vec3(0.0f);
   }
 
+  void calculateBoundingBox()
+  {
+    glm::vec3 min = glm::vec3(FLT_MAX), max = glm::vec3(-FLT_MAX);
+    for (auto &mesh : meshes) {
+      for (auto &v : mesh.getVertices()) {
+        min = glm::min(min, v.Position);
+        max = glm::max(max, v.Position);
+      }
+    }
+    this->aabb.min = min;
+    this->aabb.max = max;
+    boundingBoxVertices = {
+      // bottom
+      glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z),
+      glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, max.z),
+      glm::vec3(max.x, min.y, max.z), glm::vec3(min.x, min.y, max.z),
+      glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, min.y, min.z),
+      // top
+      glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z),
+      glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, max.z),
+      glm::vec3(max.x, max.y, max.z), glm::vec3(min.x, max.y, max.z),
+      glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, max.y, min.z),
+      // sides
+      glm::vec3(min.x, min.y, min.z), glm::vec3(min.x, max.y, min.z),
+      glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, max.y, min.z),
+      glm::vec3(max.x, min.y, max.z), glm::vec3(max.x, max.y, max.z),
+      glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, max.y, max.z)
+    };
+    glGenVertexArrays(1, &boundingBoxVAO);
+    glBindVertexArray(boundingBoxVAO);
+    glGenBuffers(1, &boundingBoxVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, boundingBoxVBO);
+    glBufferData(GL_ARRAY_BUFFER, boundingBoxVertices.size() * sizeof(glm::vec3), boundingBoxVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+  }
+
+  bool intersects(const Object &other) const
+  {
+    glm::vec3 thisMin = this->position + this->aabb.min * this->scale;
+    glm::vec3 thisMax = this->position + this->aabb.max * this->scale;
+    glm::vec3 otherMin = other.position + other.aabb.min * other.scale;
+    glm::vec3 otherMax = other.position + other.aabb.max * other.scale;
+    return (thisMin.x <= otherMax.x && thisMax.x >= otherMin.x) &&
+           (thisMin.y <= otherMax.y && thisMax.y >= otherMin.y) &&
+           (thisMin.z <= otherMax.z && thisMax.z >= otherMin.z);
+  }
+
   glm::mat4 getModelMatrix()
   {
     glm::mat4 model = glm::translate(this->modelMatrix, this->position);
@@ -658,6 +718,13 @@ public:
   {
     for (auto &mesh : meshes)
       mesh.render(shader, this->getModelMatrix());
+    if (boundingBoxVAO && touchedOtherObject) {
+      shader.use();
+      shader.setMat4("model", this->getModelMatrix());
+      glBindVertexArray(boundingBoxVAO);
+      glDrawArrays(GL_LINES, 0, boundingBoxVertices.size());
+      glBindVertexArray(0);
+    }
   }
 
   std::shared_ptr<Object> clone() const
@@ -858,6 +925,24 @@ public:
       else
       {
         object->touchedGround = false;
+      }
+
+      bool foundTouch = false;
+      for (auto &otherObject : objects) {
+        if (otherObject == object) 
+          continue;
+        
+        if (object->intersects(*otherObject)) {
+          std::cout << "Yooo I hit someone bro";
+          object->touchedOtherObject = true;
+          otherObject->touchedOtherObject = true;
+          foundTouch = true;
+          break;
+        }
+      }
+
+      if (!foundTouch) {
+        object->touchedOtherObject = false;
       }
     }
   }
@@ -1226,6 +1311,13 @@ int main()
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
       npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 1.0f * glm::vec3(window.getDeltaTime()));
       npc->needsUpdate = true;
+    }
+    for (auto &npc : window.npcs)
+    {
+      if (window.player->intersects(*npc))
+      {
+        std::cout << "Player intersects with NPC" << std::endl;
+      }
     }
     window.redraw();
     window.update();
