@@ -172,7 +172,7 @@ struct Timer
 // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 //     // Forward to ImGui FIRST
 //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-    
+
 //     // Only process your own input if ImGui doesn't want it
 //     ImGuiIO& io = ImGui::GetIO();
 //     if (!io.WantCaptureMouse) {
@@ -338,7 +338,8 @@ public:
   }
 };
 
-class Mesh {
+class Mesh
+{
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
 
@@ -367,7 +368,8 @@ public:
   {
     modelMatrix = glm::mat4(1.0f);
 
-    if (!loadObj(objFilePath) || !loadTexture(textureFilePath)) {
+    if (!loadObj(objFilePath) || !loadTexture(textureFilePath))
+    {
       std::cerr << "Failed to load model or texture" << std::endl;
       return;
     }
@@ -467,16 +469,20 @@ public:
     return true;
   }
 
-  glm::mat4 getModelMatrix() {
+  glm::mat4 getModelMatrix()
+  {
     return this->modelMatrix;
   }
 
-  void render(ShaderProgram &shader) {
+  void render(ShaderProgram &shader)
+  {
     this->render(shader, this->getModelMatrix());
   }
 
-  void prepareRender(ShaderProgram &shader) {
-    if (VAO == 0) return;
+  void prepareRender(ShaderProgram &shader)
+  {
+    if (VAO == 0)
+      return;
     shader.use();
     glBindVertexArray(this->VAO);
 
@@ -520,7 +526,6 @@ public:
 
 //   glm::mat4 modelMatrix;
 
-
 //   Model() {
 //     meshes = std::vector<Mesh>();
 
@@ -536,7 +541,7 @@ public:
   glm::vec3 rotation;
   glm::vec3 velocity;
   glm::vec3 acceleration;
-  
+
   glm::vec3 scale;
   glm::mat4 modelMatrix;
 
@@ -548,10 +553,10 @@ public:
 
   bool touchedGround = false;
 
-
   // bool needsUpdate = true;
 
-  Object() {
+  Object()
+  {
     position = glm::vec3(0.0f, 0.0f, 0.0f);
     rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -561,11 +566,13 @@ public:
     meshes = std::vector<Mesh>();
   }
 
-  Object(Mesh mesh) : Object() {
+  Object(Mesh mesh) : Object()
+  {
     meshes.push_back(mesh);
   }
 
-  Object(std::string objFilePath, float scale = 1.0f) : Object() {
+  Object(std::string objFilePath, float scale = 1.0f) : Object()
+  {
     loadOBJ(objFilePath, scale);
   }
 
@@ -618,6 +625,12 @@ public:
     this->needsUpdate = true;
   }
 
+  void applyVelocity(const glm::vec3 &vel)
+  {
+    this->velocity = vel;
+    this->needsUpdate = true;
+  }
+
   void applyGravity(const glm::vec3 &gravity, double deltaTime)
   {
     this->applyAcceleration(gravity * glm::vec3(deltaTime));
@@ -663,15 +676,13 @@ public:
     float yaw = glm::degrees(atan2(direction.z, direction.x));
 
     this->rotation.x = pitch;
-    this->rotation.y = yaw - 90.0f;
+    this->rotation.y = -yaw + 90.0f;
   }
 };
 
 class Character : public Object
 {
 public:
-
-  
 };
 
 class Camera
@@ -700,8 +711,8 @@ public:
     float nearWidth = nearHeight * aspect;
     float farWidth = farHeight * aspect;
 
-    glm::vec3 nearCenter = position + front * nearDist;
-    glm::vec3 farCenter = position + front * farDist;
+    glm::vec3 nearCenter = front * nearDist;
+    glm::vec3 farCenter = front * farDist;
 
     glm::vec3 nearTopLeft = nearCenter + up * (nearHeight / 2) - right * (nearWidth / 2);
     glm::vec3 nearTopRight = nearCenter + up * (nearHeight / 2) + right * (nearWidth / 2);
@@ -728,15 +739,14 @@ public:
         nearTopLeft, farTopLeft,
         nearTopRight, farTopRight,
         nearBottomRight, farBottomRight,
-        nearBottomLeft, farBottomLeft
-    };
+        nearBottomLeft, farBottomLeft};
 
     glGenVertexArrays(1, &frustumVAO);
     glBindVertexArray(frustumVAO);
     glGenBuffers(1, &frustumVBO);
     glBindBuffer(GL_ARRAY_BUFFER, frustumVBO);
     glBufferData(GL_ARRAY_BUFFER, frustumVertices.size() * sizeof(glm::vec3), frustumVertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
   }
@@ -767,9 +777,10 @@ public:
   }
   void render(ShaderProgram &shader) const
   {
-    if (frustumVAO == 0) return;
+    if (frustumVAO == 0)
+      return;
     shader.use();
-    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 model = glm::inverse(viewMatrix);
     shader.setMat4("model", model);
     glBindVertexArray(frustumVAO);
     glDrawArrays(GL_LINES, 0, frustumVertices.size());
@@ -783,23 +794,27 @@ private:
   std::vector<std::shared_ptr<Object>> objects;
   glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
   Timer timer;
-  
-  public:
-  Scene() {
+
+public:
+  Scene()
+  {
     objects = std::vector<std::shared_ptr<Object>>();
   }
 
-  void addModel(std::shared_ptr<Object> object) {
+  void addModel(std::shared_ptr<Object> object)
+  {
     objects.push_back(object);
   }
 
-  void prepareRender(ShaderProgram &shader, const Camera &camera) {
+  void prepareRender(ShaderProgram &shader, const Camera &camera)
+  {
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
     shader.setMat4("projection", camera.getProjectionMatrix());
   }
 
-  void render(ShaderProgram &shader, const Camera &camera) {
+  void render(ShaderProgram &shader, const Camera &camera)
+  {
     this->prepareRender(shader, camera);
 
     for (auto &model : objects)
@@ -810,11 +825,13 @@ private:
     this->endRender();
   }
 
-  void endRender() {
+  void endRender()
+  {
     glBindVertexArray(0);
   }
 
-  void update() {
+  void update()
+  {
     timer.update();
     for (auto &object : objects)
     {
@@ -824,7 +841,8 @@ private:
     resolveCollisions();
   }
 
-  void resolveCollisions() {
+  void resolveCollisions()
+  {
     for (auto &object : objects)
     {
       if (object->position.y < 0.0f)
@@ -837,17 +855,20 @@ private:
         if (object->velocity.y < 0.01f && object->velocity.y > -0.01f)
           object->needsUpdate = false;
       }
-      else {
+      else
+      {
         object->touchedGround = false;
       }
     }
   }
 
-  const std::vector<std::shared_ptr<Object>> &getModels() const {
+  const std::vector<std::shared_ptr<Object>> &getModels() const
+  {
     return objects;
   }
 
-  double getDeltaTime() {
+  double getDeltaTime()
+  {
     return timer.deltaTime;
   }
 };
@@ -871,7 +892,8 @@ public:
 
   bool canJump = true;
 
-  Window(int width, int height) : width(width), height(height) {
+  Window(int width, int height) : width(width), height(height)
+  {
     if (!initGlfw())
       return;
     glViewport(0, 0, width, height);
@@ -906,7 +928,8 @@ public:
     loadModels();
   }
 
-  bool initGlfw() {
+  bool initGlfw()
+  {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -940,7 +963,7 @@ public:
     loadStaticOBJ("resources/models/collisiontest.obj");
     this->player = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
-    loadOBJ("resources/models/citizen.obj", 0.1f);
+    // loadOBJ("resources/models/citizen.obj", 0.1f);
     auto obj2 = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
     obj2->position = glm::vec3(5.0f, 0.0f, 0.0f);
 
@@ -951,22 +974,49 @@ public:
     obj2->lookAt(this->player->position);
 
     npcs.push_back(obj2);
+    spawnZombies(20);
     // for (int i = 0; i < 10; i++) {
     //   for (int j = 0; j < 5; j++) {
     //   auto object = obj2->clone();
     //   object->position = glm::vec3(i * 2.0f, j * 5.0f, 0.0f);
     // }
-  // }
+    // }
     // this->player->position = cameraPos - cameraFront * 5.0f;
   }
 
-  std::shared_ptr<Object> loadOBJ(std::string path, float scale = 1.0f) {
+  void spawnZombies(int count = 10)
+  {
+    auto zombieTemplate = std::static_pointer_cast<Character>(loadOBJButDontAdd("resources/models/citizen.obj", 0.1f));
+    for (int i = 0; i < count; i++)
+    {
+      float x = static_cast<float>(rand() % 100 - 50);
+      float z = static_cast<float>(rand() % 100 - 50);
+      auto npc = std::static_pointer_cast<Character>(zombieTemplate->clone());
+      npc->position = glm::vec3(x, 0.0f, z);
+
+      npc->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
+      npc->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
+
+      this->scene->addModel(npc);
+
+      npcs.push_back(npc);
+    }
+  }
+
+  std::shared_ptr<Object> loadOBJ(std::string path, float scale = 1.0f)
+  {
     std::shared_ptr<Object> model = std::make_shared<Object>(path, scale);
     this->scene->addModel(model);
     return model;
   }
 
-  bool loadStaticOBJ(std::string path, float scale = 1.0f) {
+  std::shared_ptr<Object> loadOBJButDontAdd(std::string path, float scale = 1.0f)
+  {
+    return std::make_shared<Object>(path, scale);
+  }
+
+  bool loadStaticOBJ(std::string path, float scale = 1.0f)
+  {
     std::shared_ptr<Object> model = std::make_shared<Object>(path, scale);
     model->isStatic = true;
     model->needsUpdate = false;
@@ -1022,13 +1072,13 @@ public:
       stopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse)
     {
-        stopMouseCapture();
+      stopMouseCapture();
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        startMouseCapture();
+      startMouseCapture();
     }
-    
+
     const float cameraSpeed = 10.0f * deltaTime;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
@@ -1044,8 +1094,9 @@ public:
       this->player->position += cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
       this->player->position -= cameraUp * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
-      
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump)
+    {
+
       // this->player->acceleration.y = 10.0f;
       this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
       canJump = false;
@@ -1114,19 +1165,23 @@ public:
         totalVertices += mesh.getVertices().size();
     ImGui::Text("Vertices: %zu", totalVertices);
     size_t needsUpdateCount = 0;
-    for (auto &obj : this->scene->getModels()) {
-        if (obj->needsUpdate) needsUpdateCount++;
+    for (auto &obj : this->scene->getModels())
+    {
+      if (obj->needsUpdate)
+        needsUpdateCount++;
     }
     ImGui::Text("Needs Update: %zu", needsUpdateCount);
-    if (ImGui::Button("Start", ImVec2(50, 20))) {
-        std::cout << "Button clicked!" << std::endl;
+    if (ImGui::Button("Start", ImVec2(50, 20)))
+    {
+      std::cout << "Button clicked!" << std::endl;
     }
     Object *model = this->player.get();
     ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
-    for (size_t i = 0; i < this->npcs.size(); ++i) {
-        ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+    for (size_t i = 0; i < this->npcs.size(); ++i)
+    {
+      ImGui::Text("NPC %zu", i);
+      ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
+      ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
     }
     ImGui::End();
 
@@ -1150,25 +1205,28 @@ int main()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (window.player->touchedGround) {
+    if (window.player->touchedGround)
+    {
       window.canJump = true;
     }
     window.processInput();
     window.player->rotation.y = -yaw + 90.0f;
     glm::vec3 pos = window.player->position + playerHeight;
-    cameraPos = pos - cameraFront * 5.0f ;
+    cameraPos = pos - cameraFront * 5.0f;
     window.playerCamera->setPos(cameraPos);
     cameraTarget = pos;
 
     window.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
     // window.playerCamera->setPos(cameraPos);
-    
+
     window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
 
-    for (auto &npc : window.npcs) {
-      npc->lookAt(pos);
+    for (auto &npc : window.npcs)
+    {
+      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
+      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 1.0f * glm::vec3(window.getDeltaTime()));
+      npc->needsUpdate = true;
     }
-    // cameraFront = glm::normalize(cameraTarget - cameraPos);
     window.redraw();
     window.update();
   }
