@@ -1,8 +1,0 @@
-{
-  "applications": [{
-    "app_key": "openxr.exe",
-    "launch_type": "binary",
-    "binary_path_win": "./openxr.exe",
-    "is_dashboard_overlay": false
-  }]
-}

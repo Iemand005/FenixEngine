@@ -691,7 +691,7 @@ namespace fe
       }
     }
 
-    const std::vector<std::shared_ptr<Object>> &getModels() const
+    std::vector<std::shared_ptr<Object>> &getModels()
     {
       return objects;
     }

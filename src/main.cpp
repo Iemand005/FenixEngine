@@ -108,11 +108,15 @@ public:
 
   std::shared_ptr<fe::Character> player;
 
-  std::vector<std::shared_ptr<fe::Character>> npcs;
+  std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
+
+  std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
 
   double lastUpdateTime = 0.0f;
 
   bool canJump = true;
+
+  int mapIndex = 0;
 
   Window(int width, int height) : width(width), height(height)
   {
@@ -131,7 +135,6 @@ public:
 
     startMouseCapture();
 
-    this->npcs = std::vector<std::shared_ptr<fe::Character>>();
 
 #if USE_IMGUI
     const char *glsl_version = "#version 330 core";
@@ -182,19 +185,27 @@ public:
 
   void loadModels()
   {
-    loadStaticOBJ("resources/models/collisiontest.obj");
+    auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
+    this->scene->addModel(map1);
+    this->maps.push_back(map1);
+
+    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+
+    loadMap(0);
+
     this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
-    auto obj2 = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
-    obj2->position = glm::vec3(5.0f, 0.0f, 0.0f);
-
-    obj2->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-    obj2->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
-
-    obj2->lookAt(this->player->position);
-
-    npcs.push_back(obj2);
     spawnZombies(10);
+  }
+
+  void loadMap(int index) {
+    scene->getModels()[0] = maps.at(index);
+  }
+
+  void nextMap() {
+    loadMap(mapIndex);
+    mapIndex++;
+    if (mapIndex >= maps.size()) mapIndex = 0;
   }
 
   void spawnZombies(int count = 10)
@@ -202,7 +213,7 @@ public:
     const float minDistance = 20.0f;
     const float minDistanceSq = minDistance * minDistance;
 
-    auto zombieTemplate = std::static_pointer_cast<fe::Character>(loadOBJButDontAdd("resources/models/citizen.obj", 0.1f));
+    auto zombieTemplate = this->player->clone();
     for (int i = 0; i < count; i++)
     {
       float x = static_cast<float>(rand() % 100 - 50);
@@ -241,14 +252,14 @@ public:
     return std::make_shared<fe::Object>(path, scale);
   }
 
-  bool loadStaticOBJ(std::string path, float scale = 1.0f)
+  std::shared_ptr<fe::Object> loadStaticOBJ(std::string path, float scale = 1.0f)
   {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     model->isStatic = true;
     model->needsUpdate = false;
-    this->scene->addModel(model);
+    // this->scene->addModel(model);
 
-    return true;
+    return model;
   }
 
   double getDeltaTime()
@@ -331,6 +342,14 @@ public:
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
+
+
+      static bool ctrlWasDown = false;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+      if (!ctrlWasDown)
+        this->nextMap();
+        ctrlWasDown = true;
+    } else ctrlWasDown = false;
   }
 
   void enableWireframeMode()
