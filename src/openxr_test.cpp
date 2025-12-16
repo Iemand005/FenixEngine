@@ -348,6 +348,12 @@ int main()
 
   auto scene = std::make_unique<fe::Scene>();
   auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
+  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+  float fov = 45.0f;
+  auto playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)800 / (float)600, 0.1f, 100.0f);
 
   std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
   model->isStatic = true;
@@ -393,6 +399,8 @@ int main()
     std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
+    static float angle = 0.0f;
+    static fe::Camera camera;
 
     for (uint32_t eye = 0; eye < viewCount; eye++)
     {
@@ -427,12 +435,50 @@ int main()
       projection[2][3] = -1.0f;
       projection[3][2] = -(0.1f * 100.0f) / (100.0f - 0.1f);
 
-      static float angle = 0.0f;
-      angle += 0.01f;
       glm::mat4 model = glm::rotate(glm::mat4(1.0f), angle,
                                     glm::vec3(0.5f, 1.0f, 0.0f));
 
       drawCube(view, projection, model);
+
+      glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+
+auto position = glm::vec3(pose.position.x, pose.position.y, pose.position.z);
+    
+    // Orientation quaternion
+    glm::quat orientation(pose.orientation.w, 
+                          pose.orientation.x, 
+                          pose.orientation.y, 
+                          pose.orientation.z);
+    
+    // Compute forward vector (OpenXR uses -Z as forward)
+    auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
+    // Compute up vector
+    auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+
+    float nearDist = 0.10f;
+    float farDist = 100.0f;
+
+    float left   = tan(fov.angleLeft)   * nearDist;
+    float right  = tan(fov.angleRight)  * nearDist;
+    float bottom = tan(fov.angleDown)   * nearDist;
+    float top    = tan(fov.angleUp)     * nearDist;
+    
+    // Create asymmetric projection matrix
+    // auto projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
+
+    camera = fe::Camera(glm::vec3(pose.position.x, pose.position.y, pose.position.z), front, up, 45.0f, 1.0f,  nearDist, farDist);
+
+    camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
+
+      scene->prepareRender(*shader, camera);
+
+      for (auto &model : scene->getModels())
+      {
+        model->render(*shader);
+      }
 
       // Store projection view for layer submission
       projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
@@ -475,7 +521,12 @@ int main()
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 windowProj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 100.0f);
+    angle += 0.01f;
+    glm::mat4 model = glm::rotate(glm::mat4(1.0f), angle,
+                                  glm::vec3(0.5f, 1.0f, 0.0f));
+
     drawCube(windowView, windowProj);
+    scene->render(*(shader), (camera));
 
     glfwSwapBuffers(window);
     glfwPollEvents();

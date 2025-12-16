@@ -204,27 +204,7 @@ namespace fe
     int projectionLoc;
     int texLoc;
 
-    ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
-    {
-      Shader vertexShader(vertexShaderFile, GL_VERTEX_SHADER);
-      Shader fragmentShader(fragmentShaderFile, GL_FRAGMENT_SHADER);
-
-      Id = glCreateProgram();
-
-      vertexShader.attachToProgram(Id);
-      fragmentShader.attachToProgram(Id);
-
-      glLinkProgram(Id);
-
-      vertexShader.deleteShader();
-      fragmentShader.deleteShader();
-
-      modelLoc = glGetUniformLocation(this->Id, "model");
-      viewLoc = glGetUniformLocation(this->Id, "view");
-      projectionLoc = glGetUniformLocation(this->Id, "projection");
-      texLoc = glGetUniformLocation(this->Id, "ourTexture");
-      glUniform1i(texLoc, 0);
-    }
+    ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
     ShaderProgram(Shader &vertexShader, Shader &fragmentShader)
     {
@@ -666,16 +646,19 @@ namespace fe
     glm::vec3 front;
     glm::vec3 up;
     glm::mat4 viewMatrix;
-    glm::mat4 projectionMatrix;
     float fov, aspect, nearDist, farDist;
     unsigned int frustumVAO = 0, frustumVBO = 0;
     std::vector<glm::vec3> frustumVertices;
+    
+    public:
+    glm::mat4 projectionMatrix;
 
-  public:
-    Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearPlane, float farPlane) : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearPlane), farDist(farPlane)
+    Camera() {}
+
+    Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist) : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist)
     {
       viewMatrix = glm::lookAt(position, position + front, up);
-      projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearPlane, farPlane);
+      projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 
       // Compute frustum vertices
       glm::vec3 right = glm::normalize(glm::cross(front, up));
@@ -773,6 +756,16 @@ namespace fe
     Scene()
     {
       objects = std::vector<std::shared_ptr<Object>>();
+      this->enableDepthTest();
+      this->enableFaceCulling();
+    }
+    
+    void enableDepthTest() {
+      glEnable(GL_DEPTH_TEST);
+    }
+
+    void enableFaceCulling() {
+      glEnable(GL_CULL_FACE);
     }
 
     void addModel(std::shared_ptr<Object> object)
