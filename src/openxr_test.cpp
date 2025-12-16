@@ -300,6 +300,12 @@ int main()
 
   XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
   beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+  XrEnvironmentBlendMode envBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+  // xrEnviro
+
+  uint32_t count = 0;
+  xrEnumerateEnvironmentBlendModes(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &count, nullptr);
+
   outputError(xrBeginSession(session, &beginInfo));
 
   XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
@@ -324,7 +330,6 @@ int main()
 
   while (running)
   {
-    // 1. OpenXR frame timing
     XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
     XrFrameState frameState{XR_TYPE_FRAME_STATE};
     outputError(xrWaitFrame(session, &waitInfo, &frameState));
@@ -332,17 +337,14 @@ int main()
     XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
     outputError(xrBeginFrame(session, &frameBegin));
 
-    // 2. Acquire swapchain image for VR
     XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
     uint32_t swapchainImageIndex;
     outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
 
-    // Wait for image to be ready
     XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
     waitImageInfo.timeout = XR_INFINITE_DURATION;
     outputError(xrWaitSwapchainImage(swapchain, &waitImageInfo));
 
-    // 3. Locate VR views (get headset position/orientation)
     XrViewState viewState{XR_TYPE_VIEW_STATE};
     XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
     viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -351,51 +353,43 @@ int main()
 
     uint32_t viewCount = 0;
     outputError(xrEnumerateViewConfigurationViews(instance, systemId,
-                                      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
+                                                  XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
 
     std::vector<XrView> views(viewCount, {XR_TYPE_VIEW}); // Initialize with correct type
     std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
     outputError(xrEnumerateViewConfigurationViews(instance, systemId,
-                                      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
+                                                  XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
 
-    // std::vector<XrView> views(viewCount);
     outputError(xrLocateViews(session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
 
-    // 4. Render to VR (each eye)
     std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
 
     for (uint32_t eye = 0; eye < viewCount; eye++)
     {
-      // Bind the appropriate layer (eye) of the texture array
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                 swapchainImages[swapchainImageIndex].image, 0, eye);
 
-      // Set viewport for this eye
       glViewport(0, 0, swapchainWidth, swapchainHeight);
 
-      // Clear
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // Get view and projection matrices from OpenXR
       XrPosef pose = views[eye].pose;
       XrFovf fov = views[eye].fov;
 
-      // std::cout << "View " << eye << " position: " 
-      //         << views[eye].pose.position.x << ", " 
-      //         << views[eye].pose.position.y << ", " 
+      // std::cout << "View " << eye << " position: "
+      //         << views[eye].pose.position.x << ", "
+      //         << views[eye].pose.position.y << ", "
       //         << views[eye].pose.position.z << "\n";
 
-      // Convert XR pose to view matrix
       glm::mat4 view = glm::inverse(
           glm::translate(glm::mat4(1.0f),
                          glm::vec3(pose.position.x, pose.position.y, pose.position.z)) *
           glm::mat4_cast(glm::quat(pose.orientation.w,
                                    pose.orientation.x, pose.orientation.y, pose.orientation.z)));
 
-      // Convert XR FOV to projection matrix
       float tanLeft = tanf(fov.angleLeft);
       float tanRight = tanf(fov.angleRight);
       float tanDown = tanf(fov.angleDown);
@@ -410,7 +404,6 @@ int main()
       projection[2][3] = -1.0f;
       projection[3][2] = -(0.1f * 100.0f) / (100.0f - 0.1f);
 
-      // Draw cube with VR matrices
       static float angle = 0.0f;
       angle += 0.01f;
       glm::mat4 model = glm::rotate(glm::mat4(1.0f), angle,
@@ -430,11 +423,9 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // 5. Release swapchain image
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
 
-    // 6. Submit VR layer (THIS makes it visible in headset)
     XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
     layer.space = appSpace;
     layer.viewCount = viewCount;
@@ -449,7 +440,6 @@ int main()
     endInfo.layers = layers;
     outputError(xrEndFrame(session, &endInfo));
 
-    // 7. Also render to GLFW window (optional, for debugging)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, 800, 600);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
