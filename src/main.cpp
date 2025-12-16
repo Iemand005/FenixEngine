@@ -628,7 +628,7 @@ public:
     // if (isStatic || !needsUpdate)
     //   return;
     this->applyAcceleration(this->acceleration);
-    this->position = this->position + this->velocity * static_cast<float>(deltaTime);
+    this->position = this->position + this->velocity * static_cast<float>(deltaTime) + (float)deltaTime;
     this->acceleration = glm::vec3(0.0f);
   }
 
@@ -662,8 +662,8 @@ public:
     // float pitch = glm::degrees(asin(direction.y));
     // float yaw = glm::degrees(atan2(direction.z, direction.x));
 
-    this->rotation.x = 10.0f * deltaTime;
-    this->rotation.y = target.y * 100.0f + 100.0f;
+    // this->rotation.x = 10.0f * deltaTime;
+    // this->rotation.y = target.y * 100.0f + 100.0f;
   }
 };
 
@@ -887,6 +887,8 @@ public:
 
     startMouseCapture();
 
+    this->npcs = std::vector<Character>();
+
 #if USE_IMGUI
     const char *glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
@@ -938,6 +940,7 @@ public:
     loadStaticOBJ("resources/models/collisiontest.obj");
     this->player = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
+    loadOBJ("resources/models/citizen.obj", 0.1f);
     auto obj2 = std::static_pointer_cast<Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
     obj2->position = glm::vec3(5.0f, 0.0f, 0.0f);
 
@@ -1120,6 +1123,11 @@ public:
     }
     Object *model = this->player.get();
     ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
+    for (size_t i = 0; i < this->npcs.size(); ++i) {
+        ImGui::Text("NPC %zu", i);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i].position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i].rotation.x, -180.0f, 180.0f);
+    }
     ImGui::End();
 
     ImGui::Render();
@@ -1159,6 +1167,8 @@ int main()
 
     for (auto &npc : window.npcs) {
       npc.lookAt(pos);
+      npc.rotation.y += 180.0f;
+      npc.rotation.z += 10.0f;
     }
     // cameraFront = glm::normalize(cameraTarget - cameraPos);
     window.redraw();
