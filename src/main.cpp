@@ -18,8 +18,6 @@
 #include "imgui\imgui_impl_opengl3.h"
 #endif
 
-#include "OBJ_Loader.h"
-
 #include "engine.h"
 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
