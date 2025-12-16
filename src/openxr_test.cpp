@@ -1,3 +1,4 @@
+#pragma once
 #define XR_USE_PLATFORM_WIN32
 #define XR_USE_GRAPHICS_API_OPENGL
 #define GLFW_EXPOSE_NATIVE_WIN32

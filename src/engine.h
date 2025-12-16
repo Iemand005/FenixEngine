@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -19,26 +20,25 @@
 
 #include "OBJ_Loader.h"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 namespace fe
 {
 
-  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+  // glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+  // glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+  // glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
-  float fov = 45.0f;
+  // float fov = 45.0f;
 
-  float lastX = 0, lastY = 0;
+  // float lastX = 0, lastY = 0;
 
-  float yaw = -90.0f;
-  float pitch = 0.0f;
+  // float yaw = -90.0f;
+  // float pitch = 0.0f;
 
-  int windowWidth = 800.0f;
-  int windowHeight = 600.0f;
+  // int windowWidth = 800.0f;
+  // int windowHeight = 600.0f;
 
   struct AABB
   {
@@ -86,65 +86,6 @@ namespace fe
       lastTime = currentTime;
     }
   };
-
-  // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-  //     // Forward to ImGui FIRST
-  //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-
-  //     // Only process your own input if ImGui doesn't want it
-  //     ImGuiIO& io = ImGui::GetIO();
-  //     if (!io.WantCaptureMouse) {
-  //         // Your mouse handling code
-  //     }
-  // }
-
-  void mouseCallback(GLFWwindow *window, double xPos, double yPos)
-  {
-    // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
-    float xOffset = xPos - lastX;
-    float yOffset = lastY - yPos;
-    if (lastX == 0 && lastY == 0)
-    {
-      xOffset = 0;
-      yOffset = 0;
-    }
-    lastX = xPos;
-    lastY = yPos;
-
-    const float sensitivity = 0.1f;
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    yaw += xOffset;
-    pitch += yOffset;
-
-    if (pitch > 89.0f)
-      pitch = 89.0f;
-    if (pitch < -89.0f)
-      pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
-  }
-
-  void scrollCallback(GLFWwindow *window, double xoffset, double yOffset)
-  {
-    fov -= (float)yOffset;
-    if (fov < 1.0f)
-      fov = 1.0f;
-    if (fov > 45.0f)
-      fov = 45.0f;
-  }
-
-  void framebufferSizeCallback(GLFWwindow *window, int width, int height)
-  {
-    windowWidth = width;
-    windowHeight = height;
-    glViewport(0, 0, width, height);
-  }
 
   class Shader
   {

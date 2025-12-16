@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -18,9 +19,6 @@
 #endif
 
 #include "OBJ_Loader.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #include "engine.h"
 
