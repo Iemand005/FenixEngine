@@ -625,8 +625,8 @@ public:
 
   void update(double deltaTime)
   {
-    if (isStatic || !needsUpdate)
-      return;
+    // if (isStatic || !needsUpdate)
+    //   return;
     this->applyAcceleration(this->acceleration);
     this->position = this->position + this->velocity * static_cast<float>(deltaTime);
     this->acceleration = glm::vec3(0.0f);
@@ -656,13 +656,13 @@ public:
     return newObj;
   }
 
-  void lookAt(const glm::vec3 &target)
+  void lookAt(const glm::vec3 &target, double deltaTime = 0.016)
   {
     // glm::vec3 direction = glm::normalize(target - this->position);
     // float pitch = glm::degrees(asin(direction.y));
     // float yaw = glm::degrees(atan2(direction.z, direction.x));
 
-    this->rotation.x = 10.0f;
+    this->rotation.x = 10.0f * deltaTime;
     this->rotation.y = target.y * 100.0f + 100.0f;
   }
 };
@@ -945,7 +945,7 @@ public:
     obj2->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
 
     // Look at player
-    obj2->lookAt(this->player->position);
+    obj2->lookAt(this->player->position, scene->getDeltaTime());
 
     npcs.push_back(*obj2);
     // for (int i = 0; i < 10; i++) {
@@ -1052,7 +1052,8 @@ public:
       std::shared_ptr<Object> newObj = this->player->clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
       glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
-      newObj->rotation.y = atan2(dir.x, dir.z) * 180.0f / 3.141592653589793f;
+      newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
+      newObj->rotation.x = 0.0f;
       this->scene->addModel(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
