@@ -36,8 +36,7 @@ void outputError(XrResult result)
 
 XrInstance instance;
 XrSystemId systemId;
-  XrSession session;
-
+XrSession session;
 
 XrSpace appSpace = XR_NULL_HANDLE;
 
@@ -50,7 +49,7 @@ int32_t swapchainWidth, swapchainHeight;
 
 XrActionSet m_actionSet = XR_NULL_HANDLE;
 XrAction m_moveAction = XR_NULL_HANDLE;
-XrAction m_poseAction = XR_NULL_HANDLE; // For controller pose, if needed
+XrAction m_poseAction = XR_NULL_HANDLE;                          // For controller pose, if needed
 XrSpace m_controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE}; // For each hand
 XrSpace m_headSpace = XR_NULL_HANDLE;
 
@@ -59,43 +58,46 @@ XrVector2f m_joystickInput = {0.0f, 0.0f};
 XrPosef m_headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
 float m_playerHeight = 1.7f;
 
+glm::vec3 positionOffset(1.0f);
+
 std::shared_ptr<fe::Character> player;
 
-void CreateActions() {
-    // 1. Create Action Set
-    XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
-    strcpy(actionSetInfo.actionSetName, "gameplay");
-    strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
-    xrCreateActionSet(instance, &actionSetInfo, &m_actionSet);
+void CreateActions()
+{
+  // 1. Create Action Set
+  XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
+  strcpy(actionSetInfo.actionSetName, "gameplay");
+  strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
+  xrCreateActionSet(instance, &actionSetInfo, &m_actionSet);
 
-    // 2. Create Actions
-    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-    actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
-    strcpy(actionInfo.actionName, "move");
-    strcpy(actionInfo.localizedActionName, "Move");
-    xrCreateAction(m_actionSet, &actionInfo, &m_moveAction);
+  // 2. Create Actions
+  XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+  actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
+  strcpy(actionInfo.actionName, "move");
+  strcpy(actionInfo.localizedActionName, "Move");
+  xrCreateAction(m_actionSet, &actionInfo, &m_moveAction);
 
-    // 3. Suggest Bindings (e.g., for Oculus Touch)
-    std::vector<XrActionSuggestedBinding> bindings;
-    
-    // Left thumbstick for movement
-    XrPath leftThumbstickPath;
-    xrStringToPath(instance, "/user/hand/left/input/thumbstick", &leftThumbstickPath);
-    bindings.push_back({m_moveAction, leftThumbstickPath});
+  // 3. Suggest Bindings (e.g., for Oculus Touch)
+  std::vector<XrActionSuggestedBinding> bindings;
 
-    XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
-    XrPath oculusProfilePath;
-    xrStringToPath(instance, "/interaction_profiles/oculus/touch_controller", &oculusProfilePath);
-    suggestedBindings.interactionProfile = oculusProfilePath;
-    suggestedBindings.suggestedBindings = bindings.data();
-    suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
-    xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
-    
-    // 4. Attach Action Set to Session
-    XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
-    attachInfo.actionSets = &m_actionSet;
-    attachInfo.countActionSets = 1;
-    xrAttachSessionActionSets(session, &attachInfo);
+  // Left thumbstick for movement
+  XrPath leftThumbstickPath;
+  xrStringToPath(instance, "/user/hand/right/input/thumbstick", &leftThumbstickPath);
+  bindings.push_back({m_moveAction, leftThumbstickPath});
+
+  XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+  XrPath oculusProfilePath;
+  xrStringToPath(instance, "/interaction_profiles/oculus/touch_controller", &oculusProfilePath);
+  suggestedBindings.interactionProfile = oculusProfilePath;
+  suggestedBindings.suggestedBindings = bindings.data();
+  suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
+  xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
+
+  // 4. Attach Action Set to Session
+  XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+  attachInfo.actionSets = &m_actionSet;
+  attachInfo.countActionSets = 1;
+  xrAttachSessionActionSets(session, &attachInfo);
 }
 
 void initSwapchain(XrSession session)
@@ -143,75 +145,77 @@ void initSwapchain(XrSession session)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
-    // 1. Sync Actions
-    XrActiveActionSet activeActionSet{m_actionSet, XR_NULL_PATH};
-    XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
-    syncInfo.activeActionSets = &activeActionSet;
-    syncInfo.countActiveActionSets = 1;
-    xrSyncActions(session, &syncInfo);
+void PollActionsAndUpdateMovement(XrTime predictedDisplayTime)
+{
+  // 1. Sync Actions
+  XrActiveActionSet activeActionSet{m_actionSet, XR_NULL_PATH};
+  XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
+  syncInfo.activeActionSets = &activeActionSet;
+  syncInfo.countActiveActionSets = 1;
+  xrSyncActions(session, &syncInfo);
 
-    // 2. Get Joystick State
-    XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
-    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-    getInfo.action = m_moveAction;
-    xrGetActionStateVector2f(session, &getInfo, &moveState);
-    
-    if(moveState.isActive) {
-        m_joystickInput = moveState.currentState;
-    } else {
-        m_joystickInput = {0.0f, 0.0f};
-    }
+  // 2. Get Joystick State
+  XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
+  XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+  getInfo.action = m_moveAction;
+  xrGetActionStateVector2f(session, &getInfo, &moveState);
 
-    // 3. Get Head Pose (CRUCIAL for view-relative movement)
-    XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
-    m_headSpace = appSpace;
-    xrLocateSpace(m_headSpace, appSpace, predictedDisplayTime, &headLocation);
-    
-    if(headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
-        m_headPose = headLocation.pose;
-    }
+  if (moveState.isActive)
+  {
+    m_joystickInput = moveState.currentState;
+  }
+  else
+  {
+    m_joystickInput = {0.0f, 0.0f};
+  }
 
-    // 4. Calculate Movement (Transform joystick by head orientation)
-    if(fabsf(m_joystickInput.x) > 0.1f || fabsf(m_joystickInput.y) > 0.1f) {
-        // Extract forward and right vectors from head orientation
-        XrVector3f forward = {
-            -2.0f * (m_headPose.orientation.x * m_headPose.orientation.z + m_headPose.orientation.w * m_headPose.orientation.y),
-            -2.0f * (m_headPose.orientation.y * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.x),
-            -1.0f + 2.0f * (m_headPose.orientation.x * m_headPose.orientation.x + m_headPose.orientation.y * m_headPose.orientation.y)
-        };
-        
-        XrVector3f right = {
-            1.0f - 2.0f * (m_headPose.orientation.y * m_headPose.orientation.y + m_headPose.orientation.z * m_headPose.orientation.z),
-            2.0f * (m_headPose.orientation.x * m_headPose.orientation.y + m_headPose.orientation.w * m_headPose.orientation.z),
-            2.0f * (m_headPose.orientation.x * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.y)
-        };
+  // 3. Get Head Pose (CRUCIAL for view-relative movement)
+  XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
+  m_headSpace = appSpace;
+  xrLocateSpace(m_headSpace, appSpace, predictedDisplayTime, &headLocation);
 
-        // Normalize and apply joystick input
-        // forward = glm::normalize(forward);
-        // right = glm::normalize(right);
-        
-        XrVector3f movement;
-        movement.x = forward.x * m_joystickInput.y + right.x * m_joystickInput.x;
-        movement.y = 0.0f; // Typically no vertical movement from joystick
-        movement.z = forward.z * m_joystickInput.y + right.z * m_joystickInput.x;
-        
-        // Apply movement speed and delta time
-        float moveSpeed = 2.0f; // meters per second
-        // float deltaTime = GetFrameDeltaTime(); // Implement this
-        // movement = movement //ScaleVector(movement, moveSpeed * 1);
-        
-        // Apply to your player/camera position
-        // m_playerPosition.x += movement.x;
-        // m_playerPosition.z += movement.z; // Using Z for forward in OpenGL
-        player->position.x += movement.x;
-        player->position.z += movement.z;
-    }
+  if (headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT)
+  {
+    m_headPose = headLocation.pose;
+  }
+
+  // 4. Calculate Movement (Transform joystick by head orientation)
+  if (fabsf(m_joystickInput.x) > 0.1f || fabsf(m_joystickInput.y) > 0.1f)
+  {
+    // Extract forward and right vectors from head orientation
+    XrVector3f forward = {
+        -2.0f * (m_headPose.orientation.x * m_headPose.orientation.z + m_headPose.orientation.w * m_headPose.orientation.y),
+        -2.0f * (m_headPose.orientation.y * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.x),
+        -1.0f + 2.0f * (m_headPose.orientation.x * m_headPose.orientation.x + m_headPose.orientation.y * m_headPose.orientation.y)};
+
+    XrVector3f right = {
+        1.0f - 2.0f * (m_headPose.orientation.y * m_headPose.orientation.y + m_headPose.orientation.z * m_headPose.orientation.z),
+        2.0f * (m_headPose.orientation.x * m_headPose.orientation.y + m_headPose.orientation.w * m_headPose.orientation.z),
+        2.0f * (m_headPose.orientation.x * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.y)};
+
+    // Normalize and apply joystick input
+    // forward = glm::normalize(forward);
+    // right = glm::normalize(right);
+
+    XrVector3f movement;
+    float moveSpeed = 0.1f; // meters per second
+    movement.x = forward.x * m_joystickInput.y + right.x * m_joystickInput.x * moveSpeed;
+    movement.y = 0.0f; // Typically no vertical movement from joystick
+    movement.z = forward.z * m_joystickInput.y + right.z * m_joystickInput.x * moveSpeed;
+
+    // Apply movement speed and delta time
+    // float deltaTime = GetFrameDeltaTime(); // Implement this
+    // movement = movement //ScaleVector(movement, moveSpeed * 1);
+    player->position.x += movement.x;
+    player->position.z += movement.z;
+
+    positionOffset.x += movement.x;
+    positionOffset.z += movement.z;
+  }
 }
 
-int main()
+void initOpenXR(HDC hDC, HGLRC hGLRC)
 {
-
   XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
   const char *enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
@@ -231,26 +235,10 @@ int main()
 
   outputError(xrGetSystem(instance, &systemInfo, &systemId));
 
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  auto window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
-  glfwMakeContextCurrent(window);
-
-  HGLRC hglrc = wglGetCurrentContext();
-
-  if (!gladLoadGL())
-  {
-    std::cerr << "Failed to initialize GLAD" << std::endl;
-    return -1;
-  }
-
   XrGraphicsBindingOpenGLWin32KHR gfx{};
   gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
-  gfx.hDC = GetDC(glfwGetWin32Window(window));
-  gfx.hGLRC = hglrc;
+  gfx.hDC = hDC;
+  gfx.hGLRC = hGLRC;
 
   XrSessionCreateInfo sci{XR_TYPE_SESSION_CREATE_INFO};
   sci.systemId = systemId;
@@ -274,46 +262,36 @@ int main()
 
   XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
   beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-  XrEnvironmentBlendMode envBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-  // xrEnviro
-
-  uint32_t count = 0;
-  xrEnumerateEnvironmentBlendModes(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &count, nullptr);
 
   outputError(xrBeginSession(session, &beginInfo));
 
   XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
-  spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL; // Or STAGE
-  spaceInfo.poseInReferenceSpace.position = {0, 0, 0};          // Origin
-  spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};    // No rotation
+  spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+  spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
+  spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
-  XrResult result = xrCreateReferenceSpace(session, &spaceInfo, &appSpace);
-  if (XR_FAILED(result))
+  outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
+}
+
+int main()
+{
+  bool drawWindow = true;
+
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+  auto window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
+  glfwMakeContextCurrent(window);
+
+  if (!gladLoadGL())
   {
-    std::cerr << "Failed to create reference space\n";
-    return 1;
+    std::cerr << "Failed to initialize GLAD" << std::endl;
+    return -1;
   }
 
-  uint32_t blendModeCount = 0;
-  xrEnumerateEnvironmentBlendModes(
-      instance,
-      systemId,
-      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-      0,
-      &blendModeCount,
-      nullptr);
-
-  std::vector<XrEnvironmentBlendMode> blendModes(blendModeCount);
-  xrEnumerateEnvironmentBlendModes(
-      instance,
-      systemId,
-      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-      blendModeCount,
-      &blendModeCount,
-      blendModes.data());
-
-  bool running = true;
-
+  initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
   initSwapchain(session);
   CreateActions();
 
@@ -331,12 +309,11 @@ int main()
   model->needsUpdate = false;
   scene->addModel(model);
 
-  auto playerObject= std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
+  auto playerObject = std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
   scene->addModel(playerObject);
   player = std::static_pointer_cast<fe::Character>(playerObject);
 
-  glEnable(GL_DEPTH_TEST);
-
+  bool running = true;
   while (running)
   {
     XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
@@ -377,12 +354,6 @@ int main()
     static float angle = 0.0f;
     static fe::Camera camera;
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
     for (uint32_t eye = 0; eye < viewCount; eye++)
     {
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
@@ -410,7 +381,9 @@ int main()
       float bottom = tan(fov.angleDown) * nearDist;
       float top = tan(fov.angleUp) * nearDist;
 
-      camera = fe::Camera(glm::vec3(pose.position.x, pose.position.y, pose.position.z), front, up, 45.0f, 1.0f, nearDist, farDist);
+      position = position + positionOffset;
+
+      camera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
 
       camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
 
@@ -447,18 +420,17 @@ int main()
     endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
     outputError(xrEndFrame(session, &endInfo));
 
-    bool drawWindow = true;
-    if (drawWindow) {
+    if (drawWindow)
+    {
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glViewport(0, 0, 800, 600);
+      // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, 800, 600);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      scene->render(*(shader), (camera));
 
-    scene->render(*(shader), (camera));
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
     }
 
     if (glfwWindowShouldClose(window))

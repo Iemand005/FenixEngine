@@ -775,9 +775,15 @@ namespace fe
 
     void prepareRender(ShaderProgram &shader, const Camera &camera)
     {
+      this->clear();
       shader.use();
       shader.setMat4("view", camera.getViewMatrix());
       shader.setMat4("projection", camera.getProjectionMatrix());
+    }
+
+    void clear()
+    {
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void render(ShaderProgram &shader, const Camera &camera)
