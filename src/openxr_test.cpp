@@ -321,24 +321,22 @@ int main()
   }
 
   uint32_t blendModeCount = 0;
-xrEnumerateEnvironmentBlendModes(
-    instance, 
-    systemId, 
-    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 
-    0, 
-    &blendModeCount, 
-    nullptr
-);
+  xrEnumerateEnvironmentBlendModes(
+      instance,
+      systemId,
+      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+      0,
+      &blendModeCount,
+      nullptr);
 
-std::vector<XrEnvironmentBlendMode> blendModes(blendModeCount);
-xrEnumerateEnvironmentBlendModes(
-    instance, 
-    systemId, 
-    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
-    blendModeCount, 
-    &blendModeCount, 
-    blendModes.data()
-);
+  std::vector<XrEnvironmentBlendMode> blendModes(blendModeCount);
+  xrEnumerateEnvironmentBlendModes(
+      instance,
+      systemId,
+      XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+      blendModeCount,
+      &blendModeCount,
+      blendModes.data());
 
   bool running = true;
 
@@ -398,11 +396,6 @@ xrEnumerateEnvironmentBlendModes(
 
       XrPosef pose = views[eye].pose;
       XrFovf fov = views[eye].fov;
-
-      // std::cout << "View " << eye << " position: "
-      //         << views[eye].pose.position.x << ", "
-      //         << views[eye].pose.position.y << ", "
-      //         << views[eye].pose.position.z << "\n";
 
       glm::mat4 view = glm::inverse(
           glm::translate(glm::mat4(1.0f),
