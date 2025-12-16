@@ -36,6 +36,8 @@ void outputError(XrResult result)
 
 XrInstance instance;
 XrSystemId systemId;
+  XrSession session;
+
 
 XrSpace appSpace = XR_NULL_HANDLE;
 
@@ -46,16 +48,62 @@ std::vector<GLuint> framebuffers;
 uint32_t viewCount = 2; // Stereo
 int32_t swapchainWidth, swapchainHeight;
 
+XrActionSet m_actionSet = XR_NULL_HANDLE;
+XrAction m_moveAction = XR_NULL_HANDLE;
+XrAction m_poseAction = XR_NULL_HANDLE; // For controller pose, if needed
+XrSpace m_controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE}; // For each hand
+XrSpace m_headSpace = XR_NULL_HANDLE;
+
+// Movement State
+XrVector2f m_joystickInput = {0.0f, 0.0f};
+XrPosef m_headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
+float m_playerHeight = 1.7f;
+
+std::shared_ptr<fe::Character> player;
+
+void CreateActions() {
+    // 1. Create Action Set
+    XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
+    strcpy(actionSetInfo.actionSetName, "gameplay");
+    strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
+    xrCreateActionSet(instance, &actionSetInfo, &m_actionSet);
+
+    // 2. Create Actions
+    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+    actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
+    strcpy(actionInfo.actionName, "move");
+    strcpy(actionInfo.localizedActionName, "Move");
+    xrCreateAction(m_actionSet, &actionInfo, &m_moveAction);
+
+    // 3. Suggest Bindings (e.g., for Oculus Touch)
+    std::vector<XrActionSuggestedBinding> bindings;
+    
+    // Left thumbstick for movement
+    XrPath leftThumbstickPath;
+    xrStringToPath(instance, "/user/hand/left/input/thumbstick", &leftThumbstickPath);
+    bindings.push_back({m_moveAction, leftThumbstickPath});
+
+    XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+    XrPath oculusProfilePath;
+    xrStringToPath(instance, "/interaction_profiles/oculus/touch_controller", &oculusProfilePath);
+    suggestedBindings.interactionProfile = oculusProfilePath;
+    suggestedBindings.suggestedBindings = bindings.data();
+    suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
+    xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
+    
+    // 4. Attach Action Set to Session
+    XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+    attachInfo.actionSets = &m_actionSet;
+    attachInfo.countActionSets = 1;
+    xrAttachSessionActionSets(session, &attachInfo);
+}
+
 void initSwapchain(XrSession session)
 {
   uint32_t configCount;
-  xrEnumerateViewConfigurationViews(instance, systemId,
-                                    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
-  std::vector<XrViewConfigurationView> configViews(configCount,
-                                                   {XR_TYPE_VIEW_CONFIGURATION_VIEW});
-  xrEnumerateViewConfigurationViews(instance, systemId,
-                                    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, configCount, &configCount,
-                                    configViews.data());
+  xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
+  std::vector<XrViewConfigurationView> configViews(configCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
+  xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, configCount, &configCount, configViews.data());
 
   swapchainWidth = configViews[0].recommendedImageRectWidth;
   swapchainHeight = configViews[0].recommendedImageRectHeight;
@@ -76,8 +124,8 @@ void initSwapchain(XrSession session)
   xrEnumerateSwapchainImages(swapchain, 0, &imageCount, nullptr);
   swapchainImages.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
   xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader *)swapchainImages.data());
-                  
-                             depthTextures = std::vector<GLuint>(imageCount);
+
+  depthTextures = std::vector<GLuint>(imageCount);
 
   glGenTextures(imageCount, depthTextures.data());
 
@@ -93,6 +141,72 @@ void initSwapchain(XrSession session)
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
   }
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
+    // 1. Sync Actions
+    XrActiveActionSet activeActionSet{m_actionSet, XR_NULL_PATH};
+    XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
+    syncInfo.activeActionSets = &activeActionSet;
+    syncInfo.countActiveActionSets = 1;
+    xrSyncActions(session, &syncInfo);
+
+    // 2. Get Joystick State
+    XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
+    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+    getInfo.action = m_moveAction;
+    xrGetActionStateVector2f(session, &getInfo, &moveState);
+    
+    if(moveState.isActive) {
+        m_joystickInput = moveState.currentState;
+    } else {
+        m_joystickInput = {0.0f, 0.0f};
+    }
+
+    // 3. Get Head Pose (CRUCIAL for view-relative movement)
+    XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
+    m_headSpace = appSpace;
+    xrLocateSpace(m_headSpace, appSpace, predictedDisplayTime, &headLocation);
+    
+    if(headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+        m_headPose = headLocation.pose;
+    }
+
+    // 4. Calculate Movement (Transform joystick by head orientation)
+    if(fabsf(m_joystickInput.x) > 0.1f || fabsf(m_joystickInput.y) > 0.1f) {
+        // Extract forward and right vectors from head orientation
+        XrVector3f forward = {
+            -2.0f * (m_headPose.orientation.x * m_headPose.orientation.z + m_headPose.orientation.w * m_headPose.orientation.y),
+            -2.0f * (m_headPose.orientation.y * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.x),
+            -1.0f + 2.0f * (m_headPose.orientation.x * m_headPose.orientation.x + m_headPose.orientation.y * m_headPose.orientation.y)
+        };
+        
+        XrVector3f right = {
+            1.0f - 2.0f * (m_headPose.orientation.y * m_headPose.orientation.y + m_headPose.orientation.z * m_headPose.orientation.z),
+            2.0f * (m_headPose.orientation.x * m_headPose.orientation.y + m_headPose.orientation.w * m_headPose.orientation.z),
+            2.0f * (m_headPose.orientation.x * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.y)
+        };
+
+        // Normalize and apply joystick input
+        // forward = glm::normalize(forward);
+        // right = glm::normalize(right);
+        
+        XrVector3f movement;
+        movement.x = forward.x * m_joystickInput.y + right.x * m_joystickInput.x;
+        movement.y = 0.0f; // Typically no vertical movement from joystick
+        movement.z = forward.z * m_joystickInput.y + right.z * m_joystickInput.x;
+        
+        // Apply movement speed and delta time
+        float moveSpeed = 2.0f; // meters per second
+        // float deltaTime = GetFrameDeltaTime(); // Implement this
+        // movement = movement //ScaleVector(movement, moveSpeed * 1);
+        
+        // Apply to your player/camera position
+        // m_playerPosition.x += movement.x;
+        // m_playerPosition.z += movement.z; // Using Z for forward in OpenGL
+        player->position.x += movement.x;
+        player->position.z += movement.z;
+    }
 }
 
 int main()
@@ -142,7 +256,6 @@ int main()
   sci.systemId = systemId;
   sci.next = &gfx;
 
-  XrSession session;
   XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
   sessionInfo.systemId = systemId;
   sessionInfo.next = &gfx;
@@ -202,7 +315,7 @@ int main()
   bool running = true;
 
   initSwapchain(session);
-
+  CreateActions();
 
   auto scene = std::make_unique<fe::Scene>();
   auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
@@ -218,6 +331,10 @@ int main()
   model->needsUpdate = false;
   scene->addModel(model);
 
+  auto playerObject= std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
+  scene->addModel(playerObject);
+  player = std::static_pointer_cast<fe::Character>(playerObject);
+
   glEnable(GL_DEPTH_TEST);
 
   while (running)
@@ -225,6 +342,8 @@ int main()
     XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
     XrFrameState frameState{XR_TYPE_FRAME_STATE};
     outputError(xrWaitFrame(session, &waitInfo, &frameState));
+
+    PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
 
     XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
     outputError(xrBeginFrame(session, &frameBegin));
@@ -262,14 +381,11 @@ int main()
     glDepthFunc(GL_LESS);
 
     glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-
-    // glDepthRangef(0.0f, 1.0f);
+    glCullFace(GL_BACK);
 
     for (uint32_t eye = 0; eye < viewCount; eye++)
     {
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
 
       glViewport(0, 0, swapchainWidth, swapchainHeight);
@@ -294,13 +410,12 @@ int main()
       float bottom = tan(fov.angleDown) * nearDist;
       float top = tan(fov.angleUp) * nearDist;
 
-
       camera = fe::Camera(glm::vec3(pose.position.x, pose.position.y, pose.position.z), front, up, 45.0f, 1.0f, nearDist, farDist);
 
       camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       scene->render(*shader, camera);
 
@@ -332,6 +447,9 @@ int main()
     endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
     outputError(xrEndFrame(session, &endInfo));
 
+    bool drawWindow = true;
+    if (drawWindow) {
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, 800, 600);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -341,6 +459,7 @@ int main()
 
     glfwSwapBuffers(window);
     glfwPollEvents();
+    }
 
     if (glfwWindowShouldClose(window))
       running = false;
