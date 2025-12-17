@@ -293,12 +293,6 @@ int main()
 
   auto scene = std::make_unique<fe::Scene>();
   auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
-  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-  float fov = 45.0f;
-  auto playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)800 / (float)600, 0.1f, 100.0f);
 
   std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
   model->isStatic = true;

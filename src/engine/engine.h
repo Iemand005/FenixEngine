@@ -249,7 +249,6 @@ namespace fe
     }
 
     bool loadObj(std::string objFilePath);
-    
 
     bool loadTextureFile(std::string textureFilePath, int &width, int &height, int &nrChannels, unsigned char *&data)
     {
@@ -533,8 +532,8 @@ namespace fe
     glm::mat4 viewMatrix;
     unsigned int frustumVAO = 0, frustumVBO = 0;
     std::vector<glm::vec3> frustumVertices;
-    
-    public:
+
+  public:
     float fov, aspect, nearDist, farDist;
     glm::mat4 projectionMatrix;
 
@@ -561,32 +560,25 @@ namespace fe
       updateView(position, front, up);
     }
 
-    void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up) {
+    void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up)
+    {
       viewMatrix = glm::lookAt(position, position + front, up);
     }
 
-    void updateView(glm::vec3 position, glm::quat orientation) {
+    void updateView(glm::vec3 position, glm::quat orientation)
+    {
       updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
-    void updateProjection(float fov, float aspect) {
+    void updateProjection(float fov, float aspect)
+    {
       projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
     }
 
-    // void updateProjectioin(float left, float right, float bottom, float top) {
-    //   projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
-    // }
-
-    void updateProjectionWithAngles(float left, float right, float bottom, float top) {
-      projectionMatrix = glm::frustum(tan(left) * nearDist,tan(right) * nearDist,tan(bottom) * nearDist,tan(top) * nearDist, nearDist, farDist);
-    }
-
-    void updateProjection(glm::vec4 fov) {
+    void updateProjection(glm::vec4 fov)
+    {
       fov = glm::tan(fov) * nearDist;
       projectionMatrix = glm::frustum(fov.w, fov.x, fov.y, fov.z, nearDist, farDist);
-    }
-void updateProjection(float left, float right, float down, float up) {
-      projectionMatrix = glm::frustum(tan(left) * nearDist,tan(right) * nearDist,tan(down) * nearDist,tan(up) * nearDist, nearDist, farDist);
     }
     glm::mat4 getViewMatrix() const
     {
@@ -623,12 +615,14 @@ void updateProjection(float left, float right, float down, float up) {
       this->enableDepthTest();
       this->enableFaceCulling();
     }
-    
-    void enableDepthTest() {
+
+    void enableDepthTest()
+    {
       glEnable(GL_DEPTH_TEST);
     }
 
-    void enableFaceCulling() {
+    void enableFaceCulling()
+    {
       glEnable(GL_CULL_FACE);
     }
 
