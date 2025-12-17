@@ -39,14 +39,18 @@ class NetworkerServer {
         std::cout << "Received a packet but it's too small";
       }
 
-      PacketHeader header;
-      memcpy(&header, data, sizeof(PacketHeader));
+      auto header = (PacketHeader*)data;
+      // memcpy(&header, data, sizeof(PacketHeader));
 
-      switch (header.type) {
+      switch (header->type) {
         case PacketType::Message:
         {
-          MessagePacket messagePacket;
-          memcpy(&messagePacket, data, sizeof(MessagePacket));
+          auto messagePacket = (MessagePacket*)data;
+          // memcpy(&messagePacket, data, sizeof(MessagePacket));
+          short messageLength = messagePacket->messageLength;
+          char* message = (char*)malloc(messageLength);
+          memcpy(message, data + sizeof(MessagePacket), messageLength);
+          std::cout << "Received message: " << message << std::endl;
         }
         break;
       }

@@ -15,7 +15,7 @@ struct PacketHeader {
 
 struct MessagePacket {
   PacketHeader header{PacketType::Message};
-  char messageLength;
+  short messageLength;
   char message[0];
 };
 
