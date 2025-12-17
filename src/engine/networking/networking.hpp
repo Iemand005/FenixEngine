@@ -19,7 +19,7 @@ class NetworkerClient {
 
   void sendHello() {
     HelloPacket packet;
-    this->client.send((char*)packet, sizeof(HelloPacket));
+    this->client.send((char*)&packet, sizeof(HelloPacket));
   }
 
   void sendMessage(std::string message) {
