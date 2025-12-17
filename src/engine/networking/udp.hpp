@@ -158,7 +158,7 @@ int startListening(UDPResponseHandler callback)
       char senderIP[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, &senderAddr.sin_addr, senderIP, sizeof(senderIP));
   
-      std::cout << "Received " << received << " bytes from " << senderIP << ":" << ntohs(senderAddr.sin_port) << " - " << buffer << "\n";
+      std::cout << "Received " << received << " bytes from " << senderIP << ":" << ntohs(senderAddr.sin_port) << " - " << buffer << std::endl;
 
       callback(buffer, received);
     }

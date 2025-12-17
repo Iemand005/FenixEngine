@@ -30,6 +30,13 @@ class NetworkerClient {
 
     this->client.send((char*)packet, totalSize);
   }
+
+  void sendPosition(glm::vec3 position, glm::vec3 rotation) {
+    PositionPacket packet;
+    packet.position = position;
+    packet.rotation = rotation;
+    this->client.send((char*)&packet, sizeof(PositionPacket));
+  }
 };
 
 class NetworkerServer {
@@ -58,10 +65,18 @@ class NetworkerServer {
           char* message = (char*)malloc(messageLength);
           memcpy(message, data + sizeof(MessagePacket), messageLength);
           
-          std::cout << "Received message: " << message << std::endl;
+          // std::cout << "Received message: " << message << std::endl;
           std::string messageStr(message, messageLength);
           std::cout << "Received message: " << messageStr << std::endl;
           // if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
+        }
+        break;
+        case PacketType::Position:
+        {
+          auto packet = (PositionPacket*)data;
+          packet->position;
+          std::cout << "X: " << packet->position.x << " Y: " << packet->position.y << " Z: " << packet->position.z << std::endl;
+          packet->rotation;
         }
         break;
       }
