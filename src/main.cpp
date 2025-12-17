@@ -34,6 +34,8 @@ float pitch = 0.0f;
 int windowWidth = 800.0f;
 int windowHeight = 600.0f;
 
+bool vsync = true;
+
 // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 //     // Forward to ImGui FIRST
 //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
@@ -160,7 +162,7 @@ public:
     }
     glfwMakeContextCurrent(window);
 
-    glfwSwapInterval(0); // Enable vsync
+    glfwSwapInterval(vsync ? 1 : 0); // Enable vsync
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -350,15 +352,8 @@ public:
       ctrlWasDown = false;
   }
 
-  void enableWireframeMode()
-  {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  }
-
-  void disableWireframeMode()
-  {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  }
+  void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
+  void disableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
   void startMouseCapture()
   {

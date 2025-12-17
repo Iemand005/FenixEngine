@@ -59,7 +59,7 @@ class NetworkerServer {
   using HelloHandler = std::function<void(sockaddr_in address)>;
   HelloHandler helloHandler;
 
-  AllPacketHandler allPacketHandler;
+  AllPacketHandler allPacketHandler = nullptr;
 
   NetworkerServer() {
   }
@@ -75,7 +75,7 @@ class NetworkerServer {
         return;
       }
 
-      allPacketHandler(data, size, from);
+      if (allPacketHandler) allPacketHandler(data, size, from);
 
       auto header = (PacketHeader*)data;
 
@@ -102,6 +102,11 @@ class NetworkerServer {
           packet->position;
           std::cout << "X: " << packet->position.x << " Y: " << packet->position.y << " Z: " << packet->position.z << std::endl;
           packet->rotation;
+        }
+        break;
+         case PacketType::Ping:
+        {
+          std::cout << "Received a ping!" << std::endl;
         }
         break;
       }
