@@ -18,7 +18,7 @@ int main()
   NetworkerServer server;
 
   server.setMessageReceiveHandler([](std::string message) {
-    std::cout << "Gring: " << message << std::endl;
+    std::cout << "Message reached server: " << message << std::endl;
   });
 
   server.start();

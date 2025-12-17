@@ -68,12 +68,12 @@ class NetworkerServer {
           auto messagePacket = (MessagePacket*)data;
           // memcpy(&messagePacket, data, sizeof(MessagePacket));
           const size_t messageLength = messagePacket->messageLength;
-          char* message = (char*)malloc(messageLength);
-          memcpy(message, data + sizeof(MessagePacket), messageLength);
+          char* messageBuffer = (char*)malloc(messageLength);
+          memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
           
           // std::cout << "Received message: " << message << std::endl;
-          std::string messageStr(message, messageLength);
-          std::cout << "Received message: " << messageStr << std::endl;
+          std::string message(messageBuffer, messageLength);
+          // std::cout << "Received message: " << message << std::endl;
           if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
         }
         break;
