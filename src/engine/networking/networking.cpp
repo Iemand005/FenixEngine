@@ -30,8 +30,26 @@ class NetworkerClient {
 
 class NetworkerServer {
   public:
-  UDPServer udp;
+  UDPServer server;
   NetworkerServer() {}
 
+  void start() {
+    server.startListening([](const char* data, size_t size) {
+      if (size < sizeof(PacketHeader)) {
+        std::cout << "Received a packet but it's too small";
+      }
 
-}
+      PacketHeader header;
+      memcpy(&header, data, sizeof(PacketHeader));
+
+      switch (header.type) {
+        case PacketType::Message:
+        {
+          MessagePacket messagePacket;
+          memcpy(&messagePacket, data, sizeof(MessagePacket));
+        }
+        break;
+      }
+    });
+  }
+};

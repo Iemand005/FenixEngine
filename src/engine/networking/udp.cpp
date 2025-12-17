@@ -10,6 +10,8 @@
 #define SOCKET_ERRNO WSAGetLastError()
 using socket_t = SOCKET;
 
+typedef void (* UDPResponseHandler)(const char* data, size_t size);
+
 class UDPClient
 {
   socket_t sock;
@@ -87,7 +89,7 @@ int init() {
   }
 }
 
-int startListening()
+int startListening(UDPResponseHandler callback)
 {
     sockaddr_in localAddr{};
   localAddr.sin_family = AF_INET;
