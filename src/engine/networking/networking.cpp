@@ -2,6 +2,8 @@
 #include "udp.cpp"
 #include "packets.hpp"
 
+typedef void (* MessageReceiveHandler)(std::string message);
+
 class NetworkerClient {
   UDPClient client;
 
@@ -31,6 +33,7 @@ class NetworkerClient {
 class NetworkerServer {
   public:
   UDPServer server;
+  MessageReceiveHandler messageReceiveHandler = nullptr;
   NetworkerServer() {}
 
   void start() {
@@ -47,10 +50,14 @@ class NetworkerServer {
         {
           auto messagePacket = (MessagePacket*)data;
           // memcpy(&messagePacket, data, sizeof(MessagePacket));
-          short messageLength = messagePacket->messageLength;
+          const size_t messageLength = messagePacket->messageLength;
           char* message = (char*)malloc(messageLength);
           memcpy(message, data + sizeof(MessagePacket), messageLength);
+          
           std::cout << "Received message: " << message << std::endl;
+          std::string messageStr(message, messageLength);
+          std::cout << "Received message: " << messageStr << std::endl;
+          // if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
         }
         break;
       }
