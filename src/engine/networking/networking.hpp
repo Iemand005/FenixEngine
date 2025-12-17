@@ -1,10 +1,12 @@
 
-#include "udp.cpp"
+#pragma once
+#include "udp.hpp"
 #include "packets.hpp"
 
 typedef void (* MessageReceiveHandler)(std::string message);
 
 class NetworkerClient {
+  public:
   UDPClient client;
 
   NetworkerClient() {

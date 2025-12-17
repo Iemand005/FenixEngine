@@ -1,3 +1,5 @@
+
+#pragma once
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -38,7 +40,22 @@ public:
 
   void send(const char *packet, size_t size)
   {
-    std::string message = "hello";
+
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    {
+      std::cerr << "WSAStartup failed\n";
+      return;
+    }
+
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == INVALID_SOCKET)
+    {
+      std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
+      return;
+    }
+
+    // std::string message = "hello";
 
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
@@ -54,7 +71,7 @@ public:
 
     if (sent >= 0)
     {
-      std::cout << "Sent " << sent << " bytes: " << message << "\n";
+      std::cout << "Sent " << sent << " bytes: " << (char*)packet << "\n";
     }
     else
     {
@@ -123,7 +140,7 @@ int startListening(UDPResponseHandler callback)
     CLOSE_SOCKET(sock);
     return 1;
   }
-  std::cout << "Listening on UDP port 8888...\n";
+  std::cout << "Listening on UDP port " << port << "..." << std::endl;
   
 
   while (true) {
@@ -134,7 +151,7 @@ int startListening(UDPResponseHandler callback)
   socklen_t senderLen = sizeof(senderAddr);
 
   size_t received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
-
+    std::cout << "Client said something...";
     if (received >= 0)
     {
       buffer[received] = '\0';

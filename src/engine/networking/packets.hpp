@@ -1,4 +1,4 @@
-
+#pragma once
 #include <glm/glm.hpp>
 
 enum class PacketType : char {

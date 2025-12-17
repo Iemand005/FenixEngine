@@ -10,12 +10,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "imgui\imgui.h"
-#include "imgui\imgui_impl_glfw.h"
-#include "imgui\imgui_impl_opengl3.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
-#include "engine\engine.h"
-#include "engine\networking\udp.cpp"
+#include "engine/engine.h"
+// #include "engine/networking/udp.cpp"
+#include "engine/networking/networking.hpp"
 
 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -439,7 +440,9 @@ public:
 int main()
 {
 
-  
+  NetworkerClient client;
+
+  client.sendMessage("RAWR!!");
 
   Game game(800, 600);
 
