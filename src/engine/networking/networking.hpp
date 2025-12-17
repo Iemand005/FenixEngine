@@ -7,19 +7,15 @@ typedef void (* MessageReceiveHandler)(std::string message);
 
 class NetworkerClient {
   public:
-  UDPClient client;
+  UDPSocket socket;
 
   NetworkerClient() {
 
   }
 
-  void connect() {
-    this->client.openSocket();
-  }
-
   void sendHello() {
     HelloPacket packet;
-    this->client.send((char*)&packet, sizeof(HelloPacket));
+    this->socket.send((char*)&packet, sizeof(HelloPacket));
   }
 
   void sendMessage(std::string message) {
@@ -33,27 +29,26 @@ class NetworkerClient {
     memcpy(packet, &messagePacket, sizeof(MessagePacket));
     memcpy(packet + headerSize, message.c_str(), message.size());
 
-    this->client.send((char*)packet, totalSize);
+    this->socket.send((char*)packet, totalSize);
   }
 
   void sendPosition(glm::vec3 position, glm::vec3 rotation) {
     PositionPacket packet;
     packet.position = position;
     packet.rotation = rotation;
-    this->client.send((char*)&packet, sizeof(PositionPacket));
+    this->socket.send((char*)&packet, sizeof(PositionPacket));
   }
 };
 
 class NetworkerServer {
   public:
-  UDPServer server;
+  UDPSocket server;
   using MessageReceiveHandler = std::function<void(std::string message)>;
   MessageReceiveHandler messageReceiveHandler;
   using HelloHandler = std::function<void(sockaddr_in address)>;
   HelloHandler helloHandler;
 
   NetworkerServer() {
-    server.init();
   }
 
   void setMessageReceiveHandler(MessageReceiveHandler handler) {

@@ -17,107 +17,87 @@ typedef void (*UDPResponseHandler)(const char *data, size_t size);
 
 const int port = 2130;
 
-class UDPClient
-{
-  socket_t sock;
+// class UDPClient
+// {
+//   socket_t sock;
 
-public:
-  void openSocket()
-  {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-      std::cerr << "WSAStartup failed\n";
-      return;
-    }
+// public:
+//   void openSocket()
+//   {
+//     WSADATA wsaData;
+//     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+//     {
+//       std::cerr << "WSAStartup failed\n";
+//       return;
+//     }
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == INVALID_SOCKET)
-    {
-      std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-      return;
-    }
-  }
+//     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//     if (sock == INVALID_SOCKET)
+//     {
+//       std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
+//       return;
+//     }
+//   }
 
-  void send(const char *packet, size_t size)
-  {
+//   void send(const char *packet, size_t size)
+//   {
 
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-      std::cerr << "WSAStartup failed\n";
-      return;
-    }
+//     WSADATA wsaData;
+//     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+//     {
+//       std::cerr << "WSAStartup failed\n";
+//       return;
+//     }
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == INVALID_SOCKET)
-    {
-      std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-      return;
-    }
+//     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//     if (sock == INVALID_SOCKET)
+//     {
+//       std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
+//       return;
+//     }
 
-    // std::string message = "hello";
+//     // std::string message = "hello";
 
-    sockaddr_in receiverAddr{};
-    receiverAddr.sin_family = AF_INET;
-    receiverAddr.sin_port = htons(port);
+//     sockaddr_in receiverAddr{};
+//     receiverAddr.sin_family = AF_INET;
+//     receiverAddr.sin_port = htons(port);
 
-    if (inet_pton(AF_INET, "127.0.0.1", &receiverAddr.sin_addr) <= 0)
-    {
-      std::cerr << "Invalid address\n";
-      this->closeSocket();
-      return;
-    }
-    size_t sent = sendto(sock, packet, size, 0, (sockaddr *)&receiverAddr, sizeof(receiverAddr));
+//     if (inet_pton(AF_INET, "127.0.0.1", &receiverAddr.sin_addr) <= 0)
+//     {
+//       std::cerr << "Invalid address\n";
+//       this->closeSocket();
+//       return;
+//     }
+//     size_t sent = sendto(sock, packet, size, 0, (sockaddr *)&receiverAddr, sizeof(receiverAddr));
 
-    if (sent >= 0)
-    {
-      std::cout << "Sent " << sent << " bytes: " << (char *)packet << "\n";
-    }
-    else
-    {
-      std::cerr << "Send failed: " << SOCKET_ERRNO << "\n";
-    }
+//     if (sent >= 0)
+//     {
+//       std::cout << "Sent " << sent << " bytes: " << (char *)packet << "\n";
+//     }
+//     else
+//     {
+//       std::cerr << "Send failed: " << SOCKET_ERRNO << "\n";
+//     }
 
-    // this->closeSocket();
-  }
+//     // this->closeSocket();
+//   }
 
-  void closeSocket()
-  {
-    CLOSE_SOCKET(sock);
-    sock = 0;
-    WSACleanup();
-  }
-};
+//   void closeSocket()
+//   {
+//     CLOSE_SOCKET(sock);
+//     sock = 0;
+//     WSACleanup();
+//   }
+// };
 
-class UDPServer
+class UDPSocket
 {
   socket_t sock;
   using ReceiveCallback = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
 
 public:
-  UDPServer()
+  UDPSocket()
   {
-    init();
-  }
-
-  int init()
-  {
-    return 0;
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-      std::cerr << "WSAStartup failed\n";
-      return 1;
-    }
-
-    socket_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == INVALID_SOCKET)
-    {
-      std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-      return 1;
-    }
-    return 0;
   }
 
   void send(const char *packet, size_t size, char* address = "127.0.0.1") {

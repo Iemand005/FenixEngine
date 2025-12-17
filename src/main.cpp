@@ -334,9 +334,9 @@ public:
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_H == GLFW_PRESS) // Host server
+    if (glfwGetKey(window, GLFW_KEY_H == GLFW_PRESS)) // Host server
       disableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_J == GLFW_PRESS) // Join server
+    if (glfwGetKey(window, GLFW_KEY_J == GLFW_PRESS)) // Join server
       disableWireframeMode();
 
     static bool ctrlWasDown = false;
