@@ -26,12 +26,28 @@ public:
   {
   }
 
-  void send(const char *packet, size_t size, char* address = "127.0.0.1") {
+  template <typename T>
+  void send(std::string address = "127.0.0.1") {
+    T packet;
+    this->send<T>(packet, address);
+  }
+
+  template <typename T>
+  void send(T packet, std::string address = "127.0.0.1") {
+    this->send((char*)&packet, sizeof(T), address);
+  }
+
+  template <typename T>
+  void send(T packet, sockaddr_in address) {
+    this->send((char*)&packet, sizeof(T), address);
+  }
+
+  void send(const char *packet, size_t size, std::string address = "127.0.0.1") {
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
     receiverAddr.sin_port = htons(port);
 
-    if (inet_pton(AF_INET, address, &receiverAddr.sin_addr) <= 0)
+    if (inet_pton(AF_INET, address.c_str(), &receiverAddr.sin_addr) <= 0)
     {
       std::cerr << "Invalid address\n";
       this->close();

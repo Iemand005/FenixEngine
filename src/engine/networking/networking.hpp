@@ -15,9 +15,17 @@ class NetworkerClient {
 
   }
 
+  void connect() {
+    this->sendHello();
+  }
+
+  void sendPing() {
+    this->socket.send<PingPacket>();
+  }
+
   void sendHello() {
-    HelloPacket packet;
-    this->socket.send((char*)&packet, sizeof(HelloPacket));
+    PingPacket packet;
+    this->socket.send((char*)&packet, sizeof(PingPacket));
   }
 
   void sendMessage(std::string message) {

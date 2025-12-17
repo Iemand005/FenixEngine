@@ -480,7 +480,8 @@ int main()
 
   NetworkerClient client;
 
-  client.sendMessage("RAWR!!");
+  // client.sendMessage("RAWR!!");
+  client.connect();
 
   Game game(800, 600);
 

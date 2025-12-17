@@ -3,19 +3,24 @@
 
 enum class PacketType : char {
   Invalid = 0,
-  Message,
-  Position,
   Hello,
+  Ping,
+  Position,
+  Message,
 };
 
 struct PacketHeader {
   PacketType type;
   char version = 1;
-  int index;
+  int index = 0;
 };
 
-struct HelloPacket {
+struct PingPacket {
   PacketHeader header{PacketType::Hello};
+};
+
+struct Ping {
+  PacketHeader header{PacketType::Ping};
 };
 
 struct MessagePacket {
