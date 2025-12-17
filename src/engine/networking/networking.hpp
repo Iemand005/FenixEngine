@@ -42,11 +42,12 @@ class NetworkerClient {
 class NetworkerServer {
   public:
   UDPServer server;
-  MessageReceiveHandler messageReceiveHandler = nullptr;
+  using MessageReceiveHandler = std::function<void(std::string message)>;
+  MessageReceiveHandler messageReceiveHandler;
+
   NetworkerServer() {
     server.init();
   }
-
 
   void setMessageReceiveHandler(MessageReceiveHandler handler) {
     messageReceiveHandler = handler;
