@@ -5,13 +5,13 @@
 #include <cstring>
 #include <system_error>
 #include <functional>
+#include <thread>
 
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 #define CLOSE_SOCKET closesocket
 #define SOCKET_ERRNO WSAGetLastError()
-using socket_t = SOCKET;
 
 typedef void (*UDPResponseHandler)(const char *data, size_t size);
 
@@ -19,7 +19,7 @@ const int port = 2130;
 
 class UDPSocket
 {
-  socket_t sock;
+  SOCKET sock;
   using ReceiveCallback = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
 
 public:
@@ -35,12 +35,16 @@ public:
     if (inet_pton(AF_INET, address, &receiverAddr.sin_addr) <= 0)
     {
       std::cerr << "Invalid address\n";
-      CLOSE_SOCKET(sock);
-      sock = 0;
-      WSACleanup();
+      this->close();
       return;
     }
     this->send(packet, size, receiverAddr);
+  }
+
+  void close() {
+    CLOSE_SOCKET(sock);
+    sock = 0;
+    WSACleanup();
   }
 
   void send(const char *packet, size_t size, sockaddr_in address)
@@ -83,7 +87,7 @@ public:
       return 1;
     }
 
-    socket_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == INVALID_SOCKET)
     {
       std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
@@ -105,7 +109,6 @@ public:
     while (true)
     {
 
-      // 3. Receive data
       char buffer[1024];
       sockaddr_in senderAddr{};
       socklen_t senderLen = sizeof(senderAddr);
@@ -128,12 +131,14 @@ public:
       }
     }
 
-    // 4. Cleanup
-    CLOSE_SOCKET(sock);
-#ifdef _WIN32
-    WSACleanup();
-#endif
+    this->close();
 
     return 0;
+  }
+
+  int startListeningAsync(ReceiveCallback callback) {
+    std::thread listenerThread([this, callback](){
+      this->startListening(callback);
+    });
   }
 };
