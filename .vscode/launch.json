@@ -4,7 +4,7 @@
       "name": "C/C++: cl.exe build and debug main",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}\\build\\main.exe",
+      "program": "${workspaceFolder}\\build\\debug\\main.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
@@ -16,13 +16,25 @@
       "name": "C/C++: cl.exe build and debug OpenXR Windows",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}\\build\\openxr.exe",
+      "program": "${workspaceFolder}\\build\\debug\\openxr.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build OpenXR Windows"
+    },
+    {
+      "name": "C/C++: cl.exe build and debug Server",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\debug\\server.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "C/C++: cl.exe build server"
     }
   ],
   "version": "2.0.0"

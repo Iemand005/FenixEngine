@@ -34,7 +34,9 @@ class NetworkerServer {
   public:
   UDPServer server;
   MessageReceiveHandler messageReceiveHandler = nullptr;
-  NetworkerServer() {}
+  NetworkerServer() {
+    server.init();
+  }
 
   void start() {
     server.startListening([](const char* data, size_t size) {

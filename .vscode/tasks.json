@@ -273,7 +273,7 @@
         "/O2",
         "/Zi",
         "/EHsc",
-        "/MD",
+        "/MDd",
         "/Fe${workspaceFolder}\\build\\debug\\server.exe",
         "/nologo",
         "/I${workspaceFolder}\\include",

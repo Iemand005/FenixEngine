@@ -12,6 +12,8 @@ using socket_t = SOCKET;
 
 typedef void (* UDPResponseHandler)(const char* data, size_t size);
 
+const int port = 2130;
+
 class UDPClient
 {
   socket_t sock;
@@ -40,7 +42,7 @@ public:
 
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
-    receiverAddr.sin_port = htons(8888);
+    receiverAddr.sin_port = htons(port);
 
     if (inet_pton(AF_INET, "127.0.0.1", &receiverAddr.sin_addr) <= 0)
     {
@@ -73,7 +75,12 @@ class UDPServer {
   socket_t sock;
 public:
 
+UDPServer() {
+  init();
+}
+
 int init() {
+  return 0;
   WSADATA wsaData;
   if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
   {
@@ -87,14 +94,28 @@ int init() {
     std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
     return 1;
   }
+  return 0;
 }
 
 int startListening(UDPResponseHandler callback)
 {
+    WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+  {
+    std::cerr << "WSAStartup failed\n";
+    return 1;
+  }
+
+  socket_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  if (sock == INVALID_SOCKET)
+  {
+    std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
+    return 1;
+  }
     sockaddr_in localAddr{};
   localAddr.sin_family = AF_INET;
   localAddr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
-  localAddr.sin_port = htons(8888);
+  localAddr.sin_port = htons(port);
 
   if (bind(sock, (sockaddr *)&localAddr, sizeof(localAddr)) < 0)
   {
@@ -121,6 +142,8 @@ int startListening(UDPResponseHandler callback)
       inet_ntop(AF_INET, &senderAddr.sin_addr, senderIP, sizeof(senderIP));
   
       std::cout << "Received " << received << " bytes from " << senderIP << ":" << ntohs(senderAddr.sin_port) << " - " << buffer << "\n";
+
+      callback(buffer, received);
     }
     else
     {
@@ -136,4 +159,4 @@ int startListening(UDPResponseHandler callback)
 
   return 0;
 }
-}
+};
