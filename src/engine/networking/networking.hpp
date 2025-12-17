@@ -1,5 +1,7 @@
 
 #pragma once
+#include <thread>
+
 #include "udp.hpp"
 #include "packets.hpp"
 
@@ -95,6 +97,12 @@ class NetworkerServer {
         }
         break;
       }
+    });
+  }
+
+  void startAsync() {
+    std::thread listenerThread([this](){
+      this->start();
     });
   }
 };

@@ -5,7 +5,6 @@
 #include <cstring>
 #include <system_error>
 #include <functional>
-#include <thread>
 
 #include <WinSock2.h>
 #include <WS2tcpip.h>
@@ -134,11 +133,5 @@ public:
     this->close();
 
     return 0;
-  }
-
-  int startListeningAsync(ReceiveCallback callback) {
-    std::thread listenerThread([this, callback](){
-      this->startListening(callback);
-    });
   }
 };
