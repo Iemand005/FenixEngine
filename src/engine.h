@@ -531,14 +531,16 @@ namespace fe
     glm::vec3 front;
     glm::vec3 up;
     glm::mat4 viewMatrix;
-    float fov, aspect, nearDist, farDist;
     unsigned int frustumVAO = 0, frustumVBO = 0;
     std::vector<glm::vec3> frustumVertices;
     
     public:
+    float fov, aspect, nearDist, farDist;
     glm::mat4 projectionMatrix;
 
     Camera() {}
+
+    Camera(float nearDist, float farDist) : nearDist(nearDist), farDist(farDist) {};
 
     Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist);
 
@@ -556,7 +558,35 @@ namespace fe
     void setFront(const glm::vec3 &front)
     {
       this->front = front;
+      updateView(position, front, up);
+    }
+
+    void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up) {
       viewMatrix = glm::lookAt(position, position + front, up);
+    }
+
+    void updateView(glm::vec3 position, glm::quat orientation) {
+      updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    void updateProjection(float fov, float aspect) {
+      projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
+    }
+
+    // void updateProjectioin(float left, float right, float bottom, float top) {
+    //   projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
+    // }
+
+    void updateProjectionWithAngles(float left, float right, float bottom, float top) {
+      projectionMatrix = glm::frustum(tan(left) * nearDist,tan(right) * nearDist,tan(bottom) * nearDist,tan(top) * nearDist, nearDist, farDist);
+    }
+
+    void updateProjection(glm::vec4 fov) {
+      fov = glm::tan(fov) * nearDist;
+      projectionMatrix = glm::frustum(fov.w, fov.x, fov.y, fov.z, nearDist, farDist);
+    }
+void updateProjection(float left, float right, float down, float up) {
+      projectionMatrix = glm::frustum(tan(left) * nearDist,tan(right) * nearDist,tan(down) * nearDist,tan(up) * nearDist, nearDist, farDist);
     }
     glm::mat4 getViewMatrix() const
     {
@@ -619,6 +649,8 @@ namespace fe
     {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
+
+    void render(ShaderProgram &shader, const Camera &camera, int width, int height);
 
     void render(ShaderProgram &shader, const Camera &camera)
     {

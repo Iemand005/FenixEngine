@@ -249,17 +249,12 @@ void initOpenXR(HDC hDC, HGLRC hGLRC)
   sessionInfo.systemId = systemId;
   sessionInfo.next = &gfx;
 
-  XrGraphicsRequirementsOpenGLKHR glReqs = {XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
+  XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
   PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
 
   outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction *)(&pfnGetOpenGLGraphicsRequirementsKHR)));
-
   outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
-  std::cout << "Successfully got OpenGL requirements." << std::endl;
-
   outputError(xrCreateSession(instance, &sessionInfo, &session));
-
-  std::cout << "OpenXR initialized! Starting session (you should see black in headset)...\n";
 
   XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
   beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -353,45 +348,42 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
     static float angle = 0.0f;
-    static fe::Camera camera;
+    static fe::Camera camera = fe::Camera(0.1f, 100.0f);
 
     for (uint32_t eye = 0; eye < viewCount; eye++)
     {
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
       glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
 
-      glViewport(0, 0, swapchainWidth, swapchainHeight);
+      XrPosef xrPose = views[eye].pose;
+      XrFovf xrFov = views[eye].fov;
 
-      glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      XrPosef pose = views[eye].pose;
-      XrFovf fov = views[eye].fov;
-
-      glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
-      glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+      glm::vec3 position(xrPose.position.x, xrPose.position.y, xrPose.position.z);
+      glm::quat orientation(xrPose.orientation.w, xrPose.orientation.x, xrPose.orientation.y, xrPose.orientation.z);
+      glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
       auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
       auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
 
-      float nearDist = 0.10f;
-      float farDist = 100.0f;
+      // float nearDist = 0.10f;
+      // float farDist = 100.0f;
 
-      float left = tan(fov.angleLeft) * nearDist;
-      float right = tan(fov.angleRight) * nearDist;
-      float bottom = tan(fov.angleDown) * nearDist;
-      float top = tan(fov.angleUp) * nearDist;
+      // float left = tan(fov.angleLeft) * camera.nearDist;
+      // float right = tan(fov.angleRight) * camera.nearDist;
+      // float bottom = tan(fov.angleDown) * camera.nearDist;
+      // float top = tan(fov.angleUp) * camera.nearDist;
 
-      position = position + positionOffset;
+      // position = position + positionOffset;
 
-      camera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
+      // camera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
 
-      camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
+      // camera.setPos(position);
+      camera.updateView(position + positionOffset, orientation);
+      camera.updateProjection(fov);
 
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
 
-      scene->render(*shader, camera);
+      scene->render(*shader, camera, swapchainWidth, swapchainHeight);
 
       projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
       projectionViews[eye].pose = views[eye].pose;
@@ -424,11 +416,8 @@ int main()
     if (drawWindow)
     {
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      glViewport(0, 0, 800, 600);
-      // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      scene->render(*(shader), (camera));
+      
+      scene->render(*(shader), (camera), 800, 600);
 
       glfwSwapBuffers(window);
       glfwPollEvents();

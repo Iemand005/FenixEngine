@@ -48,7 +48,8 @@ namespace fe {
           nearTopLeft, farTopLeft,
           nearTopRight, farTopRight,
           nearBottomRight, farBottomRight,
-          nearBottomLeft, farBottomLeft};
+          nearBottomLeft, farBottomLeft
+        };
 
       glGenVertexArrays(1, &frustumVAO);
       glBindVertexArray(frustumVAO);
@@ -120,5 +121,11 @@ namespace fe {
       calculateBoundingBox();
 
       return true;
+    }
+
+
+    void Scene::render(ShaderProgram &shader, const Camera &camera, int width, int height) {
+      glViewport(0, 0, width, height);
+      this->render(shader, camera);
     }
 }

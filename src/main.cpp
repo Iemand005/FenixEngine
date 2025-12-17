@@ -10,13 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define USE_IMGUI 1
-
-#if USE_IMGUI
 #include "imgui\imgui.h"
 #include "imgui\imgui_impl_glfw.h"
 #include "imgui\imgui_impl_opengl3.h"
-#endif
 
 #include "engine.h"
 
@@ -35,7 +31,6 @@ float pitch = 0.0f;
 int windowWidth = 800.0f;
 int windowHeight = 600.0f;
 
-
 // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 //     // Forward to ImGui FIRST
 //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
@@ -49,7 +44,8 @@ int windowHeight = 600.0f;
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
-  // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+  ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+
   float xOffset = xPos - lastX;
   float yOffset = lastY - yPos;
   if (lastX == 0 && lastY == 0)
@@ -118,6 +114,8 @@ public:
 
   int mapIndex = 0;
 
+  ImGuiIO io;
+
   Window(int width, int height) : width(width), height(height)
   {
     if (!initGlfw())
@@ -127,6 +125,8 @@ public:
     glEnable(GL_CULL_FACE);
     // glCullFace(GL_FRONT);
 
+    initImGui();
+
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
     this->scene = std::make_unique<fe::Scene>();
@@ -134,21 +134,6 @@ public:
     this->playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
     startMouseCapture();
-
-
-#if USE_IMGUI
-    const char *glsl_version = "#version 330 core";
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-#endif
 
     loadModels();
   }
@@ -198,14 +183,17 @@ public:
     spawnZombies(10);
   }
 
-  void loadMap(int index) {
+  void loadMap(int index)
+  {
     scene->getModels()[0] = maps.at(index);
   }
 
-  void nextMap() {
+  void nextMap()
+  {
     loadMap(mapIndex);
     mapIndex++;
-    if (mapIndex >= maps.size()) mapIndex = 0;
+    if (mapIndex >= maps.size())
+      mapIndex = 0;
   }
 
   void spawnZombies(int count = 10)
@@ -223,7 +211,8 @@ public:
       float dz = z - player->position.z;
       float distanceSq = dx * dx + dz * dz;
 
-      if (distanceSq < minDistanceSq) {
+      if (distanceSq < minDistanceSq)
+      {
         x += minDistanceSq;
         z += minDistanceSq;
       }
@@ -272,19 +261,14 @@ public:
     glClearColor(r, g, b, a);
   }
 
-  
-
   void redraw()
   {
     scene->render(*(this->shader), *(this->playerCamera));
 
-#if USE_IMGUI
     fpsCounter.update();
     drawImGui();
-#endif
 
     glfwSwapBuffers(this->window);
-    glfwPollEvents();
   }
 
   void update()
@@ -343,13 +327,15 @@ public:
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
 
-
-      static bool ctrlWasDown = false;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+    static bool ctrlWasDown = false;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
       if (!ctrlWasDown)
         this->nextMap();
-        ctrlWasDown = true;
-    } else ctrlWasDown = false;
+      ctrlWasDown = true;
+    }
+    else
+      ctrlWasDown = false;
   }
 
   void enableWireframeMode()
@@ -385,15 +371,33 @@ public:
     glfwTerminate();
   }
 
-#if USE_IMGUI
+  void initImGui()
+  {
+    const char *glsl_version = "#version 330 core";
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+  }
+
   int drawImGui()
   {
-    glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_DEPTH_TEST);
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
     ImGui::Begin("Window");
     ImGui::SetWindowFocus();
     ImGui::Text("Hello, World!");
     ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Text("Objects: %zu", this->scene->getModels().size());
     size_t totalVertices = 0;
     for (auto &obj : this->scene->getModels())
@@ -423,10 +427,9 @@ public:
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_DEPTH_TEST);
     return 0;
   }
-#endif
 };
 
 int main()
@@ -437,9 +440,9 @@ int main()
 
   while (!window.shouldClose())
   {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    glfwPollEvents();
+
+    
 
     if (window.player->touchedGround)
     {
@@ -471,8 +474,8 @@ int main()
         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
       }
     }
-    window.redraw();
     window.update();
+    window.redraw();
   }
 
   window.destroy();
