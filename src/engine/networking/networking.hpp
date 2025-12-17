@@ -47,8 +47,13 @@ class NetworkerServer {
     server.init();
   }
 
+
+  void setMessageReceiveHandler(MessageReceiveHandler handler) {
+    messageReceiveHandler = handler;
+  }
+
   void start() {
-    server.startListening([](const char* data, size_t size) {
+    server.startListening([this](const char* data, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
       }
@@ -68,7 +73,7 @@ class NetworkerServer {
           // std::cout << "Received message: " << message << std::endl;
           std::string messageStr(message, messageLength);
           std::cout << "Received message: " << messageStr << std::endl;
-          // if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
+          if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
         }
         break;
         case PacketType::Position:

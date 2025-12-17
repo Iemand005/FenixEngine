@@ -90,6 +90,7 @@ public:
 
 class UDPServer {
   socket_t sock;
+  using ReceiveCallback = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
 public:
 
 UDPServer() {
@@ -114,7 +115,7 @@ int init() {
   return 0;
 }
 
-int startListening(UDPResponseHandler callback)
+int startListening(ReceiveCallback callback)
 {
     WSADATA wsaData;
   if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -160,7 +161,7 @@ int startListening(UDPResponseHandler callback)
   
       std::cout << "Received " << received << " bytes from " << senderIP << ":" << ntohs(senderAddr.sin_port) << " - " << buffer << std::endl;
 
-      callback(buffer, received);
+      callback(buffer, received, senderAddr);
     }
     else
     {
