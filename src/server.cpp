@@ -29,7 +29,9 @@ public:
 
   void start()
   {
-
+    server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
+      this->broadcast(data, size);
+    };
     server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
 
     server.helloHandler = [this](sockaddr_in address)
@@ -41,10 +43,9 @@ public:
     server.start();
   }
 
-  void broadcast() {
-    for (auto &client : clients) {
-      
-    }
+  void broadcast(const char *data, size_t size) {
+    for (auto &client : clients)
+      server.server.send(data, size, client.address);
   }
 };
 

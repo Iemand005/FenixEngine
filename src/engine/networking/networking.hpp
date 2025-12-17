@@ -44,9 +44,12 @@ class NetworkerServer {
   public:
   UDPSocket server;
   using MessageReceiveHandler = std::function<void(std::string message)>;
+  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
   MessageReceiveHandler messageReceiveHandler;
   using HelloHandler = std::function<void(sockaddr_in address)>;
   HelloHandler helloHandler;
+
+  AllPacketHandler allPacketHandler;
 
   NetworkerServer() {
   }
@@ -59,7 +62,10 @@ class NetworkerServer {
     server.startListening([this](const char* data, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
+        return;
       }
+
+      allPacketHandler(data, size, from);
 
       auto header = (PacketHeader*)data;
 
