@@ -79,12 +79,13 @@ public:
       std::cerr << "Send failed: " << SOCKET_ERRNO << "\n";
     }
 
-    this->closeSocket();
+    // this->closeSocket();
   }
 
   void closeSocket()
   {
     CLOSE_SOCKET(sock);
+    sock = 0;
     WSACleanup();
   }
 };

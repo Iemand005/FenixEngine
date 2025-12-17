@@ -17,6 +17,11 @@ class NetworkerClient {
     this->client.openSocket();
   }
 
+  void sendHello() {
+    HelloPacket packet;
+    this->client.send((char*)packet, sizeof(HelloPacket));
+  }
+
   void sendMessage(std::string message) {
 
     constexpr size_t headerSize = sizeof(MessagePacket);
@@ -44,6 +49,8 @@ class NetworkerServer {
   UDPServer server;
   using MessageReceiveHandler = std::function<void(std::string message)>;
   MessageReceiveHandler messageReceiveHandler;
+  using HelloHandler = std::function<void(sockaddr_in address)>;
+  HelloHandler helloHandler;
 
   NetworkerServer() {
     server.init();
@@ -60,20 +67,21 @@ class NetworkerServer {
       }
 
       auto header = (PacketHeader*)data;
-      // memcpy(&header, data, sizeof(PacketHeader));
 
       switch (header->type) {
+        case PacketType::Hello:
+       {
+         helloHandler(from);
+       }
+       break;
         case PacketType::Message:
         {
           auto messagePacket = (MessagePacket*)data;
-          // memcpy(&messagePacket, data, sizeof(MessagePacket));
           const size_t messageLength = messagePacket->messageLength;
           char* messageBuffer = (char*)malloc(messageLength);
           memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
           
-          // std::cout << "Received message: " << message << std::endl;
           std::string message(messageBuffer, messageLength);
-          // std::cout << "Received message: " << message << std::endl;
           if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
         }
         break;

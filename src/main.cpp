@@ -117,6 +117,9 @@ public:
 
   int mapIndex = 0;
 
+  NetworkerClient client;
+  NetworkerServer server;
+
   ImGuiIO io;
 
   Game(int width, int height) : width(width), height(height)
@@ -331,6 +334,10 @@ public:
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_H == GLFW_PRESS) // Host server
+      disableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_J == GLFW_PRESS) // Join server
+      disableWireframeMode();
 
     static bool ctrlWasDown = false;
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
@@ -355,7 +362,38 @@ public:
 
   void startMouseCapture()
   {
-    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos) {
+      // mouseCallback(window, xPos, yPos);
+ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+
+  float xOffset = xPos - lastX;
+  float yOffset = lastY - yPos;
+  if (lastX == 0 && lastY == 0)
+  {
+    xOffset = 0;
+    yOffset = 0;
+  }
+  lastX = xPos;
+  lastY = yPos;
+
+  const float sensitivity = 0.1f;
+  xOffset *= sensitivity;
+  yOffset *= sensitivity;
+
+  yaw += xOffset;
+  pitch += yOffset;
+
+  if (pitch > 89.0f)
+    pitch = 89.0f;
+  if (pitch < -89.0f)
+    pitch = -89.0f;
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(direction);
+    });
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 

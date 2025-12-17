@@ -5,12 +5,17 @@ enum class PacketType : char {
   Invalid = 0,
   Message,
   Position,
+  Hello,
 };
 
 struct PacketHeader {
   PacketType type;
   char version = 1;
   int index;
+};
+
+struct HelloPacket {
+  PacketHeader header{PacketType::Hello};
 };
 
 struct MessagePacket {
