@@ -65,19 +65,21 @@ public:
   void send(const char *packet, size_t size, sockaddr_in address)
   {
 
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-      std::cerr << "WSAStartup failed\n";
-      return;
-    }
+    // WSADATA wsaData;
+    // if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    // {
+    //   std::cerr << "WSAStartup failed\n";
+    //   return;
+    // }
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == INVALID_SOCKET)
-    {
-      std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-      return;
-    }
+    // sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    // if (sock == INVALID_SOCKET)
+    // {
+    //   std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
+    //   return;
+    // }
+
+    this->createSocketIfNotExist();
     
     size_t sent = sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
 
@@ -93,20 +95,20 @@ public:
     // this->closeSocket();
   }
 
-  int startListening(ReceiveCallback callback)
-  {
+  bool createSocketIfNotExist() {
+    if (sock != INVALID_SOCKET) return false;
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
       std::cerr << "WSAStartup failed\n";
-      return 1;
+      return false;
     }
 
     SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == INVALID_SOCKET)
     {
       std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-      return 1;
+      return false;
     }
     sockaddr_in localAddr{};
     localAddr.sin_family = AF_INET;
@@ -117,8 +119,17 @@ public:
     {
       std::cerr << "Bind failed: " << SOCKET_ERRNO << "\n";
       CLOSE_SOCKET(sock);
-      return 1;
+      return false;
     }
+
+    this->sock = sock;
+
+    return true;
+  }
+
+  int startListening(ReceiveCallback callback)
+  {
+    this->createSocketIfNotExist();
     std::cout << "Listening on UDP port " << port << "..." << std::endl;
 
     while (true)
@@ -128,10 +139,10 @@ public:
       sockaddr_in senderAddr{};
       socklen_t senderLen = sizeof(senderAddr);
 
-      size_t received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
-      std::cout << "Client said something...";
+      int received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
       if (received >= 0)
       {
+        std::cout << "Client said something...";
         buffer[received] = '\0';
         char senderIP[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &senderAddr.sin_addr, senderIP, sizeof(senderIP));
@@ -143,6 +154,8 @@ public:
       else
       {
         std::cerr << "Receive failed: " << SOCKET_ERRNO << "\n";
+        this->close();
+        this->createSocketIfNotExist();
       }
     }
 

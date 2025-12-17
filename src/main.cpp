@@ -119,8 +119,7 @@ public:
 
   int mapIndex = 0;
 
-  NetworkerClient client;
-  NetworkerServer server;
+  Networker client;
 
   ImGuiIO io;
 
@@ -473,9 +472,17 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
 int main()
 {
 
-  NetworkerClient client;
+  Networker client;
 
   // client.sendMessage("RAWR!!");
+  // client.allPacketHandler = [](const char* data, size_t size, const sockaddr_in& from){
+
+  // };
+
+  client.messageReceiveHandler = [](std::string message) {
+    std::cout << "The server broadcasted a message: " << message << std::endl;
+  };
+
   client.connect();
 
   Game game(800, 600);
@@ -486,7 +493,6 @@ int main()
   {
     glfwPollEvents();
 
-    
 
     if (game.player->touchedGround)
     {
@@ -516,6 +522,8 @@ int main()
       {
         std::cout << "Player intersects with NPC" << std::endl;
         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
+        client.sendPing();    
+
       }
     }
     game.update();

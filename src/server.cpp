@@ -25,7 +25,7 @@ class Server
 public:
   std::vector<ClientInfo> clients = std::vector<ClientInfo>();
 
-  NetworkerServer server;
+  Networker server;
 
   void start()
   {
@@ -45,7 +45,7 @@ public:
 
   void broadcast(const char *data, size_t size) {
     for (auto &client : clients)
-      server.server.send(data, size, client.address);
+      server.socket.send(data, size, client.address);
   }
 };
 

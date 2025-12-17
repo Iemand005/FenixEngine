@@ -7,16 +7,24 @@
 
 typedef void (* MessageReceiveHandler)(std::string message);
 
-class NetworkerClient {
+class Networker {
   public:
+  using MessageReceiveHandler = std::function<void(std::string message)>;
+  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
+  MessageReceiveHandler messageReceiveHandler;
+  using HelloHandler = std::function<void(sockaddr_in address)>;
+  HelloHandler helloHandler;
+
+  AllPacketHandler allPacketHandler = nullptr;
   UDPSocket socket;
 
-  NetworkerClient() {
+  Networker() {
 
   }
 
   void connect() {
     this->sendHello();
+    this->startAsync();
   }
 
   void sendPing() {
@@ -48,28 +56,13 @@ class NetworkerClient {
     packet.rotation = rotation;
     this->socket.send((char*)&packet, sizeof(PositionPacket));
   }
-};
-
-class NetworkerServer {
-  public:
-  UDPSocket server;
-  using MessageReceiveHandler = std::function<void(std::string message)>;
-  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
-  MessageReceiveHandler messageReceiveHandler;
-  using HelloHandler = std::function<void(sockaddr_in address)>;
-  HelloHandler helloHandler;
-
-  AllPacketHandler allPacketHandler = nullptr;
-
-  NetworkerServer() {
-  }
-
+  
   void setMessageReceiveHandler(MessageReceiveHandler handler) {
     messageReceiveHandler = handler;
   }
 
   void start() {
-    server.startListening([this](const char* data, size_t size, const sockaddr_in& from) {
+    socket.startListening([this](const char* data, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
