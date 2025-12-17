@@ -13,22 +13,22 @@
 #define USE_IMGUI 1
 
 #if USE_IMGUI
-#include "imgui\imgui.h"
-#include "imgui\imgui_impl_glfw.h"
-#include "imgui\imgui_impl_opengl3.h"
+#include "..\imgui\imgui.h"
+#include "..\imgui\imgui_impl_glfw.h"
+#include "..\imgui\imgui_impl_opengl3.h"
 #endif
 
 #ifdef OBJ_LOAdER
-#include "OBJ_Loader.h"
+#include <OBJ_Loader.h>
 #endif
 
-#include "stb_image.h"
+#include <stb_image.h>
 
 namespace fe
 {
 
   // glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  // glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  // glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);generally a weird fucking deram
   // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
   // glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 

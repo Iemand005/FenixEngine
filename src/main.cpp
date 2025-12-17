@@ -14,7 +14,9 @@
 #include "imgui\imgui_impl_glfw.h"
 #include "imgui\imgui_impl_opengl3.h"
 
-#include "engine.h"
+#include "engine\engine.h"
+#include "engine\networking\udp.cpp"
+
 
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -219,6 +221,8 @@ public:
 
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
       npc->position = glm::vec3(x, 0.0f, z);
+
+      if (!npc->meshes.size()) return;
 
       npc->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
       npc->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
@@ -434,6 +438,9 @@ public:
 
 int main()
 {
+
+  test();
+
   Window window(800, 600);
 
   glm::vec3 playerHeight = glm::vec3(0.0f, 6.5f, 0.0f);
