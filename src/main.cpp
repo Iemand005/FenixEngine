@@ -93,7 +93,7 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
   glViewport(0, 0, width, height);
 }
 
-class Window
+class Game
 {
 public:
   int width;
@@ -118,7 +118,7 @@ public:
 
   ImGuiIO io;
 
-  Window(int width, int height) : width(width), height(height)
+  Game(int width, int height) : width(width), height(height)
   {
     if (!initGlfw())
       return;
@@ -439,52 +439,52 @@ public:
 int main()
 {
 
-  test();
+  
 
-  Window window(800, 600);
+  Game game(800, 600);
 
   glm::vec3 playerHeight = glm::vec3(0.0f, 6.5f, 0.0f);
 
-  while (!window.shouldClose())
+  while (!game.shouldClose())
   {
     glfwPollEvents();
 
     
 
-    if (window.player->touchedGround)
+    if (game.player->touchedGround)
     {
-      window.canJump = true;
+      game.canJump = true;
     }
-    window.processInput();
-    window.player->rotation.y = -yaw + 90.0f;
-    glm::vec3 pos = window.player->position + playerHeight;
+    game.processInput();
+    game.player->rotation.y = -yaw + 90.0f;
+    glm::vec3 pos = game.player->position + playerHeight;
     cameraPos = pos - cameraFront * 5.0f;
-    window.playerCamera->setPos(cameraPos);
+    game.playerCamera->setPos(cameraPos);
     cameraTarget = pos;
 
-    window.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
+    game.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
     // window.playerCamera->setPos(cameraPos);
 
-    window.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
+    game.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
 
-    for (auto &npc : window.npcs)
+    for (auto &npc : game.npcs)
     {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * glm::vec3(window.getDeltaTime()));
+      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * glm::vec3(game.getDeltaTime()));
       npc->needsUpdate = true;
     }
-    for (auto &npc : window.npcs)
+    for (auto &npc : game.npcs)
     {
-      if (window.player->intersects(*npc))
+      if (game.player->intersects(*npc))
       {
         std::cout << "Player intersects with NPC" << std::endl;
         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
       }
     }
-    window.update();
-    window.redraw();
+    game.update();
+    game.redraw();
   }
 
-  window.destroy();
+  game.destroy();
   return 0;
 }

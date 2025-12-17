@@ -26,22 +26,6 @@
 
 namespace fe
 {
-
-  // glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  // glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);generally a weird fucking deram
-  // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  // glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
-  // float fov = 45.0f;
-
-  // float lastX = 0, lastY = 0;
-
-  // float yaw = -90.0f;
-  // float pitch = 0.0f;
-
-  // int windowWidth = 800.0f;
-  // int windowHeight = 600.0f;
-
   struct AABB
   {
     glm::vec3 min, max;
