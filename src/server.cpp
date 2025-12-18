@@ -43,12 +43,14 @@ public:
       ClientInfo clientInfo;
       clientInfo.address = address;
       this->clients.push_back(clientInfo);
+      std::cout << "Client added to connection list." << std::endl;
     };
     server.socket.createSocketIfNotExist();
     server.start();
   }
 
   void broadcast(const char *data, size_t size) {
+    std::cout << "Boradcasting" << std::endl;
     for (auto &client : clients)
       server.socket.send(data, size, client.address);
   }

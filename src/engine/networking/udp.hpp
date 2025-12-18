@@ -31,13 +31,19 @@ public:
   }
 
   template <typename T>
+  void send(sockaddr_in address) {
+    T packet;
+    this->send<T>(packet, address);
+  }
+
+  template <typename T>
   void send(T packet, unsigned short port, std::string address = "127.0.0.1") {
     this->send((char*)&packet, sizeof(T), port, address);
   }
 
   template <typename T>
   void send(T packet, sockaddr_in address) {
-    this->send((char*)&packet, sizeof(T), port, address);
+    this->send((char*)&packet, sizeof(T), address);
   }
 
   void send(const char *packet, size_t size, unsigned short port, std::string address = "127.0.0.1") {
@@ -55,6 +61,7 @@ public:
   }
 
   void close() {
+    std::cerr << "Closing socket...\n";
     CLOSE_SOCKET(sock);
     sock = INVALID_SOCKET;
     WSACleanup();
@@ -65,11 +72,14 @@ public:
 
     this->createSocketIfNotExist();
     
-    size_t sent = sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
+    size_t sent = 0;// sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
 
     if (sent >= 0)
     {
-      std::cout << "Sent " << sent << " bytes: " << (char *)packet << "\n";
+      char senderIP[INET_ADDRSTRLEN];
+      inet_ntop(AF_INET, &address.sin_addr, senderIP, sizeof(senderIP));
+
+      std::cout << "Sent " << sent << " bytes: " << (char *)packet <<" To " << senderIP << ":" << ntohs(address.sin_port) <<"\n";
     }
     else
     {
@@ -126,25 +136,21 @@ public:
     this->bindSocket(port);
     std::cout << "Listening on UDP port " << port << "..." << std::endl;
 
+    u_long mode = 1;
+    ioctlsocket(sock, FIONBIO, &mode);
+
     while (true)
     {
 
       char buffer[1024];
       sockaddr_in senderAddr{};
       socklen_t senderLen = sizeof(senderAddr);
+    std::cout << "Waiting for next packet..." << std::endl;
 
-      int received = -1;
-      try {
-      received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
-        std::cout << "No throw...";
-
-      } catch (const std::exception &ex) {
-        std::cout << ex.what();
-
-      }
+      int received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
+     
       if (received >= 0)
       {
-        std::cout << "Client said something...";
         buffer[received] = '\0';
         char senderIP[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &senderAddr.sin_addr, senderIP, sizeof(senderIP));

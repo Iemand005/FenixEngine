@@ -5,12 +5,13 @@
 #include "udp.hpp"
 #include "packets.hpp"
 
-typedef void (* MessageReceiveHandler)(std::string message);
+typedef void (*MessageReceiveHandler)(std::string message);
 
-class Networker {
-  public:
+class Networker
+{
+public:
   using MessageReceiveHandler = std::function<void(std::string message)>;
-  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
+  using AllPacketHandler = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
   MessageReceiveHandler messageReceiveHandler;
   using HelloHandler = std::function<void(sockaddr_in address)>;
   HelloHandler helloHandler;
@@ -24,55 +25,65 @@ class Networker {
 
   Networker() {}
 
-  Networker(unsigned short port) {
+  Networker(unsigned short port)
+  {
     this->port = port;
   }
 
-  void connect() {
+  void connect()
+  {
     this->sendHello();
     this->startAsync(0);
   }
 
-  void sendPing() {
-    this->socket.send<PingPacket>(port);
+  void sendPing()
+  {
+    this->socket.send<HelloPacket>(port);
   }
 
-  void sendHello() {
-    PingPacket packet;
-    this->socket.send((char*)&packet, sizeof(PingPacket), port);
+  void sendHello()
+  {
+    HelloPacket packet;
+    this->socket.send((char *)&packet, sizeof(HelloPacket), port);
   }
 
-  void sendMessage(std::string message) {
+  void sendMessage(std::string message)
+  {
 
     constexpr size_t headerSize = sizeof(MessagePacket);
     size_t totalSize = sizeof(MessagePacket) + message.size();
-    char* packet = (char*)malloc(totalSize);
-    MessagePacket messagePacket {};
+    char *packet = (char *)malloc(totalSize);
+    MessagePacket messagePacket{};
     messagePacket.messageLength = message.size();
 
     memcpy(packet, &messagePacket, sizeof(MessagePacket));
     memcpy(packet + headerSize, message.c_str(), message.size());
 
-    this->socket.send((char*)packet, totalSize, port);
+    this->socket.send((char *)packet, totalSize, port);
   }
 
-  void sendPosition(glm::vec3 position, glm::vec3 rotation) {
+  void sendPosition(glm::vec3 position, glm::vec3 rotation)
+  {
     PositionPacket packet;
     packet.position = position;
     packet.rotation = rotation;
-    this->socket.send((char*)&packet, sizeof(PositionPacket), port);
+    this->socket.send((char *)&packet, sizeof(PositionPacket), port);
   }
-  
-  void setMessageReceiveHandler(MessageReceiveHandler handler) {
+
+  void setMessageReceiveHandler(MessageReceiveHandler handler)
+  {
     messageReceiveHandler = handler;
   }
 
-  void start() {
+  void start()
+  {
     this->start(this->port);
   }
 
-  void start(unsigned short port) {
-    socket.startListening(port, [this](const char* data, size_t size, const sockaddr_in& from) {
+  void start(unsigned short port)
+  {
+    socket.startListening(port, [this](const char *data, size_t size, const sockaddr_in &from)
+                          {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
@@ -84,10 +95,10 @@ class Networker {
 
       switch (header->type) {
         case PacketType::Hello:
-       {
-         helloHandler(from);
-       }
-       break;
+        {
+          helloHandler(from);
+        }
+        break;
         case PacketType::Message:
         {
           auto messagePacket = (MessagePacket*)data;
@@ -109,22 +120,23 @@ class Networker {
         break;
          case PacketType::Ping:
         {
-          std::cout << "Received a ping!" << std::endl;
+          std::cout << "Received a ping! Answering with pong..." << std::endl;
+          this->socket.send<PongPacket>(from);
         }
         break;
-      }
-    });
+      } });
   }
 
-  void startAsync(unsigned short port) {
-    listenerThread = std::thread([this, port](){
+  void startAsync(unsigned short port)
+  {
+    listenerThread = std::thread([this, port]()
+                                 {
       try {
 
         this->start(port);
       } catch (std::exception &e) {
         std::cout << e.what() << std::endl;
-      }
-    });
+      } });
     listenerThread.detach();
   }
 };

@@ -686,7 +686,7 @@ namespace fe
           if (object->intersects(*otherObject))
           {
             if (!object->touchedOtherObject)
-              std::cout << "Yooo I hit someone bro";
+              std::cout << "Intersected" << std::endl;
             object->touchedOtherObject = true;
             otherObject->touchedOtherObject = true;
             foundTouch = true;

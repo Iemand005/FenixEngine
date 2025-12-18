@@ -18,7 +18,6 @@
 // #include "engine/networking/udp.cpp"
 #include "engine/networking/networking.hpp"
 
-
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -119,7 +118,7 @@ public:
 
   int mapIndex = 0;
 
-  Networker client;
+  std::unique_ptr<Networker> client;
 
   ImGuiIO io;
 
@@ -135,6 +134,19 @@ public:
     initImGui();
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
+
+    client = std::make_unique<Networker>(2130);
+
+    client->messageReceiveHandler = [](std::string message)
+    {
+      std::cout << "The server broadcasted a message: " << message << std::endl;
+    };
+
+    client->connect();
+
+    client->sendPing();
+
+    client->sendMessage("RAWR!!");
 
     this->scene = std::make_unique<fe::Scene>();
     this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
@@ -227,7 +239,8 @@ public:
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
-      if (!npc->meshes.size()) return;
+      if (!npc->meshes.size())
+        return;
 
       npc->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
       npc->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
@@ -335,10 +348,12 @@ public:
       enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
       disableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_H == GLFW_PRESS)) // Host server
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) // Host server
       disableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_J == GLFW_PRESS)) // Join server
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) // Join server
       disableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    //   client->sendPing();
 
     static bool ctrlWasDown = false;
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
@@ -347,8 +362,17 @@ public:
         this->nextMap();
       ctrlWasDown = true;
     }
-    else
+    else  
       ctrlWasDown = false;
+
+    static bool pWasDown = false;
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    {
+      if (!pWasDown)
+        client->sendPing();
+      pWasDown = true;
+    }
+    else pWasDown = false;
   }
 
   void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
@@ -356,7 +380,8 @@ public:
 
   void startMouseCapture()
   {
-    glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos) {
+    glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos)
+                             {
       // mouseCallback(window, xPos, yPos);
 ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
 
@@ -386,8 +411,7 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
   direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
   direction.y = sin(glm::radians(pitch));
   direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(direction);
-    });
+  cameraFront = glm::normalize(direction); });
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
@@ -472,23 +496,10 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
 int main()
 {
 
-  Networker client(2130);
-
   // client.sendMessage("RAWR!!");
   // client.allPacketHandler = [](const char* data, size_t size, const sockaddr_in& from){
 
   // };
-
-  client.messageReceiveHandler = [](std::string message) {
-    std::cout << "The server broadcasted a message: " << message << std::endl;
-  };
-
-  
-  client.connect();
-  
-  client.sendPing();
-
-  client.sendMessage("RAWR!!");
 
   Game game(800, 600);
 
@@ -497,7 +508,6 @@ int main()
   while (!game.shouldClose())
   {
     glfwPollEvents();
-
 
     if (game.player->touchedGround)
     {
@@ -527,8 +537,7 @@ int main()
       {
         std::cout << "Player intersects with NPC" << std::endl;
         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
-        client.sendPing();    
-
+        // client.sendPing();
       }
     }
     game.update();
