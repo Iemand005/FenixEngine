@@ -93,7 +93,7 @@ class Game {
   std::unique_ptr<fe::Scene> scene;
   std::unique_ptr<fe::Camera> playerCamera;
   fe::ShaderProgram* shader;
-  fe::FPSCounter fpsCounter;
+  fe::Timer fpsCounter;
 
   std::shared_ptr<fe::Character> player;
 
@@ -421,8 +421,8 @@ class Game {
     {
       ImGui::SetWindowFocus();
       ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0
-                                  ? 1.0 / fpsCounter.frameTime
+      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0
+                                  ? 1.0 / fpsCounter.deltaTime
                                   : 0.0);
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                   1000.0f / io.Framerate, io.Framerate);
