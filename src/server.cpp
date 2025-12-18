@@ -20,38 +20,43 @@ struct ClientInfo
   // std::string username; this guy eally llikes meat you still with me foxyz or have you fallen asleep again
 };
 
-class Server : Networker
+class Server
 {
 public:
   std::vector<ClientInfo> clients = std::vector<ClientInfo>();
 
+  Networker server;
+
+  Server() {
+    server = Networker(2130);
+  }
+
   void start()
   {
-    this->allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
+    server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
       this->broadcast(data, size);
     };
-    this->setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
+    server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
 
-    this->helloHandler = [this](sockaddr_in address)
+    server.helloHandler = [this](sockaddr_in address)
     {
       ClientInfo clientInfo;
       clientInfo.address = address;
       this->clients.push_back(clientInfo);
     };
-    this->socket.createSocketIfNotExist();
-    this->start();
+    server.socket.createSocketIfNotExist();
+    server.start();
   }
 
   void broadcast(const char *data, size_t size) {
     for (auto &client : clients)
-      this->socket.send(data, size, client.address);
+      server.socket.send(data, size, client.address);
   }
 };
 
 int main()
 {
-
-  Networker server(2130);
+  Server server;
   server.start();
 
   return 0;

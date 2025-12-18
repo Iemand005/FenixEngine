@@ -26,9 +26,9 @@ class Networker {
     this->port = port;
   }
 
-  void connect(unsigned short port) {
+  void connect() {
     this->sendHello();
-    this->start(0);
+    this->startAsync(0);
   }
 
   void sendPing() {

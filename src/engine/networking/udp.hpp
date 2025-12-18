@@ -135,7 +135,7 @@ public:
 
       int received = -1;
       try {
-      int received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
+      received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
         std::cout << "No throw...";
 
       } catch (const std::exception &ex) {
