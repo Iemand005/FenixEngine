@@ -7,6 +7,12 @@
 
 typedef void (*MessageReceiveHandler)(std::string message);
 
+struct ClientInfo
+{
+  unsigned int id;
+  sockaddr_in address;
+};
+
 class Networker
 {
 public:
@@ -77,6 +83,12 @@ public:
     messageReceiveHandler = handler;
   }
 
+  void broadcast(const char *data, size_t size) {
+    std::cout << "Boradcasting" << std::endl;
+    for (auto &client : clients)
+      this->socket.send(data, size, client.address);
+  }
+
   void start()
   {
     this->start(this->port);
@@ -100,10 +112,12 @@ public:
         case PacketType::Hello:
         {
           ClientInfo clientInfo;
-      clientInfo.address = from;
-      // clientInfo.id = *lastClientId++;
-      this->clients.push_back(clientInfo);
-      std::cout << "Client added to connection list." << std::endl;
+          clientInfo.address = from;
+          clientInfo.id = lastClientId++;
+          this->clients.push_back(clientInfo);
+          std::cout << "Client added to connection list." << std::endl;
+          
+          this->socket.send<OkPacket>(from);
         }
         break;
         case PacketType::Ok:

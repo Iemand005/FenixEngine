@@ -34,28 +34,15 @@ public:
   void start()
   {
     server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
-      this->broadcast(data, size);
+      server.broadcast(data, size);
     };
     server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
 
-    // int *lastClientId = new int(0);
-    // server.helloHandler = [this, lastClientId](sockaddr_in address)
-    // {
-    //   ClientInfo clientInfo;
-    //   clientInfo.address = address;
-    //   // clientInfo.id = *lastClientId++;
-    //   this->clients.push_back(clientInfo);
-    //   std::cout << "Client added to connection list." << std::endl;
-    // };
     server.socket.createSocketIfNotExist();
     server.start();
   }
 
-  void broadcast(const char *data, size_t size) {
-    std::cout << "Boradcasting" << std::endl;
-    for (auto &client : clients)
-      server.socket.send(data, size, client.address);
-  }
+  
 };
 
 int main()
