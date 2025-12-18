@@ -4,6 +4,7 @@
 enum class PacketType : char {
   Invalid = 0,
   Hello,
+  Ok,
   Ping,
   Pong,
   Position,
@@ -18,6 +19,10 @@ struct PacketHeader {
 
 struct HelloPacket {
   PacketHeader header{PacketType::Hello};
+};
+
+struct OkPacket {
+  PacketHeader header{PacketType::Ok};
 };
 
 struct PongPacket {

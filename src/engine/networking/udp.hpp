@@ -72,7 +72,7 @@ public:
 
     this->createSocketIfNotExist();
     
-    size_t sent = 0;// sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
+    size_t sent = sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
 
     if (sent >= 0)
     {
@@ -133,11 +133,12 @@ public:
   int startListening(unsigned short port, ReceiveCallback callback)
   {
     // this->createSocketIfNotExist();
-    this->bindSocket(port);
+    if (port) this->bindSocket(port);
     std::cout << "Listening on UDP port " << port << "..." << std::endl;
 
-    u_long mode = 1;
-    ioctlsocket(sock, FIONBIO, &mode);
+    // Blocking mode
+    // u_long mode = 1;
+    // ioctlsocket(sock, FIONBIO, &mode);
 
     while (true)
     {

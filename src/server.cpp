@@ -34,7 +34,7 @@ public:
   void start()
   {
     server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
-      this->broadcast(data, size);
+      // this->broadcast(data, size);
     };
     server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
 

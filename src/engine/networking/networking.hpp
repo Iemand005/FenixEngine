@@ -38,7 +38,7 @@ public:
 
   void sendPing()
   {
-    this->socket.send<HelloPacket>(port);
+    this->socket.send<PingPacket>(port);
   }
 
   void sendHello()
@@ -92,11 +92,18 @@ public:
       if (allPacketHandler) allPacketHandler(data, size, from);
 
       auto header = (PacketHeader*)data;
+      PacketHeader headerS = *header;
 
-      switch (header->type) {
+      switch (headerS.type) {
         case PacketType::Hello:
         {
           helloHandler(from);
+        }
+        break;
+        case PacketType::Ok:
+        {
+          std::cout << "The server said we're okay!" << std::endl;
+          // helloHandler(from);
         }
         break;
         case PacketType::Message:
@@ -124,19 +131,19 @@ public:
           this->socket.send<PongPacket>(from);
         }
         break;
+        case PacketType::Pong:
+        {
+          std::cout << "Received a PONG!" << std::endl;
+        }
+        break;
       } });
   }
 
   void startAsync(unsigned short port)
   {
-    listenerThread = std::thread([this, port]()
-                                 {
-      try {
-
-        this->start(port);
-      } catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-      } });
+    listenerThread = std::thread([this, port]() {
+      this->start(port);
+    });
     listenerThread.detach();
   }
 };
