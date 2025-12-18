@@ -75,7 +75,8 @@ public:
     PositionPacket packet;
     packet.position = position;
     packet.rotation = rotation;
-    this->socket.send((char *)&packet, sizeof(PositionPacket), port);
+    // this->socket.send((char *)&packet, sizeof(PositionPacket), port);
+    this->socket.send<PositionPacket>(packet, port);
   }
 
   void setMessageReceiveHandler(MessageReceiveHandler handler)

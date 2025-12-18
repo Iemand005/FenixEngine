@@ -12,15 +12,6 @@ using socket_t = SOCKET;
 
 #include "engine/networking/networking.hpp"
 
-struct ClientInfo
-{
-  unsigned int id;
-  sockaddr_in address; // IP + port
-  // uint32_t playerId;
-  // std::chrono::steady_clock::time_point lastSeen;
-  // std::string username; this guy eally llikes meat you still with me foxyz or have you fallen asleep again
-};
-
 class Server
 {
 public:

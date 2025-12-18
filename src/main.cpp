@@ -97,11 +97,12 @@ class Game {
 
   std::shared_ptr<fe::Character> player;
 
-  std::vector<std::shared_ptr<fe::Character>> npcs =
-      std::vector<std::shared_ptr<fe::Character>>();
+  std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
-  std::vector<std::shared_ptr<fe::Object>> maps =
-      std::vector<std::shared_ptr<fe::Object>>();
+  std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
+
+  std::vector<std::string> messages;
+
 
   double lastUpdateTime = 0.0f;
 
@@ -118,6 +119,7 @@ class Game {
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE);
     // glCullFace(GL_FRONT);
 
     initImGui();
@@ -126,8 +128,9 @@ class Game {
 
     client = std::make_unique<Networker>(2130);
 
-    client->messageReceiveHandler = [](std::string message) {
+    client->messageReceiveHandler = [this](std::string message) {
       std::cout << "The server broadcasted a message: " << message << std::endl;
+      messages.push_back(message);
     };
 
     client->connect();
@@ -146,6 +149,10 @@ class Game {
     startMouseCapture();
 
     loadModels();
+  }
+
+  void connectToServer(std::string address, unsigned short port) {
+    
   }
 
   bool initGlfw() {
@@ -357,6 +364,11 @@ class Game {
       disableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
       disableWireframeMode();
+
+    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+      glEnable(GL_MULTISAMPLE);
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+      glDisable(GL_MULTISAMPLE);
     // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
     //   client->sendPing();
 
@@ -401,8 +413,7 @@ class Game {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = ImGui::GetIO();
-    io.ConfigFlags |=
-        ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui::StyleColorsDark();
 
@@ -419,7 +430,6 @@ class Game {
 
     ImGui::Begin("Debug info");
     {
-      ImGui::SetWindowFocus();
       ImGui::Text("Hello, World!");
       ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0
                                   ? 1.0 / fpsCounter.deltaTime
@@ -440,6 +450,11 @@ class Game {
       if (ImGui::Button("Start", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }
+
+      if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
+        std::cout << "Button clicked!" << std::endl;
+      }
+
       fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
@@ -452,14 +467,11 @@ class Game {
     }
     ImGui::End();
 
-    static char input_buffer[256] = "";
-    static std::vector<std::string> messages;
+    static char inputBuffer[256] = "";
 
     ImGui::Begin("Chat");
     {
-      ImGui::BeginChild("ChatHistory",
-                        ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10),
-                        true, ImGuiWindowFlags_HorizontalScrollbar);
+      ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
 
       for (const auto& msg : messages) {
         ImGui::TextWrapped("%s", msg.c_str());
@@ -475,21 +487,20 @@ class Game {
       ImGui::Separator();
 
       ImGui::PushItemWidth(-70);
-      bool enter_pressed =
-          ImGui::InputText("##Input", input_buffer, IM_ARRAYSIZE(input_buffer),
-                           ImGuiInputTextFlags_EnterReturnsTrue);
+      bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::PopItemWidth();
 
       ImGui::SameLine();
 
-      // 4. Send button (or Enter key)
       bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
 
       if (send_clicked || enter_pressed) {
-        if (input_buffer[0] != '\0') {
-          messages.push_back(std::string("You: ") + input_buffer);
+        if (inputBuffer[0] != '\0') {
+          messages.push_back(std::string("You: ") + inputBuffer);
 
-          input_buffer[0] = '\0';
+          client->sendMessage(inputBuffer);
+
+          inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);
         }
       }
@@ -519,18 +530,15 @@ int main() {
     glm::vec3 pos = game.player->position + playerHeight;
     cameraPos = pos - cameraFront * 5.0f;
     game.playerCamera->setPos(cameraPos);
-    cameraTarget = pos;
 
     game.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
     // window.playerCamera->setPos(cameraPos);
 
-    game.playerCamera->setFront(glm::normalize(cameraTarget - cameraPos));
+    game.playerCamera->setFront(glm::normalize(pos - cameraPos));
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) *
-                         glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f *
-                         glm::vec3(game.getDeltaTime()));
+      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
       npc->needsUpdate = true;
     }
     for (auto& npc : game.npcs) {
