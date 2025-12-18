@@ -88,7 +88,7 @@ public:
   }
 
   bool createSocketIfNotExist() {
-    // if (sock != INVALID_SOCKET) return false;
+    if (sock != INVALID_SOCKET) return false;
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
@@ -105,6 +105,8 @@ public:
 
 
     this->sock = sock;
+
+    std::cout << "Created new socket..." << std::endl;
 
     return true;
   }
@@ -127,6 +129,7 @@ public:
       CLOSE_SOCKET(sock);
       return false;
     }
+    std::cout << "Bound socket..." << std::endl;
     return true;
   }
 
@@ -140,13 +143,13 @@ public:
     // u_long mode = 1;
     // ioctlsocket(sock, FIONBIO, &mode);
 
+    char buffer[1024];
+    sockaddr_in senderAddr{};
+    socklen_t senderLen = sizeof(senderAddr);
+
     while (true)
     {
-
-      char buffer[1024];
-      sockaddr_in senderAddr{};
-      socklen_t senderLen = sizeof(senderAddr);
-    std::cout << "Waiting for next packet..." << std::endl;
+      std::cout << "Waiting for next packet..." << std::endl;
 
       int received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
      
