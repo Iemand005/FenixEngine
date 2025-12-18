@@ -103,11 +103,7 @@ public:
     bindSocket(0);
   }
 
-  bool bindSocket(int port) {
-    bindSocket(htons(port));
-  }
-
-  bool bindSocket(u_short port) {
+  bool bindSocket(unsigned short port) {
     this->createSocketIfNotExist();
 
     sockaddr_in localAddr{};
@@ -126,7 +122,7 @@ public:
 
   int startListening(unsigned short port, ReceiveCallback callback)
   {
-    this->createSocketIfNotExist();
+    // this->createSocketIfNotExist();
     this->bindSocket(port);
     std::cout << "Listening on UDP port " << port << "..." << std::endl;
 
@@ -137,7 +133,15 @@ public:
       sockaddr_in senderAddr{};
       socklen_t senderLen = sizeof(senderAddr);
 
+      int received = -1;
+      try {
       int received = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, (sockaddr *)&senderAddr, &senderLen);
+        std::cout << "No throw...";
+
+      } catch (const std::exception &ex) {
+        std::cout << ex.what();
+
+      }
       if (received >= 0)
       {
         std::cout << "Client said something...";
@@ -153,7 +157,8 @@ public:
       {
         std::cerr << "Receive failed: " << SOCKET_ERRNO << "\n";
         this->close();
-        this->createSocketIfNotExist();
+        // this->createSocketIfNotExist();
+        this->bindSocket(port);
       }
     }
 
