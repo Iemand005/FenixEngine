@@ -13,15 +13,17 @@ public:
   using MessageReceiveHandler = std::function<void(std::string message)>;
   using AllPacketHandler = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
   MessageReceiveHandler messageReceiveHandler;
-  using HelloHandler = std::function<void(sockaddr_in address)>;
-  HelloHandler helloHandler;
 
   AllPacketHandler allPacketHandler = nullptr;
   UDPSocket socket;
 
   std::thread listenerThread;
 
+  std::vector<ClientInfo> clients = std::vector<ClientInfo>();
+
   unsigned short port = 0;
+
+  unsigned int lastClientId = 0;
 
   Networker() {}
 
@@ -97,7 +99,11 @@ public:
       switch (headerS.type) {
         case PacketType::Hello:
         {
-          helloHandler(from);
+          ClientInfo clientInfo;
+      clientInfo.address = from;
+      // clientInfo.id = *lastClientId++;
+      this->clients.push_back(clientInfo);
+      std::cout << "Client added to connection list." << std::endl;
         }
         break;
         case PacketType::Ok:
@@ -141,9 +147,8 @@ public:
 
   void startAsync(unsigned short port)
   {
-    listenerThread = std::thread([this, port]() {
-      this->start(port);
-    });
+    listenerThread = std::thread([this, port]()
+                                 { this->start(port); });
     listenerThread.detach();
   }
 };

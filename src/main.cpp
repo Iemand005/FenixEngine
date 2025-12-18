@@ -36,14 +36,10 @@ int windowHeight = 600.0f;
 bool vsync = true;
 
 // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-//     // Forward to ImGui FIRST
 //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
-//     // Only process your own input if ImGui doesn't want it
 //     ImGuiIO& io = ImGui::GetIO();
-//     if (!io.WantCaptureMouse) {
-//         // Your mouse handling code
-//     }
+//     if (io.WantCaptureMouse) return;
 // }
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
@@ -183,7 +179,12 @@ public:
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
-    // glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+      ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.WantCaptureMouse) return;
+    });
     return true;
   }
 
@@ -362,7 +363,7 @@ public:
         this->nextMap();
       ctrlWasDown = true;
     }
-    else  
+    else
       ctrlWasDown = false;
 
     static bool pWasDown = false;
@@ -372,7 +373,8 @@ public:
         client->sendPing();
       pWasDown = true;
     }
-    else pWasDown = false;
+    else
+      pWasDown = false;
   }
 
   void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
@@ -454,35 +456,88 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Window");
-    ImGui::SetWindowFocus();
-    ImGui::Text("Hello, World!");
-    ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::Text("Objects: %zu", this->scene->getModels().size());
-    size_t totalVertices = 0;
-    for (auto &obj : this->scene->getModels())
-      for (auto &mesh : obj->meshes)
-        totalVertices += mesh.getVertices().size();
-    ImGui::Text("Vertices: %zu", totalVertices);
-    size_t needsUpdateCount = 0;
-    for (auto &obj : this->scene->getModels())
+    ImGui::Begin("Debug info");
     {
-      if (obj->needsUpdate)
-        needsUpdateCount++;
+      ImGui::SetWindowFocus();
+      ImGui::Text("Hello, World!");
+      ImGui::Text("FPS %.1f", fpsCounter.frameTime > 0.0 ? 1.0 / fpsCounter.frameTime : 0.0);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("Objects: %zu", this->scene->getModels().size());
+      size_t totalVertices = 0;
+      for (auto &obj : this->scene->getModels())
+        for (auto &mesh : obj->meshes)
+          totalVertices += mesh.getVertices().size();
+      ImGui::Text("Vertices: %zu", totalVertices);
+      size_t needsUpdateCount = 0;
+      for (auto &obj : this->scene->getModels())
+      {
+        if (obj->needsUpdate)
+          needsUpdateCount++;
+      }
+      ImGui::Text("Needs Update: %zu", needsUpdateCount);
+      if (ImGui::Button("Start", ImVec2(50, 20)))
+      {
+        std::cout << "Button clicked!" << std::endl;
+      }
+      fe::Object *model = this->player.get();
+      ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
+      for (size_t i = 0; i < this->npcs.size(); ++i)
+      {
+        ImGui::Text("NPC %zu", i);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+      }
     }
-    ImGui::Text("Needs Update: %zu", needsUpdateCount);
-    if (ImGui::Button("Start", ImVec2(50, 20)))
+    ImGui::End();
+
+    static char input_buffer[256] = "";
+    static std::vector<std::string> messages;
+
+    ImGui::Begin("Chat", nullptr, ImGuiWindowFlags_NoCollapse);
     {
-      std::cout << "Button clicked!" << std::endl;
-    }
-    fe::Object *model = this->player.get();
-    ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
-    for (size_t i = 0; i < this->npcs.size(); ++i)
-    {
-      ImGui::Text("NPC %zu", i);
-      ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
-      ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+      ImGui::BeginChild("ChatHistory",
+                        ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10),
+                        true,
+                        ImGuiWindowFlags_HorizontalScrollbar);
+
+      for (const auto &msg : messages)
+      {
+        ImGui::TextWrapped("%s", msg.c_str());
+      }
+
+      // Auto-scroll to bottom if new messages
+      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+      {
+        ImGui::SetScrollHereY(1.0f);
+      }
+
+      ImGui::EndChild();
+
+
+      ImGui::Separator();
+
+      ImGui::PushItemWidth(-70);
+      bool enter_pressed = ImGui::InputText("##Input",
+                                            input_buffer,
+                                            IM_ARRAYSIZE(input_buffer),
+                                            ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::PopItemWidth();
+
+      ImGui::SameLine();
+
+      // 4. Send button (or Enter key)
+      bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
+
+      if (send_clicked || enter_pressed)
+      {
+        if (input_buffer[0] != '\0')
+        {
+          messages.push_back(std::string("You: ") + input_buffer);
+
+          input_buffer[0] = '\0';
+          ImGui::SetKeyboardFocusHere(-1);
+        }
+      }
     }
     ImGui::End();
 
