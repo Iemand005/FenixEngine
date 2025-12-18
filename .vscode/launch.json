@@ -7,7 +7,7 @@
       "program": "${workspaceFolder}\\build\\debug\\main.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${fileDirname}",
+      "cwd": "${workspaceFolder}\\src",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build main"
@@ -19,7 +19,7 @@
       "program": "${workspaceFolder}\\build\\debug\\openxr.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${fileDirname}",
+      "cwd": "${workspaceFolder}\\src",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build OpenXR Windows"
@@ -31,7 +31,7 @@
       "program": "${workspaceFolder}\\build\\debug\\server.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${fileDirname}",
+      "cwd": "${workspaceFolder}\\src",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build server"

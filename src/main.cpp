@@ -35,6 +35,8 @@ int windowHeight = 600.0f;
 
 bool vsync = true;
 
+bool capturingMouse = true;
+
 // void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 //     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
@@ -44,8 +46,10 @@ bool vsync = true;
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
-  ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
-
+  // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+    return;
   float xOffset = xPos - lastX;
   float yOffset = lastY - yPos;
   if (lastX == 0 && lastY == 0)
@@ -77,6 +81,9 @@ void mouseCallback(GLFWwindow *window, double xPos, double yPos)
 
 void scrollCallback(GLFWwindow *window, double xoffset, double yOffset)
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+    return;
   fov -= (float)yOffset;
   if (fov < 1.0f)
     fov = 1.0f;
@@ -86,6 +93,9 @@ void scrollCallback(GLFWwindow *window, double xoffset, double yOffset)
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+    return;
   windowWidth = width;
   windowHeight = height;
   glViewport(0, 0, width, height);
@@ -179,12 +189,49 @@ public:
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-      ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    glfwSetMouseButtonCallback(window, [](GLFWwindow *window, int button, int action, int mods)
+                               {
+      // ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
       ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-    });
+      if (io.WantCaptureMouse) return; });
+      glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos)
+                             {
+      // mouseCallback(window, xPos, yPos);
+    // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+
+    if (!glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+          if (io.WantCaptureMouse) return;
+
+      float xOffset = xPos - lastX;
+      float yOffset = lastY - yPos;
+      if (lastX == 0 && lastY == 0)
+      {
+        xOffset = 0;
+        yOffset = 0;
+      }
+      lastX = xPos;
+      lastY = yPos;
+
+      const float sensitivity = 0.1f;
+      xOffset *= sensitivity;
+      yOffset *= sensitivity;
+
+      yaw += xOffset;
+      pitch += yOffset;
+
+      if (pitch > 89.0f)
+        pitch = 89.0f;
+      if (pitch < -89.0f)
+        pitch = -89.0f;
+
+      glm::vec3 direction;
+      direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+      direction.y = sin(glm::radians(pitch));
+      direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+      cameraFront = glm::normalize(direction); });
     return true;
   }
 
@@ -382,45 +429,16 @@ public:
 
   void startMouseCapture()
   {
-    glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos)
-                             {
-      // mouseCallback(window, xPos, yPos);
-ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+    // return;
+    
 
-  float xOffset = xPos - lastX;
-  float yOffset = lastY - yPos;
-  if (lastX == 0 && lastY == 0)
-  {
-    xOffset = 0;
-    yOffset = 0;
-  }
-  lastX = xPos;
-  lastY = yPos;
-
-  const float sensitivity = 0.1f;
-  xOffset *= sensitivity;
-  yOffset *= sensitivity;
-
-  yaw += xOffset;
-  pitch += yOffset;
-
-  if (pitch > 89.0f)
-    pitch = 89.0f;
-  if (pitch < -89.0f)
-    pitch = -89.0f;
-
-  glm::vec3 direction;
-  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  direction.y = sin(glm::radians(pitch));
-  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(direction); });
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   }
 
   void stopMouseCapture()
   {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    glfwSetCursorPosCallback(window, NULL);
+    // glfwSetCursorPosCallback(window, NULL);
   }
 
   bool shouldClose()
@@ -512,7 +530,6 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
       }
 
       ImGui::EndChild();
-
 
       ImGui::Separator();
 
