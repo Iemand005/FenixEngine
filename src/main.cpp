@@ -483,9 +483,10 @@ int main()
     std::cout << "The server broadcasted a message: " << message << std::endl;
   };
 
-  client.sendPing();
-
+  
   client.connect();
+  
+  client.sendPing();
 
   client.sendMessage("RAWR!!");
 
