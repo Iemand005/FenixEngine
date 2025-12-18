@@ -191,16 +191,14 @@ public:
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetMouseButtonCallback(window, [](GLFWwindow *window, int button, int action, int mods)
                                {
-      // ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
       ImGuiIO& io = ImGui::GetIO();
       if (io.WantCaptureMouse) return; });
       glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xPos, double yPos)
                              {
-      // mouseCallback(window, xPos, yPos);
-    // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
 
-    if (!glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) return;
+                              auto inputMode = glfwGetInputMode(window, GLFW_CURSOR);
+    if (!(inputMode == GLFW_CURSOR_DISABLED)) return;
 
     ImGuiIO& io = ImGui::GetIO();
           if (io.WantCaptureMouse) return;
