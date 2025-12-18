@@ -1,4 +1,4 @@
-// OBJ_Loader.h - A Single Header OBJ Model Loader
+// OBJ_LOADER.h - A Single Header OBJ Model Loader
 
 #pragma once
 

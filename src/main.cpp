@@ -1,4 +1,8 @@
 #pragma once
+#define GLFW_INCLUDE_NONE
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -36,16 +40,7 @@ bool vsync = true;
 
 bool capturingMouse = true;
 
-// void mouseButtonCallback(GLFWwindow* window, int button, int action, int
-// mods) {
-//     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-
-//     ImGuiIO& io = ImGui::GetIO();
-//     if (io.WantCaptureMouse) return;
-// }
-
 void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
-  // ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantCaptureMouse) return;
   float xOffset = xPos - lastX;
@@ -460,7 +455,7 @@ class Game {
     static char input_buffer[256] = "";
     static std::vector<std::string> messages;
 
-    ImGui::Begin("Chat", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Chat");
     {
       ImGui::BeginChild("ChatHistory",
                         ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10),
@@ -509,12 +504,6 @@ class Game {
 };
 
 int main() {
-  // client.sendMessage("RAWR!!");
-  // client.allPacketHandler = [](const char* data, size_t size, const
-  // sockaddr_in& from){
-
-  // };
-
   Game game(800, 600);
 
   glm::vec3 playerHeight = glm::vec3(0.0f, 6.5f, 0.0f);

@@ -3,29 +3,61 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+// #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define USE_IMGUI 1
+// #define USE_IMGUI 1
 
-#if USE_IMGUI
-#include "..\imgui\imgui.h"
-#include "..\imgui\imgui_impl_glfw.h"
-#include "..\imgui\imgui_impl_opengl3.h"
-#endif
+// #if USE_IMGUI
+// #include "..\imgui\imgui.h"
+// #include "..\imgui\imgui_impl_glfw.h"
+// #include "..\imgui\imgui_impl_opengl3.h"
+// #endif
 
-#ifdef OBJ_LOAdER
-#include <OBJ_Loader.h>
+#ifdef OBJ_LOADER
+#include <OBJ_LOADER.h>
 #endif
 
 #include <stb_image.h>
 
+
+// double getTime() {
+//     auto now = std::chrono::system_clock::now();
+    
+//     std::time_t time_seconds = std::chrono::system_clock::to_time_t(now);
+// }
+
+// double getSteadyTimeSeconds() {
+//     auto now = std::chrono::steady_clock::now();
+//     auto duration = now.time_since_epoch();
+//     return std::chrono::duration<double>(duration).count();
+// }
+
+
+
 namespace fe
 {
+  class Time {
+private:
+    static std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+    
+public:
+    static void init() {
+        start_time = std::chrono::high_resolution_clock::now();
+    }
+    
+    static double getTime() {
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = now - start_time;
+        return elapsed.count();
+    }
+};
+
   struct AABB
   {
     glm::vec3 min, max;
@@ -47,29 +79,45 @@ namespace fe
     }
   };
 
-  struct FPSCounter
-  {
-    double lastTime = 0.0;
-    double frameTime = 0.0;
+  // struct FPSCounter
+  // {
+  //   double lastTime = 0.0;
+  //   double frameTime = 0.0;
 
-    void update()
-    {
-      double currentTime = glfwGetTime();
-      frameTime = currentTime - lastTime;
-      lastTime = currentTime;
-    }
-  };
+  //   void update()
+  //   {
+  //     double currentTime = glfwGetTime();
+  //     frameTime = currentTime - lastTime;
+  //     lastTime = currentTime;
+  //   }
+  // };
 
   struct Timer
   {
+    static std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+public:
     double lastTime = 0.0;
     double deltaTime = 0.0;
 
+    Timer() {
+      this->reset();
+    }
+
     void update()
     {
-      double currentTime = glfwGetTime();
+      double currentTime = getTime();
       deltaTime = currentTime - lastTime;
       lastTime = currentTime;
+    }
+
+        static void reset() {
+        start_time = std::chrono::high_resolution_clock::now();
+    }
+    
+    static double getTime() {
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = now - start_time;
+        return elapsed.count();
     }
   };
 

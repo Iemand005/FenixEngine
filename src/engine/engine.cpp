@@ -1,7 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
-#define OBJ_LOAdER
+#define OBJ_LOADER
 #include "engine.h"
-#include "OBJ_Loader.h"
+#include "OBJ_LOADER.h"
 
 
 namespace fe {
