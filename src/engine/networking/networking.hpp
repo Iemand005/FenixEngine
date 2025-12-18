@@ -18,6 +18,8 @@ class Networker {
   AllPacketHandler allPacketHandler = nullptr;
   UDPSocket socket;
 
+  std::thread listenerThread;
+
   unsigned short port = 0;
 
   Networker() {}
@@ -115,8 +117,14 @@ class Networker {
   }
 
   void startAsync(unsigned short port) {
-    std::thread listenerThread([this, port](){
-      this->start(port);
+    listenerThread = std::thread([this, port](){
+      try {
+
+        this->start(port);
+      } catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+      }
     });
+    listenerThread.detach();
   }
 };
