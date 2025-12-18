@@ -14,6 +14,7 @@ using socket_t = SOCKET;
 
 struct ClientInfo
 {
+  unsigned int id;
   sockaddr_in address; // IP + port
   // uint32_t playerId;
   // std::chrono::steady_clock::time_point lastSeen;
@@ -34,7 +35,7 @@ public:
   void start()
   {
     server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
-      // this->broadcast(data, size);
+      this->broadcast(data, size);
     };
     server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
 
