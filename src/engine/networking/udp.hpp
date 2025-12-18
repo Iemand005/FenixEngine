@@ -14,35 +14,33 @@
 
 typedef void (*UDPResponseHandler)(const char *data, size_t size);
 
-const int port = 2130;
+// const int PORT = 2130;
 
 class UDPSocket
 {
-  SOCKET sock;
+  SOCKET sock = INVALID_SOCKET;
   using ReceiveCallback = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
 
 public:
-  UDPSocket()
-  {
-  }
+  UDPSocket() {}
 
   template <typename T>
-  void send(std::string address = "127.0.0.1") {
+  void send(unsigned short port, std::string address = "127.0.0.1") {
     T packet;
-    this->send<T>(packet, address);
+    this->send<T>(packet, port, address);
   }
 
   template <typename T>
-  void send(T packet, std::string address = "127.0.0.1") {
-    this->send((char*)&packet, sizeof(T), address);
+  void send(T packet, unsigned short port, std::string address = "127.0.0.1") {
+    this->send((char*)&packet, sizeof(T), port, address);
   }
 
   template <typename T>
   void send(T packet, sockaddr_in address) {
-    this->send((char*)&packet, sizeof(T), address);
+    this->send((char*)&packet, sizeof(T), port, address);
   }
 
-  void send(const char *packet, size_t size, std::string address = "127.0.0.1") {
+  void send(const char *packet, size_t size, unsigned short port, std::string address = "127.0.0.1") {
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
     receiverAddr.sin_port = htons(port);
@@ -58,26 +56,12 @@ public:
 
   void close() {
     CLOSE_SOCKET(sock);
-    sock = 0;
+    sock = INVALID_SOCKET;
     WSACleanup();
   }
 
   void send(const char *packet, size_t size, sockaddr_in address)
   {
-
-    // WSADATA wsaData;
-    // if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    // {
-    //   std::cerr << "WSAStartup failed\n";
-    //   return;
-    // }
-
-    // sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    // if (sock == INVALID_SOCKET)
-    // {
-    //   std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
-    //   return;
-    // }
 
     this->createSocketIfNotExist();
     
@@ -91,12 +75,10 @@ public:
     {
       std::cerr << "Send failed: " << SOCKET_ERRNO << "\n";
     }
-
-    // this->closeSocket();
   }
 
   bool createSocketIfNotExist() {
-    if (sock != INVALID_SOCKET) return false;
+    // if (sock != INVALID_SOCKET) return false;
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
@@ -110,6 +92,24 @@ public:
       std::cerr << "Socket creation failed: " << SOCKET_ERRNO << "\n";
       return false;
     }
+
+
+    this->sock = sock;
+
+    return true;
+  }
+
+  bool bindSocket() {
+    bindSocket(0);
+  }
+
+  bool bindSocket(int port) {
+    bindSocket(htons(port));
+  }
+
+  bool bindSocket(u_short port) {
+    this->createSocketIfNotExist();
+
     sockaddr_in localAddr{};
     localAddr.sin_family = AF_INET;
     localAddr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
@@ -121,15 +121,13 @@ public:
       CLOSE_SOCKET(sock);
       return false;
     }
-
-    this->sock = sock;
-
     return true;
   }
 
-  int startListening(ReceiveCallback callback)
+  int startListening(unsigned short port, ReceiveCallback callback)
   {
     this->createSocketIfNotExist();
+    this->bindSocket(port);
     std::cout << "Listening on UDP port " << port << "..." << std::endl;
 
     while (true)

@@ -18,22 +18,26 @@ class Networker {
   AllPacketHandler allPacketHandler = nullptr;
   UDPSocket socket;
 
-  Networker() {
+  unsigned short port = 0;
 
+  Networker() {}
+
+  Networker(unsigned short port) {
+    this->port = port;
   }
 
-  void connect() {
+  void connect(unsigned short port) {
     this->sendHello();
-    this->startAsync();
+    this->startAsync(0);
   }
 
   void sendPing() {
-    this->socket.send<PingPacket>();
+    this->socket.send<PingPacket>(port);
   }
 
   void sendHello() {
     PingPacket packet;
-    this->socket.send((char*)&packet, sizeof(PingPacket));
+    this->socket.send((char*)&packet, sizeof(PingPacket), port);
   }
 
   void sendMessage(std::string message) {
@@ -47,14 +51,14 @@ class Networker {
     memcpy(packet, &messagePacket, sizeof(MessagePacket));
     memcpy(packet + headerSize, message.c_str(), message.size());
 
-    this->socket.send((char*)packet, totalSize);
+    this->socket.send((char*)packet, totalSize, port);
   }
 
   void sendPosition(glm::vec3 position, glm::vec3 rotation) {
     PositionPacket packet;
     packet.position = position;
     packet.rotation = rotation;
-    this->socket.send((char*)&packet, sizeof(PositionPacket));
+    this->socket.send((char*)&packet, sizeof(PositionPacket), port);
   }
   
   void setMessageReceiveHandler(MessageReceiveHandler handler) {
@@ -62,7 +66,11 @@ class Networker {
   }
 
   void start() {
-    socket.startListening([this](const char* data, size_t size, const sockaddr_in& from) {
+    this->start(this->port);
+  }
+
+  void start(unsigned short port) {
+    socket.startListening(port, [this](const char* data, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
@@ -106,9 +114,9 @@ class Networker {
     });
   }
 
-  void startAsync() {
-    std::thread listenerThread([this](){
-      this->start();
+  void startAsync(unsigned short port) {
+    std::thread listenerThread([this, port](){
+      this->start(port);
     });
   }
 };

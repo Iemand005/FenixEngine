@@ -472,7 +472,7 @@ ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
 int main()
 {
 
-  Networker client;
+  Networker client(2130);
 
   // client.sendMessage("RAWR!!");
   // client.allPacketHandler = [](const char* data, size_t size, const sockaddr_in& from){
@@ -483,7 +483,9 @@ int main()
     std::cout << "The server broadcasted a message: " << message << std::endl;
   };
 
-  client.connect();
+  client.connect(2130);
+
+  client.sendMessage("RAWR!!");
 
   Game game(800, 600);
 
