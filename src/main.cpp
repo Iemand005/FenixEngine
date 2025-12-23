@@ -102,8 +102,9 @@ class Game {
 
     this->client = std::make_unique<Networker>(2130);
 
-    client->messageReceiveHandler = [this](std::string message) {
-      std::cout << "The server broadcasted a message: " << message << std::endl;
+    client->messageReceiveHandler = [this](std::string message, ClientData sender) {
+      std::cout << "The server broadcasted a messageay: " << message << "Which came from  with username " << sender.username<< std::endl;
+      // std::cout ;
       messages.push_back(message);
     };
 
@@ -211,10 +212,10 @@ class Game {
   }
 
   void resize(int width, int height) {
-game->width = width;
-      game->height = height;
-      game->scene->resize(width, height);
-      game->updateAspect();
+      this->width = width;
+      this->height = height;
+      this->scene->resize(width, height);
+      this->updateAspect();
   }
 
   void loadModels() {
@@ -439,7 +440,7 @@ game->width = width;
     ImGui::Begin("Multiplayer");
     {
       static char usernameBuffer[32] = "\0";
-      static char addressBuffer[256] = "\0";
+      static char addressBuffer[256] = "127.0.0.1\0";
       int port = 2130;
 
       ImGui::InputText("##Input", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
@@ -448,7 +449,7 @@ game->width = width;
 
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
-        this->connectToServer(addressBuffer, port, usernameBuffer)
+        this->connectToServer(addressBuffer, port, "Gunky");
       }
 
       fe::Object* model = this->player.get();
@@ -503,7 +504,7 @@ game->width = width;
   }
 
   void updateAspect() {
-    this->playerCamera->setAspect((float)this->width / (float)this->height);
+    if (this->playerCamera) this->playerCamera->setAspect((float)this->width / (float)this->height);
   }
 };
 

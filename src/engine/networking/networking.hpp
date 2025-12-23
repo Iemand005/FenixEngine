@@ -1,6 +1,7 @@
 
 #pragma once
 #include <thread>
+#include <map>
 
 #include "packets.hpp"
 #include "udp.hpp"
@@ -8,15 +9,15 @@
 typedef void (*MessageReceiveHandler)(std::string message);
 
 class ClientData {
-  public:
-  unsigned int id;
+public:
+  unsigned char id;
   sockaddr_in address;
   std::string username;
 };
 
 class Networker {
  public:
-  using MessageReceiveHandler = std::function<void(std::string message)>;
+  using MessageReceiveHandler = std::function<void(std::string message, const ClientData sender)>;
   using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
   MessageReceiveHandler messageReceiveHandler;
 
@@ -25,12 +26,13 @@ class Networker {
 
   std::thread listenerThread;
 
-  std::vector<ClientData> clients = std::vector<ClientData>();
+  // std::vector<ClientData> clients = std::vector<ClientData>();
+  std::unordered_map<unsigned char, ClientData> clients = std::unordered_map<unsigned char, ClientData>();
 
   unsigned short port = 0;
   std::string serverAddress = "127.0.0.1";
 
-  unsigned int lastClientId = 0;
+  unsigned char lastClientId = 0;
 
   std::string username = "Server";
 
@@ -55,8 +57,10 @@ class Networker {
 
   void sendPing() { this->socket.send<PingPacket>(port); }
 
-  void copyStr(char* target, std::string source) {
-    memcpy(target, source.c_str(), source.size());
+  size_t copyStr(char* target, std::string source) {
+    size_t size= source.size();
+    memcpy(target, source.c_str(), size);
+    return size;
   }
 
   void sendHello() {
@@ -91,7 +95,11 @@ class Networker {
 
   void broadcast(const char* data, size_t size) {
     std::cout << "Boradcasting" << std::endl;
-    for (auto& client : clients) this->socket.send(data, size, client.address);
+    for (auto& [id, client] : clients) {
+      auto packet = (PacketHeader*)data;
+      packet->clientId = id;
+      this->socket.send(data, size, client.address);
+    }
   }
 
   void start() { this->start(this->port); }
@@ -120,18 +128,42 @@ class Networker {
           // auto hello = *(HelloPacket*)data;
           ClientData clientInfo;
           clientInfo.address = from;
-          clientInfo.id = lastClientId++;
+          unsigned char id = lastClientId++;
+          clientInfo.id = id;
           clientInfo.username = std::string(hello.clientInfo.username, hello.clientInfo.usernameLength);
-          this->clients.push_back(clientInfo);
+          this->clients.insert({id, clientInfo});
           std::cout << "Client added to connection list." << std::endl;
 
           this->socket.send<HelloOkPacket>(from);
+          ClientListPacket clientList;
+          clientList.clientCount = clients.size();
+          for (size_t i = 0; i < clients.size(); ++i)
+          {
+            auto size = copyStr(clientList.clients[i].username, clients[i].username);
+            clientList.clients[i].usernameLength = size;
+            clientList.clients[i].id = clients[i].id;
+          }
+          
+          this->socket.send<ClientListPacket>(clientList, from);
         } break;
         case PacketType::HelloOk: {
           std::cout << "The server said we're okay!" << std::endl;
           registeredOnServer = true;
           // helloHandler(from);
 
+        } break;
+        case PacketType::ClientList: {
+          std::cout << "The server showed us who's online!" << std::endl;
+          auto clientList = dataAs<ClientListPacket>(data);
+          for (size_t i = 0; i < clientList.clientCount; i++)
+          {
+            ClientInfo client = clientList.clients[i];
+            ClientData data;
+            data.id = client.id;
+            data.username = std::string(client.username, client.usernameLength);
+            std::cout << "Client number "<<i<<" has username: "<< data.username <<" and ID: "<<data.id<<std::endl;
+            clients.insert_or_assign(data.id, data);
+          }
         } break;
         case PacketType::Message: {
           auto messagePacket = (MessagePacket*)data;
@@ -140,7 +172,8 @@ class Networker {
           memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
 
           std::string message(messageBuffer, messageLength);
-          if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
+          ClientData data = clients.at(header.clientId);
+          if (messageReceiveHandler != nullptr) messageReceiveHandler(message, data);
         } break;
         case PacketType::Position: {
           auto packet = (PositionPacket*)data;
@@ -160,7 +193,7 @@ class Networker {
   }
 
   void stopAsync() {
-    // if (this->listenerThread) this->listenerThread.close();
+    // if (this->listenerThread) this->listenerThread.();
   }
 
   void startAsync(unsigned short port) {

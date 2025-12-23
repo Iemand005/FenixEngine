@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 
+#define MAX_PLAYER_COUNT 4
+
 enum class PacketType : char {
   Invalid = 0,
   Hello,
@@ -10,26 +12,32 @@ enum class PacketType : char {
   Position,
   Message,
   ClientList,
+  ServerStatus,
 };
 
 struct PacketHeader {
   PacketType type;
-  char version = 1;
-  int index = 0;
-  
+  unsigned char version = 1;
+  unsigned char clientId;
+  unsigned int index;
 };
 
 struct ClientInfo {
-char usernameLength = 32;
+  unsigned char id;
+  unsigned char usernameLength = 32;
   char username[32];
+};
+
+struct ServerStatusPacket {
+  PacketHeader header{PacketType::ServerStatus};
+
 };
 
 struct ClientListPacket {
   PacketHeader header{PacketType::ClientList};
-  short clientCount;
-  ClientInfo clients[4];
+  unsigned short clientCount;
+  ClientInfo clients[MAX_PLAYER_COUNT];
 };
-
 
 struct HelloPacket {
   PacketHeader header{PacketType::Hello};
@@ -50,7 +58,7 @@ struct PingPacket {
 
 struct MessagePacket {
   PacketHeader header{PacketType::Message};
-  short messageLength;
+  unsigned short messageLength;
   char message[0];
 };
 

@@ -27,7 +27,9 @@ public:
     server.allPacketHandler = [this](const char *data, size_t size, sockaddr_in) {
       server.broadcast(data, size);
     };
-    server.setMessageReceiveHandler([](std::string message){ std::cout << "Message reached server: " << message << std::endl; });
+    server.setMessageReceiveHandler([](std::string message, ClientData sender){
+      std::cout << "Message reached server: " << message << " with client ID: " << sender.id << " and username: " << sender.username << std::endl;
+    });
 
     server.socket.createSocketIfNotExist();
     server.start();
