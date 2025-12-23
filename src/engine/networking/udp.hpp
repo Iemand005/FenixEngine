@@ -24,7 +24,7 @@ class UDPSocket
 public:
   UDPSocket() {}
 
-  bool makeAddress(unsigned short port, std::string address = "127.0.0.1", sockaddr_in* socketAddress) {
+  bool makeAddress(unsigned short port, std::string address, sockaddr_in* socketAddress) {
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
     receiverAddr.sin_port = htons(port);

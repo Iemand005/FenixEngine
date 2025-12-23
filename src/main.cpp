@@ -88,7 +88,9 @@ class Game {
     if (!initGlfw()) return;
     this->width = width;
     this->height = height;
-    glViewport(0, 0, width, height);
+    // glViewport(0, 0, width, height);
+    updateAspect();
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
@@ -120,8 +122,9 @@ class Game {
     loadModels();
   }
 
-  void connectToServer(std::string address, unsigned short port) {
-    this->client->connect();
+  void connectToServer(std::string address, unsigned short port, std::string username) {
+    // this->client->username = username;
+    this->client->connect(address, port, username);
   }
 
   bool initGlfw() {
@@ -187,25 +190,30 @@ class Game {
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->width = width;
-      game->height = height;
-      glViewport(0, 0, width, height);
-      game->updateAspect();
+      // game->width = width;
+      // game->height = height;
+      // game->scene->resize(width, height);
+
+      // game->updateAspect();
+      game->resize(width, height);
 
       game->redraw();
     });
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->width = width;
-      game->height = height;
-      glViewport(0, 0, width, height);
-
-      game->updateAspect();
+      game->resize(width, height);
       game->redraw();
     });
 
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
      return true;
+  }
+
+  void resize(int width, int height) {
+game->width = width;
+      game->height = height;
+      game->scene->resize(width, height);
+      game->updateAspect();
   }
 
   void loadModels() {
@@ -439,6 +447,7 @@ class Game {
 
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
+        this->connectToServer(addressBuffer, port, usernameBuffer)
       }
 
       fe::Object* model = this->player.get();
@@ -515,7 +524,6 @@ int main() {
     game.playerCamera->setPos(cameraPos);
 
     // game.playerCamera->setAspect((float)game.width / (float)game.height);
-    game.updateAspect();
     // window.playerCamera->setPos(cameraPos);
 
     game.playerCamera->setFront(glm::normalize(pos - cameraPos));

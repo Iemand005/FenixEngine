@@ -616,6 +616,10 @@ class Scene {
   std::vector<std::shared_ptr<Object>>& getModels() { return objects; }
 
   double getDeltaTime() { return timer.deltaTime; }
+
+  void resize(int width, int height) {
+    glViewport(0, 0, width, height);
+  }
 };
 
 }  // namespace fe

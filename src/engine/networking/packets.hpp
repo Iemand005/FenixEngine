@@ -5,18 +5,11 @@ enum class PacketType : char {
   Invalid = 0,
   Hello,
   Ok,
-  Identity,
-  Identify,
   Ping,
   Pong,
   Position,
   Message,
 };
-
-// template<typename T>
-// struct PacketBase<T> {
-//   PacketHeader header{T};
-// }
 
 struct PacketHeader {
   PacketType type;
@@ -26,14 +19,6 @@ struct PacketHeader {
 
 struct HelloPacket {
   PacketHeader header{PacketType::Hello};
-};
-
-struct IdentifyPacket {
-  PacketHeader header{PacketType::Identify};
-}
-
-struct IdentityPacket {
-  PacketHeader header{PacketType::Identity};
   char usernameLength = 32;
   char username[32];
 };

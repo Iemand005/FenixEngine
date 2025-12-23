@@ -7,10 +7,11 @@
 
 typedef void (*MessageReceiveHandler)(std::string message);
 
-struct ClientInfo
+class ClientInfo
 {
   unsigned int id;
   sockaddr_in address;
+  std::string username;
 };
 
 class Networker
@@ -34,6 +35,8 @@ public:
 
   std::string username = "Server";
 
+  bool registeredOnServer = false;
+
   Networker() {}
 
   Networker(unsigned short port)
@@ -41,8 +44,11 @@ public:
     this->port = port;
   }
 
-  void connect()
+  void connect(std::string address, unsigned short port, std::string username)
   {
+    this->port = port;
+    this-> serverAddress = address;
+    this->username = username;
     this->sendHello();
     this->startAsync(0);
   }
@@ -60,6 +66,8 @@ public:
   void sendHello()
   {
     HelloPacket packet;
+    packet.username = username.c_str();
+    packet.usernameLength = username.size();
     this->socket.send((char *)&packet, sizeof(HelloPacket), port);
   }
 
@@ -115,10 +123,14 @@ public:
     this->start(this->port);
   }
 
+  template<typename T>
+  T dataAs<T>(const char* data) {
+    return *(T*)data;
+  }
+
   void start(unsigned short port)
   {
-    socket.startListening(port, [this](const char *data, size_t size, const sockaddr_in &from)
-                          {
+    socket.startListening(port, [this](const char *data, size_t size, const sockaddr_in &from){
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
@@ -126,15 +138,18 @@ public:
 
       if (allPacketHandler) allPacketHandler(data, size, from);
 
-      auto header = (PacketHeader*)data;
-      PacketHeader headerS = *header;
+      // auto header = *(PacketHeader*)data;
+      auto header = this->dataAs<PacketHeader>(data);
+      // PacketHeader headerS = *header;
 
-      switch (headerS.type) {
+      switch (header.type) {
         case PacketType::Hello:
         {
+          auto hello = this->dataAs<HelloPacket>(data);
           ClientInfo clientInfo;
           clientInfo.address = from;
           clientInfo.id = lastClientId++;
+          ClientInfo.username = std::string(hello.username, hello.usernameLength);
           this->clients.push_back(clientInfo);
           std::cout << "Client added to connection list." << std::endl;
           
@@ -144,8 +159,9 @@ public:
         case PacketType::Ok:
         {
           std::cout << "The server said we're okay!" << std::endl;
+          registeredOnServer = true;
           // helloHandler(from);
-          
+
         }
         break;
         case PacketType::Message:
