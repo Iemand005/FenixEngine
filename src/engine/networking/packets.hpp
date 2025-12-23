@@ -7,12 +7,17 @@ enum class PacketType : char {
   Invalid = 0,
   Hello,
   HelloOk,
+  HelloNotOk,
   Ping,
   Pong,
   Position,
   Message,
   ClientList,
   ServerStatus,
+};
+
+enum FailureReason : char {
+  ServerFull
 };
 
 struct PacketHeader {
@@ -42,6 +47,11 @@ struct ClientListPacket {
 struct HelloPacket {
   PacketHeader header{PacketType::Hello};
   ClientInfo clientInfo;
+};
+
+struct HelloNotOkPacket {
+  PacketHeader header{PacketType::HelloNotOk};
+  FailureReason reason;
 };
 
 struct HelloOkPacket {

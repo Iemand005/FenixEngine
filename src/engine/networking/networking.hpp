@@ -128,11 +128,11 @@ class Networker {
           // auto hello = *(HelloPacket*)data;
           ClientData clientInfo;
           clientInfo.address = from;
-          unsigned char id = lastClientId++;
+          unsigned char id = ++lastClientId;
           clientInfo.id = id;
           clientInfo.username = std::string(hello.clientInfo.username, hello.clientInfo.usernameLength);
           this->clients.insert({id, clientInfo});
-          std::cout << "Client added to connection list." << std::endl;
+          std::cout << "Client added to connection list. Assigned ID "<< id << std::endl;
 
           this->socket.send<HelloOkPacket>(from);
           ClientListPacket clientList;
@@ -152,17 +152,22 @@ class Networker {
           // helloHandler(from);
 
         } break;
+        case PacketType::HelloNotOk: {
+          auto hello = dataAs<HelloNotOkPacket>(data);
+          std::cerr << "The server said you couldn't join... error code: "<<hello.reason << std::endl;
+
+        } break;
         case PacketType::ClientList: {
           std::cout << "The server showed us who's online!" << std::endl;
           auto clientList = dataAs<ClientListPacket>(data);
           for (size_t i = 0; i < clientList.clientCount; i++)
           {
-            ClientInfo client = clientList.clients[i];
-            ClientData data;
-            data.id = client.id;
-            data.username = std::string(client.username, client.usernameLength);
-            std::cout << "Client number "<<i<<" has username: "<< data.username <<" and ID: "<<data.id<<std::endl;
-            clients.insert_or_assign(data.id, data);
+            ClientInfo clientInfo = clientList.clients[i];
+            ClientData client;
+            client.id = clientInfo.id;
+            client.username = std::string(clientInfo.username, clientInfo.usernameLength);
+            std::cout << "Client number "<<i<<" has username: "<< client.username <<" and ID: "<<client.id<<std::endl;
+            clients.insert_or_assign(client.id, client);
           }
         } break;
         case PacketType::Message: {
