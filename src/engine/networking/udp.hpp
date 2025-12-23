@@ -25,17 +25,21 @@ public:
   UDPSocket() {}
 
   bool makeAddress(unsigned short port, std::string address, sockaddr_in* socketAddress) {
-    sockaddr_in receiverAddr{};
-    receiverAddr.sin_family = AF_INET;
-    receiverAddr.sin_port = htons(port);
+    socketAddress = new sockaddr_in();
+    socketAddress->sin_family= AF_INET;
+    socketAddress->sin_port = htons(port);
+    
+    // sockaddr_in receiverAddr{};
+    // receiverAddr.sin_family = AF_INET;
+    // receiverAddr.sin_port = htons(port);
 
-    if (inet_pton(AF_INET, address.c_str(), &receiverAddr.sin_addr) <= 0)
+    if (inet_pton(AF_INET, address.c_str(), &socketAddress->sin_addr) <= 0)
     {
       std::cerr << "Invalid address\n";
       return false;
     }
 
-    *socketAddress = receiverAddr;
+    // *socketAddress = receiverAddr;
     return true;
   }
 

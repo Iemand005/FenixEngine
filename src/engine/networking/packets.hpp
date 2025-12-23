@@ -4,11 +4,12 @@
 enum class PacketType : char {
   Invalid = 0,
   Hello,
-  Ok,
+  HelloOk,
   Ping,
   Pong,
   Position,
   Message,
+  ClientList,
 };
 
 struct PacketHeader {
@@ -17,14 +18,25 @@ struct PacketHeader {
   int index = 0;
 };
 
-struct HelloPacket {
-  PacketHeader header{PacketType::Hello};
-  char usernameLength = 32;
+struct ClientInfo {
+char usernameLength = 32;
   char username[32];
 };
 
-struct OkPacket {
-  PacketHeader header{PacketType::Ok};
+struct ClientListPacket {
+  PacketHeader header{PacketType::ClientList};
+  short clientCount;
+  ClientInfo clients[4];
+};
+
+
+struct HelloPacket {
+  PacketHeader header{PacketType::Hello};
+  ClientInfo clientInfo;
+};
+
+struct HelloOkPacket {
+  PacketHeader header{PacketType::HelloOk};
 };
 
 struct PongPacket {

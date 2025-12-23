@@ -80,7 +80,7 @@ class Game {
 
   int mapIndex = 0;
 
-  std::unique_ptr<Networker> client;
+  std::unique_ptr<Networker> client = nullptr;
 
   ImGuiIO io;
 
@@ -107,11 +107,11 @@ class Game {
       messages.push_back(message);
     };
 
-    client->connect();
+    // client->connect();
 
-    client->sendPing();
+    // client->sendPing();
 
-    client->sendMessage("RAWR!!");
+    // client->sendMessage("RAWR!!");
 
     this->scene = std::make_unique<fe::Scene>();
     this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
@@ -124,6 +124,7 @@ class Game {
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
     // this->client->username = username;
+    // if (!this->client) 
     this->client->connect(address, port, username);
   }
 
