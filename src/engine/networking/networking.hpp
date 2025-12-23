@@ -27,7 +27,7 @@ class Networker {
   std::thread listenerThread;
 
   // std::vector<ClientData> clients = std::vector<ClientData>();
-  std::unordered_map<sockaddr_in, ClientData> clients = std::unordered_map<sockaddr_in, ClientData>();
+  std::unordered_map<sockaddr_in, ClientData> clients = std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal>();
 
   unsigned short port = 0;
   std::string serverAddress = "127.0.0.1";
@@ -100,9 +100,14 @@ class Networker {
 
   void setMessageReceiveHandler(MessageReceiveHandler handler) { messageReceiveHandler = handler; }
 
-  void broadcast(const char* data, size_t size) {
+  void broadcast(const char* data, size_t size, const sockaddr_in& from) {
     std::cout << "Boradcasting" << std::endl;
-    for (auto& [id, client] : clients) {
+    sockaddr_in_equal comparator;
+    for (auto& [address, client] : clients) {
+      if (comparator(address, from)) {
+        std::cout << "Not sending to source" <<std::endl;
+        return;
+      }
       auto packet = (PacketHeader*)data;
       packet->clientId = client.id;
       this->socket.send(data, size, client.address);
@@ -128,7 +133,7 @@ class Networker {
       if (allPacketHandler) allPacketHandler(data, size, header.type, from);
 
       if (header.type != PacketType::Hello)
-        this->broadcast(data, size);
+        this->broadcast(data, size, from);
 
       // auto header = *(PacketHeader*)data;
       // PacketHeader headerS = *header;

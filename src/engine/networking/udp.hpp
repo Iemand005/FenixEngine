@@ -12,9 +12,21 @@
 #define CLOSE_SOCKET closesocket
 #define SOCKET_ERRNO WSAGetLastError()
 
-typedef void (*UDPResponseHandler)(const char *data, size_t size);
+struct sockaddr_in_hash {
+    size_t operator()(const sockaddr_in& addr) const {
+        // Combine IP and port into a single hash
+        size_t h1 = std::hash<uint32_t>{}(addr.sin_addr.s_addr);
+        size_t h2 = std::hash<uint16_t>{}(addr.sin_port);
+        return h1 ^ (h2 << 1);
+    }
+};
 
-// const int PORT = 2130;
+struct sockaddr_in_equal {
+    bool operator()(const sockaddr_in& a, const sockaddr_in& b) const {
+        return a.sin_addr.s_addr == b.sin_addr.s_addr &&
+               a.sin_port == b.sin_port;
+    }
+};
 
 class UDPSocket
 {
