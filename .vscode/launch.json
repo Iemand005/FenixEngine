@@ -13,6 +13,17 @@
       "preLaunchTask": "C/C++: cl.exe build main"
     },
     {
+      "name": "C/C++: cl.exe debug main",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\debug\\main.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}\\src",
+      "environment": [],
+      "console": "integratedTerminal",
+    },
+    {
       "name": "C/C++: cl.exe build and debug OpenXR Windows",
       "type": "cppvsdbg",
       "request": "launch",

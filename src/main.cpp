@@ -429,7 +429,7 @@ class Game {
 
     ImGui::Begin("Multiplayer");
     {
-
+      static char usernameBuffer[32] = "\0";
       static char addressBuffer[256] = "\0";
       int port = 2130;
 

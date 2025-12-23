@@ -24,29 +24,7 @@ class UDPSocket
 public:
   UDPSocket() {}
 
-  template <typename T>
-  void send(unsigned short port, std::string address = "127.0.0.1") {
-    T packet;
-    this->send<T>(packet, port, address);
-  }
-
-  template <typename T>
-  void send(sockaddr_in address) {
-    T packet;
-    this->send<T>(packet, address);
-  }
-
-  template <typename T>
-  void send(T packet, unsigned short port, std::string address = "127.0.0.1") {
-    this->send((char*)&packet, sizeof(T), port, address);
-  }
-
-  template <typename T>
-  void send(T packet, sockaddr_in address) {
-    this->send((char*)&packet, sizeof(T), address);
-  }
-
-  void send(const char *packet, size_t size, unsigned short port, std::string address = "127.0.0.1") {
+  bool makeAddress(unsigned short port, std::string address = "127.0.0.1", sockaddr_in* socketAddress) {
     sockaddr_in receiverAddr{};
     receiverAddr.sin_family = AF_INET;
     receiverAddr.sin_port = htons(port);
@@ -54,17 +32,55 @@ public:
     if (inet_pton(AF_INET, address.c_str(), &receiverAddr.sin_addr) <= 0)
     {
       std::cerr << "Invalid address\n";
-      this->close();
-      return;
+      return false;
     }
-    this->send(packet, size, receiverAddr);
+
+    *socketAddress = receiverAddr;
+    return true;
   }
 
-  void close() {
-    std::cerr << "Closing socket...\n";
-    CLOSE_SOCKET(sock);
-    sock = INVALID_SOCKET;
-    WSACleanup();
+  template <typename T>
+  void send(unsigned short port, std::string address = "127.0.0.1") {
+    T packet;
+    this->send<T>(packet, port, address);
+  }
+
+  template <typename T>
+  void send(T packet, unsigned short port, std::string address = "127.0.0.1") {
+    this->send((char*)&packet, sizeof(T), port, address);
+  }
+
+
+
+  void send(const char *packet, size_t size, unsigned short port, std::string address = "127.0.0.1") {
+    // sockaddr_in receiverAddr{};
+    // receiverAddr.sin_family = AF_INET;
+    // receiverAddr.sin_port = htons(port);
+
+    // if (inet_pton(AF_INET, address.c_str(), &receiverAddr.sin_addr) <= 0)
+    // {
+    //   std::cerr << "Invalid address\n";
+    //   this->close();
+    //   return;
+    // }
+    sockaddr_in receiverAddress;
+    this->makeAddress(port, address, &receiverAddress);
+    this->send(packet, size, receiverAddress);
+  }
+
+
+
+    template <typename T>
+  void send(sockaddr_in address) {
+    T packet;
+    this->send<T>(packet, address);
+  }
+
+  
+
+  template <typename T>
+  void send(T packet, sockaddr_in address) {
+    this->send((char*)&packet, sizeof(T), address);
   }
 
   void send(const char *packet, size_t size, sockaddr_in address)
@@ -175,5 +191,12 @@ public:
     this->close();
 
     return 0;
+  }
+
+    void close() {
+    std::cerr << "Closing socket...\n";
+    CLOSE_SOCKET(sock);
+    sock = INVALID_SOCKET;
+    WSACleanup();
   }
 };

@@ -28,8 +28,11 @@ public:
   std::vector<ClientInfo> clients = std::vector<ClientInfo>();
 
   unsigned short port = 0;
+  std::string serverAddress = "127.0.0.1";
 
   unsigned int lastClientId = 0;
+
+  std::string username = "Server";
 
   Networker() {}
 
@@ -42,6 +45,11 @@ public:
   {
     this->sendHello();
     this->startAsync(0);
+  }
+
+    template <typename T>
+  void send(T packet) {
+    this->send((char*)&packet, sizeof(T), port, address);
   }
 
   void sendPing()
@@ -77,6 +85,18 @@ public:
     packet.rotation = rotation;
     // this->socket.send((char *)&packet, sizeof(PositionPacket), port);
     this->socket.send<PositionPacket>(packet, port);
+  }
+
+  void sendIdentity(std::string username) {
+    IdentityPacket packet;
+    packet.usernameLength = username.size();
+    if (packet.usernameLength>32) {
+      std::cout << "Username is too long";
+      return;
+    }
+
+    memcpy(packet.username, username.c_str(), username.size());
+    this->socket.send<IdentityPacket>(packet, port);
   }
 
   void setMessageReceiveHandler(MessageReceiveHandler handler)
@@ -125,6 +145,7 @@ public:
         {
           std::cout << "The server said we're okay!" << std::endl;
           // helloHandler(from);
+          
         }
         break;
         case PacketType::Message:
@@ -161,7 +182,7 @@ public:
   }
 
   void stopAsync() {
-    if (this->listenerThread) this->listenerThread.close();
+    // if (this->listenerThread) this->listenerThread.close();
   }
 
   void startAsync(unsigned short port)
