@@ -33,41 +33,12 @@ float lastX = 0, lastY = 0;
 float yaw = -90.0f;
 float pitch = 0.0f;
 
-int windowWidth = 800.0f;
-int windowHeight = 600.0f;
+// int windowWidth = 800.0f;
+// int windowHeight = 600.0f;
 
 bool vsync = true;
 
 bool capturingMouse = true;
-
-void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
-  ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) return;
-  float xOffset = xPos - lastX;
-  float yOffset = lastY - yPos;
-  if (lastX == 0 && lastY == 0) {
-    xOffset = 0;
-    yOffset = 0;
-  }
-  lastX = xPos;
-  lastY = yPos;
-
-  const float sensitivity = 0.1f;
-  xOffset *= sensitivity;
-  yOffset *= sensitivity;
-
-  yaw += xOffset;
-  pitch += yOffset;
-
-  if (pitch > 89.0f) pitch = 89.0f;
-  if (pitch < -89.0f) pitch = -89.0f;
-
-  glm::vec3 direction;
-  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  direction.y = sin(glm::radians(pitch));
-  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(direction);
-}
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yOffset) {
   ImGuiIO& io = ImGui::GetIO();
@@ -77,13 +48,13 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yOffset) {
   if (fov > 45.0f) fov = 45.0f;
 }
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-  ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) return;
-  windowWidth = width;
-  windowHeight = height;
-  glViewport(0, 0, width, height);
-}
+// void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+//   ImGuiIO& io = ImGui::GetIO();
+//   if (io.WantCaptureMouse) return;
+//   windowWidth = width;
+//   windowHeight = height;
+//   glViewport(0, 0, width, height);
+// }
 
 class Game {
  public:
@@ -117,6 +88,8 @@ class Game {
 
   Game(int width, int height) : width(width), height(height) {
     if (!initGlfw()) return;
+    this->width = width;
+    this->height = height;
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -145,7 +118,7 @@ class Game {
         new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
     this->playerCamera = std::make_unique<fe::Camera>(
         cameraPos, cameraFront, cameraUp, fov,
-        (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+        (float)this->width / (float)this->height, 0.1f, 100.0f);
 
     startMouseCapture();
 
@@ -177,7 +150,6 @@ class Game {
 
     glfwSetWindowUserPointer(window, this);
 
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetScrollCallback(window, scrollCallback);
     glfwSetMouseButtonCallback(
         window, [](GLFWwindow* window, int button, int action, int mods) {
@@ -219,15 +191,32 @@ class Game {
           cameraFront = glm::normalize(direction);
         });
 
-    // auto redrawFunc = this->redraw;
-    glfwSetWindowSizeCallback(
+    glfwSetFramebufferSizeCallback(
         window, [](GLFWwindow* window, int width, int height) {
-          glViewport(0, 0, width, height);
-          // redrawFunc();
+          ImGuiIO& io = ImGui::GetIO();
+          if (io.WantCaptureMouse) return;
+          // windowWidth = width;
+          // windowHeight = height;
           auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+          game->width = width;
+          game->height = height;
+          glViewport(0, 0, width, height);
+
           game->redraw();
         });
-    return true;
+    glfwSetWindowSizeCallback(
+        window, [](GLFWwindow* window, int width, int height) {
+          auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+          game->width = width;
+          game->height = height;
+          glViewport(0, 0, width, height);
+
+          // windowWidth = width;
+          // windowHeight = height;
+          game->redraw();
+        });
+
+    glfwGetWindowAttrib(window, GLFW_TOUCH) return true;
   }
 
   void loadModels() {
@@ -593,7 +582,7 @@ int main() {
     cameraPos = pos - cameraFront * 5.0f;
     game.playerCamera->setPos(cameraPos);
 
-    game.playerCamera->setAspect((float)windowWidth / (float)windowHeight);
+    game.playerCamera->setAspect((float)game.width / (float)game.height);
     // window.playerCamera->setPos(cameraPos);
 
     game.playerCamera->setFront(glm::normalize(pos - cameraPos));
