@@ -16,6 +16,7 @@ struct PacketHeader {
   PacketType type;
   char version = 1;
   int index = 0;
+  
 };
 
 struct ClientInfo {
