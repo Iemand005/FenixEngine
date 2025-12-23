@@ -103,7 +103,7 @@ class Game {
     this->client = std::make_unique<Networker>(2130);
 
     client->messageReceiveHandler = [this](std::string message, ClientData sender) {
-      std::cout << "The server broadcasted a messageay: " << message << "Which came from  with username " << sender.username<< std::endl;
+      std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username<< std::endl;
       // std::cout ;
       messages.push_back(message);
     };
@@ -439,17 +439,18 @@ class Game {
 
     ImGui::Begin("Multiplayer");
     {
-      static char usernameBuffer[32] = "\0";
+      static char usernameBuffer[32] = "Bill\0";
       static char addressBuffer[256] = "127.0.0.1\0";
       int port = 2130;
 
-      ImGui::InputText("##Input", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::InputInt("Port", &port);
 
 
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
-        this->connectToServer(addressBuffer, port, "Gunky");
+        this->connectToServer(addressBuffer, port, usernameBuffer);
       }
 
       fe::Object* model = this->player.get();

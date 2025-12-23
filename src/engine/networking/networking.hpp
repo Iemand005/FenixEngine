@@ -18,7 +18,7 @@ public:
 class Networker {
  public:
   using MessageReceiveHandler = std::function<void(std::string message, const ClientData sender)>;
-  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
+  using AllPacketHandler = std::function<void(const char* data, size_t size, PacketType type, const sockaddr_in& from)>;
   MessageReceiveHandler messageReceiveHandler;
 
   AllPacketHandler allPacketHandler = nullptr;
@@ -51,8 +51,14 @@ class Networker {
   }
 
   template <typename T>
+  void send() {
+    T packet;
+    this->send<T>(packet);
+  }
+
+  template <typename T>
   void send(T packet) {
-    this->send((char*)&packet, sizeof(T), port, address);
+    this->send((char*)&packet, sizeof(T), this->port, this->serverAddress);
   }
 
   void sendPing() { this->socket.send<PingPacket>(port); }
@@ -68,7 +74,8 @@ class Networker {
     // memcpy(packet.username, username.c_str(), username.size());
     copyStr(packet.clientInfo.username, username);
     packet.clientInfo.usernameLength = username.size();
-    this->socket.send((char*)&packet, sizeof(HelloPacket), port);
+    this->send<HelloPacket>(packet);
+    // this->socket.send((char*)&packet, sizeof(HelloPacket), port);
   }
 
   void sendMessage(std::string message) {
@@ -116,10 +123,11 @@ class Networker {
         return;
       }
 
-      if (allPacketHandler) allPacketHandler(data, size, from);
+      auto header = this->dataAs<PacketHeader>(data);
+
+      if (allPacketHandler) allPacketHandler(data, size, header.type, from);
 
       // auto header = *(PacketHeader*)data;
-      auto header = this->dataAs<PacketHeader>(data);
       // PacketHeader headerS = *header;
 
       switch (header.type) {
