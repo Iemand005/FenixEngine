@@ -556,8 +556,7 @@ class Scene {
 
   void clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
-  void render(ShaderProgram& shader, const Camera& camera, int width,
-              int height);
+  void render(ShaderProgram& shader, const Camera& camera, int width, int height);
 
   void render(ShaderProgram& shader, const Camera& camera) {
     this->prepareRender(shader, camera);

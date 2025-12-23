@@ -184,14 +184,11 @@ class Game {
     });
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-      // windowWidth = width;
-      // windowHeight = height;
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
       game->width = width;
       game->height = height;
       glViewport(0, 0, width, height);
+      game->updateAspect();
 
       game->redraw();
     });
@@ -201,12 +198,12 @@ class Game {
       game->height = height;
       glViewport(0, 0, width, height);
 
-      // windowWidth = width;
-      // windowHeight = height;
+      game->updateAspect();
       game->redraw();
     });
 
-    glfwGetWindowAttrib(window, GLFW_TOUCH) return true;
+    // glfwGetWindowAttrib(window, GLFW_TOUCH);
+     return true;
   }
 
   void loadModels() {
@@ -515,6 +512,10 @@ class Game {
     // glEnable(GL_DEPTH_TEST);
     return 0;
   }
+
+  void updateAspect() {
+    this->playerCamera->setAspect((float)this->width / (float)this->height);
+  }
 };
 
 int main() {
@@ -534,7 +535,8 @@ int main() {
     cameraPos = pos - cameraFront * 5.0f;
     game.playerCamera->setPos(cameraPos);
 
-    game.playerCamera->setAspect((float)game.width / (float)game.height);
+    // game.playerCamera->setAspect((float)game.width / (float)game.height);
+    game.updateAspect();
     // window.playerCamera->setPos(cameraPos);
 
     game.playerCamera->setFront(glm::normalize(pos - cameraPos));
