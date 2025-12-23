@@ -2,23 +2,22 @@
 #pragma once
 #include <thread>
 
-#include "udp.hpp"
 #include "packets.hpp"
+#include "udp.hpp"
 
 typedef void (*MessageReceiveHandler)(std::string message);
 
-class ClientInfo
-{
+class ClientInfo {
+  public:
   unsigned int id;
   sockaddr_in address;
   std::string username;
 };
 
-class Networker
-{
-public:
+class Networker {
+ public:
   using MessageReceiveHandler = std::function<void(std::string message)>;
-  using AllPacketHandler = std::function<void(const char *data, size_t size, const sockaddr_in &from)>;
+  using AllPacketHandler = std::function<void(const char* data, size_t size, const sockaddr_in& from)>;
   MessageReceiveHandler messageReceiveHandler;
 
   AllPacketHandler allPacketHandler = nullptr;
@@ -39,98 +38,71 @@ public:
 
   Networker() {}
 
-  Networker(unsigned short port)
-  {
-    this->port = port;
-  }
+  Networker(unsigned short port) { this->port = port; }
 
-  void connect(std::string address, unsigned short port, std::string username)
-  {
+  void connect(std::string address, unsigned short port, std::string username) {
     this->port = port;
-    this-> serverAddress = address;
+    this->serverAddress = address;
     this->username = username;
     this->sendHello();
     this->startAsync(0);
   }
 
-    template <typename T>
+  template <typename T>
   void send(T packet) {
     this->send((char*)&packet, sizeof(T), port, address);
   }
 
-  void sendPing()
-  {
-    this->socket.send<PingPacket>(port);
+  void sendPing() { this->socket.send<PingPacket>(port); }
+
+  void copyStr(char* target, std::string source) {
+    memcpy(target, source.c_str(), source.size());
   }
 
-  void sendHello()
-  {
+  void sendHello() {
     HelloPacket packet;
-    packet.username = username.c_str();
+    // memcpy(packet.username, username.c_str(), username.size());
+    copyStr(packet.username, username);
     packet.usernameLength = username.size();
-    this->socket.send((char *)&packet, sizeof(HelloPacket), port);
+    this->socket.send((char*)&packet, sizeof(HelloPacket), port);
   }
 
-  void sendMessage(std::string message)
-  {
-
+  void sendMessage(std::string message) {
     constexpr size_t headerSize = sizeof(MessagePacket);
     size_t totalSize = sizeof(MessagePacket) + message.size();
-    char *packet = (char *)malloc(totalSize);
+    char* packet = (char*)malloc(totalSize);
     MessagePacket messagePacket{};
     messagePacket.messageLength = message.size();
 
     memcpy(packet, &messagePacket, sizeof(MessagePacket));
     memcpy(packet + headerSize, message.c_str(), message.size());
 
-    this->socket.send((char *)packet, totalSize, port);
+    this->socket.send((char*)packet, totalSize, port);
   }
 
-  void sendPosition(glm::vec3 position, glm::vec3 rotation)
-  {
+  void sendPosition(glm::vec3 position, glm::vec3 rotation) {
     PositionPacket packet;
     packet.position = position;
     packet.rotation = rotation;
-    // this->socket.send((char *)&packet, sizeof(PositionPacket), port);
     this->socket.send<PositionPacket>(packet, port);
   }
 
-  void sendIdentity(std::string username) {
-    IdentityPacket packet;
-    packet.usernameLength = username.size();
-    if (packet.usernameLength>32) {
-      std::cout << "Username is too long";
-      return;
-    }
+  void setMessageReceiveHandler(MessageReceiveHandler handler) { messageReceiveHandler = handler; }
 
-    memcpy(packet.username, username.c_str(), username.size());
-    this->socket.send<IdentityPacket>(packet, port);
-  }
-
-  void setMessageReceiveHandler(MessageReceiveHandler handler)
-  {
-    messageReceiveHandler = handler;
-  }
-
-  void broadcast(const char *data, size_t size) {
+  void broadcast(const char* data, size_t size) {
     std::cout << "Boradcasting" << std::endl;
-    for (auto &client : clients)
-      this->socket.send(data, size, client.address);
+    for (auto& client : clients) this->socket.send(data, size, client.address);
   }
 
-  void start()
-  {
-    this->start(this->port);
-  }
+  void start() { this->start(this->port); }
 
-  template<typename T>
-  T dataAs<T>(const char* data) {
-    return *(T*)data;
-  }
+  // template <typename T>
+  // T dataAs<T>(const char* data) {
+  //   return *(T*)data;
+  // }
 
-  void start(unsigned short port)
-  {
-    socket.startListening(port, [this](const char *data, size_t size, const sockaddr_in &from){
+  void start(unsigned short port) {
+    socket.startListening(port, [this](const char* data, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
@@ -138,74 +110,62 @@ public:
 
       if (allPacketHandler) allPacketHandler(data, size, from);
 
-      // auto header = *(PacketHeader*)data;
-      auto header = this->dataAs<PacketHeader>(data);
+      auto header = *(PacketHeader*)data;
+      // auto header = this->dataAs<PacketHeader>(data);
       // PacketHeader headerS = *header;
 
       switch (header.type) {
-        case PacketType::Hello:
-        {
-          auto hello = this->dataAs<HelloPacket>(data);
+        case PacketType::Hello: {
+          // auto hello = this->dataAs<HelloPacket>(data);
+          auto hello = *(HelloPacket*)data;
           ClientInfo clientInfo;
           clientInfo.address = from;
           clientInfo.id = lastClientId++;
-          ClientInfo.username = std::string(hello.username, hello.usernameLength);
+          clientInfo.username = std::string(hello.username, hello.usernameLength);
           this->clients.push_back(clientInfo);
           std::cout << "Client added to connection list." << std::endl;
-          
+
           this->socket.send<OkPacket>(from);
-        }
-        break;
-        case PacketType::Ok:
-        {
+        } break;
+        case PacketType::Ok: {
           std::cout << "The server said we're okay!" << std::endl;
           registeredOnServer = true;
           // helloHandler(from);
 
-        }
-        break;
-        case PacketType::Message:
-        {
+        } break;
+        case PacketType::Message: {
           auto messagePacket = (MessagePacket*)data;
           const size_t messageLength = messagePacket->messageLength;
           char* messageBuffer = (char*)malloc(messageLength);
           memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
-          
+
           std::string message(messageBuffer, messageLength);
           if (messageReceiveHandler != nullptr) messageReceiveHandler(message);
-        }
-        break;
-        case PacketType::Position:
-        {
+        } break;
+        case PacketType::Position: {
           auto packet = (PositionPacket*)data;
           packet->position;
           std::cout << "X: " << packet->position.x << " Y: " << packet->position.y << " Z: " << packet->position.z << std::endl;
           packet->rotation;
-        }
-        break;
-         case PacketType::Ping:
-        {
+        } break;
+        case PacketType::Ping: {
           std::cout << "Received a ping! Answering with pong..." << std::endl;
           this->socket.send<PongPacket>(from);
-        }
-        break;
-        case PacketType::Pong:
-        {
+        } break;
+        case PacketType::Pong: {
           std::cout << "Received a PONG!" << std::endl;
-        }
-        break;
-      } });
+        } break;
+      }
+    });
   }
 
   void stopAsync() {
     // if (this->listenerThread) this->listenerThread.close();
   }
 
-  void startAsync(unsigned short port)
-  {
+  void startAsync(unsigned short port) {
     stopAsync();
-    listenerThread = std::thread([this, port]()
-                                 { this->start(port); });
+    listenerThread = std::thread([this, port]() { this->start(port); });
     listenerThread.detach();
   }
 };
