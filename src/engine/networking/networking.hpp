@@ -18,7 +18,7 @@ public:
 class Networker {
  public:
   using MessageReceiveHandler = std::function<void(std::string message, const ClientData sender)>;
-  using AllPacketHandler = std::function<void(const char* data, size_t size, PacketType type, const sockaddr_in& from)>;
+  using AllPacketHandler = std::function<void(const char* data, size_t size, PacketType type, const sockaddr_in& sender)>;
   MessageReceiveHandler messageReceiveHandler;
 
   AllPacketHandler allPacketHandler = nullptr;
@@ -27,7 +27,7 @@ class Networker {
   std::thread listenerThread;
 
   // std::vector<ClientData> clients = std::vector<ClientData>();
-  std::unordered_map<unsigned char, ClientData> clients = std::unordered_map<unsigned char, ClientData>();
+  std::unordered_map<sockaddr_in, ClientData> clients = std::unordered_map<sockaddr_in, ClientData>();
 
   unsigned short port = 0;
   std::string serverAddress = "127.0.0.1";
@@ -58,7 +58,7 @@ class Networker {
 
   template <typename T>
   void send(T packet) {
-    this->send((char*)&packet, sizeof(T), this->port, this->serverAddress);
+    this->socket.send((char*)&packet, sizeof(T), this->port, this->serverAddress);
   }
 
   void sendPing() { this->socket.send<PingPacket>(port); }
@@ -104,7 +104,7 @@ class Networker {
     std::cout << "Boradcasting" << std::endl;
     for (auto& [id, client] : clients) {
       auto packet = (PacketHeader*)data;
-      packet->clientId = id;
+      packet->clientId = client.id;
       this->socket.send(data, size, client.address);
     }
   }
@@ -127,6 +127,9 @@ class Networker {
 
       if (allPacketHandler) allPacketHandler(data, size, header.type, from);
 
+      if (header.type != PacketType::Hello)
+        this->broadcast(data, size);
+
       // auto header = *(PacketHeader*)data;
       // PacketHeader headerS = *header;
 
@@ -136,20 +139,26 @@ class Networker {
           // auto hello = *(HelloPacket*)data;
           ClientData clientInfo;
           clientInfo.address = from;
-          unsigned char id = ++lastClientId;
+          unsigned char id = lastClientId++;
           clientInfo.id = id;
           clientInfo.username = std::string(hello.clientInfo.username, hello.clientInfo.usernameLength);
-          this->clients.insert({id, clientInfo});
+          this->clients.insert({from, clientInfo});
           std::cout << "Client added to connection list. Assigned ID "<< id << std::endl;
 
           this->socket.send<HelloOkPacket>(from);
           ClientListPacket clientList;
           clientList.clientCount = clients.size();
-          for (size_t i = 0; i < clients.size(); ++i)
-          {
-            auto size = copyStr(clientList.clients[i].username, clients[i].username);
+          // for (size_t i = 0; i < clients.size(); ++i)
+          // {
+          //   auto size = copyStr(clientList.clients[i].username, clients[i].username);
+          //   clientList.clients[i].usernameLength = size;
+          //   clientList.clients[i].id = clients[i].id;
+          // }
+          size_t i = 0;
+          for (auto &[address, client] : clients) {
+            auto size = copyStr(clientList.clients[i].username, client.username);
             clientList.clients[i].usernameLength = size;
-            clientList.clients[i].id = clients[i].id;
+            clientList.clients[i].id = client.id;
           }
           
           this->socket.send<ClientListPacket>(clientList, from);
@@ -175,7 +184,7 @@ class Networker {
             client.id = clientInfo.id;
             client.username = std::string(clientInfo.username, clientInfo.usernameLength);
             std::cout << "Client number "<<i<<" has username: "<< client.username <<" and ID: "<<client.id<<std::endl;
-            clients.insert_or_assign(client.id, client);
+            clients.insert_or_assign(from, client);
           }
         } break;
         case PacketType::Message: {
@@ -185,7 +194,7 @@ class Networker {
           memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
 
           std::string message(messageBuffer, messageLength);
-          ClientData data = clients.at(header.clientId);
+          ClientData data = clients.at(from);
           if (messageReceiveHandler != nullptr) messageReceiveHandler(message, data);
         } break;
         case PacketType::Position: {

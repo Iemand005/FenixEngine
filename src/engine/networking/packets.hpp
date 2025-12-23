@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 
-#define MAX_PLAYER_COUNT 4
+#define MAX_PLAYER_COUNT 10
 
 enum class PacketType : char {
   Invalid = 0,
