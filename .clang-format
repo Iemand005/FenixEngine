@@ -1,2 +1,3 @@
 BasedOnStyle: Google
 UseTab: Never
+ColumnLimit: 200

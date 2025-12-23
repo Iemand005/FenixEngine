@@ -68,11 +68,9 @@ class Game {
 
   std::shared_ptr<fe::Character> player;
 
-  std::vector<std::shared_ptr<fe::Character>> npcs =
-      std::vector<std::shared_ptr<fe::Character>>();
+  std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
-  std::vector<std::shared_ptr<fe::Object>> maps =
-      std::vector<std::shared_ptr<fe::Object>>();
+  std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
 
   std::vector<std::string> messages;
 
@@ -114,11 +112,8 @@ class Game {
     client->sendMessage("RAWR!!");
 
     this->scene = std::make_unique<fe::Scene>();
-    this->shader =
-        new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
-    this->playerCamera = std::make_unique<fe::Camera>(
-        cameraPos, cameraFront, cameraUp, fov,
-        (float)this->width / (float)this->height, 0.1f, 100.0f);
+    this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
+    this->playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
     startMouseCapture();
 
@@ -151,70 +146,65 @@ class Game {
     glfwSetWindowUserPointer(window, this);
 
     glfwSetScrollCallback(window, scrollCallback);
-    glfwSetMouseButtonCallback(
-        window, [](GLFWwindow* window, int button, int action, int mods) {
-          ImGuiIO& io = ImGui::GetIO();
-          if (io.WantCaptureMouse) return;
-        });
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.WantCaptureMouse) return;
+    });
 
-    glfwSetCursorPosCallback(
-        window, [](GLFWwindow* window, double xPos, double yPos) {
-          if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED))
-            return;
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
+      if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) return;
 
-          ImGuiIO& io = ImGui::GetIO();
-          if (io.WantCaptureMouse) return;
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.WantCaptureMouse) return;
 
-          float xOffset = xPos - lastX;
-          float yOffset = lastY - yPos;
-          if (lastX == 0 && lastY == 0) {
-            xOffset = 0;
-            yOffset = 0;
-          }
-          lastX = xPos;
-          lastY = yPos;
+      float xOffset = xPos - lastX;
+      float yOffset = lastY - yPos;
+      if (lastX == 0 && lastY == 0) {
+        xOffset = 0;
+        yOffset = 0;
+      }
+      lastX = xPos;
+      lastY = yPos;
 
-          const float sensitivity = 0.1f;
-          xOffset *= sensitivity;
-          yOffset *= sensitivity;
+      const float sensitivity = 0.1f;
+      xOffset *= sensitivity;
+      yOffset *= sensitivity;
 
-          yaw += xOffset;
-          pitch += yOffset;
+      yaw += xOffset;
+      pitch += yOffset;
 
-          if (pitch > 89.0f) pitch = 89.0f;
-          if (pitch < -89.0f) pitch = -89.0f;
+      if (pitch > 89.0f) pitch = 89.0f;
+      if (pitch < -89.0f) pitch = -89.0f;
 
-          glm::vec3 direction;
-          direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-          direction.y = sin(glm::radians(pitch));
-          direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-          cameraFront = glm::normalize(direction);
-        });
+      glm::vec3 direction;
+      direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+      direction.y = sin(glm::radians(pitch));
+      direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+      cameraFront = glm::normalize(direction);
+    });
 
-    glfwSetFramebufferSizeCallback(
-        window, [](GLFWwindow* window, int width, int height) {
-          ImGuiIO& io = ImGui::GetIO();
-          if (io.WantCaptureMouse) return;
-          // windowWidth = width;
-          // windowHeight = height;
-          auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-          game->width = width;
-          game->height = height;
-          glViewport(0, 0, width, height);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.WantCaptureMouse) return;
+      // windowWidth = width;
+      // windowHeight = height;
+      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+      game->width = width;
+      game->height = height;
+      glViewport(0, 0, width, height);
 
-          game->redraw();
-        });
-    glfwSetWindowSizeCallback(
-        window, [](GLFWwindow* window, int width, int height) {
-          auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-          game->width = width;
-          game->height = height;
-          glViewport(0, 0, width, height);
+      game->redraw();
+    });
+    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+      game->width = width;
+      game->height = height;
+      glViewport(0, 0, width, height);
 
-          // windowWidth = width;
-          // windowHeight = height;
-          game->redraw();
-        });
+      // windowWidth = width;
+      // windowHeight = height;
+      game->redraw();
+    });
 
     glfwGetWindowAttrib(window, GLFW_TOUCH) return true;
   }
@@ -224,13 +214,11 @@ class Game {
     this->scene->addModel(map1);
     this->maps.push_back(map1);
 
-    this->maps.push_back(
-        loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(
-        loadOBJ("resources/models/citizen.obj", 0.1f));
+    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
     spawnZombies(10);
   }
@@ -261,15 +249,13 @@ class Game {
         z += minDistanceSq;
       }
 
-      auto npc =
-          std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
+      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
       if (!npc->meshes.size()) return;
 
       npc->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-      npc->meshes[1].loadTexture(
-          "resources/textures/citizenzomb_sheet_reference.png");
+      npc->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
 
       this->scene->addModel(npc);
 
@@ -278,21 +264,15 @@ class Game {
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model =
-        std::make_shared<fe::Object>(path, scale);
+    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     this->scene->addModel(model);
     return model;
   }
 
-  std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path,
-                                                float scale = 1.0f) {
-    return std::make_shared<fe::Object>(path, scale);
-  }
+  std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) { return std::make_shared<fe::Object>(path, scale); }
 
-  std::shared_ptr<fe::Object> loadStaticOBJ(std::string path,
-                                            float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model =
-        std::make_shared<fe::Object>(path, scale);
+  std::shared_ptr<fe::Object> loadStaticOBJ(std::string path, float scale = 1.0f) {
+    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     model->isStatic = true;
     model->needsUpdate = false;
     // this->scene->addModel(model);
@@ -302,9 +282,7 @@ class Game {
 
   double getDeltaTime() { return glfwGetTime(); }
 
-  void setClearColor(float r, float g, float b, float a) {
-    glClearColor(r, g, b, a);
-  }
+  void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void redraw() {
     scene->render(*(this->shader), *(this->playerCamera));
@@ -323,27 +301,19 @@ class Game {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
       stopMouseCapture();
-    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) ==
-               GLFW_PRESS) {
+    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
       startMouseCapture();
     }
 
     const float cameraSpeed = 10.0f * deltaTime;
-    glm::vec3 horizontalFront =
-        glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-      this->player->position += cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-      this->player->position -= cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-      this->player->position -= right * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-      this->player->position += right * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      this->player->position += cameraUp * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      this->player->position -= cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->position += cameraSpeed * horizontalFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->position -= cameraSpeed * horizontalFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->position -= right * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->position += right * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) this->player->position += cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) this->player->position -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
       this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
@@ -410,8 +380,7 @@ class Game {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = ImGui::GetIO();
-    io.ConfigFlags |=
-        ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui::StyleColorsDark();
 
@@ -429,16 +398,12 @@ class Game {
     ImGui::Begin("Debug info");
     {
       ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0
-                                  ? 1.0 / fpsCounter.deltaTime
-                                  : 0.0);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
       ImGui::Text("Objects: %zu", this->scene->getModels().size());
       size_t totalVertices = 0;
       for (auto& obj : this->scene->getModels())
-        for (auto& mesh : obj->meshes)
-          totalVertices += mesh.getVertices().size();
+        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
       size_t needsUpdateCount = 0;
       for (auto& obj : this->scene->getModels()) {
@@ -457,10 +422,8 @@ class Game {
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(),
-                            &this->npcs[i]->position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(),
-                            &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
       }
     }
     ImGui::End();
@@ -468,16 +431,12 @@ class Game {
     ImGui::Begin("Multiplayer");
     {
       ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0
-                                  ? 1.0 / fpsCounter.deltaTime
-                                  : 0.0);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
       ImGui::Text("Objects: %zu", this->scene->getModels().size());
       size_t totalVertices = 0;
       for (auto& obj : this->scene->getModels())
-        for (auto& mesh : obj->meshes)
-          totalVertices += mesh.getVertices().size();
+        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
       size_t needsUpdateCount = 0;
       for (auto& obj : this->scene->getModels()) {
@@ -492,8 +451,7 @@ class Game {
       int port;
 
       ImGui::PushItemWidth(-70);
-      ImGui::InputText("##Input", addressBuffer, IM_ARRAYSIZE(addressBuffer),
-                       ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::InputText("##Input", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::PopItemWidth();
       ImGui::InputInt("Port", &port);
 
@@ -507,10 +465,8 @@ class Game {
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(),
-                            &this->npcs[i]->position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(),
-                            &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
       }
     }
     ImGui::End();
@@ -518,9 +474,7 @@ class Game {
     ImGui::Begin("Chat");
     {
       static char inputBuffer[256] = "";
-      ImGui::BeginChild("ChatHistory",
-                        ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10),
-                        true, ImGuiWindowFlags_HorizontalScrollbar);
+      ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
 
       for (const auto& msg : messages) {
         ImGui::TextWrapped("%s", msg.c_str());
@@ -536,9 +490,7 @@ class Game {
       ImGui::Separator();
 
       ImGui::PushItemWidth(-70);
-      bool enter_pressed =
-          ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer),
-                           ImGuiInputTextFlags_EnterReturnsTrue);
+      bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::PopItemWidth();
 
       ImGui::SameLine();
@@ -589,9 +541,7 @@ int main() {
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) *
-                         glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f *
-                         (float)game.getDeltaTime());
+      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
       npc->needsUpdate = true;
     }
     for (auto& npc : game.npcs) {
