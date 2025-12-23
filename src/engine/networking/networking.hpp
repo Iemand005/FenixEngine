@@ -160,8 +160,13 @@ public:
       } });
   }
 
+  void stopAsync() {
+    if (this->listenerThread) this->listenerThread.close();
+  }
+
   void startAsync(unsigned short port)
   {
+    stopAsync();
     listenerThread = std::thread([this, port]()
                                  { this->start(port); });
     listenerThread.detach();

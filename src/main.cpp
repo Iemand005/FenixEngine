@@ -98,7 +98,7 @@ class Game {
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
-    client = std::make_unique<Networker>(2130);
+    this->client = std::make_unique<Networker>(2130);
 
     client->messageReceiveHandler = [this](std::string message) {
       std::cout << "The server broadcasted a message: " << message << std::endl;
@@ -120,7 +120,9 @@ class Game {
     loadModels();
   }
 
-  void connectToServer(std::string address, unsigned short port) {}
+  void connectToServer(std::string address, unsigned short port) {
+    this->client->connect();
+  }
 
   bool initGlfw() {
     glfwInit();
@@ -427,32 +429,13 @@ class Game {
 
     ImGui::Begin("Multiplayer");
     {
-      ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->getModels().size());
-      size_t totalVertices = 0;
-      for (auto& obj : this->scene->getModels())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
-      ImGui::Text("Vertices: %zu", totalVertices);
-      size_t needsUpdateCount = 0;
-      for (auto& obj : this->scene->getModels()) {
-        if (obj->needsUpdate) needsUpdateCount++;
-      }
-      ImGui::Text("Needs Update: %zu", needsUpdateCount);
-      if (ImGui::Button("Host", ImVec2(50, 20))) {
-        std::cout << "Button clicked!" << std::endl;
-      }
 
       static char addressBuffer[256] = "\0";
-      int port;
+      int port = 2130;
 
-      ImGui::PushItemWidth(-70);
       ImGui::InputText("##Input", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::PopItemWidth();
       ImGui::InputInt("Port", &port);
 
-      ImGui::SameLine();
 
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
@@ -460,11 +443,7 @@ class Game {
 
       fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
-      for (size_t i = 0; i < this->npcs.size(); ++i) {
-        ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
-      }
+
     }
     ImGui::End();
 
