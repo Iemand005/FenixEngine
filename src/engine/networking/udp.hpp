@@ -23,8 +23,7 @@ struct sockaddr_in_hash {
 
 struct sockaddr_in_equal {
     bool operator()(const sockaddr_in& a, const sockaddr_in& b) const {
-        return a.sin_addr.s_addr == b.sin_addr.s_addr &&
-               a.sin_port == b.sin_port;
+        return a.sin_addr.s_addr == b.sin_addr.s_addr && a.sin_port == b.sin_port;
     }
 };
 
@@ -103,6 +102,11 @@ public:
   {
 
     this->createSocketIfNotExist();
+
+    // if (address.sin_port == htons(2130)) {
+    //   std::cout << "I am gonna send to myself, can'tdo that! STOP!!" <<std::endl;
+    //   return;
+    // }
     
     int sent = sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
 

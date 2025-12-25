@@ -14,6 +14,7 @@ enum class PacketType : char {
   Message,
   ClientList,
   ServerStatus,
+  ClientJoined,
 };
 
 enum FailureReason : char {
@@ -36,6 +37,10 @@ struct ClientInfo {
 struct ServerStatusPacket {
   PacketHeader header{PacketType::ServerStatus};
 
+};
+
+struct ClientJoinedPacket {
+  PacketHeader header{PacketType::ClientJoined};
 };
 
 struct ClientListPacket {

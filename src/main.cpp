@@ -457,9 +457,11 @@ class Game {
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
 
       ImGui::Text("Players:");
-      for (auto &[id, client] : this->client->clients){
+      for (auto &[id, client] : this->client->clientClients){
         ImGui::Text("Player #%i username: %s", id, client.username.c_str());
       }
+
+      
       
 
     }
