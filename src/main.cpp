@@ -12,8 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <string>
 #include <map>
+#include <string>
 
 #include "engine/engine.h"
 #include "imgui/imgui.h"
@@ -108,32 +108,26 @@ class Game {
     this->client = std::make_unique<Networker>(2130);
 
     this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
-      switch(type) {
-        // case PacketType::ClientList: {
-
-        // }break;
-        case PacketType::Position:{
-
-          std::cout << "Received a thing yeah!"<<std::endl;
+      switch (type) {
+        case PacketType::Position: {
           auto packet = this->client->dataAs<PositionPacket>(data);
           if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
           player->position = packet.position;
-          player->lookAt(packet.rotation);
-        }break;
-        case PacketType::ClientList:{
-          for(auto &[id, client] : this->client->clientClients){
+          player->rotation = packet.rotation;
+        } break;
+        case PacketType::ClientList: {
+          this->players.clear();
+          for (auto& [id, client] : this->client->clientClients) {
             this->spawnPlayer(id);
-    isConnectedToServer =true;
-
-            // this->players.insert_or_assign(id, this->spawnPlayer(id));
+            isConnectedToServer = true;
           }
-        }break;
+        } break;
       }
     };
 
     client->messageReceiveHandler = [this](std::string message, ClientData sender) {
-      std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username<< std::endl;
+      std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username << std::endl;
       // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
@@ -155,7 +149,7 @@ class Game {
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
     // this->client->username = username;
-    // if (!this->client) 
+    // if (!this->client)
     this->client->connect(address, port, username);
     // isConnectedToServer =true;
   }
@@ -239,14 +233,14 @@ class Game {
     });
 
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
-     return true;
+    return true;
   }
 
   void resize(int width, int height) {
-      this->width = width;
-      this->height = height;
-      this->scene->resize(width, height);
-      this->updateAspect();
+    this->width = width;
+    this->height = height;
+    this->scene->resize(width, height);
+    this->updateAspect();
   }
 
   void loadModels() {
@@ -276,10 +270,10 @@ class Game {
     const float minDistanceSq = minDistance * minDistance;
 
     auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->clone());
-      if (zombieTemplate->meshes.size()<2) return;
+    if (zombieTemplate->meshes.size() < 2) return;
 
-          zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-      zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
+    zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
+    zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
     for (int i = 0; i < count; i++) {
       float x = static_cast<float>(rand() % 100 - 50);
       float z = static_cast<float>(rand() % 100 - 50);
@@ -295,9 +289,6 @@ class Game {
 
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
       npc->position = glm::vec3(x, 0.0f, z);
-
-
-
 
       this->scene->addModel(npc);
 
@@ -487,7 +478,6 @@ class Game {
       ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::InputInt("Port", &port);
 
-
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
         this->connectToServer(addressBuffer, port, usernameBuffer);
@@ -497,13 +487,9 @@ class Game {
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
 
       ImGui::Text("Players:");
-      for (auto &[id, client] : this->client->clientClients){
+      for (auto& [id, client] : this->client->clientClients) {
         ImGui::Text("Player #%i username: %s", id, client.username.c_str());
       }
-
-
-      
-
     }
     ImGui::End();
 
@@ -579,7 +565,7 @@ int main() {
 
     game.playerCamera->setFront(glm::normalize(pos - cameraPos));
 
-    if (game.isConnectedToServer)game.client->sendPosition(game.player->position, game.player->rotation);
+    if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));

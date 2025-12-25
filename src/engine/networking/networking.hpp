@@ -1,7 +1,7 @@
 
 #pragma once
-#include <thread>
 #include <map>
+#include <thread>
 
 #include "packets.hpp"
 #include "udp.hpp"
@@ -64,14 +64,14 @@ class Networker {
   }
 
   template <typename T>
-  void send(T packet, const sockaddr_in &address) {
+  void send(T packet, const sockaddr_in& address) {
     this->socket.send((char*)&packet, sizeof(T), address);
   }
 
   void sendPing() { this->socket.send<PingPacket>(port); }
 
   size_t copyStr(char* target, std::string source) {
-    size_t size= source.size();
+    size_t size = source.size();
     memcpy(target, source.c_str(), size);
     return size;
   }
@@ -81,7 +81,7 @@ class Networker {
     // memcpy(packet.username, username.c_str(), username.size());
     copyStr(packet.clientInfo.username, username);
     packet.clientInfo.usernameLength = username.size();
-    this->send<HelloPacket>(packet);
+    this->socket.send<HelloPacket>(packet, this->port, this->serverAddress);
     // this->socket.send((char*)&packet, sizeof(HelloPacket), port);
   }
 
@@ -116,8 +116,9 @@ class Networker {
     std::cout << "Boradcasting" << std::endl;
     for (auto& [address, client] : clients) {
       if (client.id == sender.id && sockaddr_in_equal{}(address, sender.address)) {
-        std::cout << "Not sending to source" <<std::endl;
-        continue;;
+        std::cout << "Not sending to source" << std::endl;
+        continue;
+        ;
       }
       auto packet = (PacketHeader*)data;
       packet->clientId = sender.id;
@@ -125,7 +126,7 @@ class Networker {
     }
   }
 
-  template<typename T>
+  template <typename T>
   void broadcast(T packet) {
     std::cout << "Boradcasting" << std::endl;
     for (auto& [address, _] : clients) {
@@ -133,12 +134,12 @@ class Networker {
     }
   }
 
-  template<typename T>
+  template <typename T>
   void broadcast(T packet, const sockaddr_in& from) {
     this->broadcast(packet, clients.at(from));
   }
 
-  template<typename T>
+  template <typename T>
   void broadcast(T packet, ClientData sender) {
     std::cout << "Broadcasting" << std::endl;
     for (auto& [address, _] : clients) {
@@ -170,18 +171,16 @@ class Networker {
       ClientData sender;
       if (isServer && clients.size()) {
         if (clients.count(from))
-        // if(!clients.size()) return;
-        sender = this->clients.at(from);
+          // if(!clients.size()) return;
+          sender = this->clients.at(from);
       } else {
-        if (clientClients.count(header.clientId))
-        sender = this->clientClients.at(header.clientId);
+        if (clientClients.count(header.clientId)) sender = this->clientClients.at(header.clientId);
       }
 
-      std::cout << "Identified packet sender: (#" << (int)sender.id << ") Username: " << sender.username <<std::endl;
+      std::cout << "Identified packet sender: (#" << (int)sender.id << ") Username: " << sender.username << std::endl;
 
-// maype make one handler before default and one after
-      if (header.type != PacketType::Hello)
-        this->broadcast(data, size, sender);
+      // maype make one handler before default and one after
+      if (header.type != PacketType::Hello) this->broadcast(data, size, sender);
 
       // auto header = *(PacketHeader*)data;
       // PacketHeader headerS = *header;
@@ -201,22 +200,22 @@ class Networker {
           clientInfo.username = std::string(hello.clientInfo.username, hello.clientInfo.usernameLength);
           this->clients.insert_or_assign(from, clientInfo);
           clientClients.insert_or_assign(clientInfo.id, clientInfo);
-          std::cout << "Client added to connection list. Assigned ID: "<< (int)id <<" Their username is: " << clientInfo.username<< std::endl;
+          std::cout << "Client added to connection list. Assigned ID: " << (int)id << " Their username is: " << clientInfo.username << std::endl;
 
           this->socket.send<HelloOkPacket>(from);
 
           ClientListPacket clientList;
           clientList.clientCount = clients.size();
           size_t i = 0;
-          for (auto &[address, client] : clients) {
+          for (auto& [address, client] : clients) {
             auto size = copyStr(clientList.clients[i].username, client.username);
             clientList.clients[i].usernameLength = size;
             clientList.clients[i].id = client.id;
             i++;
 
-            std::cout << "I have user: "<<client.username<<std::endl;
+            std::cout << "I have user: " << client.username << std::endl;
           }
-          
+
           this->broadcast(clientList);
           // this->socket.send<ClientListPacket>(clientList, from);
         } break;
@@ -228,19 +227,18 @@ class Networker {
         } break;
         case PacketType::HelloNotOk: {
           auto hello = dataAs<HelloNotOkPacket>(data);
-          std::cerr << "The server said you couldn't join... error code: "<<hello.reason << std::endl;
+          std::cerr << "The server said you couldn't join... error code: " << hello.reason << std::endl;
 
         } break;
         case PacketType::ClientList: {
           std::cout << "The server showed us who's online!" << std::endl;
           auto clientList = dataAs<ClientListPacket>(data);
-          for (size_t i = 0; i < clientList.clientCount; i++)
-          {
+          for (size_t i = 0; i < clientList.clientCount; i++) {
             ClientInfo clientInfo = clientList.clients[i];
             ClientData client;
             client.id = clientInfo.id;
             client.username = std::string(clientInfo.username, clientInfo.usernameLength);
-            std::cout << "Client number "<<i<<" has username: "<< client.username <<" and ID: "<<client.id<<std::endl;
+            std::cout << "Client number " << i << " has username: " << client.username << " and ID: " << client.id << std::endl;
             clientClients.insert_or_assign(client.id, client);
           }
         } break;
@@ -274,7 +272,7 @@ class Networker {
           std::cout << "Received a PONG!" << std::endl;
         } break;
       }
-      
+
       if (receiveHandler) receiveHandler(data, size, header.type, sender);
     });
   }
