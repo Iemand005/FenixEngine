@@ -29,11 +29,11 @@ public:
       //   server.broadcast(data, size);
     };
     server.setMessageReceiveHandler([](std::string message, ClientData sender){
-      std::cout << "Message reached server: " << message << " with client ID: " << sender.id << " and username: " << sender.username << std::endl;
+      std::cout << "Message reached server: " << message << " with client ID: " << (int)sender.id << " and username: " << sender.username << std::endl;
     });
 
-    server.socket.createSocketIfNotExist();
-    server.start();
+    // server.socket.createSocketIfNotExist();
+    server.startServer();
   }
 
   

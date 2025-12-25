@@ -8,8 +8,7 @@
 
 typedef void (*MessageReceiveHandler)(std::string message);
 
-class ClientData {
-public:
+struct ClientData {
   unsigned char id;
   sockaddr_in address;
   std::string username;
@@ -38,6 +37,7 @@ class Networker {
   std::string username = "Server";
 
   bool registeredOnServer = false;
+  bool isServer = false;
 
   Networker() {}
 
@@ -108,14 +108,19 @@ class Networker {
   void setMessageReceiveHandler(MessageReceiveHandler handler) { messageReceiveHandler = handler; }
 
   void broadcast(const char* data, size_t size, const sockaddr_in& from) {
+    auto sender = clients.at(from);
+    this->broadcast(data, size, sender);
+  }
+
+  void broadcast(const char* data, size_t size, ClientData sender) {
     std::cout << "Boradcasting" << std::endl;
     for (auto& [address, client] : clients) {
-      if (sockaddr_in_equal{}(address, from)) {
+      if (client.id == sender.id && sockaddr_in_equal{}(address, sender.address)) {
         std::cout << "Not sending to source" <<std::endl;
-        return;
+        continue;;
       }
       auto packet = (PacketHeader*)data;
-      packet->clientId = client.id;
+      packet->clientId = sender.id;
       this->socket.send(data, size, client.address);
     }
   }
@@ -123,13 +128,30 @@ class Networker {
   template<typename T>
   void broadcast(T packet) {
     std::cout << "Boradcasting" << std::endl;
-    for (auto& [address, client] : clients) {
-      packet.header.clientId = client.id;
+    for (auto& [address, _] : clients) {
+      this->send(packet, address);
+    }
+  }
+
+  template<typename T>
+  void broadcast(T packet, const sockaddr_in& from) {
+    this->broadcast(packet, clients.at(from));
+  }
+
+  template<typename T>
+  void broadcast(T packet, ClientData sender) {
+    std::cout << "Broadcasting" << std::endl;
+    for (auto& [address, _] : clients) {
+      packet.header.clientId = sender.id;
       this->send(packet, address);
     }
   }
 
   void start() { this->start(this->port); }
+  void startServer() {
+    isServer = true;
+    start();
+  }
 
   template <typename T>
   T dataAs(const char* data) {
@@ -218,8 +240,14 @@ class Networker {
           memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
 
           std::string message(messageBuffer, messageLength);
-          ClientData data = clientClients.at(header.clientId);
-          if (messageReceiveHandler != nullptr) messageReceiveHandler(message, data);
+          if (isServer) {
+            ClientData data = clients.at(from);
+            data.id;
+            if (messageReceiveHandler != nullptr) messageReceiveHandler(message, data);
+          } else {
+            ClientData data = clientClients.at(header.clientId);
+            if (messageReceiveHandler != nullptr) messageReceiveHandler(message, data);
+          }
         } break;
         case PacketType::Position: {
           auto packet = (PositionPacket*)data;
