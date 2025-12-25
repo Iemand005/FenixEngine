@@ -545,6 +545,12 @@ class Game {
 
 int main() {
   Game game(800, 600);
+unsigned long long int hey = 0;
+// unsigned int32_t meow = 10;
+// memcpy()
+char *test = "maow";
+test[0]++;
+printf("%s", test);
 
   glm::vec3 playerHeight = glm::vec3(0.0f, 6.5f, 0.0f);
 
