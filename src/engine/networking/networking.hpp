@@ -17,16 +17,16 @@ struct ClientData {
 class Networker {
  public:
   using MessageReceiveHandler = std::function<void(std::string message, const ClientData sender)>;
-  using AllPacketHandler = std::function<void(const char* data, size_t size, PacketType type, const sockaddr_in& sender)>;
+  using ReceiveHandler = std::function<void(const char* data, size_t size, PacketType type, const ClientData sender)>;
   MessageReceiveHandler messageReceiveHandler;
 
-  AllPacketHandler allPacketHandler = nullptr;
+  ReceiveHandler receiveHandler = nullptr;
   UDPSocket socket;
 
   std::thread listenerThread;
 
   // std::vector<ClientData> clients = std::vector<ClientData>();
-  std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal> clients = std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal>();
+  std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal> clients = std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal>(MAX_PLAYER_COUNT);
   std::unordered_map<unsigned char, ClientData> clientClients = std::unordered_map<unsigned char, ClientData>();
 
   unsigned short port = 0;
@@ -167,10 +167,21 @@ class Networker {
 
       auto header = this->dataAs<PacketHeader>(data);
 
-      if (allPacketHandler) allPacketHandler(data, size, header.type, from);
+      ClientData sender;
+      if (isServer && clients.size()) {
+        if (clients.count(from))
+        // if(!clients.size()) return;
+        sender = this->clients.at(from);
+      } else {
+        if (clientClients.count(header.clientId))
+        sender = this->clientClients.at(header.clientId);
+      }
 
+      std::cout << "Identified packet sender: (#" << (int)sender.id << ") Username: " << sender.username <<std::endl;
+
+// maype make one handler before default and one after
       if (header.type != PacketType::Hello)
-        this->broadcast(data, size, from);
+        this->broadcast(data, size, sender);
 
       // auto header = *(PacketHeader*)data;
       // PacketHeader headerS = *header;
@@ -263,6 +274,8 @@ class Networker {
           std::cout << "Received a PONG!" << std::endl;
         } break;
       }
+      
+      if (receiveHandler) receiveHandler(data, size, header.type, sender);
     });
   }
 

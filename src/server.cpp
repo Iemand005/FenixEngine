@@ -24,7 +24,7 @@ public:
 
   void start()
   {
-    server.allPacketHandler = [this](const char *data, size_t size, PacketType type, sockaddr_in sender) {
+    server.receiveHandler = [this](const char *data, size_t size, PacketType type, ClientData sender) {
       // if (type != PacketType::Hello)
       //   server.broadcast(data, size);
     };

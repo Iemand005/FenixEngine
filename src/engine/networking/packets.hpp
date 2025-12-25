@@ -78,7 +78,7 @@ struct MessagePacket {
 };
 
 struct PositionPacket {
-  PacketHeader header{PacketType::Message};
+  PacketHeader header{PacketType::Position};
   glm::vec3 position;
   glm::vec3 rotation;
 };

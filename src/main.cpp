@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
+#include <map>
 
 #include "engine/engine.h"
 #include "imgui/imgui.h"
@@ -82,7 +83,11 @@ class Game {
 
   std::unique_ptr<Networker> client = nullptr;
 
+  std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
+
   ImGuiIO io;
+
+  bool isConnectedToServer = false;
 
   Game(int width, int height) : width(width), height(height) {
     if (!initGlfw()) return;
@@ -101,6 +106,31 @@ class Game {
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
     this->client = std::make_unique<Networker>(2130);
+
+    this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
+      switch(type) {
+        // case PacketType::ClientList: {
+
+        // }break;
+        case PacketType::Position:{
+
+          std::cout << "Received a thing yeah!"<<std::endl;
+          auto packet = this->client->dataAs<PositionPacket>(data);
+          if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
+          auto player = this->players.at(sender.id);
+          player->position = packet.position;
+          player->lookAt(packet.rotation);
+        }break;
+        case PacketType::ClientList:{
+          for(auto &[id, client] : this->client->clientClients){
+            this->spawnPlayer(id);
+    isConnectedToServer =true;
+
+            // this->players.insert_or_assign(id, this->spawnPlayer(id));
+          }
+        }break;
+      }
+    };
 
     client->messageReceiveHandler = [this](std::string message, ClientData sender) {
       std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username<< std::endl;
@@ -127,6 +157,7 @@ class Game {
     // this->client->username = username;
     // if (!this->client) 
     this->client->connect(address, port, username);
+    // isConnectedToServer =true;
   }
 
   bool initGlfw() {
@@ -229,7 +260,7 @@ class Game {
 
     this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
-    spawnZombies(10);
+    // spawnZombies(10);
   }
 
   void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
@@ -244,7 +275,11 @@ class Game {
     const float minDistance = 20.0f;
     const float minDistanceSq = minDistance * minDistance;
 
-    auto zombieTemplate = this->player->clone();
+    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->clone());
+      if (zombieTemplate->meshes.size()<2) return;
+
+          zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
+      zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
     for (int i = 0; i < count; i++) {
       float x = static_cast<float>(rand() % 100 - 50);
       float z = static_cast<float>(rand() % 100 - 50);
@@ -261,15 +296,20 @@ class Game {
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
-      if (!npc->meshes.size()) return;
 
-      npc->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-      npc->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
+
 
       this->scene->addModel(npc);
 
       npcs.push_back(npc);
     }
+  }
+
+  void spawnPlayer(u_char playerId) {
+    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->clone());
+
+    this->players.insert_or_assign(playerId, newPlayer);
+    this->scene->addModel(newPlayer);
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
@@ -461,7 +501,7 @@ class Game {
         ImGui::Text("Player #%i username: %s", id, client.username.c_str());
       }
 
-      
+
       
 
     }
@@ -538,6 +578,8 @@ int main() {
     // window.playerCamera->setPos(cameraPos);
 
     game.playerCamera->setFront(glm::normalize(pos - cameraPos));
+
+    if (game.isConnectedToServer)game.client->sendPosition(game.player->position, game.player->rotation);
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
