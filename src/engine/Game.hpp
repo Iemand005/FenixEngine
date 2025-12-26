@@ -19,46 +19,11 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-// #include "engine/networking/udp.cpp"
 #include "engine/networking/networking.hpp"
 
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
-float fov = 45.0f;
-
-float lastX = 0, lastY = 0;
-
-float yaw = -90.0f;
-float pitch = 0.0f;
-
-// int windowWidth = 800.0f;
-// int windowHeight = 600.0f;
-
-bool vsync = true;
-
-bool capturingMouse = true;
-
-void scrollCallback(GLFWwindow* window, double xoffset, double yOffset) {
-  ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) return;
-  fov -= (float)yOffset;
-  if (fov < 1.0f) fov = 1.0f;
-  if (fov > 45.0f) fov = 45.0f;
-}
-
-// void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-//   ImGuiIO& io = ImGui::GetIO();
-//   if (io.WantCaptureMouse) return;
-//   windowWidth = width;
-//   windowHeight = height;
-//   glViewport(0, 0, width, height);
-// }
 
 class Game {
- public:
+  public:
   int width;
   int height;
   GLFWwindow* window;
@@ -66,9 +31,25 @@ class Game {
   std::unique_ptr<fe::Camera> playerCamera;
   fe::ShaderProgram* shader;
   fe::Timer fpsCounter;
+  
+  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+  
+  float fov = 45.0f;
+  
+  float lastX = 0, lastY = 0;
+  
+  float yaw = -90.0f;
+  float pitch = 0.0f;
+  
+  bool vsync = true;
+  
+  bool capturingMouse = true;
 
   std::shared_ptr<fe::Character> player;
-
+  
   std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
   std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
@@ -177,7 +158,13 @@ class Game {
 
     glfwSetWindowUserPointer(window, this);
 
-    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
+  ImGuiIO& io = ImGui::GetIO();
+  if (io.WantCaptureMouse) return;
+  fov -= (float)yOffset;
+  if (fov < 1.0f) fov = 1.0f;
+  if (fov > 45.0f) fov = 45.0f;
+});
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
       ImGuiIO& io = ImGui::GetIO();
       if (io.WantCaptureMouse) return;
