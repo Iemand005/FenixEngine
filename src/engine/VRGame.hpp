@@ -30,10 +30,10 @@
 
 void outputError(XrResult result) {
   if (XR_SUCCEEDED(result)) return;
-  std::cerr << "Failed to create instance: " << result << "\n";
+  // std::cerr << "Error code: " << result << "\n";
 
   char buf[XR_MAX_RESULT_STRING_SIZE];
-  if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << "\n";
+  if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " ("<< result << ")" << std::endl;
 }
 
 class VRGame : public Game {
@@ -251,11 +251,11 @@ class VRGame : public Game {
     sessionInfo.systemId = systemId;
     sessionInfo.next = &gfx;
 
-    // XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
-    // PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
+    XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
+    PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
 
-    // outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
-    // outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
+    outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
+    outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
     outputError(xrCreateSession(instance, &sessionInfo, &session));
 
     XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
