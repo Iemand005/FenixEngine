@@ -114,7 +114,7 @@ public:
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void redraw() {
-    scene->render(*(this->shader), *(this->playerCamera));
+    scene->render(*(this->shader), *(this->camera));
 
     fpsCounter.update();
     drawImGui();
@@ -328,7 +328,7 @@ public:
   }
 
   void updateAspect() {
-    if (this->playerCamera) this->playerCamera->setAspect((float)this->width / (float)this->height);
+    if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
   }
 };
 

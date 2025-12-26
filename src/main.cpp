@@ -63,7 +63,7 @@ class Game {
   int height;
   GLFWwindow* window;
   std::unique_ptr<fe::Scene> scene;
-  std::unique_ptr<fe::Camera> playerCamera;
+  std::unique_ptr<fe::Camera> camera;
   fe::ShaderProgram* shader;
   fe::Timer fpsCounter;
 
@@ -140,7 +140,7 @@ class Game {
 
     this->scene = std::make_unique<fe::Scene>();
     this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
-    this->playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
+    this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
     startMouseCapture();
 
@@ -325,7 +325,7 @@ class Game {
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void redraw() {
-    scene->render(*(this->shader), *(this->playerCamera));
+    scene->render(*(this->shader), *(this->camera));
 
     fpsCounter.update();
     drawImGui();
@@ -539,7 +539,7 @@ class Game {
   }
 
   void updateAspect() {
-    if (this->playerCamera) this->playerCamera->setAspect((float)this->width / (float)this->height);
+    if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
   }
 };
 
@@ -559,12 +559,12 @@ int main() {
     game.player->rotation.y = -yaw + 90.0f;
     glm::vec3 pos = game.player->position + cameraOffset;
     cameraPos = pos - cameraFront * 5.0f;
-    game.playerCamera->setPos(cameraPos);
+    game.camera->setPos(cameraPos);
 
     // game.playerCamera->setAspect((float)game.width / (float)game.height);
     // window.playerCamera->setPos(cameraPos);
 
-    game.playerCamera->setFront(glm::normalize(pos - cameraPos));
+    game.camera->setFront(glm::normalize(pos - cameraPos));
 
     if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
 

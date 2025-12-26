@@ -1,12 +1,12 @@
 #include "Game.hpp"
 
 #pragma once
-#define XR_USE_PLATFORWIN32
 #define XR_USE_GRAPHICS_API_OPENGL
+#define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 // #define XR_EXTENSION_PROTOTYPES
 // #define XR_KHR_opengl_enable
-#ifdef XR_USE_PLATFORWIN32
+#ifdef XR_USE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
@@ -235,8 +235,8 @@ class VRGame : public Game {
 
     outputError(xrCreateInstance(&createInfo, &instance));
 
-    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEGET_INFO};
-    systemInfo.formFactor = XR_FORFACTOR_HEAD_MOUNTED_DISPLAY;
+    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
+    systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 
     outputError(xrGetSystem(instance, &systemInfo, &systemId));
 
@@ -316,7 +316,8 @@ class VRGame : public Game {
 
       glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
       static float angle = 0.0f;
-      static fe::Camera camera = fe::Camera(0.1f, 100.0f);
+      // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
+      static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
       for (uint32_t eye = 0; eye < viewCount; eye++) {
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
@@ -329,28 +330,10 @@ class VRGame : public Game {
         glm::quat orientation(xrPose.orientation.w, xrPose.orientation.x, xrPose.orientation.y, xrPose.orientation.z);
         glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
-        auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
-        auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
-
-        // float nearDist = 0.10f;
-        // float farDist = 100.0f;
-
-        // float left = tan(fov.angleLeft) * camera.nearDist;
-        // float right = tan(fov.angleRight) * camera.nearDist;
-        // float bottom = tan(fov.angleDown) * camera.nearDist;
-        // float top = tan(fov.angleUp) * camera.nearDist;
-
-        // position = position + positionOffset;
-
-        // camera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
-
-        // camera.setPos(position);
-        camera.updateView(position + positionOffset, orientation);
-        camera.updateProjection(fov);
-
-        // camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
-
-        scene->render(*shader, camera, swapchainWidth, swapchainHeight);
+        vrCamera.updateView(position + positionOffset, orientation);
+        vrCamera.updateProjection(fov);
+        camera->update(position + positionOffset, orientation, fov);
+        scene->render(*shader, vrCamera, swapchainWidth, swapchainHeight);
 
         projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
         projectionViews[eye].pose = views[eye].pose;
@@ -383,7 +366,7 @@ class VRGame : public Game {
       if (drawWindow) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        scene->render(*(shader), (camera), 800, 600);
+        scene->render(*shader, *camera, 800, 600);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

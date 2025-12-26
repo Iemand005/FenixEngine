@@ -7,7 +7,6 @@ public:
 
   }
   void start() {
-    this->maine();
         auto scene = std::make_unique<fe::Scene>();
     auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
 
@@ -19,5 +18,6 @@ public:
     auto playerObject = std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
     scene->addModel(playerObject);
     player = std::static_pointer_cast<fe::Character>(playerObject);
+    this->run();
   }
 };

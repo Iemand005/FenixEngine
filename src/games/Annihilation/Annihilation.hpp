@@ -22,52 +22,9 @@
 // #include "engine/networking/udp.cpp"
 #include "../../engine/Game.hpp"
 
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
-float fov = 45.0f;
-
-float lastX = 0, lastY = 0;
-
-float yaw = -90.0f;
-float pitch = 0.0f;
-
-// int windowWidth = 800.0f;
-// int windowHeight = 600.0f;
-
-bool vsync = true;
-
-bool capturingMouse = true;
-
-void scrollCallback(GLFWwindow* window, double xoffset, double yOffset) {
-  ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) return;
-  fov -= (float)yOffset;
-  if (fov < 1.0f) fov = 1.0f;
-  if (fov > 45.0f) fov = 45.0f;
-}
-
-// void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-//   ImGuiIO& io = ImGui::GetIO();
-//   if (io.WantCaptureMouse) return;
-//   windowWidth = width;
-//   windowHeight = height;
-//   glViewport(0, 0, width, height);
-// }
-
 class Annihilation : public Game {
  public:
-  int width;
-  int height;
-  GLFWwindow* window;
-  std::unique_ptr<fe::Scene> scene;
-  std::unique_ptr<fe::Camera> playerCamera;
-  fe::ShaderProgram* shader;
-  fe::Timer fpsCounter;
 
-  std::shared_ptr<fe::Character> player;
 
   std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
@@ -81,13 +38,6 @@ class Annihilation : public Game {
 
   int mapIndex = 0;
 
-  std::unique_ptr<Networker> client = nullptr;
-
-  std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
-
-  ImGuiIO io;
-
-  bool isConnectedToServer = false;
 
   Annihilation(int width, int height) : Game(width, height) {
 
@@ -225,28 +175,7 @@ class Annihilation : public Game {
       pWasDown = false;
   }
 
-  void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
-  void disableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
-
   bool shouldClose() { return glfwWindowShouldClose(this->window); }
-
-  void destroy() {
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
-  }
-
-  void initImGui() {
-    const char* glsl_version = "#version 330 core";
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-  }
 
   int drawImGui() {
     // glDisable(GL_DEPTH_TEST);

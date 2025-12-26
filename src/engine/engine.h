@@ -31,8 +31,7 @@ struct Vertex {
 
   Vertex() {}
 
-  Vertex(float x, float y, float z, float nx, float ny, float nz, float u,
-         float v) {
+  Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v) {
     this->Position = glm::vec3(x, y, z);
     this->Normal = glm::vec3(nx, ny, nz);
     this->TextureCoordinate = glm::vec2(u, v);
@@ -496,13 +495,17 @@ class Camera {
     updateView(position, front, up);
   }
 
+  void update(glm::vec3 position, glm::quat orientation, glm::vec4 fov) {
+    updateView(position, orientation);
+    updateProjection(fov);
+  }
+
   void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up) {
     viewMatrix = glm::lookAt(position, position + front, up);
   }
 
   void updateView(glm::vec3 position, glm::quat orientation) {
-    updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f),
-               orientation * glm::vec3(0.0f, 1.0f, 0.0f));
+    updateView(position, orientation * glm::vec3(0.0f, 0.0f, 1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
   }
 
   void updateProjection(float fov, float aspect) {
