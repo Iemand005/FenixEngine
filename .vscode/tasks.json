@@ -359,6 +359,7 @@
         "/link",
         "/LIBPATH:${workspaceFolder}\\lib\\debug",
         "gdi32.lib", "glfw3.lib", "Opengl32.lib", "shell32.lib", "user32.lib",
+        "openxr_loaderd.lib", "advapi32.lib"
       ],
       "options": {
         "cwd": "${fileDirname}"

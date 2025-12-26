@@ -6,8 +6,11 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 // #define XR_EXTENSION_PROTOTYPES
 // #define XR_KHR_opengl_enable
-
+#ifdef XR_USE_PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <unknwn.h>
+#endif
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 // #include <GL/glew.h>
@@ -34,6 +37,7 @@ void outputError(XrResult result) {
 }
 
 class VRGame : public Game {
+  public:
   XrInstance instance;
   XrSystemId systemId;
   XrSession session;
@@ -60,6 +64,14 @@ class VRGame : public Game {
   glm::vec3 positionOffset = glm::vec3(1.0f);
 
   std::shared_ptr<fe::Character> player;
+
+  VRGame() : Game(800, 600) {
+
+  }
+
+  VRGame(int width, int height) : Game(width, height) {
+
+  }
 
   void CreateActions() {
     // 1. Create Action Set
@@ -103,6 +115,10 @@ class VRGame : public Game {
     xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
     std::vector<XrViewConfigurationView> configViews(configCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
     xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, configCount, &configCount, configViews.data());
+
+    if (!configViews.size()) {
+      std::cerr << "No headset??" << std::endl;
+    }
 
     swapchainWidth = configViews[0].recommendedImageRectWidth;
     swapchainHeight = configViews[0].recommendedImageRectHeight;
@@ -235,11 +251,11 @@ class VRGame : public Game {
     sessionInfo.systemId = systemId;
     sessionInfo.next = &gfx;
 
-    XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
-    PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
+    // XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
+    // PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
 
-    outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
-    outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
+    // outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
+    // outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
     outputError(xrCreateSession(instance, &sessionInfo, &session));
 
     XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
@@ -255,21 +271,21 @@ class VRGame : public Game {
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
   }
 
-  int main() {
+  int maine() {
     bool drawWindow = true;
 
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfwInit();
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
-    glfwMakeContextCurrent(window);
+    // auto window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
+    // glfwMakeContextCurrent(window);
 
-    if (!gladLoadGL()) {
-      std::cerr << "Failed to initialize GLAD" << std::endl;
-      return -1;
-    }
+    // if (!gladLoadGL()) {
+    //   std::cerr << "Failed to initialize GLAD" << std::endl;
+    //   return -1;
+    // }
 
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain(session);

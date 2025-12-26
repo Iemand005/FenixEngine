@@ -15,11 +15,11 @@
 #include <map>
 #include <string>
 
-#include "engine/engine.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-#include "engine/networking/networking.hpp"
+#include "engine.h"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+#include "networking/networking.hpp"
 
 
 class Game {
@@ -159,11 +159,12 @@ class Game {
     glfwSetWindowUserPointer(window, this);
 
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
+      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantCaptureMouse) return;
-  fov -= (float)yOffset;
-  if (fov < 1.0f) fov = 1.0f;
-  if (fov > 45.0f) fov = 45.0f;
+  game->fov -= (float)yOffset;
+  if (game->fov < 1.0f) game->fov = 1.0f;
+  if (game->fov > 45.0f) game->fov = 45.0f;
 });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
       ImGuiIO& io = ImGui::GetIO();
@@ -173,33 +174,34 @@ class Game {
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
       if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) return;
 
+      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
       ImGuiIO& io = ImGui::GetIO();
       if (io.WantCaptureMouse) return;
 
-      float xOffset = xPos - lastX;
-      float yOffset = lastY - yPos;
-      if (lastX == 0 && lastY == 0) {
+      float xOffset = xPos - game->lastX;
+      float yOffset = game->lastY - yPos;
+      if (game->lastX == 0 && game->lastY == 0) {
         xOffset = 0;
         yOffset = 0;
       }
-      lastX = xPos;
-      lastY = yPos;
+      game->lastX = xPos;
+      game->lastY = yPos;
 
       const float sensitivity = 0.1f;
       xOffset *= sensitivity;
       yOffset *= sensitivity;
 
-      yaw += xOffset;
-      pitch += yOffset;
+      game->yaw += xOffset;
+      game->pitch += yOffset;
 
-      if (pitch > 89.0f) pitch = 89.0f;
-      if (pitch < -89.0f) pitch = -89.0f;
+      if (game->pitch > 89.0f) game->pitch = 89.0f;
+      if (game->pitch < -89.0f) game->pitch = -89.0f;
 
       glm::vec3 direction;
-      direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-      direction.y = sin(glm::radians(pitch));
-      direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-      cameraFront = glm::normalize(direction);
+      direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
+      direction.y = sin(glm::radians(game->pitch));
+      direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
+      game->cameraFront = glm::normalize(direction);
     });
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
@@ -530,47 +532,47 @@ class Game {
   }
 };
 
-int main() {
+// int main() {
 
-  Game game(800, 600);
+//   Game game(800, 600);
   
-  glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
+//   glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
 
-  while (!game.shouldClose()) {
-    glfwPollEvents();
+//   while (!game.shouldClose()) {
+//     glfwPollEvents();
 
-    if (game.player->touchedGround) {
-      game.canJump = true;
-    }
-    game.processInput();
-    game.player->rotation.y = -yaw + 90.0f;
-    glm::vec3 pos = game.player->position + cameraOffset;
-    cameraPos = pos - cameraFront * 5.0f;
-    game.playerCamera->setPos(cameraPos);
+//     if (game.player->touchedGround) {
+//       game.canJump = true;
+//     }
+//     game.processInput();
+//     game.player->rotation.y = -game.yaw + 90.0f;
+//     glm::vec3 pos = game.player->position + cameraOffset;
+//     game.cameraPos = pos - game.cameraFront * 5.0f;
+//     game.playerCamera->setPos(game.cameraPos);
 
-    // game.playerCamera->setAspect((float)game.width / (float)game.height);
-    // window.playerCamera->setPos(cameraPos);
+//     // game.playerCamera->setAspect((float)game.width / (float)game.height);
+//     // window.playerCamera->setPos(cameraPos);
 
-    game.playerCamera->setFront(glm::normalize(pos - cameraPos));
+//     game.playerCamera->setFront(glm::normalize(pos - game.cameraPos));
 
-    if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
+//     if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
 
-    for (auto& npc : game.npcs) {
-      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
-      npc->needsUpdate = true;
-    }
-    for (auto& npc : game.npcs) {
-      if (game.player->intersects(*npc)) {
-        std::cout << "Player intersects with NPC" << std::endl;
-        std::cout << "YOU FUCKING DIED!!!!" << std::endl;
-        // client.sendPing();
-      }
-    }
-    game.update();
-    game.redraw();
-  }
+//     for (auto& npc : game.npcs) {
+//       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
+//       npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
+//       npc->needsUpdate = true;
+//     }
+//     for (auto& npc : game.npcs) {
+//       if (game.player->intersects(*npc)) {
+//         std::cout << "Player intersects with NPC" << std::endl;
+//         std::cout << "YOU FUCKING DIED!!!!" << std::endl;
+//         // client.sendPing();
+//       }
+//     }
+//     game.update();
+//     game.redraw();
+//   }
 
-  game.destroy();
-  return 0;
-}
+//   game.destroy();
+//   return 0;
+// }

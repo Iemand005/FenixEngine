@@ -47,6 +47,7 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build server"
     },
+
     {
       "name": "C/C++: cl.exe build and debug Foxcraft",
       "type": "cppvsdbg",
@@ -58,6 +59,19 @@
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build Foxcraft"
+    },
+
+    {
+      "name": "C/C++: cl.exe build and debug FoxChat",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\debug\\FoxChat.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}\\src",
+      "environment": [],
+      "console": "integratedTerminal",
+      "preLaunchTask": "C/C++: cl.exe build FoxChat"
     },
   ],
   "version": "2.0.0"
