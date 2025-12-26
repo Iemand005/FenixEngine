@@ -1,12 +1,12 @@
 #include "Game.hpp"
 
 #pragma once
-#define XR_USE_PLATFORM_WIN32
+#define XR_USE_PLATFORWIN32
 #define XR_USE_GRAPHICS_API_OPENGL
 #define GLFW_EXPOSE_NATIVE_WIN32
 // #define XR_EXTENSION_PROTOTYPES
 // #define XR_KHR_opengl_enable
-#ifdef XR_USE_PLATFORM_WIN32
+#ifdef XR_USE_PLATFORWIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
@@ -51,19 +51,17 @@ class VRGame : public Game {
   uint32_t viewCount = 2;  // Stereo
   int32_t swapchainWidth, swapchainHeight;
 
-  XrActionSet m_actionSet = XR_NULL_HANDLE;
-  XrAction m_moveAction = XR_NULL_HANDLE;
-  XrAction m_poseAction = XR_NULL_HANDLE;                           // For controller pose, if needed
-  XrSpace m_controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};  // For each hand
-  XrSpace m_headSpace = XR_NULL_HANDLE;
+  XrActionSet actionSet = XR_NULL_HANDLE;
+  XrAction moveAction = XR_NULL_HANDLE;
+  XrAction poseAction = XR_NULL_HANDLE;                           // For controller pose, if needed
+  XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};  // For each hand
+  XrSpace headSpace = XR_NULL_HANDLE;
 
-  XrVector2f m_joystickInput = {0.0f, 0.0f};
-  XrPosef m_headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
-  float m_playerHeight = 1.7f;
+  XrVector2f joystickInput = {0.0f, 0.0f};
+  XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
+  float playerHeight = 1.7f;
 
   glm::vec3 positionOffset = glm::vec3(1.0f);
-
-  std::shared_ptr<fe::Character> player;
 
   VRGame() : Game(800, 600) {
 
@@ -78,14 +76,14 @@ class VRGame : public Game {
     XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
     strcpy(actionSetInfo.actionSetName, "gameplay");
     strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
-    xrCreateActionSet(instance, &actionSetInfo, &m_actionSet);
+    xrCreateActionSet(instance, &actionSetInfo, &actionSet);
 
     // 2. Create Actions
     XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
     actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
     strcpy(actionInfo.actionName, "move");
     strcpy(actionInfo.localizedActionName, "Move");
-    xrCreateAction(m_actionSet, &actionInfo, &m_moveAction);
+    xrCreateAction(actionSet, &actionInfo, &moveAction);
 
     // 3. Suggest Bindings (e.g., for Oculus Touch)
     std::vector<XrActionSuggestedBinding> bindings;
@@ -93,7 +91,7 @@ class VRGame : public Game {
     // Left thumbstick for movement
     XrPath leftThumbstickPath;
     xrStringToPath(instance, "/user/hand/right/input/thumbstick", &leftThumbstickPath);
-    bindings.push_back({m_moveAction, leftThumbstickPath});
+    bindings.push_back({moveAction, leftThumbstickPath});
 
     XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
     XrPath oculusProfilePath;
@@ -105,7 +103,7 @@ class VRGame : public Game {
 
     // 4. Attach Action Set to Session
     XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
-    attachInfo.actionSets = &m_actionSet;
+    attachInfo.actionSets = &actionSet;
     attachInfo.countActionSets = 1;
     xrAttachSessionActionSets(session, &attachInfo);
   }
@@ -159,7 +157,7 @@ class VRGame : public Game {
 
   void PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     // 1. Sync Actions
-    XrActiveActionSet activeActionSet{m_actionSet, XR_NULL_PATH};
+    XrActiveActionSet activeActionSet{actionSet, XR_NULL_PATH};
     XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
     syncInfo.activeActionSets = &activeActionSet;
     syncInfo.countActiveActionSets = 1;
@@ -168,34 +166,34 @@ class VRGame : public Game {
     // 2. Get Joystick State
     XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
     XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-    getInfo.action = m_moveAction;
+    getInfo.action = moveAction;
     xrGetActionStateVector2f(session, &getInfo, &moveState);
 
     if (moveState.isActive) {
-      m_joystickInput = moveState.currentState;
+      joystickInput = moveState.currentState;
     } else {
-      m_joystickInput = {0.0f, 0.0f};
+      joystickInput = {0.0f, 0.0f};
     }
 
     // 3. Get Head Pose (CRUCIAL for view-relative movement)
     XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
-    m_headSpace = appSpace;
-    xrLocateSpace(m_headSpace, appSpace, predictedDisplayTime, &headLocation);
+    headSpace = appSpace;
+    xrLocateSpace(headSpace, appSpace, predictedDisplayTime, &headLocation);
 
     if (headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
-      m_headPose = headLocation.pose;
+      headPose = headLocation.pose;
     }
 
     // 4. Calculate Movement (Transform joystick by head orientation)
-    if (fabsf(m_joystickInput.x) > 0.1f || fabsf(m_joystickInput.y) > 0.1f) {
+    if (fabsf(joystickInput.x) > 0.1f || fabsf(joystickInput.y) > 0.1f) {
       // Extract forward and right vectors from head orientation
-      XrVector3f forward = {-2.0f * (m_headPose.orientation.x * m_headPose.orientation.z + m_headPose.orientation.w * m_headPose.orientation.y),
-                            -2.0f * (m_headPose.orientation.y * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.x),
-                            -1.0f + 2.0f * (m_headPose.orientation.x * m_headPose.orientation.x + m_headPose.orientation.y * m_headPose.orientation.y)};
+      XrVector3f forward = {-2.0f * (headPose.orientation.x * headPose.orientation.z + headPose.orientation.w * headPose.orientation.y),
+                            -2.0f * (headPose.orientation.y * headPose.orientation.z - headPose.orientation.w * headPose.orientation.x),
+                            -1.0f + 2.0f * (headPose.orientation.x * headPose.orientation.x + headPose.orientation.y * headPose.orientation.y)};
 
-      XrVector3f right = {1.0f - 2.0f * (m_headPose.orientation.y * m_headPose.orientation.y + m_headPose.orientation.z * m_headPose.orientation.z),
-                          2.0f * (m_headPose.orientation.x * m_headPose.orientation.y + m_headPose.orientation.w * m_headPose.orientation.z),
-                          2.0f * (m_headPose.orientation.x * m_headPose.orientation.z - m_headPose.orientation.w * m_headPose.orientation.y)};
+      XrVector3f right = {1.0f - 2.0f * (headPose.orientation.y * headPose.orientation.y + headPose.orientation.z * headPose.orientation.z),
+                          2.0f * (headPose.orientation.x * headPose.orientation.y + headPose.orientation.w * headPose.orientation.z),
+                          2.0f * (headPose.orientation.x * headPose.orientation.z - headPose.orientation.w * headPose.orientation.y)};
 
       // Normalize and apply joystick input
       // forward = glm::normalize(forward);
@@ -203,9 +201,9 @@ class VRGame : public Game {
 
       XrVector3f movement;
       float moveSpeed = 0.1f;  // meters per second
-      movement.x = forward.x * m_joystickInput.y + right.x * m_joystickInput.x * moveSpeed;
+      movement.x = forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
       movement.y = 0.0f;  // Typically no vertical movement from joystick
-      movement.z = forward.z * m_joystickInput.y + right.z * m_joystickInput.x * moveSpeed;
+      movement.z = forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
 
       // Apply movement speed and delta time
       // float deltaTime = GetFrameDeltaTime(); // Implement this
@@ -233,8 +231,8 @@ class VRGame : public Game {
 
     outputError(xrCreateInstance(&createInfo, &instance));
 
-    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
-    systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
+    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEGET_INFO};
+    systemInfo.formFactor = XR_FORFACTOR_HEAD_MOUNTED_DISPLAY;
 
     outputError(xrGetSystem(instance, &systemInfo, &systemId));
 
