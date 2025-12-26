@@ -61,14 +61,18 @@ class VRGame : public Game {
   XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
   float playerHeight = 1.7f;
 
+  bool drawWindow = true;
+
   glm::vec3 positionOffset = glm::vec3(1.0f);
 
-  VRGame() : Game(800, 600) {
+  VRGame() : VRGame(0, 0, false) {}
 
-  }
+  VRGame(int width, int height, bool drawWindow = true) : Game(width, height) {
+    this->drawWindow = drawWindow;
 
-  VRGame(int width, int height) : Game(width, height) {
-
+    initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
+    initSwapchain(session);
+    CreateActions();
   }
 
   void CreateActions() {
@@ -269,51 +273,24 @@ class VRGame : public Game {
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
   }
 
-  int maine() {
-    bool drawWindow = true;
-
-    // glfwInit();
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // auto window = glfwCreateWindow(800, 600, "FoxEngine", NULL, NULL);
-    // glfwMakeContextCurrent(window);
-
-    // if (!gladLoadGL()) {
-    //   std::cerr << "Failed to initialize GLAD" << std::endl;
-    //   return -1;
-    // }
-
-    initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
-    initSwapchain(session);
-    CreateActions();
-
-    auto scene = std::make_unique<fe::Scene>();
-    auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
-
-    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
-    model->isStatic = true;
-    model->needsUpdate = false;
-    scene->addModel(model);
-
-    auto playerObject = std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
-    scene->addModel(playerObject);
-    player = std::static_pointer_cast<fe::Character>(playerObject);
-
+  int initialize() {
+    
+  }
+  void run() {
     bool running = true;
+    XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
+    XrFrameState frameState{XR_TYPE_FRAME_STATE};
+    XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
+    XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+    uint32_t swapchainImageIndex;
+
     while (running) {
-      XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
-      XrFrameState frameState{XR_TYPE_FRAME_STATE};
       outputError(xrWaitFrame(session, &waitInfo, &frameState));
 
       PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
 
-      XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
       outputError(xrBeginFrame(session, &frameBegin));
 
-      XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-      uint32_t swapchainImageIndex;
       outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
 
       XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
@@ -419,9 +396,5 @@ class VRGame : public Game {
 
     xrDestroySession(session);
     xrDestroyInstance(instance);
-
-    return 0;
   }
-
-  // class VRGame : public Game {
 };

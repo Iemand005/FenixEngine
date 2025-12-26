@@ -15,15 +15,50 @@
 #include <map>
 #include <string>
 
-#include "engine.h"
-#include "../imgui/imgui.h"
-#include "../imgui/imgui_impl_glfw.h"
-#include "../imgui/imgui_impl_opengl3.h"
-#include "networking/networking.hpp"
+#include "engine/engine.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+// #include "engine/networking/udp.cpp"
+#include "../../engine/Game.hpp"
 
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
-class Game {
-  public:
+float fov = 45.0f;
+
+float lastX = 0, lastY = 0;
+
+float yaw = -90.0f;
+float pitch = 0.0f;
+
+// int windowWidth = 800.0f;
+// int windowHeight = 600.0f;
+
+bool vsync = true;
+
+bool capturingMouse = true;
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yOffset) {
+  ImGuiIO& io = ImGui::GetIO();
+  if (io.WantCaptureMouse) return;
+  fov -= (float)yOffset;
+  if (fov < 1.0f) fov = 1.0f;
+  if (fov > 45.0f) fov = 45.0f;
+}
+
+// void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+//   ImGuiIO& io = ImGui::GetIO();
+//   if (io.WantCaptureMouse) return;
+//   windowWidth = width;
+//   windowHeight = height;
+//   glViewport(0, 0, width, height);
+// }
+
+class Annihilation : public Game {
+ public:
   int width;
   int height;
   GLFWwindow* window;
@@ -31,25 +66,9 @@ class Game {
   std::unique_ptr<fe::Camera> playerCamera;
   fe::ShaderProgram* shader;
   fe::Timer fpsCounter;
-  
-  glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-  
-  float fov = 45.0f;
-  
-  float lastX = 0, lastY = 0;
-  
-  float yaw = -90.0f;
-  float pitch = 0.0f;
-  
-  bool vsync = true;
-  
-  bool capturingMouse = true;
 
   std::shared_ptr<fe::Character> player;
-  
+
   std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
   std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
@@ -70,21 +89,7 @@ class Game {
 
   bool isConnectedToServer = false;
 
-  Game(int width, int height) : width(width), height(height) {
-    if (!initGlfw()) return;
-    this->width = width;
-    this->height = height;
-    // glViewport(0, 0, width, height);
-    updateAspect();
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_MULTISAMPLE);
-    // glCullFace(GL_FRONT);
-
-    initImGui();
-
-    this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
+  Annihilation(int width, int height) : Game(width, height) {
 
     this->client = std::make_unique<Networker>(2130);
 
@@ -113,123 +118,7 @@ class Game {
       messages.push_back(sender.username + ": " + message);
     };
 
-    // client->connect();
-
-    // client->sendPing();
-
-    // client->sendMessage("RAWR!!");
-
-    this->scene = std::make_unique<fe::Scene>();
-    this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
-    this->playerCamera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
-
-    startMouseCapture();
-
     loadModels();
-  }
-
-  void connectToServer(std::string address, unsigned short port, std::string username) {
-    // this->client->username = username;
-    // if (!this->client)
-    this->client->connect(address, port, username);
-    // isConnectedToServer =true;
-  }
-
-  bool initGlfw() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
-    if (window == NULL) {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return false;
-    }
-    glfwMakeContextCurrent(window);
-
-    glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return false;
-    }
-
-    glfwSetWindowUserPointer(window, this);
-
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-  ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) return;
-  game->fov -= (float)yOffset;
-  if (game->fov < 1.0f) game->fov = 1.0f;
-  if (game->fov > 45.0f) game->fov = 45.0f;
-});
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-    });
-
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
-      if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) return;
-
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-
-      float xOffset = xPos - game->lastX;
-      float yOffset = game->lastY - yPos;
-      if (game->lastX == 0 && game->lastY == 0) {
-        xOffset = 0;
-        yOffset = 0;
-      }
-      game->lastX = xPos;
-      game->lastY = yPos;
-
-      const float sensitivity = 0.1f;
-      xOffset *= sensitivity;
-      yOffset *= sensitivity;
-
-      game->yaw += xOffset;
-      game->pitch += yOffset;
-
-      if (game->pitch > 89.0f) game->pitch = 89.0f;
-      if (game->pitch < -89.0f) game->pitch = -89.0f;
-
-      glm::vec3 direction;
-      direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      direction.y = sin(glm::radians(game->pitch));
-      direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      game->cameraFront = glm::normalize(direction);
-    });
-
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      // game->width = width;
-      // game->height = height;
-      // game->scene->resize(width, height);
-
-      // game->updateAspect();
-      game->resize(width, height);
-
-      game->redraw();
-    });
-    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->resize(width, height);
-      game->redraw();
-    });
-
-    // glfwGetWindowAttrib(window, GLFW_TOUCH);
-    return true;
-  }
-
-  void resize(int width, int height) {
-    this->width = width;
-    this->height = height;
-    this->scene->resize(width, height);
-    this->updateAspect();
   }
 
   void loadModels() {
@@ -244,14 +133,6 @@ class Game {
     this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
 
     // spawnZombies(10);
-  }
-
-  void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
-
-  void nextMap() {
-    loadMap(mapIndex);
-    mapIndex++;
-    if (mapIndex >= maps.size()) mapIndex = 0;
   }
 
   void spawnZombies(int count = 10) {
@@ -284,45 +165,6 @@ class Game {
       npcs.push_back(npc);
     }
   }
-
-  void spawnPlayer(u_char playerId) {
-    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->clone());
-
-    this->players.insert_or_assign(playerId, newPlayer);
-    this->scene->addModel(newPlayer);
-  }
-
-  std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->addModel(model);
-    return model;
-  }
-
-  std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) { return std::make_shared<fe::Object>(path, scale); }
-
-  std::shared_ptr<fe::Object> loadStaticOBJ(std::string path, float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    model->isStatic = true;
-    model->needsUpdate = false;
-    // this->scene->addModel(model);
-
-    return model;
-  }
-
-  double getDeltaTime() { return glfwGetTime(); }
-
-  void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
-
-  void redraw() {
-    scene->render(*(this->shader), *(this->playerCamera));
-
-    fpsCounter.update();
-    drawImGui();
-
-    glfwSwapBuffers(this->window);
-  }
-
-  void update() { scene->update(); }
 
   void processInput() {
     double deltaTime = scene->getDeltaTime();
@@ -386,32 +228,33 @@ class Game {
   void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
   void disableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
-  void startMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);}
+  bool shouldClose() { return glfwWindowShouldClose(this->window); }
 
-  void stopMouseCapture() {glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}
+  void destroy() {
+    glfwDestroyWindow(this->window);
+    glfwTerminate();
+  }
 
-
-  
   void initImGui() {
     const char* glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-    
+
     ImGui::StyleColorsDark();
-    
+
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
-  
+
   int drawImGui() {
     // glDisable(GL_DEPTH_TEST);
-    
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    
+
     ImGui::Begin("Debug info");
     {
       ImGui::Text("Hello, World!");
@@ -421,7 +264,7 @@ class Game {
       size_t totalVertices = 0;
       for (auto& obj : this->scene->getModels())
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
-        ImGui::Text("Vertices: %zu", totalVertices);
+      ImGui::Text("Vertices: %zu", totalVertices);
       size_t needsUpdateCount = 0;
       for (auto& obj : this->scene->getModels()) {
         if (obj->needsUpdate) needsUpdateCount++;
@@ -434,7 +277,7 @@ class Game {
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }
-      
+
       fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
@@ -450,11 +293,11 @@ class Game {
       static char usernameBuffer[32] = "Bill\0";
       static char addressBuffer[256] = "127.0.0.1\0";
       int port = 2130;
-      
+
       ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::InputInt("Port", &port);
-      
+
       if (ImGui::Button("Join", ImVec2(60, 0))) {
         std::cout << "Connecting to server... " << addressBuffer << std::endl;
         this->connectToServer(addressBuffer, port, usernameBuffer);
@@ -462,7 +305,7 @@ class Game {
 
       fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
-      
+
       ImGui::Text("Players:");
       for (auto& [id, client] : this->client->clientClients) {
         ImGui::Text("Player #%i username: %s", id, client.username.c_str());
@@ -474,24 +317,24 @@ class Game {
     {
       static char inputBuffer[256] = "";
       ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
-      
+
       for (const auto& msg : messages) {
         ImGui::TextWrapped("%s", msg.c_str());
       }
-      
+
       // Auto-scroll to bottom if new messages
       if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
         ImGui::SetScrollHereY(1.0f);
       }
-      
+
       ImGui::EndChild();
-      
+
       ImGui::Separator();
-      
+
       ImGui::PushItemWidth(-70);
       bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::PopItemWidth();
-      
+
       ImGui::SameLine();
 
       bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
@@ -499,30 +342,19 @@ class Game {
       if (send_clicked || enter_pressed) {
         if (inputBuffer[0] != '\0') {
           messages.push_back(std::string("You: ") + inputBuffer);
-          
+
           client->sendMessage(inputBuffer);
-          
+
           inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);
         }
       }
     }
     ImGui::End();
-    
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     // glEnable(GL_DEPTH_TEST);
     return 0;
-  }
-  
-  void updateAspect() {
-    if (this->playerCamera) this->playerCamera->setAspect((float)this->width / (float)this->height);
-  }
-
-  bool shouldClose() { return glfwWindowShouldClose(this->window); }
-
-  void destroy() {
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
   }
 };
