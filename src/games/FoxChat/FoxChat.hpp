@@ -15,7 +15,7 @@ public:
     model->needsUpdate = false;
     scene->addModel(model);
 
-    auto playerObject = std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
+    auto playerObject = std::make_shared<fe::Object>("resources/models/Fizzy.obj", 0.1f);
     scene->addModel(playerObject);
     player = std::static_pointer_cast<fe::Character>(playerObject);
     this->run();
