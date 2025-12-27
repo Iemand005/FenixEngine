@@ -18,9 +18,6 @@ int main() {
     game.cameraPos = pos - game.cameraFront * 5.0f;
     game.camera->setPos(game.cameraPos);
 
-    // game.playerCamera->setAspect((float)game.width / (float)game.height);
-    // window.playerCamera->setPos(cameraPos);
-
     game.camera->setFront(glm::normalize(pos - game.cameraPos));
 
     #ifdef FE_WIN32
@@ -40,7 +37,7 @@ int main() {
       }
     }
     game.update();
-    game.redraw();
+    game.Redraw();
   }
 
   game.destroy();

@@ -21,9 +21,7 @@
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
 
-#ifdef FE_WIN32
 #include "networking/networking.hpp"
-#endif
 
 class Game {
   public:
@@ -32,7 +30,7 @@ class Game {
   GLFWwindow* window;
   std::unique_ptr<fe::Scene> scene;
   std::unique_ptr<fe::Camera> camera;
-  fe::ShaderProgram* shader;
+  std::unique_ptr<fe::ShaderProgram> shader;
   fe::Timer fpsCounter;
   
   glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -65,9 +63,7 @@ class Game {
 
   int mapIndex = 0;
 
-  #ifdef FE_WIN32
   std::unique_ptr<Networker> client = nullptr;
-#endif
 
   std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
 
@@ -76,7 +72,7 @@ class Game {
   bool isConnectedToServer = false;
 
   Game(int width, int height) : width(width), height(height) {
-    if (!initGlfw()) return;
+    if (!InitGlfw()) return;
     this->width = width;
     this->height = height;
     // glViewport(0, 0, width, height);
@@ -90,7 +86,6 @@ class Game {
     initImGui();
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
-#ifdef FE_WIN32
     this->client = std::make_unique<Networker>(2130);
 
     this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
@@ -117,15 +112,9 @@ class Game {
       // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
-#endif
-    // client->connect();
-
-    // client->sendPing();
-
-    // client->sendMessage("RAWR!!");
 
     this->scene = std::make_unique<fe::Scene>();
-    this->shader = new fe::ShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
+    this->shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
     startMouseCapture();
@@ -137,13 +126,18 @@ class Game {
     // this->client->username = username;
     // if (!this->client)
 
-#ifdef FE_WIN32
     this->client->connect(address, port, username);
     // isConnectedToServer =true;
-    #endif
   }
 
-  bool initGlfw() {
+  bool InitGlfw() {
+
+      if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+  } else {
+    std::cerr << "No Wayland Support" <<std::endl;
+  }
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -219,21 +213,21 @@ class Game {
       // game->scene->resize(width, height);
 
       // game->updateAspect();
-      game->resize(width, height);
+      game->Resize(width, height);
 
-      game->redraw();
+      game->Redraw();
     });
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->resize(width, height);
-      game->redraw();
+      game->Resize(width, height);
+      game->Redraw();
     });
 
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
     return true;
   }
 
-  void resize(int width, int height) {
+  void Resize(int width, int height) {
     this->width = width;
     this->height = height;
     this->scene->resize(width, height);
@@ -321,8 +315,8 @@ class Game {
 
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
-  void redraw() {
-    scene->render(*(this->shader), *(this->camera));
+  void Redraw() {
+    scene->Render(*(this->shader), *(this->camera));
 
     fpsCounter.update();
     drawImGui();

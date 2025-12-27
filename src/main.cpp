@@ -89,7 +89,7 @@ class Game {
   bool isConnectedToServer = false;
 
   Game(int width, int height) : width(width), height(height) {
-    if (!initGlfw()) return;
+    if (!InitGlfw()) return;
     this->width = width;
     this->height = height;
     // glViewport(0, 0, width, height);
@@ -153,7 +153,7 @@ class Game {
     // isConnectedToServer =true;
   }
 
-  bool initGlfw() {
+  bool InitGlfw() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -221,21 +221,21 @@ class Game {
       // game->scene->resize(width, height);
 
       // game->updateAspect();
-      game->resize(width, height);
+      game->Resize(width, height);
 
-      game->redraw();
+      game->Redraw();
     });
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->resize(width, height);
-      game->redraw();
+      game->Resize(width, height);
+      game->Redraw();
     });
 
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
     return true;
   }
 
-  void resize(int width, int height) {
+  void Resize(int width, int height) {
     this->width = width;
     this->height = height;
     this->scene->resize(width, height);
@@ -323,8 +323,8 @@ class Game {
 
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
-  void redraw() {
-    scene->render(*(this->shader), *(this->camera));
+  void Redraw() {
+    scene->Render(*(this->shader), *(this->camera));
 
     fpsCounter.update();
     drawImGui();
@@ -580,7 +580,7 @@ int main() {
       }
     }
     game.update();
-    game.redraw();
+    game.Redraw();
   }
 
   game.destroy();

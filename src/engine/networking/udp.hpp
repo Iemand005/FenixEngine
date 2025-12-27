@@ -6,14 +6,25 @@
 #include <system_error>
 #include <functional>
 
-#ifdef FE_WIN32
+#ifdef _WIN32
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
-#endif
-
+// typedef sockaddr_in=sockaddr_in
 #define CLOSE_SOCKET closesocket
 #define SOCKET_ERRNO WSAGetLastError()
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+    #define SOCKET int
+    #define INVALID_SOCKET -1
+    #define SOCKET_ERRNO "idk"
+    // #define CLOSE_SOCKET closesocket
+        #define CLOSE_SOCKET close
+#endif
+
 
 struct sockaddr_in_hash {
     size_t operator()(const sockaddr_in& addr) const {
@@ -78,7 +89,7 @@ public:
     if (inet_pton(AF_INET, address.c_str(), &receiverAddr.sin_addr) <= 0)
     {
       std::cerr << "Invalid address\n";
-      this->close();
+      this->Close();
       return;
     }
     sockaddr_in receiverAddress;
@@ -128,12 +139,15 @@ public:
 
   bool createSocketIfNotExist() {
     if (sock != INVALID_SOCKET) return false;
+
+    #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
       std::cerr << "WSAStartup failed\n";
       return false;
     }
+    #endif
 
     SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == INVALID_SOCKET)
@@ -205,21 +219,24 @@ public:
       else
       {
         std::cerr << "Receive failed: " << SOCKET_ERRNO << "\n";
-        this->close();
+        this->Close();
         // this->createSocketIfNotExist();
         this->bindSocket(port);
       }
     }
 
-    this->close();
+    this->Close();
 
     return 0;
   }
 
-    void close() {
+    void Close() {
     std::cerr << "Closing socket...\n";
     CLOSE_SOCKET(sock);
     sock = INVALID_SOCKET;
+
+    #ifdef _WIN32
     WSACleanup();
+    #endif
   }
 };

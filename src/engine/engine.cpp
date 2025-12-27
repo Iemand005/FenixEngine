@@ -126,6 +126,6 @@ namespace fe {
 
     void Scene::render(ShaderProgram &shader, const Camera &camera, int width, int height) {
       glViewport(0, 0, width, height);
-      this->render(shader, camera);
+      this->Render(shader, camera);
     }
 }

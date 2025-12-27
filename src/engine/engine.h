@@ -559,7 +559,7 @@ class Scene {
 
   void render(ShaderProgram& shader, const Camera& camera, int width, int height);
 
-  void render(ShaderProgram& shader, const Camera& camera) {
+  void Render(ShaderProgram& shader, const Camera& camera) {
     this->prepareRender(shader, camera);
 
     for (auto& model : objects) model->render(shader);

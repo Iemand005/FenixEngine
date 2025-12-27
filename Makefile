@@ -4,9 +4,11 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 INCLUDES = -Iinclude
 LIBS = -lglfw3 -lGL -lX11 -lpthread -ldl -lm -lstdc++
+# LIBS = -lglfw3 -lwayland-client -lwayland-egl -lxkbcommon -lepoxy -ldl -lm -lpthread
+# LIBS = -lglfw3 -lGL -lwayland-client -lwayland-egl -lpthread -ldl -lm -lstdc++
 
 # Source files
-GLAD_SRC = src/glad.c
+GLAD_SRC = src/glad.c 
 IMGUI_SRCS = src/imgui/imgui.cpp \
              src/imgui/imgui_draw.cpp \
              src/imgui/imgui_tables.cpp \
@@ -19,6 +21,7 @@ MAIN_SRC = src/games/Annihilation/main.cpp
 # Output
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/annihilation
+WORK_DIR = src
 
 # Object files
 OBJECTS = $(BUILD_DIR)/glad.o \
