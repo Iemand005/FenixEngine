@@ -505,7 +505,7 @@ class Camera {
   }
 
   void updateView(glm::vec3 position, glm::quat orientation) {
-    updateView(position, orientation * glm::vec3(0.0f, 0.0f, 1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
+    updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
   }
 
   void updateProjection(float fov, float aspect) {
@@ -514,8 +514,8 @@ class Camera {
   }
 
   void updateProjection(glm::vec4 fov) {
-    fov = glm::vec4( tan(fov.x) * nearDist, tan(fov.y) * nearDist, tan(fov.z) * nearDist, tan(fov.w) * nearDist);
-    fov = fov;
+    // fov = glm::vec4(tan(fov.x), tan(fov.y), tan(fov.z), tan(fov.w));
+    fov = glm::tan(fov) * nearDist;
     projectionMatrix = glm::frustum(fov.x, fov.y, fov.z, fov.w, nearDist, farDist);
   }
   glm::mat4 getViewMatrix() const { return viewMatrix; }

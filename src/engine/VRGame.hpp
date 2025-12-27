@@ -317,7 +317,7 @@ class VRGame : public Game {
       glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
       static float angle = 0.0f;
       // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
-      static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
+      // static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
       for (uint32_t eye = 0; eye < viewCount; eye++) {
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
@@ -330,31 +330,31 @@ class VRGame : public Game {
         glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
         glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
-        vrCamera.updateView(position + positionOffset, orientation);
-        vrCamera.updateProjection(fov);
+        // vrCamera.updateView(position + positionOffset, orientation);
+        // vrCamera.updateProjection(fov);
         camera->update(position + positionOffset, orientation, fov);
 
 
      
 
-      auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
-      auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+      // auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
+      // auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
 
-      float nearDist = 0.10f;
-      float farDist = 100.0f;
+      // float nearDist = 0.10f;
+      // float farDist = 100.0f;
 
-      float left = tan(fov.x) * nearDist;
-      float right = tan(fov.y) * nearDist;
-      float bottom = tan(fov.z) * nearDist;
-      float top = tan(fov.w) * nearDist;
+      // float left = tan(fov.x) * nearDist;
+      // float right = tan(fov.y) * nearDist;
+      // float bottom = tan(fov.z) * nearDist;
+      // float top = tan(fov.w) * nearDist;
 
-      position = position + positionOffset;
+      // position = position + positionOffset;
 
-      vrCamera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
+      // vrCamera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
 
       // vrCamera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
-      vrCamera.updateProjection(fov);
-        scene->render(*shader, vrCamera, swapchainWidth, swapchainHeight);
+      // camera->updateProjection(fov);
+        scene->render(*shader, *camera, swapchainWidth, swapchainHeight);
 
         projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
         projectionViews[eye].pose = views[eye].pose;
