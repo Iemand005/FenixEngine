@@ -127,7 +127,7 @@ class Game {
     // this->client->username = username;
     // if (!this->client)
 
-    this->client->connect(address, port, username);
+    this->client->Connect(address, port, username);
     // isConnectedToServer =true;
   }
 

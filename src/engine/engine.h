@@ -29,15 +29,16 @@ struct AABB {
 };
 
 struct Vertex {
-  glm::vec3 Position;
-  glm::vec3 Normal;
+  public:
+  glm::vec3 position;
+  glm::vec3 normal;
   glm::vec2 TextureCoordinate;
 
   Vertex() {}
 
   Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v) {
-    this->Position = glm::vec3(x, y, z);
-    this->Normal = glm::vec3(nx, ny, nz);
+    this->position = glm::vec3(x, y, z);
+    this->normal = glm::vec3(nx, ny, nz);
     this->TextureCoordinate = glm::vec2(u, v);
   }
 };
@@ -374,8 +375,8 @@ class Object {
     glm::vec3 min = glm::vec3(FLT_MAX), max = glm::vec3(-FLT_MAX);
     for (auto& mesh : meshes) {
       for (auto& v : mesh.getVertices()) {
-        min = glm::min(min, v.Position);
-        max = glm::max(max, v.Position);
+        min = glm::min(min, v.position);
+        max = glm::max(max, v.position);
       }
     }
     this->aabb.min = min;

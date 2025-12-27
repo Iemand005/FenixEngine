@@ -1,6 +1,7 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
@@ -28,7 +29,10 @@ class PhysicsComponent {
 
   void SyncToRender() {}
 
-  void CreateMeshShapeFromVertices(std::vector<fe::Vertex> *vertices, std::vector<uint32_t> *indices) {
+  void CreateMeshBody(
+    const std::vector<fe::Vertex>& vertices,
+    const std::vector<unsigned int>& indices,
+    JPH::PhysicsSystem& physicsSystem) {
     JPH::VertexList vertexList;
     JPH::IndexedTriangleList triangleList;
 

@@ -45,7 +45,7 @@ class Networker {
 
   Networker(unsigned short port) { this->port = port; }
 
-  void connect(std::string address, unsigned short port, std::string username) {
+  void Connect(std::string address, unsigned short port, std::string username) {
     this->port = port;
     this->serverAddress = address;
     this->username = username;
