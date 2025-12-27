@@ -4,7 +4,10 @@
 #include <thread>
 
 #include "packets.hpp"
+
+#ifdef FE_WIN32
 #include "udp.hpp"
+#endif
 
 typedef void (*MessageReceiveHandler)(std::string message);
 

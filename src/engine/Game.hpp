@@ -4,6 +4,7 @@
 #define NOMINMAX
 
 #include <GLFW/glfw3.h>
+#pragma comment(lib, "glfw3.lib")
 #include <glad/glad.h>
 
 #include <cstdio>
@@ -19,8 +20,10 @@
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
-#include "networking/networking.hpp"
 
+#ifdef FE_WIN32
+#include "networking/networking.hpp"
+#endif
 
 class Game {
   public:
@@ -62,7 +65,9 @@ class Game {
 
   int mapIndex = 0;
 
+  #ifdef FE_WIN32
   std::unique_ptr<Networker> client = nullptr;
+#endif
 
   std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
 
@@ -85,7 +90,7 @@ class Game {
     initImGui();
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
-
+#ifdef FE_WIN32
     this->client = std::make_unique<Networker>(2130);
 
     this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
@@ -112,7 +117,7 @@ class Game {
       // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
-
+#endif
     // client->connect();
 
     // client->sendPing();
@@ -131,8 +136,11 @@ class Game {
   void connectToServer(std::string address, unsigned short port, std::string username) {
     // this->client->username = username;
     // if (!this->client)
+
+#ifdef FE_WIN32
     this->client->connect(address, port, username);
     // isConnectedToServer =true;
+    #endif
   }
 
   bool initGlfw() {
@@ -377,7 +385,7 @@ class Game {
 
     static bool pWasDown = false;
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-      if (!pWasDown) client->sendPing();
+      // if (!pWasDown) client->sendPing();
       pWasDown = true;
     } else
       pWasDown = false;
@@ -445,6 +453,7 @@ class Game {
     }
     ImGui::End();
 
+#ifdef FE_WIN32
     ImGui::Begin("Multiplayer");
     {
       static char usernameBuffer[32] = "Bill\0";
@@ -469,6 +478,7 @@ class Game {
       }
     }
     ImGui::End();
+    #endif
 
     ImGui::Begin("Chat");
     {
@@ -500,7 +510,9 @@ class Game {
         if (inputBuffer[0] != '\0') {
           messages.push_back(std::string("You: ") + inputBuffer);
           
+#ifdef FE_WIN32
           client->sendMessage(inputBuffer);
+          #endif
           
           inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);

@@ -1,4 +1,3 @@
-#pragma once
 #define GLFW_INCLUDE_NONE
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX

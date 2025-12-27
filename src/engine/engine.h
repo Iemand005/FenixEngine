@@ -6,13 +6,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #ifdef OBJ_LOADER
-#include <OBJ_LOADER.h>
+#include <OBJ_Loader.h>
 #endif
 
 #include <stb_image.h>
@@ -88,8 +89,7 @@ class Shader {
       return false;
     }
 
-    shaderText.assign((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+    shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
     file.close();
 
@@ -112,18 +112,15 @@ class ShaderProgram {
   int projectionLoc;
   int texLoc;
 
-  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
-      : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER),
-                      Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
-
-  ShaderProgram(Shader& vertexShader, Shader& fragmentShader) {
+  
+  ShaderProgram(Shader vertexShader, Shader fragmentShader) {
     Id = glCreateProgram();
-
+    
     vertexShader.attachToProgram(Id);
     fragmentShader.attachToProgram(Id);
 
     glLinkProgram(Id);
-
+    
     vertexShader.deleteShader();
     fragmentShader.deleteShader();
 
@@ -133,15 +130,16 @@ class ShaderProgram {
     texLoc = glGetUniformLocation(this->Id, "ourTexture");
     glUniform1i(texLoc, 0);
   }
-
+  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
+  
   void use() { glUseProgram(this->Id); }
-
+  
   void setMat4(const std::string& name, const glm::mat4& mat) const {
     glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1,
                        GL_FALSE, &mat[0][0]);
-  }
-};
-
+                      }
+                    };
+                    
 class Mesh {
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;

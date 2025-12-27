@@ -15,10 +15,9 @@
 #include <map>
 #include <string>
 
-#include "engine/engine.h"
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
+#include "../../imgui/imgui.h"
+#include "../../imgui/imgui_impl_glfw.h"
+#include "../../imgui/imgui_impl_opengl3.h"
 // #include "engine/networking/udp.cpp"
 #include "../../engine/Game.hpp"
 
@@ -40,6 +39,8 @@ class Annihilation : public Game {
 
 
   Annihilation(int width, int height) : Game(width, height) {
+
+#ifdef FE_WIN32
 
     this->client = std::make_unique<Networker>(2130);
 
@@ -67,7 +68,7 @@ class Annihilation : public Game {
       // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
-
+#endif
     loadModels();
   }
 
@@ -169,7 +170,7 @@ class Annihilation : public Game {
 
     static bool pWasDown = false;
     if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-      if (!pWasDown) client->sendPing();
+      // if (!pWasDown) client->sendPing();
       pWasDown = true;
     } else
       pWasDown = false;
@@ -217,6 +218,9 @@ class Annihilation : public Game {
     }
     ImGui::End();
 
+#ifdef FE_WIN32
+
+
     ImGui::Begin("Multiplayer");
     {
       static char usernameBuffer[32] = "Bill\0";
@@ -241,6 +245,8 @@ class Annihilation : public Game {
       }
     }
     ImGui::End();
+
+    #endif
 
     ImGui::Begin("Chat");
     {
@@ -272,7 +278,10 @@ class Annihilation : public Game {
         if (inputBuffer[0] != '\0') {
           messages.push_back(std::string("You: ") + inputBuffer);
 
+#ifdef FE_WIN32
+
           client->sendMessage(inputBuffer);
+          #endif
 
           inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);

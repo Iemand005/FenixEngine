@@ -1,9 +1,4 @@
-#pragma once
-
-// #include "Annhihilation.hpp"
 #include "Annihilation.hpp"
-
-
 
 int main() {
 
@@ -18,17 +13,19 @@ int main() {
       game.canJump = true;
     }
     game.processInput();
-    game.player->rotation.y = -yaw + 90.0f;
+    game.player->rotation.y = -game.yaw + 90.0f;
     glm::vec3 pos = game.player->position + cameraOffset;
-    cameraPos = pos - cameraFront * 5.0f;
-    game.camera->setPos(cameraPos);
+    game.cameraPos = pos - game.cameraFront * 5.0f;
+    game.camera->setPos(game.cameraPos);
 
     // game.playerCamera->setAspect((float)game.width / (float)game.height);
     // window.playerCamera->setPos(cameraPos);
 
-    game.camera->setFront(glm::normalize(pos - cameraPos));
+    game.camera->setFront(glm::normalize(pos - game.cameraPos));
 
+    #ifdef FE_WIN32
     if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
+    #endif
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));

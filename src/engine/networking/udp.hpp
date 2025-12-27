@@ -6,9 +6,12 @@
 #include <system_error>
 #include <functional>
 
+#ifdef FE_WIN32
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
+#endif
+
 #define CLOSE_SOCKET closesocket
 #define SOCKET_ERRNO WSAGetLastError()
 
