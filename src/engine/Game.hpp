@@ -241,7 +241,7 @@ class Game {
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+    // this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/Ryan.obj", 0.1f));
 
     // spawnZombies(10);
   }
