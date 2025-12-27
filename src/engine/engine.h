@@ -514,9 +514,9 @@ class Camera {
   }
 
   void updateProjection(glm::vec4 fov) {
-    fov = glm::tan(fov) * nearDist;
-    projectionMatrix =
-        glm::frustum(fov.w, fov.x, fov.y, fov.z, nearDist, farDist);
+    fov = glm::vec4( tan(fov.x) * nearDist, tan(fov.y) * nearDist, tan(fov.z) * nearDist, tan(fov.w) * nearDist);
+    fov = fov;
+    projectionMatrix = glm::frustum(fov.x, fov.y, fov.z, fov.w, nearDist, farDist);
   }
   glm::mat4 getViewMatrix() const { return viewMatrix; }
   glm::mat4 getProjectionMatrix() const { return projectionMatrix; }
