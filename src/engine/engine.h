@@ -12,11 +12,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "physix/physix.hpp"
+
 #ifdef OBJ_LOADER
 #include <OBJ_Loader.h>
 #endif
 
 #include <stb_image.h>
+
 
 namespace fe {
 
@@ -312,6 +315,8 @@ class Object {
   unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
 
   std::vector<glm::vec3> boundingBoxVertices;
+
+  PhysicsComponent physicsComponent;
 
   // bool needsUpdate = true;
 

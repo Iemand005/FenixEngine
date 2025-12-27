@@ -2,11 +2,14 @@
 
 int main() {
 
-  Game game(800, 600);
+  Annihilation game(800, 600);
+  game.DisableVSync();
   
   glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
 
   while (!game.shouldClose()) {
+//     std::cout << "DEBUG: Before glfwPollEvents()" << std::endl;
+// std::cout << "DEBUG: Window pointer: " << game.window << std::endl;
     glfwPollEvents();
 
     if (game.player->touchedGround) {

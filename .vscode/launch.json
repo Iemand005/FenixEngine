@@ -7,7 +7,7 @@
       "program": "${workspaceFolder}\\build\\debug\\main.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
+      "cwd": "${workspaceFolder}",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build main"
@@ -47,7 +47,6 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build server"
     },
-
     {
       "name": "C/C++: cl.exe build and debug Foxcraft",
       "type": "cppvsdbg",
@@ -60,7 +59,6 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build Foxcraft"
     },
-
     {
       "name": "C/C++: cl.exe build and debug FoxChat",
       "type": "cppvsdbg",
@@ -72,6 +70,33 @@
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build FoxChat"
+    },
+    
+    {
+      "name": "(gdb) Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/annihilation",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set disassembly flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "C/C++: make",
+      "miDebuggerPath": "/usr/bin/gdb"
     },
   ],
   "version": "2.0.0"

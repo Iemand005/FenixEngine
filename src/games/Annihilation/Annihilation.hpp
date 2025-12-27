@@ -25,9 +25,9 @@ class Annihilation : public Game {
  public:
 
 
-  std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
+  // std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
 
-  std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
+  // std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
 
   std::vector<std::string> messages;
 
@@ -40,7 +40,8 @@ class Annihilation : public Game {
 
   Annihilation(int width, int height) : Game(width, height) {
 
-#ifdef FE_WIN32
+    loadModels();
+
 
     this->client = std::make_unique<Networker>(2130);
 
@@ -68,8 +69,6 @@ class Annihilation : public Game {
       // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
-#endif
-    loadModels();
   }
 
   void loadModels() {
@@ -77,7 +76,7 @@ class Annihilation : public Game {
     this->scene->addModel(map1);
     this->maps.push_back(map1);
 
-    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+    // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
 
@@ -218,7 +217,6 @@ class Annihilation : public Game {
     }
     ImGui::End();
 
-#ifdef FE_WIN32
 
 
     ImGui::Begin("Multiplayer");
@@ -246,7 +244,6 @@ class Annihilation : public Game {
     }
     ImGui::End();
 
-    #endif
 
     ImGui::Begin("Chat");
     {

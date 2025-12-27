@@ -1,7 +1,8 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O2
+# CXXFLAGS = -std=c++17 -Wall -Wextra -O2
+CXXFLAGS = -std=c++17 -Wall -Wextra -g -Og -Iinclude
 INCLUDES = -Iinclude
 LIBS = -lglfw3 -lGL -lX11 -lpthread -ldl -lm -lstdc++
 # LIBS = -lglfw3 -lwayland-client -lwayland-egl -lxkbcommon -lepoxy -ldl -lm -lpthread

@@ -75,14 +75,12 @@ class Game {
     this->width = width;
     this->height = height;
     // glViewport(0, 0, width, height);
-    updateAspect();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
     // glCullFace(GL_FRONT);
 
-    initImGui();
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
     this->client = std::make_unique<Networker>(2130);
@@ -113,12 +111,16 @@ class Game {
     };
 
     this->scene = std::make_unique<fe::Scene>();
-    this->shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
+    this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
+    updateAspect();
+    
+    initImGui();
+    
     startMouseCapture();
 
-    loadModels();
+    // loadModels(); Letter U
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
@@ -129,12 +131,24 @@ class Game {
     // isConnectedToServer =true;
   }
 
+  void SetSwapInterval(int interval) {
+    glfwSwapInterval(interval);
+  }
+
+  void EnableVSync() {
+    SetSwapInterval(1);
+  }
+
+  void DisableVSync() {
+    SetSwapInterval(0);
+  }
+
   bool InitGlfw() {
-    if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
-      glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-    } else {
-      std::cerr << "No Wayland Support" << std::endl;
-    }
+    // if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
+    //   glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+    // } else {
+    //   std::cerr << "No Wayland Support" << std::endl;
+    // }
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -149,7 +163,8 @@ class Game {
     }
     glfwMakeContextCurrent(window);
 
-    glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
+    // glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
+    EnableVSync();
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
       std::cout << "Failed to initialize GLAD" << std::endl;
@@ -230,20 +245,6 @@ class Game {
     this->height = height;
     this->scene->resize(width, height);
     this->updateAspect();
-  }
-
-  void loadModels() {
-    auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->addModel(map1);
-    this->maps.push_back(map1);
-
-    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
-
-    loadMap(0);
-
-    // this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/Ryan.obj", 0.1f));
-
-    // spawnZombies(10);
   }
 
   void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
@@ -443,7 +444,6 @@ class Game {
     }
     ImGui::End();
 
-#ifdef FE_WIN32
     ImGui::Begin("Multiplayer");
     {
       static char usernameBuffer[32] = "Bill\0";
@@ -468,7 +468,6 @@ class Game {
       }
     }
     ImGui::End();
-#endif
 
     ImGui::Begin("Chat");
     {
@@ -500,9 +499,7 @@ class Game {
         if (inputBuffer[0] != '\0') {
           messages.push_back(std::string("You: ") + inputBuffer);
 
-#ifdef FE_WIN32
           client->sendMessage(inputBuffer);
-#endif
 
           inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);
