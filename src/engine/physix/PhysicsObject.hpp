@@ -1,3 +1,4 @@
+#include "../engine.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
@@ -7,28 +8,61 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
-#include "../engine.h"
 
-class PhysicsComponent {
+// namespace Layers
+// {
+//   static constexpr ObjectLayer MOVING = 0;
+// };
+
+// namespace BroadPhaseLayers
+// {
+//   static constexpr BroadPhaseLayer MOVING(0);
+// };
+namespace fe {
+class PhysicsObject : Object {
  private:
   JPH::BodyID bodyId;
   JPH::Body* body;
-  std::shared_ptr<fe::Object> renderObject;
+  // fe::Object* renderObject;
+  JPH::BodyInterface *bodyInterface;
 
  public:
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
 
-  PhysicsComponent();
-  ~PhysicsComponent();
+  PhysicsObject(JPH::PhysicsSystem physicsSystem) {
+  float a = 1.0;
+  float b = 0.1;
+  float c = 0.5;
+    JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
+    bodyShapeSettings.mConvexRadius = 0.01;
+    bodyShapeSettings.SetDensity(1000.0);
+    bodyShapeSettings.SetEmbedded();
+    JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
+    JPH::ShapeRefC body_shape = body_shape_result.Get();
+    
+    JPH::BodyCreationSettings bodySettings(body_shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, Layers::MOVING);
+    bodySettings.mMaxLinearVelocity = 10000.0;
+    bodySettings.mApplyGyroscopicForce = true;
+    bodySettings.mLinearDamping = 0.0;
+    bodySettings.mAngularDamping = 0.0;
 
-  void Initialize(JPH::BodyID bodyId, JPH::Body* body, std::shared_ptr<fe::Object> renderObject = nullptr) {
+    this->bodyInterface = &physicsSystem.GetBodyInterface();
+    body = bodyInterface->CreateBody(bodySettings);
+    bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
+  };
+
+  PhysicsObject(){};
+
+  ~PhysicsObject(){};
+
+  void Initialize(JPH::BodyID bodyId, JPH::Body* body) {
     this->bodyId = bodyId;
     this->body = body;
-    this->renderObject = renderObject;
+    // this->renderObject = renderObject;
   }
 
   void SyncToRender() {
-    JPH::RMat44 transform = body_interface.GetWorldTransform(body->GetID());
+    JPH::RMat44 transform = bodyInterface->GetWorldTransform(body->GetID());
     JPH::RVec3 position = transform.GetTranslation();
     JPH::Vec3 x = transform.GetAxisX();
     JPH::Vec3 y = transform.GetAxisY();
@@ -37,28 +71,28 @@ class PhysicsComponent {
     float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
   }
 
-  void CreateMeshBody(
-    const std::vector<fe::Vertex>& vertices,
-    const std::vector<unsigned int>& indices,
-    JPH::PhysicsSystem& physicsSystem) {
-    JPH::VertexList vertexList;
-    JPH::IndexedTriangleList triangleList;
+  // void CreateMeshBody(
+  //   const std::vector<fe::Vertex>& vertices,
+  //   const std::vector<unsigned int>& indices,
+  //   JPH::PhysicsSystem& physicsSystem) {
+  //   JPH::VertexList vertexList;
+  //   JPH::IndexedTriangleList triangleList;
 
-    // Convert vertices to JPH::Float3 (or JPH::Vec3)
-    vertexList.reserve(vertices.size());
-    for (const fe::Vertex& v : vertices) {
-      // glm::vec3 to JPH::Float3 conversion
-      vertexList.push_back(JPH::Float3(v.position.x, v.position.y, v.position.z));
-    }
+  //   // Convert vertices to JPH::Float3 (or JPH::Vec3)
+  //   vertexList.reserve(vertices.size());
+  //   for (const fe::Vertex& v : vertices) {
+  //     // glm::vec3 to JPH::Float3 conversion
+  //     vertexList.push_back(JPH::Float3(v.position.x, v.position.y, v.position.z));
+  //   }
 
-    // Convert indices to IndexedTriangle objects
-    // Assumes indices are stored as a triangle list (3 consecutive indices per triangle)
-    triangleList.reserve(indices.size() / 3);
-    for (size_t i = 0; i < indices.size(); i += 3) {
-      JPH::IndexedTriangle triangle(static_cast<uint32_t>(indices[i]), static_cast<uint32_t>(indices[i + 1]), static_cast<uint32_t>(indices[i + 2]), 0u);
-      triangleList.push_back(triangle);
-    }
-  }
+  //   // Convert indices to IndexedTriangle objects
+  //   // Assumes indices are stored as a triangle list (3 consecutive indices per triangle)
+  //   triangleList.reserve(indices.size() / 3);
+  //   for (size_t i = 0; i < indices.size(); i += 3) {
+  //     JPH::IndexedTriangle triangle(static_cast<uint32_t>(indices[i]), static_cast<uint32_t>(indices[i + 1]), static_cast<uint32_t>(indices[i + 2]), 0u);
+  //     triangleList.push_back(triangle);
+  //   }
+  // }
 
   // Helper function to create indexed triangles from a vertex list
   // Assumes vertices are in triangle list format: v0, v1, v2, v3, v4, v5...
@@ -107,3 +141,4 @@ class PhysicsComponent {
     return triangles;
   }
 };
+}

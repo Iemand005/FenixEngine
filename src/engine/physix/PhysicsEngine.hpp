@@ -23,8 +23,11 @@
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
+#include "PhysicsObject.hpp"
 
 using namespace JPH;
+
+
 
 class ObjectLayerPairFilterImpl: public ObjectLayerPairFilter
 {
@@ -34,10 +37,6 @@ class ObjectLayerPairFilterImpl: public ObjectLayerPairFilter
     }
 };
 
-namespace BroadPhaseLayers
-{
-  static constexpr BroadPhaseLayer MOVING(0);
-};
 
 class BPLayerInterfaceImpl final: public BroadPhaseLayerInterface
 {
@@ -78,7 +77,7 @@ static bool AssertFailedImpl(const char *inExpression, const char *inMessage, co
 
 class PhysicsEngine {
   PhysicsSystem physics_system;
-  JobSystemThreadPool job_system;
+  JobSystemThreadPool *jobSystem;
   TempAllocatorMalloc temp_allocator;
 
     JPH::PhysicsSystem* physicsSystem = new JPH::PhysicsSystem();
@@ -100,7 +99,8 @@ class PhysicsEngine {
   Factory::sInstance = new Factory();
   RegisterTypes();
 
-  job_system=JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
+  JobSystemThreadPool job_system(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
+  this->jobSystem = &job_system;
 
   const uint cMaxBodies = 1024;
   const uint cNumBodyMutexes = 0;
@@ -124,7 +124,8 @@ class PhysicsEngine {
   body_shape_settings.SetEmbedded();
   ShapeSettings::ShapeResult body_shape_result = body_shape_settings.Create();
   ShapeRefC body_shape = body_shape_result.Get();
-  BodyCreationSettings body_settings(body_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+  
+  BodyCreationSettings body_settings(body_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::Moving);
   body_settings.mMaxLinearVelocity = 10000.0;
   body_settings.mApplyGyroscopicForce = true;
   body_settings.mLinearDamping = 0.0;
@@ -142,7 +143,7 @@ class PhysicsEngine {
 
   void update(double dt) {
     const int cCollisionSteps = 1;
-    physics_system.Update(dt, cCollisionSteps, &temp_allocator, &job_system);
+    physics_system.Update(dt, cCollisionSteps, &temp_allocator, jobSystem);
   }
 
 };

@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "physix/physix.hpp"
+#include "./physix/PhysicsEngine.hpp"
 
 #ifdef OBJ_LOADER
 #include <OBJ_Loader.h>
@@ -317,7 +317,7 @@ class Object {
 
   std::vector<glm::vec3> boundingBoxVertices;
 
-  PhysicsComponent physicsComponent;
+  // PhysicsObject physicsComponent;
 
   // bool needsUpdate = true;
 
