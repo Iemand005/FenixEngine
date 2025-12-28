@@ -19,8 +19,9 @@
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
-#include "engine.h"
+#include "./engine.h"
 #include "networking/networking.hpp"
+#include "./physics/PhysicsEngine.hpp"
 
 class Game {
  public:
@@ -70,6 +71,8 @@ class Game {
 
   bool isConnectedToServer = false;
 
+  std::unique_ptr<PhysicsEngine> physicsEngine;
+
   Game(int width, int height) : width(width), height(height) {
     if (!InitGlfw()) return;
     this->width = width;
@@ -83,6 +86,9 @@ class Game {
 
 
     this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
+
+    this->physicsEngine = std::make_unique<PhysicsEngine>();
+
     this->client = std::make_unique<Networker>(2130);
 
     this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
@@ -111,8 +117,10 @@ class Game {
     };
 
     this->scene = std::make_unique<fe::Scene>();
+    // physicsEngine
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
+
 
     updateAspect();
     
