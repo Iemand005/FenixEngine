@@ -27,7 +27,15 @@ class PhysicsComponent {
     this->renderObject = renderObject;
   }
 
-  void SyncToRender() {}
+  void SyncToRender() {
+    JPH::RMat44 transform = body_interface.GetWorldTransform(body->GetID());
+    JPH::RVec3 position = transform.GetTranslation();
+    JPH::Vec3 x = transform.GetAxisX();
+    JPH::Vec3 y = transform.GetAxisY();
+    JPH::Vec3 z = transform.GetAxisZ();
+    float translation[3] = {(float)position.GetX(), (float)position.GetY(), (float)position.GetZ()};
+    float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
+  }
 
   void CreateMeshBody(
     const std::vector<fe::Vertex>& vertices,
