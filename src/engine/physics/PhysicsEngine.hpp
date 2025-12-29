@@ -12,6 +12,11 @@
 #include <cstdarg>
 #include <thread>
 
+#define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
+#define JPH_PROFILE_ENABLED
+#define JPH_DEBUG_RENDERER
+#define JPH_OBJECT_STREAM
+
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
@@ -26,13 +31,42 @@
 
 #include "PhysicsObject.hpp"
 
+JPH_SUPPRESS_WARNINGS
+
 using namespace JPH;
+
+
 
 // namespace BroadPhaseLayers
 // {
 //   static constexpr BroadPhaseLayer MOVING(0);
 // };
+#ifdef JPH_ENABLE_ASSERTS
 
+// // Callback for asserts, connect this to your own assert handler if you have one
+// static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
+// {
+// 	// Print to the TTY
+// 	std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
+
+// 	// Breakpoint
+// 	return true;
+// };
+
+static void TraceImpl(const char *inFMT, ...)
+{
+	// Format the message
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
+
+	// Print to the TTY
+	std::cout << buffer << std::endl;
+}
+
+#endif // JPH_ENABLE_ASSERTS
 
 class ObjectLayerPairFilterImpl: public ObjectLayerPairFilter
 {
@@ -81,13 +115,13 @@ static bool AssertFailedImpl(const char *inExpression, const char *inMessage, co
 #endif
 
 class PhysicsEngine {
-  PhysicsSystem physicsSystem;
+  public:
+  // PhysicsSystem physicsSystem;
   JobSystemThreadPool *jobSystem;
   TempAllocatorMalloc temp_allocator;
 
-    JPH::PhysicsSystem* physicsSystem = new JPH::PhysicsSystem();
+    std::shared_ptr<PhysicsSystem> physicsSystem;
 
-  public:
 
   PhysicsEngine(){
     // b
@@ -97,12 +131,18 @@ class PhysicsEngine {
     
     // // Set gravity and other settings
     // physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+    // JPH::PhysicsSystem physicsSystem;
+    physicsSystem = std::make_shared<JPH::PhysicsSystem>();
 
 
     RegisterDefaultAllocator();
+
+    Trace = TraceImpl;
   JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
   Factory::sInstance = new Factory();
   RegisterTypes();
+
+  TempAllocatorImpl temp_allocator(10 * 1024 * 1024);
 
   JobSystemThreadPool job_system(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
   this->jobSystem = &job_system;
@@ -111,18 +151,30 @@ class PhysicsEngine {
   const uint cNumBodyMutexes = 0;
   const uint cMaxBodyPairs = 1024;
   const uint cMaxContactConstraints = 1024;
+
   BPLayerInterfaceImpl broad_phase_layer_interface;
   ObjectLayerPairFilterImpl object_vs_object_layer_filter;
   ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
 
-  physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface,
+  physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface,
                       object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
-  physicsSystem.SetGravity(Vec3::sZero());
+  physicsSystem->SetGravity(Vec3::sZero());
   
   float a = 1.0;
   float b = 0.1;
   float c = 0.5;
 
+  
+  
+  BodyInterface &body_interface = physicsSystem->GetBodyInterface();
+  
+  BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
+  floor_shape_settings.SetEmbedded();
+  ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+  ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
+  BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -1.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+  Body *floor = body_interface.CreateBody(floor_settings);
+  
   BoxShapeSettings body_shape_settings(Vec3(a, b, c));
   body_shape_settings.mConvexRadius = 0.01;
   body_shape_settings.SetDensity(1000.0);
@@ -135,20 +187,20 @@ class PhysicsEngine {
   body_settings.mApplyGyroscopicForce = true;
   body_settings.mLinearDamping = 0.0;
   body_settings.mAngularDamping = 0.0;
-  
-  
-  BodyInterface &body_interface = physicsSystem.GetBodyInterface();
+
   Body *body = body_interface.CreateBody(body_settings);
   body_interface.AddBody(body->GetID(), EActivation::Activate);
   body_interface.SetLinearVelocity(body->GetID(), Vec3(0.0, 0.0, 0.0));
   body_interface.SetAngularVelocity(body->GetID(), Vec3(0.3, 0.0, 5.0));
 
-  physicsSystem.OptimizeBroadPhase();
+  physicsSystem->OptimizeBroadPhase();
+
+  // this->physicsSystem = physicsSystem;
   }
 
   void update(double dt) {
     const int cCollisionSteps = 1;
-    physicsSystem.Update(dt, cCollisionSteps, &temp_allocator, jobSystem);
+    physicsSystem->Update(dt, cCollisionSteps, &temp_allocator, jobSystem);
   }
 
 };

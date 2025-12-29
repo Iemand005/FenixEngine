@@ -10,10 +10,14 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
+using namespace JPH;
+using namespace JPH::literals;
 
 namespace Layers
 {
-  static constexpr JPH::ObjectLayer MOVING = 0;
+  static constexpr ObjectLayer NON_MOVING = 0;
+  static constexpr ObjectLayer MOVING = 1;
+  static constexpr ObjectLayer NUM_LAYERS = 2;
 };
 
 namespace BroadPhaseLayers
@@ -31,12 +35,12 @@ class PhysicsObject {
   JPH::BodyID bodyId;
   JPH::Body* body;
   // fe::Object* renderObject;
-  JPH::BodyInterface *bodyInterface;
+  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
 
  public:
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
 
-  PhysicsObject(JPH::PhysicsSystem physicsSystem) {
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
   float a = 1.0;
   float b = 0.1;
   float c = 0.5;
@@ -53,12 +57,14 @@ class PhysicsObject {
     bodySettings.mLinearDamping = 0.0;
     bodySettings.mAngularDamping = 0.0;
 
-    this->bodyInterface = &physicsSystem.GetBodyInterface();
-    body = bodyInterface->CreateBody(bodySettings);
+    this->physicsSystem = physicsSystem;
+
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    Body *body = bodyInterface->CreateBody(bodySettings);
     bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
 
-      bodyInterface->SetLinearVelocity(body->GetID(), Vec3(0.0, 0.0, 0.0));
-  bodyInterface->SetAngularVelocity(body->GetID(), Vec3(0.3, 0.0, 5.0));
+      bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0, 0.0, 0.0));
+    bodyInterface->SetAngularVelocity(body->GetID(), JPH::Vec3(0.3, 0.0, 5.0));
   };
 
   PhysicsObject(){};
@@ -72,6 +78,8 @@ class PhysicsObject {
   }
 
   ObjectState SyncToRender() {
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+
     JPH::RMat44 transform = bodyInterface->GetWorldTransform(body->GetID());
     JPH::RVec3 position = transform.GetTranslation();
     JPH::Vec3 x = transform.GetAxisX();
