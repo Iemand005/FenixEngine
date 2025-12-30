@@ -31,11 +31,11 @@ int main() {
       npc->needsUpdate = true;
     }
     for (auto& npc : game.npcs) {
-      if (game.player->intersects(*npc)) {
-        std::cout << "Player intersects with NPC" << std::endl;
-        std::cout << "YOU FUCKING DIED!!!!" << std::endl;
-        // client.sendPing();
-      }
+      // if (game.player->intersects(*npc)) {
+      //   std::cout << "Player intersects with NPC" << std::endl;
+      //   std::cout << "YOU FUCKING DIED!!!!" << std::endl;
+      //   // client.sendPing();
+      // }
     }
     game.update();
     game.Redraw();

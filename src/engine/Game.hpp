@@ -22,6 +22,9 @@
 #include "./engine.h"
 #include "networking/networking.hpp"
 #include "./physics/PhysicsEngine.hpp"
+#include "Object.hpp"
+#include "Camera.hpp"
+#include "ShaderProgram.hpp"
 
 class Game {
  public:
@@ -262,38 +265,7 @@ class Game {
     mapIndex++;
     if (mapIndex >= maps.size()) mapIndex = 0;
   }
-
-  void spawnZombies(int count = 10) {
-    const float minDistance = 20.0f;
-    const float minDistanceSq = minDistance * minDistance;
-
-    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->clone());
-    if (zombieTemplate->meshes.size() < 2) return;
-
-    zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-    zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
-    for (int i = 0; i < count; i++) {
-      float x = static_cast<float>(rand() % 100 - 50);
-      float z = static_cast<float>(rand() % 100 - 50);
-
-      float dx = x - player->position.x;
-      float dz = z - player->position.z;
-      float distanceSq = dx * dx + dz * dz;
-
-      if (distanceSq < minDistanceSq) {
-        x += minDistanceSq;
-        z += minDistanceSq;
-      }
-
-      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
-      npc->position = glm::vec3(x, 0.0f, z);
-
-      this->scene->addModel(npc);
-
-      npcs.push_back(npc);
-    }
-  }
-
+  
   void spawnPlayer(u_char playerId) {
     auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->clone());
 
