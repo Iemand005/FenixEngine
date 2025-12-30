@@ -129,6 +129,8 @@ class PhysicsEngine {
         std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
         std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> object_vs_broadphase_layer_filter;
 
+        std::vector<std::unique_ptr<fe::PhysicsObject>> physicsObjects;
+
 
   PhysicsEngine(){
     RegisterDefaultAllocator();
@@ -225,7 +227,10 @@ object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilt
   }
 
   fe::PhysicsObject* CreateObject() {
-    return new fe::PhysicsObject(this->physicsSystem.get());
+    // return new fe::PhysicsObject(this->physicsSystem);
+    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem);
+    physicsObjects.push_back(std::move(obj));
+    return physicsObjects.back().get();
   }
 
 };

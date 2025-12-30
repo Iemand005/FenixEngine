@@ -37,14 +37,14 @@ class PhysicsObject {
  private:
   JPH::BodyID bodyId;
   // fe::Object* renderObject;
-  std::unique_ptr<JPH::BodyInterface> bodyInterface;
+  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
   
   public:
   // std::unique_ptr<JPH::Body> body;`
   Body *body;
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
 
-  PhysicsObject(JPH::PhysicsSystem* physicsSystem) {
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
   float a = 1.0;
   float b = 0.1;
   float c = 0.5;
@@ -61,10 +61,9 @@ class PhysicsObject {
     bodySettings.mLinearDamping = 0.0;
     bodySettings.mAngularDamping = 0.0;
 
-    // this->physicsSystem = physicsSystem;
+    this->physicsSystem = physicsSystem;
 
-    bodyInterface = std::make_unique<JPH::BodyInterface>(physicsSystem->GetBodyInterface());
-
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
     Body* bodya = bodyInterface->CreateBody(bodySettings);
     this->body = bodya;
     bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
@@ -84,7 +83,7 @@ class PhysicsObject {
   }
 
   ObjectState SyncToRender() {
-    // JPH::BodyInterface bodyInterface = &this->physicsSystem->GetBodyInterface();
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
 
     JPH::RMat44 transform = bodyInterface->GetWorldTransform(body->GetID());
     JPH::RVec3 position = transform.GetTranslation();

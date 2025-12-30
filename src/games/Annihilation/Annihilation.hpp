@@ -76,7 +76,8 @@ class Annihilation : public Game {
     this->scene->addModel(map1);
     this->maps.push_back(map1);
 
-    map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem.get());
+    // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
+    map1->SetPhysicsObject(physicsEngine->CreateObject());
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 

@@ -317,7 +317,7 @@ class Object {
 
   std::vector<glm::vec3> boundingBoxVertices;
 
-  PhysicsObject* physicsComponent;
+  std::unique_ptr<PhysicsObject> physicsComponent = nullptr;
 
   // bool needsUpdate = true;
 
@@ -359,6 +359,10 @@ class Object {
 
   void applyGravity(const glm::vec3& gravity, double deltaTime) {
     this->applyAcceleration(gravity * glm::vec3(deltaTime));
+  }
+
+  void SetPhysicsObject(PhysicsObject* physicsObject) {
+    this->physicsComponent = std::make_unique<PhysicsObject>(physicsObject);
   }
 
   void update(double deltaTime) {
