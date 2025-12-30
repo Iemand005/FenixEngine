@@ -4,6 +4,8 @@
 #include "OBJ_Loader.h"
 
 
+
+
 namespace fe {
 
 
@@ -118,14 +120,10 @@ namespace fe {
 
       this->scale = glm::vec3(scale);
 
-      calculateBoundingBox();
 
       return true;
     }
 
 
-    void Scene::render(ShaderProgram &shader, const Camera &camera, int width, int height) {
-      glViewport(0, 0, width, height);
-      this->Render(shader, camera);
-    }
+    
 }

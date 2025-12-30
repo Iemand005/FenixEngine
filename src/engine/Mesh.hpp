@@ -14,6 +14,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Vertex.hpp"
+#include "ShaderProgram.hpp"
 
 namespace fe {
 
