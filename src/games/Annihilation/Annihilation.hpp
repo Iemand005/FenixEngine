@@ -24,11 +24,6 @@
 class Annihilation : public Game {
  public:
 
-
-  // std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
-
-  // std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
-
   std::vector<std::string> messages;
 
   double lastUpdateTime = 0.0f;
@@ -45,10 +40,10 @@ class Annihilation : public Game {
 
     this->client = std::make_unique<Networker>(2130);
 
-    this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
+    this->client->receiveHandler = [this](PacketData data, PacketType type, const ClientData sender) {
       switch (type) {
         case PacketType::Position: {
-          auto packet = this->client->dataAs<PositionPacket>(data);
+          auto packet = data.As<PositionPacket>();
           if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
           player->position = packet.position;
@@ -58,7 +53,7 @@ class Annihilation : public Game {
           this->players.clear();
           for (auto& [id, client] : this->client->clientClients) {
             this->spawnPlayer(id);
-            isConnectedToServer = true;
+            isConnectedToServer = ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc                                                                                                                                                                       cccccccccccccccccccccccccccccccccccccccccccccccccccccccc           c                                                                                                                                           true;
           }
         } break;
       }
@@ -77,7 +72,11 @@ class Annihilation : public Game {
     this->maps.push_back(map1);
 
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
-    map1->SetPhysicsObject(physicsEngine->CreateObject(false));
+    auto vertices = std::vector<glm::vec3>(map1->meshes[0].vertices.size());
+    for (auto &vertex : map1->meshes[0].vertices) {
+      vertices.push_back(vertex.position);
+    }
+    map1->SetPhysicsObject(physicsEngine->CreateObject(vertices, map1->meshes[0].indices));
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 

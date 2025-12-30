@@ -135,17 +135,17 @@ class ShaderProgram {
 };
 
 class Mesh {
-  std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
-
+  
   unsigned int indexCount;
-
+  
   unsigned int VAO = 0;
   unsigned int VBO = 0;
   unsigned int EBO = 0;
   unsigned int texture = 0;
-
- public:
+  
+  public:
+  std::vector<Vertex> vertices;
+  std::vector<unsigned int> indices;
   glm::mat4 modelMatrix;
 
   Mesh() {}
@@ -543,6 +543,14 @@ class Scene {
   }
 
   void resolveCollisions() {
+    for (auto& object : objects) {
+      if (object->position.y < -200.0f) {
+        auto pos = object->position;
+        pos.y = 10;
+        object->physicsObject->SetPosition(pos);
+        object->physicsObject->SetLinearVelocity(glm::vec3(0.0f));
+      }
+    }
     // for (auto& object : objects) {
     //   if (object->position.y < 0.0f) {
     //     object->position.y = 0.0f;

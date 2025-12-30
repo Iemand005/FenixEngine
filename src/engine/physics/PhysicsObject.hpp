@@ -41,12 +41,13 @@ class PhysicsObject {
  public:
   // std::unique_ptr<JPH::Body> body;`
   Body* body;
-  enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
+  enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField, Compound };
 
-  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, bool dynamic = true) {
-    float a = 1.0;
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, bool dynamic = true) : physicsSystem(physicsSystem) {
+    float a = 100.0;
     float b = 0.1;
-    float c = 0.5;
+    float c = 100.5;
+
     JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
     bodyShapeSettings.mConvexRadius = 0.01;
     bodyShapeSettings.SetDensity(1000.0);
@@ -60,7 +61,7 @@ class PhysicsObject {
     bodySettings.mLinearDamping = 0.0;
     bodySettings.mAngularDamping = 0.0;
 
-    this->physicsSystem = physicsSystem;
+    // this->physicsSystem = physicsSystem;
 
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
     this->body = bodyInterface->CreateBody(bodySettings);
@@ -69,7 +70,31 @@ class PhysicsObject {
     // bodyInterface->SetGravityFactor()
   };
 
-  PhysicsObject() {};
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem,
+                const std::vector<glm::vec3>& vertices,
+                const std::vector<uint32_t>& indices,
+                const glm::vec3& position = glm::vec3(0.0f),
+                float density = 1000.0f,
+                bool isStatic = false)
+    : physicsSystem(physicsSystem)
+  {
+    if (!physicsSystem) {
+      std::cerr << "Error: PhysicsObject created with null physicsSystem!" << std::endl;
+      return;
+    }
+    
+    JPH::ShapeRefC shape = CreateMeshShape(vertices, indices, density);
+    if (!shape) {
+      std::cerr << "Failed to create mesh shape!" << std::endl;
+      return;
+    }
+    
+    CreateBodyFromShape(shape, position, 
+                       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
+                       isStatic ? Layers::NON_MOVING : Layers::MOVING);
+  }
+
+  PhysicsObject() : physicsSystem(nullptr), bodyId(BodyID()) {};
 
   ~PhysicsObject() {};
 
@@ -88,35 +113,116 @@ class PhysicsObject {
     state.rotationX = glm::vec3(x.GetX(), y.GetX(), z.GetX());
     state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
     state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
-    state.velocity =ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
+    state.velocity = ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
     return state;
   }
 
-  BodyInterface* GetBody() {
-    return &this->physicsSystem->GetBodyInterface();
+    static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
+                                        const std::vector<uint32_t>& indices,
+                                        float density = 1000.0f) {
+    // Convert glm::vec3 to JPH::Float3
+    JPH::VertexList vertexList;
+    vertexList.reserve(vertices.size());
+    for (const auto& v : vertices) {
+      vertexList.emplace_back(v.x, v.y, v.z);
+    }
+    
+    // Create triangle list from indices
+    JPH::IndexedTriangleList triangleList;
+    triangleList.reserve(indices.size() / 3);
+    
+    if (indices.size() % 3 != 0) {
+      std::cerr << "Error: Index count must be divisible by 3!" << std::endl;
+      return nullptr;
+    }
+    
+    for (size_t i = 0; i < indices.size(); i += 3) {
+      JPH::IndexedTriangle triangle;
+      triangle.mIdx[0] = indices[i];
+      triangle.mIdx[1] = indices[i + 1];
+      triangle.mIdx[2] = indices[i + 2];
+      triangle.mMaterialIndex = 0; // Default material
+      triangleList.push_back(triangle);
+    }
+    
+    // Create mesh shape settings
+    JPH::MeshShapeSettings meshSettings(vertexList, triangleList);
+    
+    // Important: For physics simulation, we need to create a triangle mesh
+    // with proper support for backfaces
+    // meshSettings.mTriangleWindingCounterClockwise = true;
+    
+    // Create the shape
+    JPH::ShapeSettings::ShapeResult result = meshSettings.Create();
+    
+    if (result.HasError()) {
+      std::cerr << "Error creating mesh shape: " << result.GetError() << std::endl;
+      return nullptr;
+    }
+    
+    return result.Get();
   }
 
-
-  void SetLinearVelocity(glm::vec3 velocity) {
-    GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+  void CreateBodyFromShape(JPH::ShapeRefC shape,
+                          const glm::vec3& position,
+                          JPH::EMotionType motionType,
+                          JPH::ObjectLayer layer) {
+    if (!shape) {
+      std::cerr << "Error: Cannot create body with null shape!" << std::endl;
+      return;
+    }
+    
+    // Create body settings
+    JPH::BodyCreationSettings bodySettings(
+      shape,
+      JPH::RVec3(position.x, position.y, position.z),
+      JPH::Quat::sIdentity(),
+      motionType,
+      layer
+    );
+    
+    // Configure body properties
+    bodySettings.mFriction = 0.5f;
+    bodySettings.mRestitution = 0.1f;
+    bodySettings.mLinearDamping = 0.05f;
+    bodySettings.mAngularDamping = 0.05f;
+    bodySettings.mMaxLinearVelocity = 100.0f;
+    bodySettings.mAllowSleeping = true;
+    
+    if (motionType == JPH::EMotionType::Dynamic) {
+      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateMassAndInertia;
+    }
+    
+    // Get body interface and create body
+    auto& bodyInterface = physicsSystem->GetBodyInterface();
+    JPH::Body* body = bodyInterface.CreateBody(bodySettings);
+    
+    if (!body) {
+      std::cerr << "Failed to create physics body!" << std::endl;
+      return;
+    }
+    
+    bodyId = body->GetID();
+    bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
+    
+    std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex()
+              << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic")
+              << ", Layer: " << layer << ")" << std::endl;
   }
-\
-  JPH::Vec3 VecConv(glm::vec3 vec) {
-    return JPH::Vec3(vec.x, vec.y, vec.z);
-  }
 
-  glm::vec3 ParseVec3(JPH::Vec3 vec) {
-    return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ());
-  }
+  BodyInterface* GetBody() { return &this->physicsSystem->GetBodyInterface(); }
 
-  void AddLinearVelocity(glm::vec3 velocity) {
-    GetBody()->AddLinearVelocity(bodyId, VecConv(velocity));
-  }
+  void SetLinearVelocity(glm::vec3 velocity) { GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z)); }
 
-  // void CreateMeshBody(
-  //   const std::vector<fe::Vertex>& vertices,
-  //   const std::vector<unsigned int>& indices,
-  //   JPH::PhysicsSystem& physicsSystem) {
+  JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
+
+  glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+
+  void AddLinearVelocity(glm::vec3 velocity) { GetBody()->AddLinearVelocity(bodyId, VecConv(velocity)); }
+
+  void SetPosition(glm::vec3 position) { GetBody()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate); }
+
+  // void CreateMeshBody(const std::vector<fe::Vertex>& vertices, const std::vector<unsigned int>& indices) {
   //   JPH::VertexList vertexList;
   //   JPH::IndexedTriangleList triangleList;
 

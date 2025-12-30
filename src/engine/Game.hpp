@@ -91,10 +91,10 @@ class Game {
 
     this->client = std::make_unique<Networker>(2130);
 
-    this->client->receiveHandler = [this](const char* data, size_t size, PacketType type, const ClientData sender) {
+    this->client->receiveHandler = [this](PacketData data, PacketType type, const ClientData sender) {
       switch (type) {
         case PacketType::Position: {
-          auto packet = this->client->dataAs<PositionPacket>(data);
+          auto packet = data.As<PositionPacket>();
           if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
           player->position = packet.position;

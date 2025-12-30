@@ -16,10 +16,20 @@ struct ClientData {
   std::string username;
 };
 
+struct PacketData {
+  const char *data;
+  size_t size;
+
+  template <typename T>
+  T As() {
+    return *(T*)data;
+  }
+};
+
 class Networker {
  public:
   using MessageReceiveHandler = std::function<void(std::string message, const ClientData sender)>;
-  using ReceiveHandler = std::function<void(const char* data, size_t size, PacketType type, const ClientData sender)>;
+  using ReceiveHandler = std::function<void(PacketData data, PacketType type, const ClientData sender)>;
   MessageReceiveHandler messageReceiveHandler;
 
   ReceiveHandler receiveHandler = nullptr;
@@ -156,19 +166,23 @@ class Networker {
     start();
   }
 
-  template <typename T>
-  T dataAs(const char* data) {
-    return *(T*)data;
-  }
+  // template <typename T>
+  // T dataAs(const char* data) {
+  //   return *(T*)data;
+  // }
 
   void start(unsigned short port) {
-    socket.startListening(port, [this](const char* data, size_t size, const sockaddr_in& from) {
+    socket.startListening(port, [this](const char* buffer, size_t size, const sockaddr_in& from) {
       if (size < sizeof(PacketHeader)) {
         std::cout << "Received a packet but it's too small";
         return;
       }
 
-      auto header = this->dataAs<PacketHeader>(data);
+      PacketData data;
+      data.data = buffer;
+      data.size = size;
+
+      auto header = data.As<PacketHeader>();
 
       ClientData sender;
       if (isServer && clients.size()) {
@@ -182,14 +196,14 @@ class Networker {
       std::cout << "Identified packet sender: (#" << (int)sender.id << ") Username: " << sender.username << std::endl;
 
       // maype make one handler before default and one after
-      if (header.type != PacketType::Hello) this->broadcast(data, size, sender);
+      if (header.type != PacketType::Hello) this->broadcast(buffer, size, sender);
 
       // auto header = *(PacketHeader*)data;
       // PacketHeader headerS = *header;
 
       switch (header.type) {
         case PacketType::Hello: {
-          auto hello = this->dataAs<HelloPacket>(data);
+          auto hello = data.As<HelloPacket>();
           // auto hello = *(HelloPacket*)data;
           if (ntohs(from.sin_port) == this->port) {
             std::cout << "Received Hello from same port, ignoring" << std::endl;
@@ -228,13 +242,13 @@ class Networker {
 
         } break;
         case PacketType::HelloNotOk: {
-          auto hello = dataAs<HelloNotOkPacket>(data);
+          auto hello = data.As<HelloNotOkPacket>();
           std::cerr << "The server said you couldn't join... error code: " << hello.reason << std::endl;
 
         } break;
         case PacketType::ClientList: {
           std::cout << "The server showed us who's online!" << std::endl;
-          auto clientList = dataAs<ClientListPacket>(data);
+          auto clientList = data.As<ClientListPacket>();
           for (size_t i = 0; i < clientList.clientCount; i++) {
             ClientInfo clientInfo = clientList.clients[i];
             ClientData client;
@@ -245,10 +259,10 @@ class Networker {
           }
         } break;
         case PacketType::Message: {
-          auto messagePacket = (MessagePacket*)data;
-          const size_t messageLength = messagePacket->messageLength;
+          auto messagePacket = data.As<MessagePacket>();
+          const size_t messageLength = messagePacket.messageLength;
           char* messageBuffer = (char*)malloc(messageLength);
-          memcpy(messageBuffer, data + sizeof(MessagePacket), messageLength);
+          memcpy(messageBuffer, buffer + sizeof(MessagePacket), messageLength);
 
           std::string message(messageBuffer, messageLength);
           if (isServer) {
@@ -261,10 +275,10 @@ class Networker {
           }
         } break;
         case PacketType::Position: {
-          auto packet = (PositionPacket*)data;
-          packet->position;
-          std::cout << "X: " << packet->position.x << " Y: " << packet->position.y << " Z: " << packet->position.z << std::endl;
-          packet->rotation;
+          auto packet = data.As<PositionPacket>();
+          packet.position;
+          std::cout << "X: " << packet.position.x << " Y: " << packet.position.y << " Z: " << packet.position.z << std::endl;
+          packet.rotation;
         } break;
         case PacketType::Ping: {
           std::cout << "Received a ping! Answering with pong..." << std::endl;
@@ -275,7 +289,7 @@ class Networker {
         } break;
       }
 
-      if (receiveHandler) receiveHandler(data, size, header.type, sender);
+      if (receiveHandler) receiveHandler(data, header.type, sender);
     });
   }
 
