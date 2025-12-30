@@ -451,8 +451,10 @@ class Game {
         std::cout << "Button clicked!" << std::endl;
       }
 
-      fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
+      fe::Object* character = this->player.get();
+      ImGui::SliderFloat3("Position", &character->position.x, -10.0f, 10.0f);
+      ImGui::SliderFloat3("Rotation", &character->rotation.x, -10.0f, 10.0f);
+      ImGui::SliderFloat3("Velocity", &character->velocity.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
         ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);

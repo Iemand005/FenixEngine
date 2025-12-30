@@ -338,12 +338,14 @@ class Object {
   void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
   void update(double deltaTime) {
-    this->applyAcceleration(this->acceleration);
-    this->position = this->position + this->velocity * static_cast<float>(deltaTime) + glm::radians(0.0001f);
-    this->acceleration = glm::vec3(0.0f);
+    // this->applyAcceleration(this->acceleration);
+    // this->position = this->position + this->velocity * static_cast<float>(deltaTime) + glm::radians(0.0001f);
+    // this->acceleration = glm::vec3(0.0f);
+
     if (this->physicsObject) {
       auto state = this->physicsObject->SyncToRender();
       this->position = state.position;
+      this->velocity = state.velocity;
       this->rotation = state.rotationX;
     }
   }
@@ -426,7 +428,7 @@ class Character : public Object {
  public:
 };
 
-class Camera {
+class Camera : public Object {
  private:
   glm::vec3 position;
   glm::vec3 front;
@@ -541,35 +543,35 @@ class Scene {
   }
 
   void resolveCollisions() {
-    for (auto& object : objects) {
-      if (object->position.y < 0.0f) {
-        object->position.y = 0.0f;
-        object->velocity.y *= -0.1f;
+    // for (auto& object : objects) {
+    //   if (object->position.y < 0.0f) {
+    //     object->position.y = 0.0f;
+    //     object->velocity.y *= -0.1f;
 
-        object->touchedGround = true;
+    //     object->touchedGround = true;
 
-        if (object->velocity.y < 0.01f && object->velocity.y > -0.01f) object->needsUpdate = false;
-      } else {
-        object->touchedGround = false;
-      }
+    //     if (object->velocity.y < 0.01f && object->velocity.y > -0.01f) object->needsUpdate = false;
+    //   } else {
+    //     object->touchedGround = false;
+    //   }
 
-      bool foundTouch = false;
-      for (auto& otherObject : objects) {
-        if (otherObject == object) continue;
+    //   bool foundTouch = false;
+    //   for (auto& otherObject : objects) {
+    //     if (otherObject == object) continue;
 
-        if (object->intersects(*otherObject)) {
-          if (!object->touchedOtherObject) std::cout << "Intersected" << std::endl;
-          object->touchedOtherObject = true;
-          otherObject->touchedOtherObject = true;
-          foundTouch = true;
-          break;
-        }
-      }
+    //     if (object->intersects(*otherObject)) {
+    //       if (!object->touchedOtherObject) std::cout << "Intersected" << std::endl;
+    //       object->touchedOtherObject = true;
+    //       otherObject->touchedOtherObject = true;
+    //       foundTouch = true;
+    //       break;
+    //     }
+    //   }
 
-      if (!foundTouch) {
-        object->touchedOtherObject = false;
-      }
-    }
+    //   if (!foundTouch) {
+    //     object->touchedOtherObject = false;
+    //   }
+    // }
   }
 
   std::vector<std::shared_ptr<Object>>& getModels() { return objects; }

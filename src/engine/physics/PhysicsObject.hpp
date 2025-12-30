@@ -28,6 +28,7 @@ struct ObjectState {
   glm::vec3 rotationX;
   glm::vec3 rotationY;
   glm::vec3 rotationZ67;
+  glm::vec3 velocity;
 };
 
 namespace fe {
@@ -65,6 +66,7 @@ class PhysicsObject {
     this->body = bodyInterface->CreateBody(bodySettings);
     this->bodyId = body->GetID();
     bodyInterface->AddBody(this->body->GetID(), JPH::EActivation::Activate);
+    // bodyInterface->SetGravityFactor()
   };
 
   PhysicsObject() {};
@@ -74,7 +76,7 @@ class PhysicsObject {
   ObjectState SyncToRender() {
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
 
-    JPH::RMat44 transform = bodyInterface->GetWorldTransform(body->GetID());
+    JPH::RMat44 transform = bodyInterface->GetWorldTransform(bodyId);
     JPH::RVec3 position = transform.GetTranslation();
     JPH::Vec3 x = transform.GetAxisX();
     JPH::Vec3 y = transform.GetAxisY();
@@ -86,6 +88,7 @@ class PhysicsObject {
     state.rotationX = glm::vec3(x.GetX(), y.GetX(), z.GetX());
     state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
     state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
+    state.velocity =ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
     return state;
   }
 
@@ -95,23 +98,18 @@ class PhysicsObject {
 
 
   void SetLinearVelocity(glm::vec3 velocity) {
-    // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
     GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
-    // bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
   }
-
-  // void SetAcceleration(glm::vec3 velocity) {
-  //   // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-  //   GetBody()->(this->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
-  //   // bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
-  // }
-
+\
   JPH::Vec3 VecConv(glm::vec3 vec) {
     return JPH::Vec3(vec.x, vec.y, vec.z);
   }
 
+  glm::vec3 ParseVec3(JPH::Vec3 vec) {
+    return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ());
+  }
+
   void AddLinearVelocity(glm::vec3 velocity) {
-    // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
     GetBody()->AddLinearVelocity(bodyId, VecConv(velocity));
   }
 

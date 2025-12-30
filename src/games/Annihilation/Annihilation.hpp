@@ -132,7 +132,7 @@ class Annihilation : public Game {
       startMouseCapture();
     }
 
-    const float cameraSpeed = 10.0f;
+    const float cameraSpeed = 0.0100f;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
 
@@ -147,8 +147,9 @@ class Annihilation : public Game {
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= cameraUp;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
-      this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
-      canJump = false;
+      // this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
+      acceleration.y = 10;
+      canJump = true;
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       std::shared_ptr<fe::Object> newObj = this->player->clone();
@@ -184,8 +185,8 @@ class Annihilation : public Game {
     } else
       pWasDown = false;
 
-      this->player->physicsObject->SetLinearVelocity(velocity * cameraSpeed);
-      this->player->physicsObject->AddLinearVelocity(acceleration);
+      // this->player->physicsObject->AddLinearVelocity(acceleration);
+      this->player->physicsObject->AddLinearVelocity(velocity * cameraSpeed);
   }
 
   bool shouldClose() { return glfwWindowShouldClose(this->window); }

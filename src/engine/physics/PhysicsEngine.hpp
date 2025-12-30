@@ -147,10 +147,8 @@ class PhysicsEngine {
             std::thread::hardware_concurrency() - 1
         );
         
-        // Create PhysicsSystem with shared ownership
         physicsSystem = std::make_shared<JPH::PhysicsSystem>();
         
-        // Initialize it
         broad_phase_layer_interface = std::make_shared<    BPLayerInterfaceImpl>() ;
 object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>() ;
 object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>() ;
