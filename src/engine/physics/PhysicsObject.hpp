@@ -27,20 +27,24 @@ namespace BroadPhaseLayers
 
 struct ObjectState {
   glm::vec3 position;
+  glm::vec3 rotationX;
+  glm::vec3 rotationY;
+  glm::vec3 rotationZ67;
 };
 
 namespace fe {
 class PhysicsObject {
  private:
   JPH::BodyID bodyId;
-  JPH::Body* body;
   // fe::Object* renderObject;
-  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-
- public:
+  std::unique_ptr<JPH::BodyInterface> bodyInterface;
+  
+  public:
+  // std::unique_ptr<JPH::Body> body;`
+  Body *body;
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
 
-  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
+  PhysicsObject(JPH::PhysicsSystem* physicsSystem) {
   float a = 1.0;
   float b = 0.1;
   float c = 0.5;
@@ -57,10 +61,12 @@ class PhysicsObject {
     bodySettings.mLinearDamping = 0.0;
     bodySettings.mAngularDamping = 0.0;
 
-    this->physicsSystem = physicsSystem;
+    // this->physicsSystem = physicsSystem;
 
-    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-    Body *body = bodyInterface->CreateBody(bodySettings);
+    bodyInterface = std::make_unique<JPH::BodyInterface>(physicsSystem->GetBodyInterface());
+
+    Body* bodya = bodyInterface->CreateBody(bodySettings);
+    this->body = bodya;
     bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
 
       bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0, 0.0, 0.0));
@@ -78,7 +84,7 @@ class PhysicsObject {
   }
 
   ObjectState SyncToRender() {
-    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    // JPH::BodyInterface bodyInterface = &this->physicsSystem->GetBodyInterface();
 
     JPH::RMat44 transform = bodyInterface->GetWorldTransform(body->GetID());
     JPH::RVec3 position = transform.GetTranslation();
@@ -89,6 +95,9 @@ class PhysicsObject {
     float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
     ObjectState state;
     state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
+    state.rotationX = glm::vec3(x.GetX(), y.GetX(), z.GetX());
+    state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
+    state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
     return state;
   }
 

@@ -224,4 +224,8 @@ object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilt
     physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
   }
 
+  fe::PhysicsObject* CreateObject() {
+    return new fe::PhysicsObject(this->physicsSystem.get());
+  }
+
 };

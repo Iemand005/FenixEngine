@@ -317,7 +317,7 @@ class Object {
 
   std::vector<glm::vec3> boundingBoxVertices;
 
-  PhysicsObject physicsComponent;
+  PhysicsObject* physicsComponent;
 
   // bool needsUpdate = true;
 
@@ -369,6 +369,12 @@ class Object {
                      this->velocity * static_cast<float>(deltaTime) +
                      glm::radians(0.0001f);
     this->acceleration = glm::vec3(0.0f);
+    // this->position = physicsComponent
+    if (this->physicsComponent) {
+      auto state= this->physicsComponent->SyncToRender();
+      this->position = state.position;
+      this->rotation =state.rotationX;
+    }
   }
 
   void calculateBoundingBox() {

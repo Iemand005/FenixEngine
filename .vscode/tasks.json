@@ -16,6 +16,7 @@
         "${workspaceFolder}\\src\\games\\Annihilation\\main.cpp",
         "/Zi",
         "/EHsc",
+        "/FS",
         "/MDd",
         "/Fe${workspaceFolder}\\build\\debug\\main.exe",
         "/nologo",
