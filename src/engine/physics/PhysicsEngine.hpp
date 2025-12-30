@@ -125,6 +125,10 @@ class PhysicsEngine {
 
     std::shared_ptr<PhysicsSystem> physicsSystem;
 
+        std::shared_ptr<    BPLayerInterfaceImpl> broad_phase_layer_interface;
+        std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
+        std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> object_vs_broadphase_layer_filter;
+
 
   PhysicsEngine(){
     RegisterDefaultAllocator();
@@ -145,14 +149,15 @@ class PhysicsEngine {
         physicsSystem = std::make_shared<JPH::PhysicsSystem>();
         
         // Initialize it
-        BPLayerInterfaceImpl broad_phase_layer_interface;
-        ObjectLayerPairFilterImpl object_vs_object_layer_filter;
-        ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
+        broad_phase_layer_interface = std::make_shared<    BPLayerInterfaceImpl>() ;
+object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>() ;
+object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>() ;
+
         
         physicsSystem->Init(1024, 0, 1024, 1024, 
-                           broad_phase_layer_interface,
-                           object_vs_broadphase_layer_filter, 
-                           object_vs_object_layer_filter);
+                           *broad_phase_layer_interface,
+                           *object_vs_broadphase_layer_filter, 
+                           *object_vs_object_layer_filter);
         
         physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
   
@@ -195,8 +200,28 @@ class PhysicsEngine {
   }
 
   void update(double dt) {
-    const int cCollisionSteps = 1;
-    physicsSystem->Update(dt, cCollisionSteps, &temp_allocator, jobSystem);
+    // Validate input parameters
+    if (dt <= 0.0) {
+      // Log warning or handle invalid delta time
+      std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
+      return;
+    }
+
+    // Ensure physics system and dependencies are initialized
+    if (!physicsSystem || !temp_allocator || !jobSystem) {
+      std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
+      return;
+    }
+
+    // Number of collision steps (configurable, currently set to 1 for simplicity)
+    const int collisionSteps = 1;
+
+    // Cast dt to float as required by Jolt Physics
+    float deltaTime = static_cast<float>(dt);
+
+    // Update the physics system
+    // Note: Jolt's Update method may internally handle errors, but we add basic checks
+    physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
   }
 
 };
