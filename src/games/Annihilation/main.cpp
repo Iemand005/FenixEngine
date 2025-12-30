@@ -23,9 +23,7 @@ int main() {
 
     game.camera->setFront(glm::normalize(pos - game.cameraPos));
 
-    #ifdef FE_WIN32
     if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
-    #endif
 
     for (auto& npc : game.npcs) {
       npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
