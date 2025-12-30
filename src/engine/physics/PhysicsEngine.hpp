@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cstdarg>
 #include <thread>
+#include <memory>
 
 #define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 #define JPH_PROFILE_ENABLED
@@ -117,48 +118,43 @@ static bool AssertFailedImpl(const char *inExpression, const char *inMessage, co
 class PhysicsEngine {
   public:
   // PhysicsSystem physicsSystem;
-  JobSystemThreadPool *jobSystem;
-  TempAllocatorMalloc temp_allocator;
+  // JobSystemThreadPool *jobSystem;
+  // TempAllocatorMalloc temp_allocator;
+  std::unique_ptr<JPH::JobSystemThreadPool> jobSystem; // Unique ownership
+    std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
 
     std::shared_ptr<PhysicsSystem> physicsSystem;
 
 
   PhysicsEngine(){
-    // b
-    //JPH::Factory::sInstance = new JPH::Factory();
-    // // Create physics system
-    // physicsSystem->Init(1024, 0, 1024, 1024,  nullptr, nullptr, &object_layer_pair_filter);
-    
-    // // Set gravity and other settings
-    // physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
-    // JPH::PhysicsSystem physicsSystem;
-    physicsSystem = std::make_shared<JPH::PhysicsSystem>();
-
-
     RegisterDefaultAllocator();
-
-    Trace = TraceImpl;
-  JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
-  Factory::sInstance = new Factory();
-  RegisterTypes();
-
-  TempAllocatorImpl temp_allocator(10 * 1024 * 1024);
-
-  JobSystemThreadPool job_system(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1);
-  this->jobSystem = &job_system;
-
-  const uint cMaxBodies = 1024;
-  const uint cNumBodyMutexes = 0;
-  const uint cMaxBodyPairs = 1024;
-  const uint cMaxContactConstraints = 1024;
-
-  BPLayerInterfaceImpl broad_phase_layer_interface;
-  ObjectLayerPairFilterImpl object_vs_object_layer_filter;
-  ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
-
-  physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface,
-                      object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
-  physicsSystem->SetGravity(Vec3::sZero());
+        Trace = TraceImpl;
+        JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
+        Factory::sInstance = new Factory();
+        RegisterTypes();
+        
+        // Create heap-allocated members
+        temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+        jobSystem = std::make_unique<JPH::JobSystemThreadPool>(
+            cMaxPhysicsJobs, 
+            cMaxPhysicsBarriers, 
+            std::thread::hardware_concurrency() - 1
+        );
+        
+        // Create PhysicsSystem with shared ownership
+        physicsSystem = std::make_shared<JPH::PhysicsSystem>();
+        
+        // Initialize it
+        BPLayerInterfaceImpl broad_phase_layer_interface;
+        ObjectLayerPairFilterImpl object_vs_object_layer_filter;
+        ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
+        
+        physicsSystem->Init(1024, 0, 1024, 1024, 
+                           broad_phase_layer_interface,
+                           object_vs_broadphase_layer_filter, 
+                           object_vs_object_layer_filter);
+        
+        physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
   
   float a = 1.0;
   float b = 0.1;
