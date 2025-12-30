@@ -77,13 +77,16 @@ class Annihilation : public Game {
     this->maps.push_back(map1);
 
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
-    map1->SetPhysicsObject(physicsEngine->CreateObject());
+    map1->SetPhysicsObject(physicsEngine->CreateObject(false));
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
 
     this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+
+    this->player->SetPhysicsObject(physicsEngine->CreateObject());
+
 
     // spawnZombies(10);
   }
@@ -132,7 +135,8 @@ class Annihilation : public Game {
     const float cameraSpeed = 10.0f * deltaTime;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->position += cameraSpeed * horizontalFront;
+    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->SetLinearVelocity(glm::vec3(horizontalFront));
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->position -= cameraSpeed * horizontalFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->position -= right * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->position += right * cameraSpeed;

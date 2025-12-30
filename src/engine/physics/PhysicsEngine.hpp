@@ -163,38 +163,38 @@ object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilt
         
         physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
   
-  float a = 1.0;
-  float b = 0.1;
-  float c = 0.5;
+  // float a = 1.0;
+  // float b = 0.1;
+  // float c = 0.5;
 
   
   
-  BodyInterface &body_interface = physicsSystem->GetBodyInterface();
+  // BodyInterface &body_interface = physicsSystem->GetBodyInterface();
   
-  BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
-  floor_shape_settings.SetEmbedded();
-  ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-  ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
-  BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -1.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
-  Body *floor = body_interface.CreateBody(floor_settings);
+  // BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
+  // floor_shape_settings.SetEmbedded();
+  // ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+  // ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
+  // BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -1.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+  // Body *floor = body_interface.CreateBody(floor_settings);
   
-  BoxShapeSettings body_shape_settings(Vec3(a, b, c));
-  body_shape_settings.mConvexRadius = 0.01;
-  body_shape_settings.SetDensity(1000.0);
-  body_shape_settings.SetEmbedded();
-  ShapeSettings::ShapeResult body_shape_result = body_shape_settings.Create();
-  ShapeRefC body_shape = body_shape_result.Get();
+  // BoxShapeSettings body_shape_settings(Vec3(a, b, c));
+  // body_shape_settings.mConvexRadius = 0.01;
+  // body_shape_settings.SetDensity(1000.0);
+  // body_shape_settings.SetEmbedded();
+  // ShapeSettings::ShapeResult body_shape_result = body_shape_settings.Create();
+  // ShapeRefC body_shape = body_shape_result.Get();
   
-  BodyCreationSettings body_settings(body_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
-  body_settings.mMaxLinearVelocity = 10000.0;
-  body_settings.mApplyGyroscopicForce = true;
-  body_settings.mLinearDamping = 0.0;
-  body_settings.mAngularDamping = 0.0;
+  // BodyCreationSettings body_settings(body_shape, RVec3(0.0, 0.0, 0.0), Quat::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+  // body_settings.mMaxLinearVelocity = 10000.0;
+  // body_settings.mApplyGyroscopicForce = true;
+  // body_settings.mLinearDamping = 0.0;
+  // body_settings.mAngularDamping = 0.0;
 
-  Body *body = body_interface.CreateBody(body_settings);
-  body_interface.AddBody(body->GetID(), EActivation::Activate);
-  body_interface.SetLinearVelocity(body->GetID(), Vec3(0.0, 0.0, 0.0));
-  body_interface.SetAngularVelocity(body->GetID(), Vec3(0.3, 0.0, 5.0));
+  // Body *body = body_interface.CreateBody(body_settings);
+  // body_interface.AddBody(body->GetID(), EActivation::Activate);
+  // body_interface.SetLinearVelocity(body->GetID(), Vec3(0.0, 0.0, 0.0));
+  // body_interface.SetAngularVelocity(body->GetID(), Vec3(0.3, 0.0, 5.0));
 
   physicsSystem->OptimizeBroadPhase();
 
@@ -226,8 +226,8 @@ object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilt
     physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
   }
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject() {
-    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem);
+  std::unique_ptr<fe::PhysicsObject> CreateObject(bool dynamic = true) {
+    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem, dynamic);
     return std::move(obj);
   }
 

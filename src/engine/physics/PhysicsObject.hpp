@@ -1,28 +1,26 @@
 
 #pragma once
-#include "../engine.h"
-
-#include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
-#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+
+#include "../engine.h"
 
 using namespace JPH;
 using namespace JPH::literals;
 
-namespace Layers
-{
-  static constexpr ObjectLayer NON_MOVING = 0;
-  static constexpr ObjectLayer MOVING = 1;
-  static constexpr ObjectLayer NUM_LAYERS = 2;
-};
+namespace Layers {
+static constexpr ObjectLayer NON_MOVING = 0;
+static constexpr ObjectLayer MOVING = 1;
+static constexpr ObjectLayer NUM_LAYERS = 2;
+};  // namespace Layers
 
-namespace BroadPhaseLayers
-{
-  static constexpr JPH::BroadPhaseLayer MOVING(0);
+namespace BroadPhaseLayers {
+static constexpr JPH::BroadPhaseLayer MOVING(0);
 };
 
 struct ObjectState {
@@ -38,24 +36,24 @@ class PhysicsObject {
   JPH::BodyID bodyId;
   // fe::Object* renderObject;
   std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-  
-  public:
+
+ public:
   // std::unique_ptr<JPH::Body> body;`
-  Body *body;
+  Body* body;
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField };
 
-  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
-  float a = 1.0;
-  float b = 0.1;
-  float c = 0.5;
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, bool dynamic = true) {
+    float a = 1.0;
+    float b = 0.1;
+    float c = 0.5;
     JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
     bodyShapeSettings.mConvexRadius = 0.01;
     bodyShapeSettings.SetDensity(1000.0);
     bodyShapeSettings.SetEmbedded();
     JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
     JPH::ShapeRefC body_shape = body_shape_result.Get();
-    
-    JPH::BodyCreationSettings bodySettings(body_shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, 0);
+
+    JPH::BodyCreationSettings bodySettings(body_shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(), dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static, Layers::MOVING);
     bodySettings.mMaxLinearVelocity = 10000.0;
     bodySettings.mApplyGyroscopicForce = true;
     bodySettings.mLinearDamping = 0.0;
@@ -66,15 +64,16 @@ class PhysicsObject {
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
     Body* bodya = bodyInterface->CreateBody(bodySettings);
     this->body = bodya;
+    this->bodyId = body->GetID();
     bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
 
-      bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.1, 0.0, 0.0));
-    bodyInterface->SetAngularVelocity(body->GetID(), JPH::Vec3(0.3, 0.0, 5.0));
+    // bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0, 0.0, 0.0));
+    // bodyInterface->SetAngularVelocity(body->GetID(), JPH::Vec3(0.3, 0.0, 5.0));
   };
 
-  PhysicsObject(){};
+  PhysicsObject() {};
 
-  ~PhysicsObject(){};
+  ~PhysicsObject() {};
 
   void Initialize(JPH::BodyID bodyId, JPH::Body* body) {
     this->bodyId = bodyId;
@@ -98,6 +97,17 @@ class PhysicsObject {
     state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
     state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
     return state;
+  }
+
+  void SetLinearVelocity(glm::vec3 velocity) {
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    bodyInterface->SetLinearVelocity(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0));
+    bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
+  }
+
+  void AddLinearVelocity(glm::vec3 velocity) {
+    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    bodyInterface->AddLinearVelocity(this->bodyId, {velocity.x,velocity.y,velocity.z});
   }
 
   // void CreateMeshBody(
@@ -170,4 +180,4 @@ class PhysicsObject {
     return triangles;
   }
 };
-}
+}  // namespace fe
