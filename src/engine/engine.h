@@ -52,10 +52,11 @@ struct Timer {
 
   Timer() { this->reset(); }
 
-  void update() {
+  double update() {
     double currentTime = getTime();
     deltaTime = currentTime - lastTime;
     lastTime = currentTime;
+    return deltaTime;
   }
 
   void reset() {
@@ -378,6 +379,7 @@ class Object {
       auto state= this->physicsComponent->SyncToRender();
       this->position = state.position;
       this->rotation =state.rotationX;
+      // this->
     }
   }
 
@@ -587,13 +589,14 @@ class Scene {
 
   void endRender() { glBindVertexArray(0); }
 
-  void update() {
-    timer.update();
+  double update() {
+    auto deltaTime = timer.update();
     for (auto& object : objects) {
-      object->applyGravity(gravity, timer.deltaTime);
-      object->update(timer.deltaTime);
+      object->applyGravity(gravity, deltaTime);
+      object->update(deltaTime);
     }
     resolveCollisions();
+    return deltaTime;
   }
 
   void resolveCollisions() {

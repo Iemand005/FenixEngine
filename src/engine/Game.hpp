@@ -331,10 +331,19 @@ class Game {
     glfwSwapBuffers(this->window);
   }
 
-  void update() { scene->update(); }
+  void update() { 
+    double dt = scene->update();
+    updatePhysics(dt);
+   }
+
+  void updatePhysics(double deltaTime) {
+    physicsEngine->update(deltaTime);
+  }
 
   void processInput() {
     double deltaTime = scene->getDeltaTime();
+
+    physicsEngine->update(deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {

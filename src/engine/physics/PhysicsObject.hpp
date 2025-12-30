@@ -68,7 +68,7 @@ class PhysicsObject {
     this->body = bodya;
     bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
 
-      bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0, 0.0, 0.0));
+      bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.1, 0.0, 0.0));
     bodyInterface->SetAngularVelocity(body->GetID(), JPH::Vec3(0.3, 0.0, 5.0));
   };
 
