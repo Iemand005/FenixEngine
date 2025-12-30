@@ -361,8 +361,8 @@ class Object {
     this->applyAcceleration(gravity * glm::vec3(deltaTime));
   }
 
-  void SetPhysicsObject(PhysicsObject* physicsObject) {
-    this->physicsComponent = std::make_unique<PhysicsObject>(physicsObject);
+  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) {
+    this->physicsComponent = std::move(physicsObject);
   }
 
   void update(double deltaTime) {

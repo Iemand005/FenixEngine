@@ -226,11 +226,9 @@ object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilt
     physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
   }
 
-  fe::PhysicsObject* CreateObject() {
-    // return new fe::PhysicsObject(this->physicsSystem);
+  std::unique_ptr<fe::PhysicsObject> CreateObject() {
     auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem);
-    physicsObjects.push_back(std::move(obj));
-    return physicsObjects.back().get();
+    return std::move(obj);
   }
 
 };
