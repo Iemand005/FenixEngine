@@ -296,7 +296,7 @@ class Game {
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void Redraw() {
-    scene->Render(*(this->shader), *(this->camera));
+    scene->Render(*(this->shader), *this->camera.get());
 
     fpsCounter.update();
     drawImGui();

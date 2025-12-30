@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Timer.hpp"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
 #include "physics/PhysicsEngine.hpp"
@@ -32,7 +33,7 @@ class Scene {
     this->enableFaceCulling();
   }
 
-  void render(ShaderProgram shader, const Camera camera, int width, int height) {
+  void render(ShaderProgram shader, Camera &camera, int width, int height) {
       glViewport(0, 0, width, height);
       this->Render(shader, camera);
     }
@@ -43,7 +44,7 @@ class Scene {
 
   void addModel(std::shared_ptr<Object> object) { objects.push_back(object); }
 
-  void prepareRender(ShaderProgram shader, const Camera camera) {
+  void prepareRender(ShaderProgram shader, Camera camera) {
     this->clear();
     shader.use();
     shader.setMat4("view", camera.getViewMatrix());
@@ -52,9 +53,11 @@ class Scene {
 
   void clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
-  void render(ShaderProgram shader, const Camera camera, int width, int height);
+  // void render(ShaderProgram shader, const Camera &camera, int width, int height) {
 
-  void Render(ShaderProgram shader, const Camera camera) {
+  // }
+
+  void Render(ShaderProgram shader, Camera &camera) {
     this->prepareRender(shader, camera);
 
     for (auto& model : objects) model->render(shader);
