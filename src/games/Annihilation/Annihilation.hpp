@@ -123,7 +123,7 @@ class Annihilation : public Game {
   }
 
   void processInput() {
-    double deltaTime = scene->getDeltaTime();
+    // double deltaTime = scene->getDeltaTime()
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
@@ -132,16 +132,19 @@ class Annihilation : public Game {
       startMouseCapture();
     }
 
-    const float cameraSpeed = 10.0f * deltaTime;
+    const float cameraSpeed = 10.0f;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
+
+    glm::vec3 velocity{};
+    glm::vec3 acceleration{};
     // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->SetLinearVelocity(glm::vec3(horizontalFront));
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->position -= cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->position -= right * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->position += right * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) this->player->position += cameraUp * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) this->player->position -= cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) velocity += horizontalFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) velocity -= horizontalFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) velocity -= right;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= cameraUp;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
       this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
@@ -180,6 +183,9 @@ class Annihilation : public Game {
       pWasDown = true;
     } else
       pWasDown = false;
+
+      this->player->physicsObject->SetLinearVelocity(velocity * cameraSpeed);
+      this->player->physicsObject->AddLinearVelocity(acceleration);
   }
 
   bool shouldClose() { return glfwWindowShouldClose(this->window); }

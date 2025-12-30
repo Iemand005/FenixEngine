@@ -4,13 +4,12 @@
 #include <chrono>
 #include <cstdio>
 #include <fstream>
-#include <iostream>
-#include <string>
-#include <memory>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include "./physics/PhysicsEngine.hpp"
 
@@ -20,16 +19,14 @@
 
 #include <stb_image.h>
 
-
 namespace fe {
-
 
 struct AABB {
   glm::vec3 min, max;
 };
 
 struct Vertex {
-  public:
+ public:
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec2 TextureCoordinate;
@@ -59,9 +56,7 @@ struct Timer {
     return deltaTime;
   }
 
-  void reset() {
-    startTime = std::chrono::high_resolution_clock::now();
-  }
+  void reset() { startTime = std::chrono::high_resolution_clock::now(); }
 
   double getTime() {
     auto now = std::chrono::high_resolution_clock::now();
@@ -103,9 +98,7 @@ class Shader {
 
   void deleteShader() { glDeleteShader(this->Id); }
 
-  void attachToProgram(unsigned int programId) {
-    glAttachShader(programId, this->Id);
-  }
+  void attachToProgram(unsigned int programId) { glAttachShader(programId, this->Id); }
 };
 
 class ShaderProgram {
@@ -117,15 +110,14 @@ class ShaderProgram {
   int projectionLoc;
   int texLoc;
 
-  
   ShaderProgram(Shader vertexShader, Shader fragmentShader) {
     Id = glCreateProgram();
-    
+
     vertexShader.attachToProgram(Id);
     fragmentShader.attachToProgram(Id);
 
     glLinkProgram(Id);
-    
+
     vertexShader.deleteShader();
     fragmentShader.deleteShader();
 
@@ -136,15 +128,12 @@ class ShaderProgram {
     glUniform1i(texLoc, 0);
   }
   ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
-  
+
   void use() { glUseProgram(this->Id); }
-  
-  void setMat4(const std::string& name, const glm::mat4& mat) const {
-    glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1,
-                       GL_FALSE, &mat[0][0]);
-                      }
-                    };
-                    
+
+  void setMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
+};
+
 class Mesh {
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
@@ -188,26 +177,22 @@ class Mesh {
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
-                 vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
     this->VBO = VBO;
 
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int),
-                 indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
     this->EBO = EBO;
 
     int vertexStride = sizeof(Vertex);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride,
-                          (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride,
-                          (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
@@ -215,8 +200,7 @@ class Mesh {
 
   bool loadObj(std::string objFilePath);
 
-  bool loadTextureFile(std::string textureFilePath, int& width, int& height,
-                       int& nrChannels, unsigned char*& data) {
+  bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
     stbi_set_flip_vertically_on_load(true);
     data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
     if (!data) {
@@ -231,8 +215,7 @@ class Mesh {
     //   return false;
     int width, height, nrChannels;
     unsigned char* data;
-    if (!loadTextureFile(textureFilePath, width, height, nrChannels, data))
-      return false;
+    if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
 
     glGenTextures(1, &this->texture);
     glBindTexture(GL_TEXTURE_2D, this->texture);
@@ -243,8 +226,7 @@ class Mesh {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
-                 GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
@@ -254,9 +236,7 @@ class Mesh {
 
   glm::mat4 getModelMatrix() { return this->modelMatrix; }
 
-  void render(ShaderProgram& shader) {
-    this->render(shader, this->getModelMatrix());
-  }
+  void render(ShaderProgram& shader) { this->render(shader, this->getModelMatrix()); }
 
   void prepareRender(ShaderProgram& shader) {
     if (VAO == 0) return;
@@ -267,9 +247,7 @@ class Mesh {
     glBindTexture(GL_TEXTURE_2D, this->texture);
   }
 
-  void draw() {
-    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-  }
+  void draw() { glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0); }
 
   void render(ShaderProgram& shader, glm::mat4 modelMatrix) {
     this->prepareRender(shader);
@@ -278,8 +256,7 @@ class Mesh {
     this->draw();
   }
 
-  void renderInstanced(ShaderProgram& shader,
-                       const std::vector<glm::mat4>& modelMatrices) {
+  void renderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
     this->prepareRender(shader);
 
     for (const auto& modelMatrix : modelMatrices) {
@@ -318,7 +295,7 @@ class Object {
 
   std::vector<glm::vec3> boundingBoxVertices;
 
-  std::unique_ptr<PhysicsObject> physicsComponent = nullptr;
+  std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 
   // bool needsUpdate = true;
 
@@ -337,9 +314,7 @@ class Object {
     calculateBoundingBox();
   }
 
-  Object(std::string objFilePath, float scale = 1.0f) : Object() {
-    loadOBJ(objFilePath, scale);
-  }
+  Object(std::string objFilePath, float scale = 1.0f) : Object() { loadOBJ(objFilePath, scale); }
 
   bool loadOBJ(std::string path, float scale = 1.0f);
 
@@ -358,28 +333,18 @@ class Object {
     this->needsUpdate = true;
   }
 
-  void applyGravity(const glm::vec3& gravity, double deltaTime) {
-    this->applyAcceleration(gravity * glm::vec3(deltaTime));
-  }
+  void applyGravity(const glm::vec3& gravity, double deltaTime) { this->applyAcceleration(gravity * glm::vec3(deltaTime)); }
 
-  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) {
-    this->physicsComponent = std::move(physicsObject);
-  }
+  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
   void update(double deltaTime) {
-    // if (isStatic || !needsUpdate)
-    //   return;
     this->applyAcceleration(this->acceleration);
-    this->position = this->position +
-                     this->velocity * static_cast<float>(deltaTime) +
-                     glm::radians(0.0001f);
+    this->position = this->position + this->velocity * static_cast<float>(deltaTime) + glm::radians(0.0001f);
     this->acceleration = glm::vec3(0.0f);
-    // this->position = physicsComponent
-    if (this->physicsComponent) {
-      auto state= this->physicsComponent->SyncToRender();
+    if (this->physicsObject) {
+      auto state = this->physicsObject->SyncToRender();
       this->position = state.position;
-      this->rotation =state.rotationX;
-      // this->
+      this->rotation = state.rotationX;
     }
   }
 
@@ -393,31 +358,21 @@ class Object {
     }
     this->aabb.min = min;
     this->aabb.max = max;
-    boundingBoxVertices = {
-        // bottom
-        glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z),
-        glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, max.z),
-        glm::vec3(max.x, min.y, max.z), glm::vec3(min.x, min.y, max.z),
-        glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, min.y, min.z),
-        // top
-        glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z),
-        glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, max.z),
-        glm::vec3(max.x, max.y, max.z), glm::vec3(min.x, max.y, max.z),
-        glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, max.y, min.z),
-        // sides
-        glm::vec3(min.x, min.y, min.z), glm::vec3(min.x, max.y, min.z),
-        glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, max.y, min.z),
-        glm::vec3(max.x, min.y, max.z), glm::vec3(max.x, max.y, max.z),
-        glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, max.y, max.z)};
+    boundingBoxVertices = {// bottom
+                           glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, min.y, max.z), glm::vec3(max.x, min.y, max.z),
+                           glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, min.y, min.z),
+                           // top
+                           glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, max.y, max.z), glm::vec3(max.x, max.y, max.z),
+                           glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, max.y, max.z), glm::vec3(min.x, max.y, min.z),
+                           // sides
+                           glm::vec3(min.x, min.y, min.z), glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, min.y, min.z), glm::vec3(max.x, max.y, min.z), glm::vec3(max.x, min.y, max.z),
+                           glm::vec3(max.x, max.y, max.z), glm::vec3(min.x, min.y, max.z), glm::vec3(min.x, max.y, max.z)};
     glGenVertexArrays(1, &boundingBoxVAO);
     glBindVertexArray(boundingBoxVAO);
     glGenBuffers(1, &boundingBoxVBO);
     glBindBuffer(GL_ARRAY_BUFFER, boundingBoxVBO);
-    glBufferData(GL_ARRAY_BUFFER,
-                 boundingBoxVertices.size() * sizeof(glm::vec3),
-                 boundingBoxVertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
-                          (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, boundingBoxVertices.size() * sizeof(glm::vec3), boundingBoxVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
   }
@@ -427,17 +382,13 @@ class Object {
     glm::vec3 thisMax = this->position + this->aabb.max * this->scale;
     glm::vec3 otherMin = other.position + other.aabb.min * other.scale;
     glm::vec3 otherMax = other.position + other.aabb.max * other.scale;
-    return (thisMin.x <= otherMax.x && thisMax.x >= otherMin.x) &&
-           (thisMin.y <= otherMax.y && thisMax.y >= otherMin.y) &&
-           (thisMin.z <= otherMax.z && thisMax.z >= otherMin.z);
+    return (thisMin.x <= otherMax.x && thisMax.x >= otherMin.x) && (thisMin.y <= otherMax.y && thisMax.y >= otherMin.y) && (thisMin.z <= otherMax.z && thisMax.z >= otherMin.z);
   }
 
   glm::mat4 getModelMatrix() {
     glm::mat4 model = glm::translate(this->modelMatrix, this->position);
-    model = glm::rotate(model, glm::radians(this->rotation.y),
-                        glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(this->rotation.x),
-                        glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, this->scale);
     return model;
   }
@@ -490,16 +441,13 @@ class Camera {
 
   Camera() {}
 
-  Camera(float nearDist, float farDist)
-      : nearDist(nearDist), farDist(farDist) {};
+  Camera(float nearDist, float farDist) : nearDist(nearDist), farDist(farDist) {};
 
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov,
-         float aspect, float nearDist, float farDist);
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist);
 
   void setAspect(float aspect) {
     this->aspect = aspect;
-    projectionMatrix =
-        glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
+    projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
   }
 
   void setPos(const glm::vec3& pos) {
@@ -516,18 +464,11 @@ class Camera {
     updateProjection(fov);
   }
 
-  void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up) {
-    viewMatrix = glm::lookAt(position, position + front, up);
-  }
+  void updateView(glm::vec3 position, glm::vec3 front, glm::vec3 up) { viewMatrix = glm::lookAt(position, position + front, up); }
 
-  void updateView(glm::vec3 position, glm::quat orientation) {
-    updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f));
-  }
+  void updateView(glm::vec3 position, glm::quat orientation) { updateView(position, orientation * glm::vec3(0.0f, 0.0f, -1.0f), orientation * glm::vec3(0.0f, 1.0f, 0.0f)); }
 
-  void updateProjection(float fov, float aspect) {
-    projectionMatrix =
-        glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
-  }
+  void updateProjection(float fov, float aspect) { projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist); }
 
   void updateProjection(glm::vec4 fov) {
     // fov = glm::vec4(tan(fov.x), tan(fov.y), tan(fov.z), tan(fov.w));
@@ -607,8 +548,7 @@ class Scene {
 
         object->touchedGround = true;
 
-        if (object->velocity.y < 0.01f && object->velocity.y > -0.01f)
-          object->needsUpdate = false;
+        if (object->velocity.y < 0.01f && object->velocity.y > -0.01f) object->needsUpdate = false;
       } else {
         object->touchedGround = false;
       }
@@ -618,8 +558,7 @@ class Scene {
         if (otherObject == object) continue;
 
         if (object->intersects(*otherObject)) {
-          if (!object->touchedOtherObject)
-            std::cout << "Intersected" << std::endl;
+          if (!object->touchedOtherObject) std::cout << "Intersected" << std::endl;
           object->touchedOtherObject = true;
           otherObject->touchedOtherObject = true;
           foundTouch = true;
@@ -637,9 +576,7 @@ class Scene {
 
   double getDeltaTime() { return timer.deltaTime; }
 
-  void resize(int width, int height) {
-    glViewport(0, 0, width, height);
-  }
+  void resize(int width, int height) { glViewport(0, 0, width, height); }
 };
 
 }  // namespace fe

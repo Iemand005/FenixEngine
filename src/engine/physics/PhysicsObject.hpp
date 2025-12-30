@@ -62,24 +62,14 @@ class PhysicsObject {
     this->physicsSystem = physicsSystem;
 
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-    Body* bodya = bodyInterface->CreateBody(bodySettings);
-    this->body = bodya;
+    this->body = bodyInterface->CreateBody(bodySettings);
     this->bodyId = body->GetID();
-    bodyInterface->AddBody(body->GetID(), JPH::EActivation::Activate);
-
-    // bodyInterface->SetLinearVelocity(body->GetID(), JPH::Vec3(0.0, 0.0, 0.0));
-    // bodyInterface->SetAngularVelocity(body->GetID(), JPH::Vec3(0.3, 0.0, 5.0));
+    bodyInterface->AddBody(this->body->GetID(), JPH::EActivation::Activate);
   };
 
   PhysicsObject() {};
 
   ~PhysicsObject() {};
-
-  void Initialize(JPH::BodyID bodyId, JPH::Body* body) {
-    this->bodyId = bodyId;
-    this->body = body;
-    // this->renderObject = renderObject;
-  }
 
   ObjectState SyncToRender() {
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
@@ -99,15 +89,30 @@ class PhysicsObject {
     return state;
   }
 
+  BodyInterface* GetBody() {
+    return &this->physicsSystem->GetBodyInterface();
+  }
+
+
   void SetLinearVelocity(glm::vec3 velocity) {
-    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-    bodyInterface->SetLinearVelocity(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0));
-    bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
+    // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+    // bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
+  }
+
+  // void SetAcceleration(glm::vec3 velocity) {
+  //   // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+  //   GetBody()->(this->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+  //   // bodyInterface->SetPosition(this->bodyId, JPH::Vec3(1.0, 0.0, 0.0), JPH::EActivation::Activate);
+  // }
+
+  JPH::Vec3 VecConv(glm::vec3 vec) {
+    return JPH::Vec3(vec.x, vec.y, vec.z);
   }
 
   void AddLinearVelocity(glm::vec3 velocity) {
-    auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-    bodyInterface->AddLinearVelocity(this->bodyId, {velocity.x,velocity.y,velocity.z});
+    // auto bodyInterface = &this->physicsSystem->GetBodyInterface();
+    GetBody()->AddLinearVelocity(bodyId, VecConv(velocity));
   }
 
   // void CreateMeshBody(
