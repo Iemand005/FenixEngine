@@ -2,9 +2,7 @@
 #pragma once
 #include <glad/glad.h>
 
-#include <chrono>
 #include <cstdio>
-#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
