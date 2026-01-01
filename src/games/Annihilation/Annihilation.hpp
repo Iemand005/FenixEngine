@@ -74,11 +74,13 @@ class Annihilation : public Game {
     this->maps.push_back(map1);
 
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
-    auto vertices = std::vector<glm::vec3>(map1->meshes[0].vertices.size());
-    for (auto &vertex : map1->meshes[0].vertices) {
-      vertices.push_back(vertex.position);
+
+    for (auto &mesh : map1->meshes) {
+      auto vertices = std::vector<glm::vec3>(mesh.vertices.size());
+      for (auto &vertex : mesh.vertices)
+        vertices.push_back(vertex.position);
+      mesh.physicsObject = std::make_shared<fe::PhysicsObject>(physicsEngine->CreateObject(vertices, mesh.indices));
     }
-    map1->SetPhysicsObject(physicsEngine->CreateObject(vertices, map1->meshes[0].indices));
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 

@@ -13,6 +13,7 @@
 
 #include "Vertex.hpp"
 #include "ShaderProgram.hpp"
+#include "physics/PhysicsObject.hpp"
 
 namespace fe {
 
@@ -29,6 +30,8 @@ class Mesh {
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
   glm::mat4 modelMatrix;
+
+  std::shared_ptr<PhysicsObject> physicsObject = nullptr;
 
   Mesh() {}
 
@@ -146,6 +149,8 @@ class Mesh {
       this->draw();
     }
   }
+
+  // void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
   std::vector<Vertex> getVertices() { return this->vertices; }
 };

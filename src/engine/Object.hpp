@@ -43,7 +43,7 @@ class Object {
 
   std::vector<glm::vec3> boundingBoxVertices;
 
-  std::unique_ptr<PhysicsObject> physicsObject = nullptr;
+  std::unique_ptr<fe::PhysicsObject> physicsObject = nullptr;
 
   // bool needsUpdate = true;
 

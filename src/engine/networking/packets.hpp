@@ -82,3 +82,8 @@ struct PositionPacket {
   glm::vec3 position;
   glm::vec3 rotation;
 };
+
+
+// struct Teste {
+//   void* hey;
+// };

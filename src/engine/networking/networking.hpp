@@ -37,7 +37,6 @@ class Networker {
 
   std::thread listenerThread;
 
-  // std::vector<ClientData> clients = std::vector<ClientData>();
   std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal> clients = std::unordered_map<sockaddr_in, ClientData, sockaddr_in_hash, sockaddr_in_equal>(MAX_PLAYER_COUNT);
   std::unordered_map<unsigned char, ClientData> clientClients = std::unordered_map<unsigned char, ClientData>();
 
