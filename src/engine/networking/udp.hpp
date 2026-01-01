@@ -99,13 +99,11 @@ public:
 
 
 
-    template <typename T>
+  template <typename T>
   void send(sockaddr_in address) {
     T packet;
     this->send<T>(packet, address);
   }
-
-  
 
   template <typename T>
   void send(T packet, sockaddr_in address) {
@@ -114,13 +112,7 @@ public:
 
   void send(const char *packet, size_t size, sockaddr_in address)
   {
-
     this->createSocketIfNotExist();
-
-    // if (address.sin_port == htons(2130)) {
-    //   std::cout << "I am gonna send to myself, can'tdo that! STOP!!" <<std::endl;
-    //   return;
-    // }
     
     int sent = sendto(sock, packet, size, 0, (sockaddr *)&address, sizeof(address));
 
