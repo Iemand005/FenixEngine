@@ -9,17 +9,17 @@ int main() {
   
   auto cameraOffset = vec3(0.0f, 6.5f, 0.0f);
 
-  while (!game->shouldClose()) {
+  while (!game->ShouldClose()) {
     glfwPollEvents();
 
     if (game->player->touchedGround) {
       game->canJump = true;
     }
-    game->processInput();
+    game->ProcessInput();
     game->player->rotation.y = -game->yaw + 90.0f;
     glm::vec3 pos = game->player->position + cameraOffset;
     game->cameraPos = pos - game->cameraFront * 5.0f;
-    game->camera->setPos(game->cameraPos);
+    game->camera->SetPos(game->cameraPos);
 
     // game.playerCamera->setAspect((float)game.width / (float)game.height);
     // window.playerCamera->setPos(cameraPos);

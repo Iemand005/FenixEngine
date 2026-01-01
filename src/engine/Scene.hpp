@@ -47,8 +47,8 @@ class Scene {
   void prepareRender(ShaderProgram shader, Camera camera) {
     this->clear();
     shader.use();
-    shader.setMat4("view", camera.getViewMatrix());
-    shader.setMat4("projection", camera.getProjectionMatrix());
+    shader.setMat4("view", camera.GetViewMatrix());
+    shader.setMat4("projection", camera.GetProjectionMatrix());
   }
 
   void clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }

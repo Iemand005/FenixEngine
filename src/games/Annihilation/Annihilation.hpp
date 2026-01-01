@@ -124,7 +124,7 @@ class Annihilation : public Game {
     }
   }
 
-  void processInput() {
+  void ProcessInput() {
     // double deltaTime = scene->getDeltaTime()
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
@@ -191,7 +191,7 @@ class Annihilation : public Game {
       this->player->physicsObject->AddLinearVelocity(velocity * cameraSpeed);
   }
 
-  bool shouldClose() { return glfwWindowShouldClose(this->window); }
+  bool ShouldClose() { return glfwWindowShouldClose(this->window); }
 
   int drawImGui() {
     // glDisable(GL_DEPTH_TEST);

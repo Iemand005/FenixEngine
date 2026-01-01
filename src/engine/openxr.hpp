@@ -370,7 +370,7 @@ int main()
 
       // camera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
 
-      // camera.setPos(position);
+      // camera.SetPos(position);
       camera.updateView(position + positionOffset, orientation);
       camera.updateProjection(fov);
 

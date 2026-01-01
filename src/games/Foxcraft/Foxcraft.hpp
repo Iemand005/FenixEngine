@@ -124,7 +124,7 @@ public:
 
   void update() { scene->update(); }
 
-  void processInput() {
+  void ProcessInput() {
     double deltaTime = scene->getDeltaTime();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
@@ -197,7 +197,7 @@ public:
     // glfwSetCursorPosCallback(window, NULL);
   }
 
-  bool shouldClose() { return glfwWindowShouldClose(this->window); }
+  bool ShouldClose() { return glfwWindowShouldClose(this->window); }
 
   void destroy() {
     glfwDestroyWindow(this->window);

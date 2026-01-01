@@ -304,16 +304,16 @@ class Game {
     glfwSwapBuffers(this->window);
   }
 
-  void update() { 
+  void Update() { 
     double dt = scene->update();
-    updatePhysics(dt);
+    UpdatePhysics(dt);
    }
 
-  void updatePhysics(double deltaTime) {
+  void UpdatePhysics(double deltaTime) {
     physicsEngine->update(deltaTime);
   }
 
-  void processInput() {
+  void ProcessInput() {
     double deltaTime = scene->getDeltaTime();
 
     physicsEngine->update(deltaTime);
@@ -510,7 +510,7 @@ class Game {
     if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
   }
 
-  bool shouldClose() { return glfwWindowShouldClose(this->window); }
+  bool ShouldClose() { return glfwWindowShouldClose(this->window); }
 
   void destroy() {
     glfwDestroyWindow(this->window);

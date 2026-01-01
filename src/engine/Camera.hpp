@@ -31,7 +31,7 @@ class Camera {
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
   }
 
-  void setPos(const glm::vec3& pos) {
+  void SetPos(const glm::vec3& pos) {
     this->position = pos;
     viewMatrix = glm::lookAt(position, position + front, up);
   }
@@ -56,8 +56,8 @@ class Camera {
     fov = glm::tan(fov) * nearDist;
     projectionMatrix = glm::frustum(fov.x, fov.y, fov.z, fov.w, nearDist, farDist);
   }
-  glm::mat4 getViewMatrix() const { return viewMatrix; }
-  glm::mat4 getProjectionMatrix() const { return projectionMatrix; }
+  glm::mat4 GetViewMatrix() const { return viewMatrix; }
+  glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
   void render(ShaderProgram& shader) const {
     if (frustumVAO == 0) return;
     shader.use();

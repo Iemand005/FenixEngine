@@ -1,4 +1,5 @@
 #include "Annihilation.hpp"
+#include "../../engine/physics/BasicDebugRenderer.hpp"
 
 int main() {
 
@@ -7,7 +8,7 @@ int main() {
   
   glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
 
-  while (!game.shouldClose()) {
+  while (!game.ShouldClose()) {
 //     std::cout << "DEBUG: Before glfwPollEvents()" << std::endl;
 // std::cout << "DEBUG: Window pointer: " << game.window << std::endl;
     glfwPollEvents();
@@ -15,11 +16,11 @@ int main() {
     if (game.player->touchedGround) {
       game.canJump = true;
     }
-    game.processInput();
+    game.ProcessInput();
     game.player->rotation.y = -game.yaw + 90.0f;
     glm::vec3 pos = game.player->position + cameraOffset;
     game.cameraPos = pos - game.cameraFront * 5.0f;
-    game.camera->setPos(game.cameraPos);
+    game.camera->SetPos(game.cameraPos);
 
     game.camera->setFront(glm::normalize(pos - game.cameraPos));
 
@@ -37,8 +38,10 @@ int main() {
       //   // client.sendPing();
       // }
     }
-    game.update();
+    game.Update();
     game.Redraw();
+
+
   }
 
   game.destroy();
