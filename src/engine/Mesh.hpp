@@ -3,35 +3,33 @@
 #include <glad/glad.h>
 
 #include <cstdio>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "Vertex.hpp"
 #include "ShaderProgram.hpp"
+#include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
 namespace fe {
 
 class Mesh {
-  
   unsigned int indexCount;
-  
+
   unsigned int VAO = 0;
   unsigned int VBO = 0;
   unsigned int EBO = 0;
   unsigned int texture = 0;
-  
-  public:
+
+ public:
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
   glm::mat4 modelMatrix;
 
-  std::shared_ptr<PhysicsObject> physicsObject = nullptr;
+  std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 
   Mesh() {}
 
@@ -53,6 +51,35 @@ class Mesh {
 
     init();
   }
+
+  Mesh& operator=(const Mesh& other) {
+        if (this != &other) {
+            indexCount = other.indexCount;
+            VAO = other.VAO;
+            VBO = other.VBO;
+            EBO = other.EBO;
+            texture = other.texture;
+            vertices = other.vertices;
+            indices = other.indices;
+            modelMatrix = other.modelMatrix;
+            physicsObject = other.physicsObject ? other.physicsObject->Clone() : nullptr;
+        }
+        return *this;
+    }
+
+  Mesh(Mesh&&) = default;
+  Mesh& operator=(Mesh&&) = default;
+
+  Mesh(const Mesh& other)
+      : indexCount(other.indexCount),
+        VAO(other.VAO),
+        VBO(other.VBO),
+        EBO(other.EBO),
+        texture(other.texture),
+        vertices(other.vertices),
+        indices(other.indices),
+        modelMatrix(other.modelMatrix),
+        physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
 
   void init() {
     unsigned int VAO, VBO, EBO;
@@ -150,9 +177,9 @@ class Mesh {
     }
   }
 
-  // void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
+  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
   std::vector<Vertex> getVertices() { return this->vertices; }
 };
 
-}
+}  // namespace fe

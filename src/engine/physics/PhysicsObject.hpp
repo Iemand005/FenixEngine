@@ -98,6 +98,10 @@ class PhysicsObject {
 
   ~PhysicsObject() {};
 
+  std::unique_ptr<PhysicsObject> Clone() {
+    return nullptr;
+  }
+
   ObjectState SyncToRender() {
     auto bodyInterface = &this->physicsSystem->GetBodyInterface();
 

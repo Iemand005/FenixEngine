@@ -167,9 +167,7 @@ class PhysicsEngine {
     return std::move(obj);
   }
 
-  fe::PhysicsObject* CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
-    // auto physObj = std::make_unique<fe::PhysicsObject>(physicsSystem, vertices, indices);
-    return new fe::PhysicsObject(physicsSystem, vertices, indices);
-    // return std::move(obj);
+  std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
+    return std::make_unique<fe::PhysicsObject>(physicsSystem, vertices, indices);
   }
 };
