@@ -45,6 +45,8 @@ class Object {
 
   std::unique_ptr<fe::PhysicsObject> physicsObject = nullptr;
 
+  std::string sourcePath;
+
   // bool needsUpdate = true;
 
   Object() {
@@ -61,7 +63,9 @@ class Object {
     meshes.push_back(mesh);
   }
 
-  Object(std::string objFilePath, float scale = 1.0f) : Object() { loadOBJ(objFilePath, scale); }
+  Object(std::string objFilePath, float scale = 1.0f) : Object() { loadOBJ(objFilePath, scale);
+  sourcePath = objFilePath;
+  }
 
   bool loadOBJ(std::string path, float scale = 1.0f);
 
