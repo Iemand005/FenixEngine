@@ -1,10 +1,10 @@
 build
 .vs
 *.exe
-*.obj
 *.pdb
 *.ilk
 dist
 trash
 *.7z
 *.rar
+cache
