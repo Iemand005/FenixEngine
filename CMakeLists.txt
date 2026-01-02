@@ -25,6 +25,8 @@ add_executable(main ${SOURCE_FILES})
 # For Visual Studio (if you ever open the project in VS)
 set_target_properties(main PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    VS_DEBUGGER_WORKING_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
+    VS_DEBUGGER_WORKING_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}"
 )
 
 # For VSCode CMake Tools specifically
