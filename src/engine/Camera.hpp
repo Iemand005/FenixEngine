@@ -58,11 +58,11 @@ class Camera {
   }
   glm::mat4 GetViewMatrix() const { return viewMatrix; }
   glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
-  void render(ShaderProgram& shader) const {
+  void Render(ShaderProgram& shader) const {
     if (frustumVAO == 0) return;
-    shader.use();
+    shader.Use();
     glm::mat4 model = glm::inverse(viewMatrix);
-    shader.setMat4("model", model);
+    shader.SetMat4("model", model);
     glBindVertexArray(frustumVAO);
     glDrawArrays(GL_LINES, 0, frustumVertices.size());
     glBindVertexArray(0);

@@ -45,9 +45,9 @@ class ShaderProgram {
   }
   ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
-  void use() { glUseProgram(this->Id); }
+  void Use() { glUseProgram(this->Id); }
 
-  void setMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
+  void SetMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
 };
 }
 

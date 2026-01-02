@@ -4,7 +4,6 @@ project(MyProject)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set this early - affects where executables go
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/debug")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/release")
 
@@ -21,13 +20,6 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 
 add_executable(main ${SOURCE_FILES})
-
-# For Visual Studio (if you ever open the project in VS)
-set_target_properties(main PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    VS_DEBUGGER_WORKING_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}"
-    VS_DEBUGGER_WORKING_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}"
-)
 
 # For VSCode CMake Tools specifically
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

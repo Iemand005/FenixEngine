@@ -152,7 +152,7 @@ class Mesh {
 
   void prepareRender(ShaderProgram& shader) {
     if (VAO == 0) return;
-    shader.use();
+    shader.Use();
     glBindVertexArray(this->VAO);
 
     glActiveTexture(GL_TEXTURE0);
@@ -163,7 +163,7 @@ class Mesh {
 
   void render(ShaderProgram& shader, glm::mat4 modelMatrix) {
     this->prepareRender(shader);
-    shader.setMat4("model", modelMatrix);
+    shader.SetMat4("model", modelMatrix);
 
     this->draw();
   }
@@ -172,7 +172,7 @@ class Mesh {
     this->prepareRender(shader);
 
     for (const auto& modelMatrix : modelMatrices) {
-      shader.setMat4("model", modelMatrix);
+      shader.SetMat4("model", modelMatrix);
       this->draw();
     }
   }

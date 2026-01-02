@@ -29,8 +29,8 @@ class Scene {
  public:
   Scene() {
     objects = std::vector<std::shared_ptr<Object>>();
-    this->enableDepthTest();
-    this->enableFaceCulling();
+    this->EnableDepthTest();
+    this->EnableFaceCulling();
   }
 
   void render(ShaderProgram shader, Camera &camera, int width, int height) {
@@ -38,47 +38,43 @@ class Scene {
       this->Render(shader, camera);
     }
 
-  void enableDepthTest() { glEnable(GL_DEPTH_TEST); }
+  void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 
-  void enableFaceCulling() { glEnable(GL_CULL_FACE); }
+  void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
 
   void AddModel(std::shared_ptr<Object> object) { objects.push_back(object); }
 
-  void prepareRender(ShaderProgram shader, Camera camera) {
-    this->clear();
-    shader.use();
-    shader.setMat4("view", camera.GetViewMatrix());
-    shader.setMat4("projection", camera.GetProjectionMatrix());
+  void PrepareRender(ShaderProgram shader, Camera camera) {
+    this->Clear();
+    shader.Use();
+    shader.SetMat4("view", camera.GetViewMatrix());
+    shader.SetMat4("projection", camera.GetProjectionMatrix());
   }
 
-  void clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
-
-  // void render(ShaderProgram shader, const Camera &camera, int width, int height) {
-
-  // }
+  void Clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
   void Render(ShaderProgram shader, Camera &camera) {
-    this->prepareRender(shader, camera);
+    this->PrepareRender(shader, camera);
 
     for (auto& model : objects) model->render(shader);
 
-    camera.render(shader);
+    camera.Render(shader);
 
-    this->endRender();
+    this->EndRender();
   }
 
-  void endRender() { glBindVertexArray(0); }
+  void EndRender() { glBindVertexArray(0); }
 
   double update() {
     auto deltaTime = timer.update();
     for (auto& object : objects) {
       object->Update(deltaTime);
     }
-    resolveCollisions();
+    ResolveCollisions();
     return deltaTime;
   }
 
-  void resolveCollisions() {
+  void ResolveCollisions() {
     for (auto& object : objects) {
       if (object->state.position.y < -200.0f) {
         auto pos = object->state.position;
@@ -91,9 +87,9 @@ class Scene {
 
   std::vector<std::shared_ptr<Object>>& getModels() { return objects; }
 
-  double getDeltaTime() { return timer.deltaTime; }
+  double GetDeltaTime() { return timer.deltaTime; }
 
-  void resize(int width, int height) { glViewport(0, 0, width, height); }
+  void Resize(int width, int height) { glViewport(0, 0, width, height); }
 };
 
 } 

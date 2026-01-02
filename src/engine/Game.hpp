@@ -82,47 +82,17 @@ class Game {
     if (!InitGlfw()) return;
     this->width = width;
     this->height = height;
-    // glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
-    // glCullFace(GL_FRONT);
 
 
     this->SetClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
     this->physicsEngine = std::make_unique<PhysicsEngine>();
 
-    this->client = std::make_unique<Networker>(2130);
-
-    this->client->receiveHandler = [this](PacketData data, PacketType type, const ClientData sender) {
-      switch (type) {
-        case PacketType::Position: {
-          auto packet = data.As<PositionPacket>();
-          if (!this->players.count(sender.id)) this->SpawnPlayer(sender.id);
-          auto player = this->players.at(sender.id);
-          player->state.position = packet.position;
-          player->state.rotation = packet.rotation;
-        } break;
-        case PacketType::ClientList: {
-          this->players.clear();
-          for (auto& [id, client] : this->client->clientClients) {
-            this->SpawnPlayer(id);
-            isConnectedToServer = true;
-          }
-        } break;
-      }
-    };
-
-    client->messageReceiveHandler = [this](std::string message, ClientData sender) {
-      std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username << std::endl;
-      // std::cout ;
-      messages.push_back(sender.username + ": " + message);
-    };
-
     this->scene = std::make_unique<fe::Scene>();
-    // physicsEngine
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
@@ -132,8 +102,6 @@ class Game {
     initImGui();
     
     StartMouseCapture();
-
-    // loadModels(); Letter U
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
@@ -256,7 +224,7 @@ class Game {
   void Resize(int width, int height) {
     this->width = width;
     this->height = height;
-    this->scene->resize(width, height);
+    this->scene->Resize(width, height);
     this->updateAspect();
   }
 
@@ -312,7 +280,7 @@ class Game {
   }
 
   void ProcessInput() {
-    double deltaTime = scene->getDeltaTime();
+    double deltaTime = scene->GetDeltaTime();
 
     physicsEngine->Update(deltaTime);
 

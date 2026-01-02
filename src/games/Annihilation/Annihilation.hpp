@@ -62,7 +62,6 @@ class Annihilation : public Game {
 
     client->messageReceiveHandler = [this](std::string message, ClientData sender) {
       std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username << std::endl;
-      // std::cout ;
       messages.push_back(sender.username + ": " + message);
     };
   }

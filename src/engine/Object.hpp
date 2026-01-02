@@ -90,8 +90,8 @@ class Object {
   void render(ShaderProgram& shader) {
     for (auto& mesh : meshes) mesh.render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
-      shader.use();
-      shader.setMat4("model", this->GetModelMatrix());
+      shader.Use();
+      shader.SetMat4("model", this->GetModelMatrix());
       glBindVertexArray(boundingBoxVAO);
       glDrawArrays(GL_LINES, 0, boundingBoxVertices.size());
       glBindVertexArray(0);
