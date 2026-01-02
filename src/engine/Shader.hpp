@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,7 +34,8 @@ class Shader {
     std::ifstream file(fileName.c_str());
 
     if (!file.is_open()) {
-      std::cerr << "Failed to open file." << std::endl;
+      std::filesystem::path cwd = std::filesystem::current_path();
+      std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
       return false;
     }
 

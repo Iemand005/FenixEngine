@@ -19,18 +19,31 @@ else()
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES
-    src/ext/*.c
-    src/ext/imgui/*.cpp
+    src/extern/*.c
+    src/extern/imgui/*.cpp
     src/engine/*.cpp
     src/games/Annihilation/*.cpp
 )
 
 add_executable(main ${SOURCE_FILES})
 
+# SET WORKING DIRECTORY HERE - AFTER add_executable
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set_target_properties(main PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    message(STATUS "Debug: Working directory set to project root: ${CMAKE_SOURCE_DIR}")
+else()
+    set_target_properties(main PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    message(STATUS "Release: Working directory set to project root: ${CMAKE_SOURCE_DIR}")
+endif()
+
 target_include_directories(main PRIVATE
     include
     src
-    src/ext
+    src/extern
     third_party/JoltPhysics
 )
 

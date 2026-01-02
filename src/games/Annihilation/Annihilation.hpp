@@ -47,8 +47,8 @@ class Annihilation : public Game {
           auto packet = data.As<PositionPacket>();
           if (!this->players.count(sender.id)) this->SpawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
-          player->position = packet.position;
-          player->rotation = packet.rotation;
+          player->state.position = packet.position;
+          player->state.rotation = packet.rotation;
         } break;
         case PacketType::ClientList: {
           this->players.clear();
@@ -106,8 +106,8 @@ class Annihilation : public Game {
       float x = static_cast<float>(rand() % 100 - 50);
       float z = static_cast<float>(rand() % 100 - 50);
 
-      float dx = x - player->position.x;
-      float dz = z - player->position.z;
+      float dx = x - player->state.position.x;
+      float dz = z - player->state.position.z;
       float distanceSq = dx * dx + dz * dz;
 
       if (distanceSq < minDistanceSq) {
@@ -116,7 +116,7 @@ class Annihilation : public Game {
       }
 
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
-      npc->position = glm::vec3(x, 0.0f, z);
+      npc->state.position = glm::vec3(x, 0.0f, z);
 
       this->scene->AddModel(npc);
 
@@ -155,10 +155,10 @@ class Annihilation : public Game {
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       std::shared_ptr<fe::Object> newObj = this->player->Clone();
-      newObj->position = this->player->position + horizontalFront * 2.0f;
-      glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
-      newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
-      newObj->rotation.x = 0.0f;
+      newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
+      glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
+      newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
+      newObj->state.rotation.x = 0.0f;
       this->scene->AddModel(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
@@ -210,25 +210,17 @@ class Annihilation : public Game {
       for (auto& obj : this->scene->getModels())
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
-      size_t needsUpdateCount = 0;
-      for (auto& obj : this->scene->getModels()) {
-        if (obj->needsUpdate) needsUpdateCount++;
-      }
-      ImGui::Text("Needs Update: %zu", needsUpdateCount);
-      if (ImGui::Button("Start", ImVec2(50, 20))) {
-        std::cout << "Button clicked!" << std::endl;
-      }
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }
 
       fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
+      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->rotation.x, -180.0f, 180.0f);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
       }
     }
     ImGui::End();
@@ -251,7 +243,7 @@ class Annihilation : public Game {
       }
 
       fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->position.x, -10.0f, 10.0f);
+      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
       ImGui::Text("Players:");
       for (auto& [id, client] : this->client->clientClients) {

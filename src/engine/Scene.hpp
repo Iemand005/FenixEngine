@@ -72,8 +72,7 @@ class Scene {
   double update() {
     auto deltaTime = timer.update();
     for (auto& object : objects) {
-      object->applyGravity(gravity, deltaTime);
-      object->update(deltaTime);
+      object->Update(deltaTime);
     }
     resolveCollisions();
     return deltaTime;
@@ -81,8 +80,8 @@ class Scene {
 
   void resolveCollisions() {
     for (auto& object : objects) {
-      if (object->position.y < -200.0f) {
-        auto pos = object->position;
+      if (object->state.position.y < -200.0f) {
+        auto pos = object->state.position;
         pos.y = 10;
         object->physicsObject->SetPosition(pos);
         object->physicsObject->SetLinearVelocity(glm::vec3(0.0f));

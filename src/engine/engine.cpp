@@ -118,7 +118,7 @@ namespace fe {
         this->meshes.push_back(mesh);
       }
 
-      this->scale = glm::vec3(scale);
+      this->state.scale = glm::vec3(scale);
 
 
       return true;

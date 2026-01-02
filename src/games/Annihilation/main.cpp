@@ -17,19 +17,19 @@ int main() {
       game.canJump = true;
     }
     game.ProcessInput();
-    game.player->rotation.y = -game.yaw + 90.0f;
-    glm::vec3 pos = game.player->position + cameraOffset;
+    game.player->state.rotation.y = -game.yaw + 90.0f;
+    glm::vec3 pos = game.player->state.position + cameraOffset;
     game.cameraPos = pos - game.cameraFront * 5.0f;
     game.camera->SetPos(game.cameraPos);
 
     game.camera->setFront(glm::normalize(pos - game.cameraPos));
 
-    if (game.isConnectedToServer) game.client->sendPosition(game.player->position, game.player->rotation);
+    if (game.isConnectedToServer) game.client->sendPosition(game.player->state.position, game.player->state.rotation);
 
     for (auto& npc : game.npcs) {
-      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
-      npc->needsUpdate = true;
+      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));/*
+      npc->ApplyVelocity(glm::normalize(pos - npc->state.position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
+      npc->needsUpdate = true;*/
     }
     for (auto& npc : game.npcs) {
       // if (game.player->intersects(*npc)) {
