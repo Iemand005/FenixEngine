@@ -5,16 +5,19 @@
       "label": "C/C++: cl.exe build main",
       "command": "cl.exe",
       "args": [
-        "${workspaceFolder}\\src\\*.c",
-        "${workspaceFolder}\\src\\*.cpp",
+        "${workspaceFolder}\\src\\ext\\*.c",
+        "${workspaceFolder}\\src\\ext\\imgui\\*.cpp",
+        "${workspaceFolder}\\src\\engine\\*.cpp",
+        "${workspaceFolder}\\src\\games\\Annihilation\\*.cpp",
         "/Zi",
         "/EHsc",
         "/FS",
         "/MDd",
         "/Fe${workspaceFolder}\\build\\debug\\main.exe",
-        "/Foobj\\",
         "/nologo",
         "/I${workspaceFolder}\\include",
+        "/I${workspaceFolder}\\src",
+        "/I${workspaceFolder}\\src\\ext",
         "/I${workspaceFolder}\\third_party\\JoltPhysics",
         "/std:c++17",
         "/link",
@@ -22,7 +25,7 @@
         "gdi32.lib", "glfw3.lib", "Opengl32.lib", "shell32.lib", "user32.lib", "Jolt.lib"
       ],
       "options": {
-        "cwd": "${workspaceFolder}\\cache"
+        "cwd": "${fileDirname}"
       },
       "problemMatcher": [
         "$msCompile"
