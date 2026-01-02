@@ -5,13 +5,14 @@
 
 namespace fe {
 
-	struct StringData {
+struct StringData {
 		size_t size;
     char8_t data[];
   };
 
 struct ObjectData {
-	
+	StringData modelFile;
+	StringData textureFile;
 	};
 
 	struct LevelData {

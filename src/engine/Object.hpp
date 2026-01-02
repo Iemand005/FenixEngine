@@ -12,11 +12,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "bases.h"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
 #include "physics/PhysicsEngine.hpp"
 
 namespace fe {
+
+    /*struct ObjectState {
+
+};*/
 
 class Object {
  private:
@@ -55,7 +60,6 @@ class Object {
     velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
     scale = glm::vec3(1.0f, 1.0f, 1.0f);
-    modelMatrix = glm::mat4(1.0f);
     meshes = std::vector<Mesh>();
   }
 
@@ -89,20 +93,16 @@ class Object {
   void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
   void update(double deltaTime) {
-    // this->applyAcceleration(this->acceleration);
-    // this->position = this->position + this->velocity * static_cast<float>(deltaTime) + glm::radians(0.0001f);
-    // this->acceleration = glm::vec3(0.0f);
-
     if (this->physicsObject) {
       auto state = this->physicsObject->SyncToRender();
       this->position = state.position;
       this->velocity = state.velocity;
-      this->rotation = state.rotationX;
+      this->rotation = state.rotation;
     }
   }
 
-  glm::mat4 getModelMatrix() {
-    glm::mat4 model = glm::translate(this->modelMatrix, this->position);
+  glm::mat4 GetModelMatrix() {
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), this->position);
     model = glm::rotate(model, glm::radians(this->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(this->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, this->scale);
@@ -110,10 +110,10 @@ class Object {
   }
 
   void render(ShaderProgram& shader) {
-    for (auto& mesh : meshes) mesh.render(shader, this->getModelMatrix());
+    for (auto& mesh : meshes) mesh.render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
       shader.use();
-      shader.setMat4("model", this->getModelMatrix());
+      shader.setMat4("model", this->GetModelMatrix());
       glBindVertexArray(boundingBoxVAO);
       glDrawArrays(GL_LINES, 0, boundingBoxVertices.size());
       glBindVertexArray(0);
@@ -124,7 +124,6 @@ class Object {
     auto newObj = std::make_shared<Object>();
     newObj->meshes = this->meshes;
     newObj->scale = this->scale;
-    newObj->modelMatrix = this->modelMatrix;
     return newObj;
   }
 

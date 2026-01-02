@@ -9,6 +9,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 
 #include "../engine.h"
+#include "../bases.h"
 
 using namespace JPH;
 using namespace JPH::literals;
@@ -21,14 +22,6 @@ static constexpr ObjectLayer NUM_LAYERS = 2;
 
 namespace BroadPhaseLayers {
 static constexpr JPH::BroadPhaseLayer MOVING(0);
-};
-
-struct ObjectState {
-  glm::vec3 position;
-  glm::vec3 rotationX;
-  glm::vec3 rotationY;
-  glm::vec3 rotationZ67;
-  glm::vec3 velocity;
 };
 
 namespace fe {
@@ -114,9 +107,9 @@ class PhysicsObject {
     float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
     ObjectState state;
     state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
-    state.rotationX = glm::vec3(x.GetX(), y.GetX(), z.GetX());
-    state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
-    state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
+    state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
+    // state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
+    // state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
     state.velocity = ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
     return state;
   }
