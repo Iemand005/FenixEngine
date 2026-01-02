@@ -139,7 +139,7 @@ class PhysicsEngine {
 
   }
 
-  void update(double dt) {
+  void Update(double dt) {
     // Validate input parameters
     if (dt <= 0.0) {
       // Log warning or handle invalid delta time

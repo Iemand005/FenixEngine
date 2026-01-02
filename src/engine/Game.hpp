@@ -89,7 +89,7 @@ class Game {
     // glCullFace(GL_FRONT);
 
 
-    this->setClearColor(0.1f, 0.4f, 1.0f, 1.0f);
+    this->SetClearColor(0.1f, 0.4f, 1.0f, 1.0f);
 
     this->physicsEngine = std::make_unique<PhysicsEngine>();
 
@@ -99,7 +99,7 @@ class Game {
       switch (type) {
         case PacketType::Position: {
           auto packet = data.As<PositionPacket>();
-          if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
+          if (!this->players.count(sender.id)) this->SpawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
           player->position = packet.position;
           player->rotation = packet.rotation;
@@ -107,7 +107,7 @@ class Game {
         case PacketType::ClientList: {
           this->players.clear();
           for (auto& [id, client] : this->client->clientClients) {
-            this->spawnPlayer(id);
+            this->SpawnPlayer(id);
             isConnectedToServer = true;
           }
         } break;
@@ -130,7 +130,7 @@ class Game {
     
     initImGui();
     
-    startMouseCapture();
+    StartMouseCapture();
 
     // loadModels(); Letter U
   }
@@ -267,16 +267,16 @@ class Game {
     if (mapIndex >= maps.size()) mapIndex = 0;
   }
   
-  void spawnPlayer(u_char playerId) {
-    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->clone());
+  void SpawnPlayer(u_char playerId) {
+    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
 
     this->players.insert_or_assign(playerId, newPlayer);
-    this->scene->addModel(newPlayer);
+    this->scene->AddModel(newPlayer);
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->addModel(model);
+    this->scene->AddModel(model);
     return model;
   }
 
@@ -293,7 +293,7 @@ class Game {
 
   double getDeltaTime() { return glfwGetTime(); }
 
-  void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+  void SetClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void Redraw() {
     scene->Render(*(this->shader), *this->camera.get());
@@ -310,19 +310,19 @@ class Game {
    }
 
   void UpdatePhysics(double deltaTime) {
-    physicsEngine->update(deltaTime);
+    physicsEngine->Update(deltaTime);
   }
 
   void ProcessInput() {
     double deltaTime = scene->getDeltaTime();
 
-    physicsEngine->update(deltaTime);
+    physicsEngine->Update(deltaTime);
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
-      stopMouseCapture();
+      StopMouseCapture();
     } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-      startMouseCapture();
+      StartMouseCapture();
     }
 
     const float cameraSpeed = 10.0f * deltaTime;
@@ -336,23 +336,23 @@ class Game {
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) this->player->position -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
-      this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
+      this->player->ApplyForce(glm::vec3(0.0f, 10.0f, 0.0f));
       canJump = false;
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-      std::shared_ptr<fe::Object> newObj = this->player->clone();
+      std::shared_ptr<fe::Object> newObj = this->player->Clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
       glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
       newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->rotation.x = 0.0f;
-      this->scene->addModel(newObj);
+      this->scene->AddModel(newObj);
     }
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) enableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) disableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-      disableWireframeMode();
+      DisableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-      disableWireframeMode();
+      DisableWireframeMode();
 
     if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
@@ -374,12 +374,12 @@ class Game {
       pWasDown = false;
   }
 
-  void enableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
-  void disableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
+  void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
+  void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
-  void startMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+  void StartMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
 
-  void stopMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+  void StopMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
   void initImGui() {
     const char* glsl_version = "#version 330 core";

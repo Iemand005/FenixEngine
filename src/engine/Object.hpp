@@ -65,7 +65,7 @@ class Object {
 
   bool loadOBJ(std::string path, float scale = 1.0f);
 
-  void applyForce(const glm::vec3& force) {
+  void ApplyForce(const glm::vec3& force) {
     this->acceleration = this->acceleration + force;
     this->needsUpdate = true;
   }
@@ -116,7 +116,7 @@ class Object {
     }
   }
 
-  std::shared_ptr<Object> clone() const {
+  std::shared_ptr<Object> Clone() const {
     auto newObj = std::make_shared<Object>();
     newObj->meshes = this->meshes;
     newObj->scale = this->scale;

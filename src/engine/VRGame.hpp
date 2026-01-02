@@ -73,7 +73,7 @@ class VRGame : public Game {
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain(session);
     CreateActions();
-    stopMouseCapture();
+    StopMouseCapture();
   }
 
   void CreateAction(XrActionType  type, std::string name, XrAction *action) {

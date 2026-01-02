@@ -296,10 +296,10 @@ int main()
   std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
   model->isStatic = true;
   model->needsUpdate = false;
-  scene->addModel(model);
+  scene->AddModel(model);
 
   auto playerObject = std::make_shared<fe::Object>("resources/models/citizen.obj", 0.1f);
-  scene->addModel(playerObject);
+  scene->AddModel(playerObject);
   player = std::static_pointer_cast<fe::Character>(playerObject);
 
   bool running = true;

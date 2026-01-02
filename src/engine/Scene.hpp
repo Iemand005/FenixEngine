@@ -42,7 +42,7 @@ class Scene {
 
   void enableFaceCulling() { glEnable(GL_CULL_FACE); }
 
-  void addModel(std::shared_ptr<Object> object) { objects.push_back(object); }
+  void AddModel(std::shared_ptr<Object> object) { objects.push_back(object); }
 
   void prepareRender(ShaderProgram shader, Camera camera) {
     this->clear();

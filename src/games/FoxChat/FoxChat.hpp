@@ -13,10 +13,10 @@ public:
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
     model->isStatic = true;
     model->needsUpdate = false;
-    scene->addModel(model);
+    scene->AddModel(model);
 
     auto playerObject = std::make_shared<fe::Object>("resources/models/Ryan.obj");
-    scene->addModel(playerObject);
+    scene->AddModel(playerObject);
     player = std::static_pointer_cast<fe::Character>(playerObject);
 
     this->run();

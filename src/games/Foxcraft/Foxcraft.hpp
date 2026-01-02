@@ -34,7 +34,7 @@ public:
 
   void loadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->addModel(map1);
+    this->scene->AddModel(map1);
     this->maps.push_back(map1);
 
     this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
@@ -58,7 +58,7 @@ public:
     const float minDistance = 20.0f;
     const float minDistanceSq = minDistance * minDistance;
 
-    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->clone());
+    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->Clone());
     if (zombieTemplate->meshes.size() < 2) return;
 
     zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
@@ -76,25 +76,25 @@ public:
         z += minDistanceSq;
       }
 
-      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
+      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
-      this->scene->addModel(npc);
+      this->scene->AddModel(npc);
 
       npcs.push_back(npc);
     }
   }
 
   void spawnPlayer(u_char playerId) {
-    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->clone());
+    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
 
     this->players.insert_or_assign(playerId, newPlayer);
-    this->scene->addModel(newPlayer);
+    this->scene->AddModel(newPlayer);
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->addModel(model);
+    this->scene->AddModel(model);
     return model;
   }
 
@@ -145,16 +145,16 @@ public:
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) this->player->position -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
-      this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
+      this->player->ApplyForce(glm::vec3(0.0f, 10.0f, 0.0f));
       canJump = false;
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-      std::shared_ptr<fe::Object> newObj = this->player->clone();
+      std::shared_ptr<fe::Object> newObj = this->player->Clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
       glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
       newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->rotation.x = 0.0f;
-      this->scene->addModel(newObj);
+      this->scene->AddModel(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) disableWireframeMode();

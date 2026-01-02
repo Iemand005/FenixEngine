@@ -45,7 +45,7 @@ class Annihilation : public Game {
       switch (type) {
         case PacketType::Position: {
           auto packet = data.As<PositionPacket>();
-          if (!this->players.count(sender.id)) this->spawnPlayer(sender.id);
+          if (!this->players.count(sender.id)) this->SpawnPlayer(sender.id);
           auto player = this->players.at(sender.id);
           player->position = packet.position;
           player->rotation = packet.rotation;
@@ -53,7 +53,7 @@ class Annihilation : public Game {
         case PacketType::ClientList: {
           this->players.clear();
           for (auto& [id, client] : this->client->clientClients) {
-            this->spawnPlayer(id);
+            this->SpawnPlayer(id);
             isConnectedToServer = true;                           
           }
         } break;
@@ -69,7 +69,7 @@ class Annihilation : public Game {
 
   void loadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->addModel(map1);
+    this->scene->AddModel(map1);
     this->maps.push_back(map1);
 
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
@@ -97,7 +97,7 @@ class Annihilation : public Game {
     const float minDistance = 20.0f;
     const float minDistanceSq = minDistance * minDistance;
 
-    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->clone());
+    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->Clone());
     if (zombieTemplate->meshes.size() < 2) return;
 
     zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
@@ -115,10 +115,10 @@ class Annihilation : public Game {
         z += minDistanceSq;
       }
 
-      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->clone());
+      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
-      this->scene->addModel(npc);
+      this->scene->AddModel(npc);
 
       npcs.push_back(npc);
     }
@@ -127,11 +127,11 @@ class Annihilation : public Game {
   void ProcessInput() {
     // double deltaTime = scene->getDeltaTime()
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) stopMouseCapture();
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
-      stopMouseCapture();
+      StopMouseCapture();
     } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-      startMouseCapture();
+      StartMouseCapture();
     }
 
     const float cameraSpeed = 0.0100f;
@@ -154,19 +154,19 @@ class Annihilation : public Game {
       canJump = true;
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-      std::shared_ptr<fe::Object> newObj = this->player->clone();
+      std::shared_ptr<fe::Object> newObj = this->player->Clone();
       newObj->position = this->player->position + horizontalFront * 2.0f;
       glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
       newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->rotation.x = 0.0f;
-      this->scene->addModel(newObj);
+      this->scene->AddModel(newObj);
     }
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) enableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) disableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-      disableWireframeMode();
+      DisableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-      disableWireframeMode();
+      DisableWireframeMode();
 
     if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
