@@ -7,11 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-    
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(/MDd /Zi)
+    add_compile_definitions(_DEBUG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/debug)
+else()
+    add_compile_options(/MD /O2)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release)
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES
@@ -39,9 +43,12 @@ if(WIN32)
         user32
     )
     
-    target_link_directories(main PRIVATE
-        lib/debug
-    )
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_directories(main PRIVATE lib/debug)
+        target_link_options(main PRIVATE /DEBUG)
+    else()
+        target_link_directories(main PRIVATE lib/release)
+    endif()
     
     target_link_libraries(main PRIVATE Jolt)
 endif()
