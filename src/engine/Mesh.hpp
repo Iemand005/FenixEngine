@@ -14,13 +14,13 @@
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#endif  // !STB_IMAGE_IMPLEMENTATION
+//#ifndef STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
+//#endif  // !STB_IMAGE_IMPLEMENTATION
 
-#define OBJ_LOADER
-#include "OBJ_Loader.h"
+//#define OBJ_LOADER
+//#include "OBJ_Loader.h"
 
 namespace fe {
 
@@ -118,7 +118,8 @@ class Mesh {
     glBindVertexArray(0);
   }
 
-  bool loadObj(std::string objFilePath) {
+  bool loadObj(std::string objFilePath)
+  /*{
     objl::Loader objectLoader;
 
     bool success = objectLoader.LoadFile(objFilePath);
@@ -136,7 +137,7 @@ class Mesh {
     for (size_t i = 0; i < this->indices.size(); i++) this->indices[i] = objectLoader.LoadedIndices[i];
 
     return true;
-  };
+  }*/;
 
   bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
     stbi_set_flip_vertically_on_load(true);

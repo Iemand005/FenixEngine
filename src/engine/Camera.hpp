@@ -24,7 +24,9 @@ class Camera {
 
   Camera(float nearDist, float farDist) : nearDist(nearDist), farDist(farDist) {};
 
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist) {
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist)
+      : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist) 
+  {
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 

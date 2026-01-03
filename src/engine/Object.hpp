@@ -18,13 +18,13 @@
 #include "physics/PhysicsEngine.hpp"
 
 
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#endif  // !STB_IMAGE_IMPLEMENTATION
+//#ifndef STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
+//#include <stb_image.h>
+//#endif  // !STB_IMAGE_IMPLEMENTATION
 
-#define OBJ_LOADER
-#include "OBJ_Loader.h"
+//#define OBJ_LOADER
+//#include "OBJ_Loader.h"
 
 namespace fe {
 
@@ -75,7 +75,8 @@ class Object {
   sourcePath = objFilePath;
   }
 
-  bool loadOBJ(std::string path, float scale = 1.0f) {
+  bool loadOBJ(std::string path, float scale = 1.0f)
+  /*{
     objl::Loader objectLoader;
 
     bool success = objectLoader.LoadFile(path);
@@ -105,7 +106,7 @@ class Object {
     this->state.scale = glm::vec3(scale);
 
     return true;
-  };
+  }*/;
 
   void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
