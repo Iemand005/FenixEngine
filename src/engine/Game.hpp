@@ -28,6 +28,8 @@
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
 
+#define WAYLAND
+
 class Game {
  public:
   int width;
@@ -78,8 +80,8 @@ class Game {
 
   std::unique_ptr<PhysicsEngine> physicsEngine;
 
-  Game(int width, int height) : width(width), height(height) {
-    if (!InitGlfw()) return;
+  Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
+    if (!InitGlfw(bpc10)) return;
     this->width = width;
     this->height = height;
 
@@ -99,7 +101,7 @@ class Game {
 
     UpdateAspect();
     
-    initImGui();
+    InitImGui();
     
     StartMouseCapture();
   }
@@ -124,17 +126,26 @@ class Game {
     SetSwapInterval(0);
   }
 
-  bool InitGlfw() {
-    // if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
-    //   glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-    // } else {
-    //   std::cerr << "No Wayland Support" << std::endl;
-    // }
+  bool InitGlfw(bool tenBit = true) {
+#ifdef WAYLAND
+    if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
+      glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+    } else {
+      std::cerr << "No Wayland Support" << std::endl;
+    }
+#endif
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    if (tenBit) {
+      glfwWindowHint(GLFW_RED_BITS, 10);
+      glfwWindowHint(GLFW_GREEN_BITS, 10);
+      glfwWindowHint(GLFW_BLUE_BITS, 10);
+      glfwWindowHint(GLFW_ALPHA_BITS, 2);
+    }
 
     this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
     if (window == NULL) {
@@ -349,7 +360,7 @@ class Game {
 
   void StopMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
-  void initImGui() {
+  void InitImGui() {
     const char* glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -362,111 +373,7 @@ class Game {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
-  virtual void DrawUI() = 0;
-
-  int drawImGui() {
-    // glDisable(GL_DEPTH_TEST);
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ImGui::Begin("Debug info");
-    {
-      ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
-      size_t totalVertices = 0;
-      for (auto& obj : this->scene->GetObjects())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
-      ImGui::Text("Vertices: %zu", totalVertices);
-
-      if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
-        std::cout << "Button clicked!" << std::endl;
-      }
-
-      fe::Object* character = this->player.get();
-      ImGui::SliderFloat3("Position", &character->state.position.x, -10.0f, 10.0f);
-      ImGui::SliderFloat3("Rotation", &character->state.rotation.x, -10.0f, 10.0f);
-      ImGui::SliderFloat3("Velocity", &character->state.velocity.x, -10.0f, 10.0f);
-      for (size_t i = 0; i < this->npcs.size(); ++i) {
-        ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
-      }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Multiplayer");
-    {
-      static char usernameBuffer[32] = "Bill\0";
-      static char addressBuffer[256] = "127.0.0.1\0";
-      int port = 2130;
-
-      ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputInt("Port", &port);
-
-      if (ImGui::Button("Join", ImVec2(60, 0))) {
-        std::cout << "Connecting to server... " << addressBuffer << std::endl;
-        this->connectToServer(addressBuffer, port, usernameBuffer);
-      }
-
-      fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
-
-      ImGui::Text("Players:");
-      for (auto& [id, client] : this->client->clientClients) {
-        ImGui::Text("Player #%i username: %s", id, client.username.c_str());
-      }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Chat");
-    {
-      static char inputBuffer[256] = "";
-      ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
-
-      for (const auto& msg : messages) {
-        ImGui::TextWrapped("%s", msg.c_str());
-      }
-
-      // Auto-scroll to bottom if new messages
-      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(1.0f);
-      }
-
-      ImGui::EndChild();
-
-      ImGui::Separator();
-
-      ImGui::PushItemWidth(-70);
-      bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::PopItemWidth();
-
-      ImGui::SameLine();
-
-      bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
-
-      if (send_clicked || enter_pressed) {
-        if (inputBuffer[0] != '\0') {
-          messages.push_back(std::string("You: ") + inputBuffer);
-
-          client->sendMessage(inputBuffer);
-
-          inputBuffer[0] = '\0';
-          ImGui::SetKeyboardFocusHere(-1);
-        }
-      }
-    }
-    ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // glEnable(GL_DEPTH_TEST);
-    return 0;
-  }
+  virtual void DrawUI() {};
 
   void UpdateAspect() {
     if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);

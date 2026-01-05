@@ -169,8 +169,6 @@ class Annihilation : public Game {
 
     if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
-    // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    //   client->sendPing();
 
     static bool ctrlWasDown = false;
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -179,22 +177,12 @@ class Annihilation : public Game {
     } else
       ctrlWasDown = false;
 
-    static bool pWasDown = false;
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-      // if (!pWasDown) client->sendPing();
-      pWasDown = true;
-    } else
-      pWasDown = false;
-
-      // this->player->physicsObject->AddLinearVelocity(acceleration);
       this->player->physicsObject->AddLinearVelocity(velocity * cameraSpeed);
   }
 
   bool ShouldClose() { return glfwWindowShouldClose(this->window); }
 
-  int drawImGui() {
-    // glDisable(GL_DEPTH_TEST);
-
+  void DrawUI() override {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -282,10 +270,7 @@ class Annihilation : public Game {
         if (inputBuffer[0] != '\0') {
           messages.push_back(std::string("You: ") + inputBuffer);
 
-#ifdef FE_WIN32
-
           client->sendMessage(inputBuffer);
-          #endif
 
           inputBuffer[0] = '\0';
           ImGui::SetKeyboardFocusHere(-1);
@@ -296,7 +281,5 @@ class Annihilation : public Game {
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // glEnable(GL_DEPTH_TEST);
-    return 0;
   }
 };
