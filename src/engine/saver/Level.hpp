@@ -1,13 +1,15 @@
 
 #include <memory>
 #include <vector>
+#include <fstream>
+
 #include "../Object.hpp"
 
 namespace fe {
 
 struct StringData {
 		size_t size = 255;
-    char data[0];
+    uint8_t data[255];
   };
 
 struct ObjectData {
@@ -34,27 +36,58 @@ struct ObjectData {
 		}
 
 		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
-			std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
+			// std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
+			size_t size = sizeof(LevelData) + sizeof(ObjectData) * objects.size();
 
+			LevelData *level = (LevelData *)malloc(size);
+
+			level->objectCount = objects.size();
+
+			size_t i = 0;
 			for (auto &object : objects) {
 				ObjectData data;
 				data.state = object->state;
-				datas.push_back(data);
+				// datas.push_back(data);
+				level->objects[i] = data;
+				++i;
 			}
+
+			char *rawLevel = (char *)level;
+
+			std::ofstream saveFile("save.fes", std::ios::binary | std::ios::ate);
+
+			saveFile.write(rawLevel, size);
+			// level.objects = *datas.data();
 
 			return true;
 		}
 
-		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
-			std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
+		std::vector<std::shared_ptr<fe::Object>> Load() {
 
-			for (auto &object : objects) {
-				ObjectData data;
-				data.state = object->state;
-				datas.push_back(data);
+			// std::ifstream saveFile("");
+
+			std::ifstream saveFile("save.fes", std::ios::binary | std::ios::ate);
+    // if (!saveFile) return nullptr;
+    auto size = saveFile.tellg();
+    saveFile.seekg(0);
+    char* buf = new char[size];
+  	saveFile.read(buf, size);
+    // return buf;
+
+			saveFile.close();
+
+			LevelData *level = (LevelData *)buf;
+
+			auto objects = std::vector<std::shared_ptr<fe::Object>>();
+
+			for (size_t i = 0; i < level->objectCount; ++i) {
+				auto objData = level->objects[i];
+				auto objFileName = std::string((char *)objData.modelFile.data, (int)objData.modelFile.size);
+				auto obj = std::make_shared<fe::Object>(objFileName, objData.state);
+				objects.push_back(obj);
 			}
-
-			return true;
+			delete[] buf;
+			return objects;
 		}
 	};
 }

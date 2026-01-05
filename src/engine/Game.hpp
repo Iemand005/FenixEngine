@@ -125,7 +125,29 @@ class Game {
 //     [](std::shared_ptr<fe::Object> obj) { return obj.get(); }
 // );
     
-    this->level->Save(this->scene->GetObjects());
+    this->level->Save(this->scene->GetFilteredObjects(player));
+  }
+
+  void LoadLevel() {
+    // auto sceneObjs = this->scene->GetObjects();
+    // auto objects = std::vector<fe::Object>(sceneObjs.size());
+
+    // for (auto &obj : sceneObjs) {
+    //   objects.push_back()
+    // }
+
+//     std::transform(
+//     sceneObjs.begin(), sceneObjs.end(),
+//     std::back_inserter(objects),
+//     [](std::shared_ptr<fe::Object> obj) { return obj.get(); }
+// );
+    
+
+    auto objects = this->level->Load();
+    this->scene->ClearObjects();
+    this->scene->AddObject(player);
+    for (auto &object : objects)
+      this->scene->AddObject(object);
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
@@ -308,7 +330,7 @@ class Game {
   }
 
   void Update() { 
-    double dt = scene->update();
+    double dt = scene->Update();
     UpdatePhysics(dt);
    }
 

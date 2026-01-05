@@ -122,7 +122,7 @@ public:
     glfwSwapBuffers(this->window);
   }
 
-  void update() { scene->update(); }
+  void update() { scene->Update(); }
 
   void ProcessInput() {
     double deltaTime = scene->getDeltaTime();

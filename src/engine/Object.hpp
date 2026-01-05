@@ -75,6 +75,11 @@ class Object {
   sourcePath = objFilePath;
   }
 
+  Object(std::string objFilePath, ObjectState state) : Object() { LoadObj(objFilePath);
+    this->state = state;
+    sourcePath = objFilePath;
+  }
+
   bool LoadObj(std::string path, float scale = 1.0f)
   /*{
     objl::Loader objectLoader;
@@ -127,7 +132,7 @@ class Object {
     return model;
   }
 
-  void render(ShaderProgram& shader) {
+  void Render(ShaderProgram& shader) {
     for (auto& mesh : meshes) mesh.render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
       shader.Use();
@@ -145,7 +150,7 @@ class Object {
     return newObj;
   }
 
-  void lookAt(const glm::vec3& target) {
+  void LookAt(const glm::vec3& target) {
     glm::vec3 direction = glm::normalize(target - this->state.position);
     float pitch = glm::degrees(asin(direction.y));
     float yaw = glm::degrees(atan2(direction.z, direction.x));

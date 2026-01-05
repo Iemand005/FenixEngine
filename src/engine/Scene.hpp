@@ -41,7 +41,7 @@ class Scene {
   void Render(ShaderProgram shader, Camera &camera) {
     this->PrepareRender(shader, camera);
 
-    for (auto& model : objects) model->render(shader);
+    for (auto& model : objects) model->Render(shader);
 
     camera.Render(shader);
 
@@ -52,7 +52,21 @@ class Scene {
 
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
 
+
+  std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
+
+  std::vector<std::shared_ptr<Object>> GetFilteredObjects(std::shared_ptr<Object> exclude) const {
+    std::vector<std::shared_ptr<Object>> filtered;
+    std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [exclude](const std::shared_ptr<Object>& obj) {
+      return obj != exclude;
+    });
+    return filtered;
+}
+
+  void ClearObjects() { objects.clear(); }
+
   void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
+
 
   void PrepareRender(ShaderProgram shader, Camera camera) {
     this->Clear();
@@ -66,7 +80,7 @@ class Scene {
 
   void EndRender() { glBindVertexArray(0); }
 
-  double update() {
+  double Update() {
     auto deltaTime = timer.update();
     for (auto& object : objects) {
       object->Update(deltaTime);
@@ -85,8 +99,6 @@ class Scene {
       }
     }
   }
-
-  std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
 
   double GetDeltaTime() { return timer.deltaTime; }
 

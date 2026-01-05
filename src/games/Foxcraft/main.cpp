@@ -29,7 +29,7 @@ int main() {
     if (game->isConnectedToServer) game->client->sendPosition(game->player->position, game->player->rotation);
 
     for (auto& npc : game->npcs) {
-      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
+      npc->LookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
       npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game->getDeltaTime());
       npc->needsUpdate = true;
     }

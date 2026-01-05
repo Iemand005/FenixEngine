@@ -211,7 +211,16 @@ public:
       }
 
       if (ImGui::Button("Save map!")) {
-        
+        this->SaveMap();
+      }
+
+      if (ImGui::Button("Load map!")) {
+        this->LoadLevel();
+      }
+
+
+      if (ImGui::Button("Clear objects")) {
+        this->scene->ClearObjects();
       }
 
       static bool snapToGrid = true;

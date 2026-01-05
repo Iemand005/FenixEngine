@@ -27,7 +27,7 @@ int main() {
     if (game.isConnectedToServer) game.client->sendPosition(game.player->state.position, game.player->state.rotation);
 
     for (auto& npc : game.npcs) {
-      npc->lookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));/*
+      npc->LookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));/*
       npc->ApplyVelocity(glm::normalize(pos - npc->state.position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game.getDeltaTime());
       npc->needsUpdate = true;*/
     }
