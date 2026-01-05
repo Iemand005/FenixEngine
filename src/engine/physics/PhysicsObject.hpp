@@ -217,7 +217,9 @@ class PhysicsObject {
 
   void AddLinearVelocity(glm::vec3 velocity) { GetBody()->AddLinearVelocity(bodyId, VecConv(velocity)); }
 
+  glm::vec3 GetPosition() { return ParseVec3(GetBody()->GetPosition(bodyId)); }
   void SetPosition(glm::vec3 position) { GetBody()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate); }
+  void AddPosition(glm::vec3 position) { SetPosition(position + GetPosition()); }
 
   // void CreateMeshBody(const std::vector<fe::Vertex>& vertices, const std::vector<unsigned int>& indices) {
   //   JPH::VertexList vertexList;

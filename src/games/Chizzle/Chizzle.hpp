@@ -25,9 +25,11 @@ public:
   int mapIndex = 0;
 
 
-  Chizzle(int width, int height) : VRGame(width, height) {
+  Chizzle(int width, int height, bool vr = false) : VRGame(width, height, vr) {
 
     loadModels();
+
+    this->physicsEngine->DisableGravity();
 
 
     this->client = std::make_unique<Networker>(2130);
@@ -170,15 +172,9 @@ public:
     } else
       ctrlWasDown = false;
 
-    static bool pWasDown = false;
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-      // if (!pWasDown) client->sendPing();
-      pWasDown = true;
-    } else
-      pWasDown = false;
 
       // this->player->physicsObject->AddLinearVelocity(acceleration);
-      this->player->physicsObject->AddLinearVelocity(velocity * cameraSpeed);
+      this->player->physicsObject->AddPosition(velocity * cameraSpeed);
   }
 
   bool ShouldClose() { return glfwWindowShouldClose(this->window); }
@@ -208,7 +204,7 @@ public:
 
       Update();
       Redraw();
-      RedrawVR();
+      // RedrawVR();
     }
 
     destroy();

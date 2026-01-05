@@ -114,7 +114,7 @@ public:
   void setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void redraw() {
-    scene->render(*(this->shader), *(this->camera));
+    scene->Render(*(this->shader), *(this->camera));
 
     fpsCounter.update();
     drawImGui();

@@ -110,7 +110,7 @@ class PhysicsEngine {
 
   std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
   std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
-  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> object_vs_broadphase_layer_filter;
+  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
 
   std::vector<std::unique_ptr<fe::PhysicsObject>> physicsObjects;
 
@@ -129,12 +129,11 @@ class PhysicsEngine {
 
     broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
     object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
-    object_vs_broadphase_layer_filter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
+    objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
 
-    physicsSystem->Init(1024, 0, 1024, 1024, *broad_phase_layer_interface, *object_vs_broadphase_layer_filter, *object_vs_object_layer_filter);
+    physicsSystem->Init(1024, 0, 1024, 1024, *broad_phase_layer_interface, *objectVsBroadphaseLayerFilter, *object_vs_object_layer_filter);
 
-    physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
-
+    EnableGravity();
 
     physicsSystem->OptimizeBroadPhase();
 
@@ -170,5 +169,13 @@ class PhysicsEngine {
 
   std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
     return std::make_unique<fe::PhysicsObject>(physicsSystem, vertices, indices);
+  }
+  
+  void EnableGravity() {
+    physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+  }
+
+  void DisableGravity() {
+    physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
   }
 };

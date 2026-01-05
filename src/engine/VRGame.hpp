@@ -37,7 +37,11 @@ void outputError(XrResult result) {
 }
 
 class VRGame : public Game {
-  public:
+private:
+  bool drawVR = false;
+  bool vrInitialized = false;
+
+public:
   XrInstance instance;
   XrSystemId systemId;
   XrSession session;
@@ -76,8 +80,13 @@ class VRGame : public Game {
 
   VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
-    LaunchVR();
+    if (launchVR)
+      LaunchVR();
   }
+
+  void EnableVR() { if (vrInitialized) drawVR = true; }
+
+  void DisableVR() { drawVR = false; }
   
   void LaunchVR() {
     
@@ -278,6 +287,8 @@ class VRGame : public Game {
     spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
+
+    vrInitialized = true;
   }
 
   void RedrawVR() {
@@ -327,7 +338,7 @@ class VRGame : public Game {
         glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
         camera->update(position + positionOffset, orientation, fov);
-        scene->render(*shader, *camera, swapchainWidth, swapchainHeight);
+        scene->Render(*shader, *camera, swapchainWidth, swapchainHeight);
 
         projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
         projectionViews[eye].pose = views[eye].pose;
@@ -337,8 +348,6 @@ class VRGame : public Game {
         projectionViews[eye].subImage.imageRect.extent = {swapchainWidth, swapchainHeight};
         projectionViews[eye].subImage.imageArrayIndex = eye;
       }
-
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
       XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
       outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
@@ -356,19 +365,32 @@ class VRGame : public Game {
       endInfo.layers = layers;
       endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
       outputError(xrEndFrame(session, &endInfo));
+  }
 
-      if (drawWindow) {
-        Redraw();
-      }
+  void BindMainWindowBuffer() {
+    BindFrameBuffer();
+  }
+
+  void BindFrameBuffer(int bufferIndex = 0) {
+    glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+  }
+
+  void RedrawWindow() {
+    BindMainWindowBuffer();
+
+    const Game* game = this;
+  
+    scene->Render(*shader, *camera);
+  
+    glfwSwapBuffers(window);
+    glfwPollEvents();
   }
 
   void Redraw() {
-glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        scene->render(*shader, *camera, 800, 600);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+    if (drawVR)
+      RedrawVR();
+    if (drawWindow)
+      RedrawWindow();
   }
 
   // void run() {

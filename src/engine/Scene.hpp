@@ -33,11 +33,21 @@ class Scene {
     this->EnableFaceCulling();
   }
 
-  void render(ShaderProgram shader, Camera &camera, int width, int height) {
-      glViewport(0, 0, width, height);
-      this->Render(shader, camera);
-    }
+  void Render(ShaderProgram shader, Camera &camera, int width, int height) {
+    this->Resize(width, height);
+    this->Render(shader, camera);
+  }
+  
+  void Render(ShaderProgram shader, Camera &camera) {
+    this->PrepareRender(shader, camera);
 
+    for (auto& model : objects) model->render(shader);
+
+    camera.Render(shader);
+
+    this->EndRender();
+  }
+  
   void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
@@ -53,15 +63,6 @@ class Scene {
 
   void Clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
-  void Render(ShaderProgram shader, Camera &camera) {
-    this->PrepareRender(shader, camera);
-
-    for (auto& model : objects) model->render(shader);
-
-    camera.Render(shader);
-
-    this->EndRender();
-  }
 
   void EndRender() { glBindVertexArray(0); }
 

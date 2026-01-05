@@ -376,7 +376,7 @@ int main()
 
       // camera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
 
-      scene->render(*shader, camera, swapchainWidth, swapchainHeight);
+      scene->Render(*shader, camera, swapchainWidth, swapchainHeight);
 
       projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
       projectionViews[eye].pose = views[eye].pose;
@@ -410,7 +410,7 @@ int main()
     {
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
       
-      scene->render(*(shader), (camera), 800, 600);
+      scene->Render(*(shader), (camera), 800, 600);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
