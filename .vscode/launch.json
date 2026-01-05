@@ -21,7 +21,7 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}\\src",
       "environment": [],
-      "console": "integratedTerminal",
+      "console": "integratedTerminal"
     },
     {
       "name": "C/C++: cl.exe build and debug OpenXR Windows",
@@ -71,7 +71,6 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build FoxChat"
     },
-
     {
       "name": "C/C++: cl.exe build and debug Chizzle",
       "type": "cppvsdbg",
@@ -84,7 +83,6 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build Chizzle"
     },
-    
     {
       "name": "(gdb) Launch",
       "type": "cppdbg",
@@ -111,6 +109,58 @@
       "preLaunchTask": "C/C++: make",
       "miDebuggerPath": "/usr/bin/gdb"
     },
+    {
+      "name": "C/C++: g++.exe build and debug active file",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\debug\\editor.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "C/C++: g++.exe build active file"
+    },
+    {
+      "name": "C/C++: g++.exe build and debug Editor",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\debug\\editor.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "C/C++: g++ build Chizzle"
+    }
   ],
   "version": "2.0.0"
 }
