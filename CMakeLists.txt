@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(MyProject)
+project(editor)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/debug")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/release")
 
-add_subdirectory(third_party/JoltPhysics)
-add_subdirectory(third_party/OpenXR-SDK)
+add_subdirectory(third_party/JoltPhysics/Build)
+# add_subdirectory(third_party/OpenXR-SDK)
 
-add_executable(editor ${SRC_FILES})
+# add_executable(editor ${SRC_FILES})
 
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)

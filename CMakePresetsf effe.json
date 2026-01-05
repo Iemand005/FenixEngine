@@ -1,0 +1,30 @@
+{
+	"version": 3,
+	"configurePresets": [
+		{
+			"name": "windows-debug",
+			"displayName": "Windows Debug",
+			"description": "Debug configuration for Windows",
+			"generator": "Visual Studio 17 2022",
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "/MDd /Zi /Ob0 /Od /RTC1",
+				"CMAKE_EXE_LINKER_FLAGS_DEBUG": "/DEBUG"
+			},
+			"environment": {
+				"working_directory": "${sourceDir}"
+			}
+		},
+		{
+			"name": "windows-release",
+			"displayName": "Windows Release",
+			"generator": "Visual Studio 17 2022",
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_FLAGS_RELEASE": "/MD /O2 /Ob2 /DNDEBUG"
+			}
+		}
+	]
+}
