@@ -65,11 +65,22 @@ class VRGame : public Game {
 
   glm::vec3 positionOffset = glm::vec3(1.0f);
 
+  bool running = true;
+    XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
+    XrFrameState frameState{XR_TYPE_FRAME_STATE};
+    XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
+    XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+    uint32_t swapchainImageIndex;
+
   VRGame() : VRGame(0, 0, false) {}
 
-  VRGame(int width, int height, bool drawWindow = true) : Game(width, height) {
+  VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
-
+    LaunchVR();
+  }
+  
+  void LaunchVR() {
+    
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain(session);
     CreateActions();
@@ -208,8 +219,8 @@ class VRGame : public Game {
       // Apply movement speed and delta time
       // float deltaTime = GetFrameDeltaTime(); // Implement this
       // movement = movement //ScaleVector(movement, moveSpeed * 1);
-      player->position.x += movement.x;
-      player->position.z += movement.z;
+      player->state.position.x += movement.x;
+      player->state.position.z += movement.z;
 
       positionOffset.x += movement.x;
       positionOffset.z += movement.z;
@@ -269,18 +280,7 @@ class VRGame : public Game {
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
   }
 
-  int initialize() {
-    
-  }
-  void run() {
-    bool running = true;
-    XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
-    XrFrameState frameState{XR_TYPE_FRAME_STATE};
-    XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
-    XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-    uint32_t swapchainImageIndex;
-
-    while (running) {
+  void RedrawVR() {
       outputError(xrWaitFrame(session, &waitInfo, &frameState));
 
       PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
@@ -358,20 +358,36 @@ class VRGame : public Game {
       outputError(xrEndFrame(session, &endInfo));
 
       if (drawWindow) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        Redraw();
+      }
+  }
+
+  void Redraw() {
+glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         scene->render(*shader, *camera, 800, 600);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-      }
+  }
 
-      if (glfwWindowShouldClose(window)) running = false;
-    }
+  // void run() {
+    
 
-    std::cout << "Done!\n";
+  //   while (running) {
+  //     RedrawVR();
 
+  //     if (glfwWindowShouldClose(window)) running = false;
+  //   }
+
+  //   std::cout << "Done!\n";
+
+  // }
+  
+  void destroy() {
     xrDestroySession(session);
     xrDestroyInstance(instance);
+    glfwDestroyWindow(this->window);
+    glfwTerminate();
   }
 };

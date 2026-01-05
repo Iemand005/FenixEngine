@@ -17,6 +17,7 @@
 #define JPH_PROFILE_ENABLED
 #define JPH_DEBUG_RENDERER
 #define JPH_OBJECT_STREAM
+#define JPH_CROSS_PLATFORM_DETERMINISTIC
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
