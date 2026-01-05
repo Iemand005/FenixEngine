@@ -32,5 +32,29 @@ struct ObjectData {
 
 			return true;
 		}
+
+		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
+			std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
+
+			for (auto &object : objects) {
+				ObjectData data;
+				data.state = object->state;
+				datas.push_back(data);
+			}
+
+			return true;
+		}
+
+		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
+			std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
+
+			for (auto &object : objects) {
+				ObjectData data;
+				data.state = object->state;
+				datas.push_back(data);
+			}
+
+			return true;
+		}
 	};
 }

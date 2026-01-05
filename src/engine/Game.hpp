@@ -112,14 +112,20 @@ class Game {
   }
 
   void SaveMap() {
-    auto sceneObjs = this->scene->GetObjects();
-    auto objects = std::vector<fe::Object>(sceneObjs.size());
+    // auto sceneObjs = this->scene->GetObjects();
+    // auto objects = std::vector<fe::Object>(sceneObjs.size());
 
-    for (auto &obj : sceneObjs) {
-      objects.push_back()
-    }
+    // for (auto &obj : sceneObjs) {
+    //   objects.push_back()
+    // }
+
+//     std::transform(
+//     sceneObjs.begin(), sceneObjs.end(),
+//     std::back_inserter(objects),
+//     [](std::shared_ptr<fe::Object> obj) { return obj.get(); }
+// );
     
-    this->level->Save(objects);
+    this->level->Save(this->scene->GetObjects());
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
