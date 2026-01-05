@@ -27,7 +27,7 @@ public:
 
   Chizzle(int width, int height, bool vr = false) : VRGame(width, height, vr) {
 
-    loadModels();
+    LoadModels();
 
     this->physicsEngine->DisableGravity();
 
@@ -59,7 +59,7 @@ public:
     };
   }
 
-  void loadModels() {
+  void LoadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
     this->scene->AddModel(map1);
     this->maps.push_back(map1);
@@ -77,43 +77,10 @@ public:
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.0001f));
 
     this->player->SetPhysicsObject(physicsEngine->CreateObject());
 
-
-    // spawnZombies(10);
-  }
-
-  void spawnZombies(int count = 10) {
-    const float minDistance = 20.0f;
-    const float minDistanceSq = minDistance * minDistance;
-
-    auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->Clone());
-    if (zombieTemplate->meshes.size() < 2) return;
-
-    zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-    zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
-    for (int i = 0; i < count; i++) {
-      float x = static_cast<float>(rand() % 100 - 50);
-      float z = static_cast<float>(rand() % 100 - 50);
-
-      float dx = x - player->state.position.x;
-      float dz = z - player->state.position.z;
-      float distanceSq = dx * dx + dz * dz;
-
-      if (distanceSq < minDistanceSq) {
-        x += minDistanceSq;
-        z += minDistanceSq;
-      }
-
-      auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
-      npc->state.position = glm::vec3(x, 0.0f, z);
-
-      this->scene->AddModel(npc);
-
-      npcs.push_back(npc);
-    }
   }
 
   void ProcessInput() {
@@ -139,12 +106,9 @@ public:
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
-      // this->player->acceleration.y = 10.0f;
-      // this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));
-      acceleration.y = 10;
-      canJump = true;
-    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity -= glm::vec3(0, 1, 0);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) velocity -= glm::vec3(0, -1, 0);
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
       std::shared_ptr<fe::Object> newObj = this->player->Clone();
       newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
@@ -182,11 +146,9 @@ public:
   void Run() {
     DisableVSync();
   
-    glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
+    glm::vec3 cameraOffset = glm::vec3(0);
 
     while (!ShouldClose()) {
-  //     std::cout << "DEBUG: Before glfwPollEvents()" << std::endl;
-  // std::cout << "DEBUG: Window pointer: " << window << std::endl;
       glfwPollEvents();
 
       if (player->touchedGround) {
@@ -195,7 +157,7 @@ public:
       ProcessInput();
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;
-      cameraPos = pos - cameraFront * 5.0f;
+      cameraPos = pos - cameraFront * 6.0f;
       camera->SetPos(cameraPos);
 
       camera->setFront(glm::normalize(pos - cameraPos));
@@ -204,15 +166,12 @@ public:
 
       Update();
       Redraw();
-      // RedrawVR();
     }
 
     destroy();
   }
 
   int drawImGui() {
-    // glDisable(GL_DEPTH_TEST);
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -269,6 +228,7 @@ public:
     }
     ImGui::End();
 
+    
 
     ImGui::Begin("Chat");
     {
@@ -314,7 +274,6 @@ public:
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // glEnable(GL_DEPTH_TEST);
     return 0;
   }
 };

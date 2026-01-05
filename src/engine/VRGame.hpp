@@ -76,7 +76,9 @@ public:
     XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
     uint32_t swapchainImageIndex;
 
-  VRGame() : VRGame(0, 0, false) {}
+  VRGame(bool launchVR = true) : VRGame(0, 0, false) {
+    LaunchVR();
+  }
 
   VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
@@ -367,16 +369,12 @@ public:
       outputError(xrEndFrame(session, &endInfo));
   }
 
-  void BindMainWindowBuffer() {
-    BindFrameBuffer();
-  }
-
   void BindFrameBuffer(int bufferIndex = 0) {
     glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
   }
 
   void RedrawWindow() {
-    BindMainWindowBuffer();
+    BindFrameBuffer();
 
     const Game* game = this;
   
@@ -392,19 +390,6 @@ public:
     if (drawWindow)
       RedrawWindow();
   }
-
-  // void run() {
-    
-
-  //   while (running) {
-  //     RedrawVR();
-
-  //     if (glfwWindowShouldClose(window)) running = false;
-  //   }
-
-  //   std::cout << "Done!\n";
-
-  // }
   
   void destroy() {
     xrDestroySession(session);

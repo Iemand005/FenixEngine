@@ -36,7 +36,7 @@ class Annihilation : public Game {
 
   Annihilation(int width, int height) : Game(width, height) {
 
-    loadModels();
+    LoadModels();
 
 
     this->client = std::make_unique<Networker>(2130);
@@ -66,7 +66,7 @@ class Annihilation : public Game {
     };
   }
 
-  void loadModels() {
+  void LoadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
     this->scene->AddModel(map1);
     this->maps.push_back(map1);
