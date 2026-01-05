@@ -8,3 +8,4 @@ trash
 *.7z
 *.rar
 cache
+dist
