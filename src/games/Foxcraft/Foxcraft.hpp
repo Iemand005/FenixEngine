@@ -34,7 +34,7 @@ public:
 
   void LoadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->AddModel(map1);
+    this->scene->AddObject(map1);
     this->maps.push_back(map1);
 
     this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
@@ -46,7 +46,7 @@ public:
     // spawnZombies(10);
   }
 
-  void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
+  void loadMap(int index) { scene->GetObjects()[0] = maps.at(index); }
 
   void nextMap() {
     loadMap(mapIndex);
@@ -79,7 +79,7 @@ public:
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
       npc->position = glm::vec3(x, 0.0f, z);
 
-      this->scene->AddModel(npc);
+      this->scene->AddObject(npc);
 
       npcs.push_back(npc);
     }
@@ -89,12 +89,12 @@ public:
     auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
 
     this->players.insert_or_assign(playerId, newPlayer);
-    this->scene->AddModel(newPlayer);
+    this->scene->AddObject(newPlayer);
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->AddModel(model);
+    this->scene->AddObject(model);
     return model;
   }
 
@@ -154,7 +154,7 @@ public:
       glm::vec3 dir = glm::normalize(this->player->position - newObj->position);
       newObj->rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->rotation.x = 0.0f;
-      this->scene->AddModel(newObj);
+      this->scene->AddObject(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) enableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) disableWireframeMode();
@@ -229,13 +229,13 @@ public:
       ImGui::Text("Hello, World!");
       ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->getModels().size());
+      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
-      for (auto& obj : this->scene->getModels())
+      for (auto& obj : this->scene->GetObjects())
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
       size_t needsUpdateCount = 0;
-      for (auto& obj : this->scene->getModels()) {
+      for (auto& obj : this->scene->GetObjects()) {
         if (obj->needsUpdate) needsUpdateCount++;
       }
       ImGui::Text("Needs Update: %zu", needsUpdateCount);

@@ -68,7 +68,7 @@ class Annihilation : public Game {
 
   void LoadModels() {
     auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->AddModel(map1);
+    this->scene->AddObject(map1);
     this->maps.push_back(map1);
 
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
@@ -117,7 +117,7 @@ class Annihilation : public Game {
       auto npc = std::static_pointer_cast<fe::Character>(zombieTemplate->Clone());
       npc->state.position = glm::vec3(x, 0.0f, z);
 
-      this->scene->AddModel(npc);
+      this->scene->AddObject(npc);
 
       npcs.push_back(npc);
     }
@@ -158,7 +158,7 @@ class Annihilation : public Game {
       glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
       newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->state.rotation.x = 0.0f;
-      this->scene->AddModel(newObj);
+      this->scene->AddObject(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
@@ -204,9 +204,9 @@ class Annihilation : public Game {
       ImGui::Text("Hello, World!");
       ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->getModels().size());
+      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
-      for (auto& obj : this->scene->getModels())
+      for (auto& obj : this->scene->GetObjects())
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 

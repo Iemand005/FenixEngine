@@ -47,12 +47,12 @@ class Scene {
 
     this->EndRender();
   }
-  
+
   void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
 
-  void AddModel(std::shared_ptr<Object> object) { objects.push_back(object); }
+  void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
 
   void PrepareRender(ShaderProgram shader, Camera camera) {
     this->Clear();
@@ -86,7 +86,7 @@ class Scene {
     }
   }
 
-  std::vector<std::shared_ptr<Object>>& getModels() { return objects; }
+  std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
 
   double GetDeltaTime() { return timer.deltaTime; }
 

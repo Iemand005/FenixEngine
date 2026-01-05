@@ -228,7 +228,7 @@ class Game {
     this->UpdateAspect();
   }
 
-  void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
+  void loadMap(int index) { scene->GetObjects()[0] = maps.at(index); }
 
   void nextMap() {
     loadMap(mapIndex);
@@ -240,12 +240,12 @@ class Game {
     auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
 
     this->players.insert_or_assign(playerId, newPlayer);
-    this->scene->AddModel(newPlayer);
+    this->scene->AddObject(newPlayer);
   }
 
   std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->AddModel(model);
+    this->scene->AddObject(model);
     return model;
   }
 
@@ -313,7 +313,7 @@ class Game {
       glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
       newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
       newObj->state.rotation.x = 0.0f;
-      this->scene->AddModel(newObj);
+      this->scene->AddObject(newObj);
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
@@ -376,9 +376,9 @@ class Game {
       ImGui::Text("Hello, World!");
       ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->getModels().size());
+      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
-      for (auto& obj : this->scene->getModels())
+      for (auto& obj : this->scene->GetObjects())
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 

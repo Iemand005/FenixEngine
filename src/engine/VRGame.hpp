@@ -386,7 +386,7 @@ class VRGame : public Game {
     if (drawWindow) RedrawWindow();
   }
 
-  void destroy() {
+  void Destroy() {
     xrDestroySession(session);
     xrDestroyInstance(instance);
     glfwDestroyWindow(this->window);
