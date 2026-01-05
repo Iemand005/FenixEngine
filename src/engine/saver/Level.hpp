@@ -25,15 +25,15 @@ struct ObjectData {
 	class Level {
 		public:
 
-		bool Save(std::vector<fe::Object> objects) {
-			std::vector<ObjectData> datas;
+		// bool Save(std::vector<fe::Object> objects) {
+		// 	std::vector<ObjectData> datas;
 
-			for (auto &object : objects) {
+		// 	for (auto &object : objects) {
 
-			}
+		// 	}
 
-			return true;
-		}
+		// 	return true;
+		// }
 
 		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
 			// std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
@@ -47,7 +47,10 @@ struct ObjectData {
 			for (auto &object : objects) {
 				ObjectData data;
 				data.state = object->state;
+				auto fileName = object->sourcePath;
 				// datas.push_back(data);
+				memcpy(data.modelFile.data, fileName.c_str(), fileName.size());
+				data.modelFile.size = fileName.size();
 				level->objects[i] = data;
 				++i;
 			}

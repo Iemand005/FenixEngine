@@ -77,7 +77,8 @@ public:
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(LoadObj("resources/models/citizen.obj", 0.0001f));
+    this->player = std::make_shared<fe::Character>();
+    this->scene->AddObject(player);
 
     this->player->SetPhysicsObject(physicsEngine->CreateObject());
 

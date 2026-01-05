@@ -5,6 +5,7 @@ namespace fe {
 
 class Character : public Object {
  public:
+//  Character() : Object() {};
 };
 
 }
