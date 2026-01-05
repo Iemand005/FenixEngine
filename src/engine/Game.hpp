@@ -97,7 +97,7 @@ class Game {
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
 
-    updateAspect();
+    UpdateAspect();
     
     initImGui();
     
@@ -225,7 +225,7 @@ class Game {
     this->width = width;
     this->height = height;
     this->scene->Resize(width, height);
-    this->updateAspect();
+    this->UpdateAspect();
   }
 
   void loadMap(int index) { scene->getModels()[0] = maps.at(index); }
@@ -265,7 +265,8 @@ class Game {
     scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
-    drawImGui();
+    // drawImGui();
+    DrawUI();
 
     glfwSwapBuffers(this->window);
   }
@@ -279,7 +280,7 @@ class Game {
     physicsEngine->Update(deltaTime);
   }
 
-  void ProcessInput() {
+  virtual void ProcessInput() {
     double deltaTime = scene->GetDeltaTime();
 
     physicsEngine->Update(deltaTime);
@@ -360,6 +361,8 @@ class Game {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
+
+  virtual void DrawUI() = 0;
 
   int drawImGui() {
     // glDisable(GL_DEPTH_TEST);
@@ -465,7 +468,7 @@ class Game {
     return 0;
   }
 
-  void updateAspect() {
+  void UpdateAspect() {
     if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
   }
 
