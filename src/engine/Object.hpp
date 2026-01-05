@@ -71,11 +71,11 @@ class Object {
     meshes.push_back(mesh);
   }
 
-  Object(std::string objFilePath, float scale = 1.0f) : Object() { loadOBJ(objFilePath, scale);
+  Object(std::string objFilePath, float scale = 1.0f) : Object() { LoadObj(objFilePath, scale);
   sourcePath = objFilePath;
   }
 
-  bool loadOBJ(std::string path, float scale = 1.0f)
+  bool LoadObj(std::string path, float scale = 1.0f)
   /*{
     objl::Loader objectLoader;
 

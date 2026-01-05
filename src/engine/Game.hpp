@@ -27,6 +27,7 @@
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
+#include "saver/Level.hpp"
 
 #define WAYLAND
 
@@ -80,6 +81,9 @@ class Game {
 
   std::unique_ptr<PhysicsEngine> physicsEngine;
 
+  std::unique_ptr<fe::Level> level;
+
+
   Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
     if (!InitGlfw(bpc10)) return;
     this->width = width;
@@ -97,6 +101,7 @@ class Game {
     this->scene = std::make_unique<fe::Scene>();
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(cameraPos, cameraFront, cameraUp, fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
+    this->level = std::make_unique<fe::Level>();
 
 
     UpdateAspect();
@@ -104,6 +109,17 @@ class Game {
     InitImGui();
     
     StartMouseCapture();
+  }
+
+  void SaveMap() {
+    auto sceneObjs = this->scene->GetObjects();
+    auto objects = std::vector<fe::Object>(sceneObjs.size());
+
+    for (auto &obj : sceneObjs) {
+      objects.push_back()
+    }
+    
+    this->level->Save(objects);
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
@@ -179,7 +195,10 @@ class Game {
     });
 
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
-      if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) return;
+      if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
+        // ImGui::SetNextFrameWantCaptureMouse(false);
+        return;
+      }
 
       auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
       ImGuiIO& io = ImGui::GetIO();
@@ -254,7 +273,7 @@ class Game {
     this->scene->AddObject(newPlayer);
   }
 
-  std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
+  std::shared_ptr<fe::Object> LoadObj(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     this->scene->AddObject(model);
     return model;
@@ -302,6 +321,11 @@ class Game {
     } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
       StartMouseCapture();
     }
+
+    // if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
+    //     ImGui::SetNextFrameWantCaptureMouse(false);
+    //     return;
+    //   }
 
     const float cameraSpeed = 10.0f * deltaTime;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
@@ -356,9 +380,16 @@ class Game {
   void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
   void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
-  void StartMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+  void StartMouseCapture() {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    io.WantCaptureMouse = false;
+  }
 
-  void StopMouseCapture() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+  void StopMouseCapture() {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    io.WantCaptureMouse = true;
+
+  }
 
   void InitImGui() {
     const char* glsl_version = "#version 330 core";

@@ -26,7 +26,7 @@ bool Mesh::loadObj(std::string objFilePath) {
   return true;
 }
 
-bool Object::loadOBJ(std::string path, float scale) {
+bool Object::LoadObj(std::string path, float scale) {
   objl::Loader objectLoader;
 
   bool success = objectLoader.LoadFile(path);

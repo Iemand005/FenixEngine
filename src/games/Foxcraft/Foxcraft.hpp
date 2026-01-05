@@ -41,7 +41,7 @@ public:
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.1f));
+    this->player = std::static_pointer_cast<fe::Character>(LoadObj("resources/models/citizen.obj", 0.1f));
 
     // spawnZombies(10);
   }
@@ -92,7 +92,7 @@ public:
     this->scene->AddObject(newPlayer);
   }
 
-  std::shared_ptr<fe::Object> loadOBJ(std::string path, float scale = 1.0f) {
+  std::shared_ptr<fe::Object> LoadObj(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     this->scene->AddObject(model);
     return model;

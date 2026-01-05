@@ -77,7 +77,7 @@ public:
 
     loadMap(0);
 
-    this->player = std::static_pointer_cast<fe::Character>(loadOBJ("resources/models/citizen.obj", 0.0001f));
+    this->player = std::static_pointer_cast<fe::Character>(LoadObj("resources/models/citizen.obj", 0.0001f));
 
     this->player->SetPhysicsObject(physicsEngine->CreateObject());
 
@@ -202,15 +202,24 @@ public:
     ImGui::Begin("Objects");
     {
       static char filenameBuffer[512] = "\0";
+      static float newObjectScale = 1.0f;
 
       ImGui::InputText("File", filenameBuffer, IM_ARRAYSIZE(filenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::Button("Load model");
+      ImGui::DragFloat3("Scale##newObj", &newObjectScale, 0.001f);
+      if (ImGui::Button("Load model")) {
+        LoadObj(filenameBuffer, newObjectScale);
+      }
+
+      if (ImGui::Button("Save map!")) {
+        
+      }
 
       static bool snapToGrid = true;
       ImGui::Checkbox("Snap to grid", &snapToGrid);
+      float step = snapToGrid ? 0.1f : 0.0001f;
+
       size_t i = 0;
       for (auto &objectthis : scene->GetObjects()) {
-        float step = snapToGrid ? 0.1f : 0.0001f;
         ImGui::Text("Object %zu", i);
         ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &objectthis->state.position.x, step);
         ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &objectthis->state.rotation.x, step);
