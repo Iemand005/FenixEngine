@@ -205,14 +205,18 @@ public:
       static char filenameBuffer[512] = "\0";
       static float newObjectScale = 1.0f;
 
-      ImGui::InputText("File", filenameBuffer, IM_ARRAYSIZE(filenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::InputText("Model file (.obj)", filenameBuffer, IM_ARRAYSIZE(filenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
       ImGui::DragFloat3("Scale##newObj", &newObjectScale, 0.001f);
       if (ImGui::Button("Load model")) {
         LoadObj(filenameBuffer, newObjectScale);
       }
 
+
+      static char mapNameBuffer[512] = "level.fes\0";
+      ImGui::InputText("Map file", mapNameBuffer, IM_ARRAYSIZE(mapNameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+
       if (ImGui::Button("Save map!")) {
-        this->SaveMap();
+        this->SaveLevel();
       }
 
       if (ImGui::Button("Load map!")) {
@@ -229,11 +233,11 @@ public:
       float step = snapToGrid ? 0.1f : 0.0001f;
 
       size_t i = 0;
-      for (auto &objectthis : scene->GetObjects()) {
+      for (auto &object : scene->GetObjects()) {
         ImGui::Text("Object %zu", i);
-        ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &objectthis->state.position.x, step);
-        ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &objectthis->state.rotation.x, step);
-        ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &objectthis->state.scale.x, step);
+        ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
+        ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
+        ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
         ++i;
       }
     }

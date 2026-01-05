@@ -25,17 +25,7 @@ struct ObjectData {
 	class Level {
 		public:
 
-		// bool Save(std::vector<fe::Object> objects) {
-		// 	std::vector<ObjectData> datas;
-
-		// 	for (auto &object : objects) {
-
-		// 	}
-
-		// 	return true;
-		// }
-
-		bool Save(std::vector<std::shared_ptr<fe::Object>> objects) {
+		bool Save(std::vector<std::shared_ptr<fe::Object>> objects, std::string fileName) {
 			// std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
 			size_t size = sizeof(LevelData) + sizeof(ObjectData) * objects.size();
 
@@ -57,7 +47,7 @@ struct ObjectData {
 
 			char *rawLevel = (char *)level;
 
-			std::ofstream saveFile("save.fes", std::ios::binary | std::ios::ate);
+			std::ofstream saveFile(fileName, std::ios::binary | std::ios::ate);
 
 			saveFile.write(rawLevel, size);
 			// level.objects = *datas.data();
@@ -65,11 +55,11 @@ struct ObjectData {
 			return true;
 		}
 
-		std::vector<std::shared_ptr<fe::Object>> Load() {
+		std::vector<std::shared_ptr<fe::Object>> Load(std::string fileName) {
 
 			// std::ifstream saveFile("");
 
-			std::ifstream saveFile("save.fes", std::ios::binary | std::ios::ate);
+			std::ifstream saveFile(fileName, std::ios::binary | std::ios::ate);
     // if (!saveFile) return nullptr;
     auto size = saveFile.tellg();
     saveFile.seekg(0);
