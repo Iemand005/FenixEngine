@@ -1,7 +1,9 @@
 #pragma once
 #define GLFW_INCLUDE_NONE
 #define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 
 #include <GLFW/glfw3.h>
 #pragma comment(lib, "glfw3.lib")

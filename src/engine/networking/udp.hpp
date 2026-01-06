@@ -157,7 +157,7 @@ public:
   }
 
   bool bindSocket() {
-    bindSocket(0);
+    return bindSocket(0);
   }
 
   bool bindSocket(unsigned short port) {

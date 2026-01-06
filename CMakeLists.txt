@@ -21,8 +21,6 @@ add_subdirectory(third_party/glfw)
 add_subdirectory(third_party/JoltPhysics/Build)
 # add_subdirectory(third_party/OpenXR-SDK)
 
-# add_executable(editor ${SRC_FILES})
-
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -44,11 +42,18 @@ else()
     set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib/release")
 endif()
 
-# Compile options per configuration
-target_compile_options(main PRIVATE
-    $<$<CONFIG:Debug>:/MDd /Zi>
-    $<$<CONFIG:Release>:/MD /O2>
-)
+# Compile options per configuration - FIXED VERSION
+if(MSVC)
+    target_compile_options(main PRIVATE
+        $<$<CONFIG:Debug>:/MDd /Zi>
+        $<$<CONFIG:Release>:/MD /O2>
+    )
+else()
+    target_compile_options(main PRIVATE
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Release>:-O3>
+    )
+endif()
 
 target_compile_definitions(main PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
@@ -73,14 +78,16 @@ if(WIN32)
         Jolt
     )
     
-    target_link_options(main PRIVATE
-        $<$<CONFIG:Debug>:/DEBUG>
-    )
+    # Link options - only for MSVC
+    if(MSVC)
+        target_link_options(main PRIVATE
+            $<$<CONFIG:Debug>:/DEBUG>
+        )
+    endif()
 endif()
 
 # Create a post-build script to help with debugging
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # Copy any needed files to build directory
     add_custom_command(TARGET main POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "Debug executable built at: $<TARGET_FILE:main>"
         COMMAND ${CMAKE_COMMAND} -E echo "To debug in VSCode, set cwd to: ${CMAKE_SOURCE_DIR}"
