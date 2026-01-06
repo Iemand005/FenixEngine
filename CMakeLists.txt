@@ -17,6 +17,7 @@ if(MINGW OR UNIX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
+add_subdirectory(third_party/glfw)
 add_subdirectory(third_party/JoltPhysics/Build)
 # add_subdirectory(third_party/OpenXR-SDK)
 
