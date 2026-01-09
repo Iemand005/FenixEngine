@@ -28,6 +28,7 @@ public:
   Chizzle(int width, int height, bool vr = true) : VRGame(width, height, vr) {
 
     LoadModels();
+    this->EnableVR();
 
     this->physicsEngine->DisableGravity();
 
@@ -187,11 +188,11 @@ public:
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
-        // this->EnableVR();
+        this->EnableVR();
       }
 
       if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
-        // this->DisableVR();
+        this->DisableVR();
       }
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
