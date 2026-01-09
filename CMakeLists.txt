@@ -18,6 +18,13 @@ if(MINGW OR UNIX)
 endif()
 
 add_subdirectory(third_party/glfw)
+
+# Configure JoltPhysics options BEFORE adding it as subdirectory
+set(JPH_USE_DX12 OFF CACHE BOOL "Use DirectX" FORCE)
+set(JPH_USE_DXC OFF CACHE BOOL "Use DXC shader compiler" FORCE)
+set(JPH_USE_VK OFF CACHE BOOL "Use Vulkan" FORCE)
+set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
+
 add_subdirectory(third_party/JoltPhysics/Build)
 # add_subdirectory(third_party/OpenXR-SDK)
 

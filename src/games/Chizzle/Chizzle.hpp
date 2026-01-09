@@ -186,6 +186,14 @@ public:
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 
+      if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
+        this->EnableVR();
+      }
+
+      if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
+        this->DisableVR();
+      }
+
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }

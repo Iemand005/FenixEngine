@@ -28,13 +28,7 @@
 
 #include "engine.h"
 
-void outputError(XrResult result) {
-  if (XR_SUCCEEDED(result)) return;
-  // std::cerr << "Error code: " << result << "\n";
 
-  char buf[XR_MAX_RESULT_STRING_SIZE];
-  if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
-}
 
 class VRGame : public Game {
  private:
@@ -83,6 +77,7 @@ class VRGame : public Game {
   }
 
   void EnableVR() {
+    if (!vrInitialized) LaunchVR();
     if (vrInitialized) drawVR = true;
   }
 
@@ -384,6 +379,15 @@ class VRGame : public Game {
   void Redraw() {
     if (drawVR) RedrawVR();
     if (drawWindow) RedrawWindow();
+  }
+
+  void outputError(XrResult result) {
+    if (XR_SUCCEEDED(result)) return;
+    // std::cerr << "Error code: " << result << "\n";
+
+    char buf[XR_MAX_RESULT_STRING_SIZE];
+    if (xrResultToString(nullptr, result, buf) == XR_SUCCESS)
+      std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
   }
 
   void Destroy() {
