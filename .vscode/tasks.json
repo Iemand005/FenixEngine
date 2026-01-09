@@ -443,7 +443,7 @@
         "advapi32.lib"
       ],
       "options": {
-        "cwd": "${fileDirname}"
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [
         "$msCompile"

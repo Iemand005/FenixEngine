@@ -69,7 +69,7 @@ class VRGame : public Game {
   XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
   uint32_t swapchainImageIndex;
 
-  VRGame(bool launchVR = true) : VRGame(0, 0, launchVR) { }
+  VRGame(bool launchVR = true) : VRGame(0, 0, false) { LaunchVR(); }
 
   VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
@@ -361,10 +361,12 @@ class VRGame : public Game {
     outputError(xrEndFrame(session, &endInfo));
   }
 
-  void BindFrameBuffer(int bufferIndex = 0) { glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex); }
+  void BindFrameBuffer(int bufferIndex = 0) {
+    glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+  }
 
   void RedrawWindow() {
-    // BindFrameBuffer();
+    BindFrameBuffer();
 
     // const Game* game = this;
 

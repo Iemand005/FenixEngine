@@ -66,7 +66,7 @@
       "program": "${workspaceFolder}\\build\\debug\\FoxChat.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
+      "cwd": "${workspaceFolder}",
       "environment": [],
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build FoxChat"
