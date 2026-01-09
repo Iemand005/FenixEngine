@@ -25,7 +25,7 @@ public:
   int mapIndex = 0;
 
 
-  Chizzle(int width, int height, bool vr = false) : VRGame(width, height, vr) {
+  Chizzle(int width, int height, bool vr = true) : VRGame(width, height, vr) {
 
     LoadModels();
 
@@ -167,7 +167,7 @@ public:
       Redraw();
     }
 
-    Destroy();
+    // destroy();
   }
 
   void DrawUI() override {
@@ -187,11 +187,11 @@ public:
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
-        this->EnableVR();
+        // this->EnableVR();
       }
 
       if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
-        this->DisableVR();
+        // this->DisableVR();
       }
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
