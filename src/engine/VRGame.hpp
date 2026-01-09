@@ -28,14 +28,16 @@
 
 #include "engine.h"
 
+void outputError(XrResult result) {
+  if (XR_SUCCEEDED(result)) return;
+  // std::cerr << "Error code: " << result << "\n";
 
+  char buf[XR_MAX_RESULT_STRING_SIZE];
+  if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " ("<< result << ")" << std::endl;
+}
 
 class VRGame : public Game {
- private:
-  bool drawVR = false;
-  bool vrInitialized = false;
-
- public:
+  public:
   XrInstance instance;
   XrSystemId systemId;
   XrSession session;
@@ -51,61 +53,43 @@ class VRGame : public Game {
 
   XrActionSet actionSet = XR_NULL_HANDLE;
   XrAction moveAction = XR_NULL_HANDLE;
-  XrAction orientAction = XR_NULL_HANDLE;
   XrAction poseAction = XR_NULL_HANDLE;                           // For controller pose, if needed
   XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};  // For each hand
   XrSpace headSpace = XR_NULL_HANDLE;
 
+  XrVector2f joystickInput = {0.0f, 0.0f};
+  XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
   float playerHeight = 1.7f;
 
   bool drawWindow = true;
 
   glm::vec3 positionOffset = glm::vec3(1.0f);
 
-  bool running = true;
-  XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
-  XrFrameState frameState{XR_TYPE_FRAME_STATE};
-  XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
-  XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-  uint32_t swapchainImageIndex;
+  VRGame() : VRGame(0, 0, false) {}
 
-  VRGame(bool launchVR = true) : VRGame(0, 0, false) { LaunchVR(); }
-
-  VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
+  VRGame(int width, int height, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
-    if (launchVR) LaunchVR();
-  }
 
-  void EnableVR() {
-    if (!vrInitialized) LaunchVR();
-    if (vrInitialized) drawVR = true;
-  }
-
-  void DisableVR() { drawVR = false; }
-
-  void LaunchVR() {
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain(session);
     CreateActions();
-    StopMouseCapture();
-  }
-
-  void CreateAction(XrActionType type, std::string name, XrAction* action) {
-    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-    actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
-    strcpy(actionInfo.actionName, name.c_str());
-    strcpy(actionInfo.localizedActionName, name.c_str());
-    xrCreateAction(actionSet, &actionInfo, action);
   }
 
   void CreateActions() {
+    // 1. Create Action Set
     XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
     strcpy(actionSetInfo.actionSetName, "gameplay");
     strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
     xrCreateActionSet(instance, &actionSetInfo, &actionSet);
 
-    CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "move", &moveAction);
+    // 2. Create Actions
+    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+    actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
+    strcpy(actionInfo.actionName, "move");
+    strcpy(actionInfo.localizedActionName, "Move");
+    xrCreateAction(actionSet, &actionInfo, &moveAction);
 
+    // 3. Suggest Bindings (e.g., for Oculus Touch)
     std::vector<XrActionSuggestedBinding> bindings;
 
     // Left thumbstick for movement
@@ -121,6 +105,7 @@ class VRGame : public Game {
     suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
     xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
 
+    // 4. Attach Action Set to Session
     XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
     attachInfo.actionSets = &actionSet;
     attachInfo.countActionSets = 1;
@@ -175,15 +160,14 @@ class VRGame : public Game {
   }
 
   void PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
-    XrVector2f joystickInput = {0.0f, 0.0f};
-    XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
-
+    // 1. Sync Actions
     XrActiveActionSet activeActionSet{actionSet, XR_NULL_PATH};
     XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
     syncInfo.activeActionSets = &activeActionSet;
     syncInfo.countActiveActionSets = 1;
     xrSyncActions(session, &syncInfo);
 
+    // 2. Get Joystick State
     XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
     XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
     getInfo.action = moveAction;
@@ -195,6 +179,7 @@ class VRGame : public Game {
       joystickInput = {0.0f, 0.0f};
     }
 
+    // 3. Get Head Pose (CRUCIAL for view-relative movement)
     XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
     headSpace = appSpace;
     xrLocateSpace(headSpace, appSpace, predictedDisplayTime, &headLocation);
@@ -203,27 +188,32 @@ class VRGame : public Game {
       headPose = headLocation.pose;
     }
 
-    auto ori = headPose.orientation;
-
+    // 4. Calculate Movement (Transform joystick by head orientation)
     if (fabsf(joystickInput.x) > 0.1f || fabsf(joystickInput.y) > 0.1f) {
-      glm::vec3 forward = glm::vec3(-2.0f * (ori.x * ori.z + ori.w * ori.y), -2.0f * (ori.y * ori.z - ori.w * ori.x), -1.0f + 2.0f * (ori.x * ori.x + ori.y * ori.y));
-      glm::vec3 right = glm::vec3(1.0f - 2.0f * (ori.y * ori.y + ori.z * ori.z), 2.0f * (ori.x * ori.y + ori.w * ori.z), 2.0f * (ori.x * ori.z - ori.w * ori.y));
+      // Extract forward and right vectors from head orientation
+      XrVector3f forward = {-2.0f * (headPose.orientation.x * headPose.orientation.z + headPose.orientation.w * headPose.orientation.y),
+                            -2.0f * (headPose.orientation.y * headPose.orientation.z - headPose.orientation.w * headPose.orientation.x),
+                            -1.0f + 2.0f * (headPose.orientation.x * headPose.orientation.x + headPose.orientation.y * headPose.orientation.y)};
+
+      XrVector3f right = {1.0f - 2.0f * (headPose.orientation.y * headPose.orientation.y + headPose.orientation.z * headPose.orientation.z),
+                          2.0f * (headPose.orientation.x * headPose.orientation.y + headPose.orientation.w * headPose.orientation.z),
+                          2.0f * (headPose.orientation.x * headPose.orientation.z - headPose.orientation.w * headPose.orientation.y)};
 
       // Normalize and apply joystick input
-      forward = glm::normalize(forward);
-      right = glm::normalize(right);
+      // forward = glm::normalize(forward);
+      // right = glm::normalize(right);
 
       XrVector3f movement;
       float moveSpeed = 0.1f;  // meters per second
-      movement.x = .3f * forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
+      movement.x = forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
       movement.y = 0.0f;  // Typically no vertical movement from joystick
-      movement.z = -.3f * forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
+      movement.z = forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
 
       // Apply movement speed and delta time
       // float deltaTime = GetFrameDeltaTime(); // Implement this
       // movement = movement //ScaleVector(movement, moveSpeed * 1);
-      player->state.position.x += movement.x;
-      player->state.position.z += movement.z;
+      // player->state.position.x += movement.x;
+      // player->state.position.z += movement.z;
 
       positionOffset.x += movement.x;
       positionOffset.z += movement.z;
@@ -281,119 +271,134 @@ class VRGame : public Game {
     spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
-
-    vrInitialized = true;
   }
 
-  void RedrawVR() {
-    outputError(xrWaitFrame(session, &waitInfo, &frameState));
+  int initialize() {
+    
+  }
+  void run() {
+    bool running = true;
+    XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
+    XrFrameState frameState{XR_TYPE_FRAME_STATE};
+    XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
+    XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+    uint32_t swapchainImageIndex;
 
-    PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
+    while (running) {
+      outputError(xrWaitFrame(session, &waitInfo, &frameState));
 
-    outputError(xrBeginFrame(session, &frameBegin));
+      PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
 
-    outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
+      outputError(xrBeginFrame(session, &frameBegin));
 
-    XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-    waitImageInfo.timeout = XR_INFINITE_DURATION;
-    outputError(xrWaitSwapchainImage(swapchain, &waitImageInfo));
+      outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
 
-    XrViewState viewState{XR_TYPE_VIEW_STATE};
-    XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
-    viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-    viewLocateInfo.displayTime = frameState.predictedDisplayTime;
-    viewLocateInfo.space = appSpace;
+      XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
+      waitImageInfo.timeout = XR_INFINITE_DURATION;
+      outputError(xrWaitSwapchainImage(swapchain, &waitImageInfo));
 
-    uint32_t viewCount = 0;
-    outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
+      XrViewState viewState{XR_TYPE_VIEW_STATE};
+      XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
+      viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+      viewLocateInfo.displayTime = frameState.predictedDisplayTime;
+      viewLocateInfo.space = appSpace;
 
-    std::vector<XrView> views(viewCount, {XR_TYPE_VIEW});
-    std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
-    outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
+      uint32_t viewCount = 0;
+      outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
 
-    outputError(xrLocateViews(session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
+      std::vector<XrView> views(viewCount, {XR_TYPE_VIEW});
+      std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
+      outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
 
-    std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
+      outputError(xrLocateViews(session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
 
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
-    static float angle = 0.0f;
-    // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
-    // static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
+      std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
 
-    for (uint32_t eye = 0; eye < viewCount; eye++) {
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
+      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
+      static float angle = 0.0f;
+      // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
+      static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
-      XrPosef pose = views[eye].pose;
-      XrFovf xrFov = views[eye].fov;
+      for (uint32_t eye = 0; eye < viewCount; eye++) {
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
 
-      glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
-      glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
-      glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
+        XrPosef pose = views[eye].pose;
+        XrFovf xrFov = views[eye].fov;
 
-      camera->update(position + positionOffset, orientation, fov);
-      scene->Render(*shader, *camera, swapchainWidth, swapchainHeight);
+        glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
+        glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+        glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
-      projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-      projectionViews[eye].pose = views[eye].pose;
-      projectionViews[eye].fov = views[eye].fov;
-      projectionViews[eye].subImage.swapchain = swapchain;
-      projectionViews[eye].subImage.imageRect.offset = {0, 0};
-      projectionViews[eye].subImage.imageRect.extent = {swapchainWidth, swapchainHeight};
-      projectionViews[eye].subImage.imageArrayIndex = eye;
+        vrCamera.updateView(position + positionOffset, orientation);
+        vrCamera.updateProjection(fov);
+        camera->update(position + positionOffset, orientation, fov);
+
+
+     
+
+      auto front = orientation * glm::vec3(0.0f, 0.0f, -1.0f);
+      auto up = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+
+      float nearDist = 0.10f;
+      float farDist = 100.0f;
+
+      float left = tan(fov.x) * nearDist;
+      float right = tan(fov.y) * nearDist;
+      float bottom = tan(fov.z) * nearDist;
+      float top = tan(fov.w) * nearDist;
+
+      position = position + positionOffset;
+
+      vrCamera = fe::Camera(position, front, up, 45.0f, 1.0f, nearDist, farDist);
+
+      // vrCamera.projectionMatrix = glm::frustum(left, right, bottom, top, nearDist, farDist);
+      vrCamera.updateProjection(fov);
+        scene->Render(*shader, vrCamera, swapchainWidth, swapchainHeight);
+
+        projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
+        projectionViews[eye].pose = views[eye].pose;
+        projectionViews[eye].fov = views[eye].fov;
+        projectionViews[eye].subImage.swapchain = swapchain;
+        projectionViews[eye].subImage.imageRect.offset = {0, 0};
+        projectionViews[eye].subImage.imageRect.extent = {swapchainWidth, swapchainHeight};
+        projectionViews[eye].subImage.imageArrayIndex = eye;
+      }
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+      XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
+      outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
+
+      XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+      layer.space = appSpace;
+      layer.viewCount = viewCount;
+      layer.views = projectionViews.data();
+
+      const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
+
+      XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
+      endInfo.displayTime = frameState.predictedDisplayTime;
+      endInfo.layerCount = 1;
+      endInfo.layers = layers;
+      endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+      outputError(xrEndFrame(session, &endInfo));
+
+      if (drawWindow) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        scene->Render(*shader, *camera, 800, 600);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+      }
+
+      if (glfwWindowShouldClose(window)) running = false;
     }
 
-    XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-    outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
+    std::cout << "Done!\n";
 
-    XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-    layer.space = appSpace;
-    layer.viewCount = viewCount;
-    layer.views = projectionViews.data();
-
-    const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
-
-    XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-    endInfo.displayTime = frameState.predictedDisplayTime;
-    endInfo.layerCount = 1;
-    endInfo.layers = layers;
-    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-    outputError(xrEndFrame(session, &endInfo));
-  }
-
-  void BindFrameBuffer(int bufferIndex = 0) { glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex); }
-
-  void RedrawWindow() {
-    BindFrameBuffer();
-
-    const Game* game = this;
-
-    scene->Render(*shader, *camera);
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    // Game* game = this;
-    // game->Redraw();
-  }
-
-  void Redraw() {
-    if (drawVR) RedrawVR();
-    if (drawWindow) RedrawWindow();
-  }
-
-  void outputError(XrResult result) {
-    if (XR_SUCCEEDED(result)) return;
-    // std::cerr << "Error code: " << result << "\n";
-
-    char buf[XR_MAX_RESULT_STRING_SIZE];
-    if (xrResultToString(nullptr, result, buf) == XR_SUCCESS)
-      std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
-  }
-
-  void Destroy() {
     xrDestroySession(session);
     xrDestroyInstance(instance);
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
   }
 };

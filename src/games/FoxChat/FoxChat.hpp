@@ -7,12 +7,11 @@ public:
 
   }
   void start() {
-        auto scene = std::make_unique<fe::Scene>();
+    auto scene = std::make_unique<fe::Scene>();
     auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
 
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
     model->isStatic = true;
-    model->needsUpdate = false;
     scene->AddObject(model);
 
     auto playerObject = std::make_shared<fe::Object>("resources/models/Ryan.obj");

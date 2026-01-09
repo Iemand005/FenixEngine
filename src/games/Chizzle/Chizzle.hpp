@@ -27,8 +27,21 @@ public:
 
   Chizzle(int width, int height, bool vr = true) : VRGame(width, height, vr) {
 
+    auto scene = std::make_unique<fe::Scene>();
+    auto shader = std::make_unique<fe::ShaderProgram>("VertexShader.glsl", "FragmentShader.glsl");
+
+    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>("resources/models/collisiontest.obj");
+    model->isStatic = true;
+    scene->AddObject(model);
+
+    auto playerObject = std::make_shared<fe::Object>("resources/models/Ryan.obj");
+    scene->AddObject(playerObject);
+    player = std::static_pointer_cast<fe::Character>(playerObject);
+
+    this->run();
+
     LoadModels();
-    this->EnableVR();
+    // this->EnableVR();
 
     this->physicsEngine->DisableGravity();
 
@@ -188,11 +201,11 @@ public:
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
-        this->EnableVR();
+        // this->EnableVR();
       }
 
       if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
-        this->DisableVR();
+        // this->DisableVR();
       }
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
