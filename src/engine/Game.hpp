@@ -145,7 +145,7 @@ class Game {
     SetSwapInterval(0);
   }
 
-  bool InitGlfw(bool tenBit = true) {
+  bool InitGlfw(bool tenBit = false) {
 #ifdef WAYLAND
     if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
       glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);

@@ -86,6 +86,7 @@ class VRGame : public Game {
   void LaunchVR() {
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain(session);
+    CheckGLError("after framebuffer setup");
     CreateActions();
     StopMouseCapture();
   }
@@ -140,9 +141,37 @@ class VRGame : public Game {
     swapchainWidth = configViews[0].recommendedImageRectWidth;
     swapchainHeight = configViews[0].recommendedImageRectHeight;
 
+
+    uint32_t formatCount;
+    xrEnumerateSwapchainFormats(session, 0, &formatCount, nullptr);
+    std::vector<int64_t> formats(formatCount);
+    xrEnumerateSwapchainFormats(session, formatCount, &formatCount, formats.data());
+
+    std::cout << "Available swapchain formats:" << std::endl;
+    for (auto format : formats) {
+        std::cout << "  " << format << std::endl;
+    }
+
+    // Try to find a supported format - GL_RGBA8 is usually 0x8058
+    int64_t chosenFormat = GL_RGBA8;  // Try RGBA8 first
+    bool formatFound = false;
+    for (auto format : formats) {
+        if (format == GL_RGBA8 || format == GL_SRGB8_ALPHA8 || format == GL_RGBA8_SNORM) {
+            chosenFormat = format;
+            formatFound = true;
+            std::cout << "Using format: " << chosenFormat << std::endl;
+            break;
+        }
+    }
+
+    if (!formatFound && !formats.empty()) {
+        chosenFormat = formats[0];
+        std::cout << "Falling back to format: " << chosenFormat << std::endl;
+    }
+
     XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
     swapchainInfo.arraySize = viewCount;  // Stereo = 2 layers
-    swapchainInfo.format = GL_SRGB8_ALPHA8;
+    swapchainInfo.format = chosenFormat;
     swapchainInfo.width = swapchainWidth;
     swapchainInfo.height = swapchainHeight;
     swapchainInfo.mipCount = 1;
@@ -165,12 +194,24 @@ class VRGame : public Game {
     glGenFramebuffers(imageCount, framebuffers.data());
 
     for (int i = 0; i < imageCount; i++) {
-      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_ARRAY, swapchainImages[i].image, 0);
-
-      glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
-      glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
+    
+    // Initialize with no color attachment for now
+    // We'll attach layers dynamically in RedrawVR()
+    
+    // Create depth texture as 2D array for stereo
+    glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    // Don't attach depth here - we'll attach per layer in RedrawVR
+}
+glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
@@ -321,8 +362,25 @@ class VRGame : public Game {
     // static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
     for (uint32_t eye = 0; eye < viewCount; eye++) {
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
+      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
+    
+    // Attach the color layer for this eye
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
+    
+    // Attach the depth layer for this eye  
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
+    
+    // Check framebuffer status
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
+    }
+
+       glViewport(0, 0, swapchainWidth, swapchainHeight);
+    glScissor(0, 0, swapchainWidth, swapchainHeight);
+    
+    // Clear buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       XrPosef pose = views[eye].pose;
       XrFovf xrFov = views[eye].fov;
@@ -353,12 +411,27 @@ class VRGame : public Game {
 
     const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
 
+    
     XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-    endInfo.displayTime = frameState.predictedDisplayTime;
+endInfo.displayTime = frameState.predictedDisplayTime;
+endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+
+if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
+    XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+    layer.space = appSpace;
+    layer.viewCount = viewCount;
+    layer.views = projectionViews.data();
+    
+    const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
     endInfo.layerCount = 1;
     endInfo.layers = layers;
-    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-    outputError(xrEndFrame(session, &endInfo));
+} else {
+    endInfo.layerCount = 0;
+    endInfo.layers = nullptr;
+    std::cerr << "Warning: No valid layers to submit" << std::endl;
+}
+
+outputError(xrEndFrame(session, &endInfo));
   }
 
   void BindFrameBuffer(int bufferIndex = 0) {
@@ -380,6 +453,10 @@ class VRGame : public Game {
 
   void Redraw() {
     if (drawVR) RedrawVR();
+    GLenum err;
+while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error: " << err << std::endl;
+}
     if (drawWindow) RedrawWindow();
   }
 
@@ -391,6 +468,13 @@ class VRGame : public Game {
     if (xrResultToString(nullptr, result, buf) == XR_SUCCESS)
       std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
   }
+
+  void CheckGLError(const char* location) {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
+    }
+}
 
   void Destroy() {
     xrDestroySession(session);
