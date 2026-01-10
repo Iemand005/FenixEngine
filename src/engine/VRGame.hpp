@@ -81,7 +81,10 @@ class VRGame : public Game {
     if (vrInitialized) drawVR = true;
   }
 
-  void DisableVR() { drawVR = false; }
+  void DisableVR() {
+    drawVR = false;
+    outputError(xrEndSession(session));
+  }
 
   void LaunchVR() {
     initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
@@ -96,7 +99,7 @@ class VRGame : public Game {
     actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
     strcpy(actionInfo.actionName, name.c_str());
     strcpy(actionInfo.localizedActionName, name.c_str());
-    xrCreateAction(actionSet, &actionInfo, action);
+    outputError(xrCreateAction(actionSet, &actionInfo, action));
   }
 
   void CreateActions() {
@@ -128,6 +131,49 @@ class VRGame : public Game {
     xrAttachSessionActionSets(session, &attachInfo);
   }
 
+  void CreateSwapchain(int32_t width, int32_t height, int64_t format) {
+    XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
+    swapchainInfo.arraySize = viewCount;  // Stereo = 2 layers
+    swapchainInfo.format = format;
+    swapchainInfo.width = width;
+    swapchainInfo.height = height;
+    swapchainInfo.mipCount = 1;
+    swapchainInfo.faceCount = 1;
+    swapchainInfo.sampleCount = 1;
+    swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+
+    outputError(xrCreateSwapchain(session, &swapchainInfo, &swapchain));
+
+    uint32_t imageCount;
+    outputError(xrEnumerateSwapchainImages(swapchain, 0, &imageCount, nullptr));
+    swapchainImages.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
+    outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImages.data()));
+
+    depthTextures = std::vector<GLuint>(imageCount);
+
+    glGenTextures(imageCount, depthTextures.data());
+
+    framebuffers.resize(imageCount);
+    glGenFramebuffers(imageCount, framebuffers.data());
+
+    for (int i = 0; i < imageCount; i++) {
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
+    
+    // Initialize with no color attachment for now
+    // We'll attach layers dynamically in RedrawVR()
+    
+    // Create depth texture as 2D array for stereo
+    glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, width, height, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+}
+
   void initSwapchain(XrSession session) {
     uint32_t configCount;
     xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
@@ -155,13 +201,17 @@ class VRGame : public Game {
     // Try to find a supported format - GL_RGBA8 is usually 0x8058
     int64_t chosenFormat = GL_RGBA8;  // Try RGBA8 first
     bool formatFound = false;
-    for (auto format : formats) {
-        if (format == GL_RGBA8 || format == GL_SRGB8_ALPHA8 || format == GL_RGBA8_SNORM) {
-            chosenFormat = format;
-            formatFound = true;
-            std::cout << "Using format: " << chosenFormat << std::endl;
-            break;
-        }
+    // for (auto format : formats) {
+    //     if (format == GL_RGBA8 || format == GL_SRGB8_ALPHA8 || format == GL_RGBA8_SNORM) {
+    //         chosenFormat = format;
+    //         formatFound = true;
+    //         std::cout << "Using format: " << chosenFormat << std::endl;
+    //         break;
+    //     }
+    // }
+    {
+      formatFound = true;
+      chosenFormat = formats[1];
     }
 
     if (!formatFound && !formats.empty()) {
@@ -169,47 +219,8 @@ class VRGame : public Game {
         std::cout << "Falling back to format: " << chosenFormat << std::endl;
     }
 
-    XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
-    swapchainInfo.arraySize = viewCount;  // Stereo = 2 layers
-    swapchainInfo.format = chosenFormat;
-    swapchainInfo.width = swapchainWidth;
-    swapchainInfo.height = swapchainHeight;
-    swapchainInfo.mipCount = 1;
-    swapchainInfo.faceCount = 1;
-    swapchainInfo.sampleCount = 1;
-    swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
-
-    xrCreateSwapchain(session, &swapchainInfo, &swapchain);
-
-    uint32_t imageCount;
-    xrEnumerateSwapchainImages(swapchain, 0, &imageCount, nullptr);
-    swapchainImages.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
-    xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImages.data());
-
-    depthTextures = std::vector<GLuint>(imageCount);
-
-    glGenTextures(imageCount, depthTextures.data());
-
-    framebuffers.resize(imageCount);
-    glGenFramebuffers(imageCount, framebuffers.data());
-
-    for (int i = 0; i < imageCount; i++) {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
     
-    // Initialize with no color attachment for now
-    // We'll attach layers dynamically in RedrawVR()
-    
-    // Create depth texture as 2D array for stereo
-    glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    // Don't attach depth here - we'll attach per layer in RedrawVR
+    CreateSwapchain(swapchainWidth, swapchainHeight, chosenFormat);
 }
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -271,7 +282,14 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
   }
 
+  void Log(const std::string& message) {
+    std::cout << message << std::endl;
+}
+
   void initOpenXR(HDC hDC, HGLRC hGLRC) {
+
+
+
     XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
     const char* enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
@@ -290,6 +308,18 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
     systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 
     outputError(xrGetSystem(instance, &systemInfo, &systemId));
+
+
+     XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
+    outputError(xrGetSystemProperties(instance, systemId, &systemProps));
+    Log("System Name: " + std::string(systemProps.systemName));
+    Log("Vendor ID: " + std::to_string(systemProps.vendorId));
+    
+    // After creating session
+    Log("OpenXR Session Created");
+    
+    // Log which GPU is being used
+    Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 
     XrGraphicsBindingOpenGLWin32KHR gfx{};
     gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
