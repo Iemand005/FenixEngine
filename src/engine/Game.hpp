@@ -261,6 +261,10 @@ class Game {
     this->UpdateAspect();
   }
 
+  void Resize() {
+    Resize(width, height);
+  }
+
   void loadMap(int index) { scene->GetObjects()[0] = maps.at(index); }
 
   void nextMap() {
