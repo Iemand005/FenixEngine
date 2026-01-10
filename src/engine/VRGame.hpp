@@ -28,8 +28,6 @@
 
 #include "engine.h"
 
-
-
 class VRGame : public Game {
  private:
   bool drawVR = false;
@@ -82,7 +80,6 @@ class VRGame : public Game {
   }
 
   void DisableVR() {
-    drawVR = false;
     outputError(xrRequestExitSession(session));
     // outputError(xrEndSession(session));
   }
@@ -145,7 +142,6 @@ class VRGame : public Game {
     swapchainWidth = configViews[0].recommendedImageRectWidth;
     swapchainHeight = configViews[0].recommendedImageRectHeight;
 
-
     uint32_t formatCount;
     xrEnumerateSwapchainFormats(session, 0, &formatCount, nullptr);
     std::vector<int64_t> formats(formatCount);
@@ -153,7 +149,7 @@ class VRGame : public Game {
 
     std::cout << "Available swapchain formats:" << std::endl;
     for (auto format : formats) {
-        std::cout << "  " << format << std::endl;
+      std::cout << "  " << format << std::endl;
     }
 
     // Try to find a supported format - GL_RGBA8 is usually 0x8058
@@ -173,8 +169,8 @@ class VRGame : public Game {
     }
 
     if (!formatFound && !formats.empty()) {
-        chosenFormat = formats[0];
-        std::cout << "Falling back to format: " << chosenFormat << std::endl;
+      chosenFormat = formats[0];
+      std::cout << "Falling back to format: " << chosenFormat << std::endl;
     }
 
     XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
@@ -202,23 +198,22 @@ class VRGame : public Game {
     glGenFramebuffers(imageCount, framebuffers.data());
 
     for (int i = 0; i < imageCount; i++) {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
-    
-    // Initialize with no color attachment for now
-    // We'll attach layers dynamically in RedrawVR()
-    
-    // Create depth texture as 2D array for stereo
-    glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-}
-glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
+
+      // Initialize with no color attachment for now
+      // We'll attach layers dynamically in RedrawVR()
+
+      // Create depth texture as 2D array for stereo
+      glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
+      glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, swapchainWidth, swapchainHeight, 2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+      // Set texture parameters
+      glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
@@ -278,14 +273,9 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
   }
 
-  void Log(const std::string& message) {
-    std::cout << message << std::endl;
-}
+  void Log(const std::string& message) { std::cout << message << std::endl; }
 
   void initOpenXR(HDC hDC, HGLRC hGLRC) {
-
-
-
     XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
     const char* enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
@@ -305,15 +295,14 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     outputError(xrGetSystem(instance, &systemInfo, &systemId));
 
-
-     XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
+    XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
     outputError(xrGetSystemProperties(instance, systemId, &systemProps));
     Log("System Name: " + std::string(systemProps.systemName));
     Log("Vendor ID: " + std::to_string(systemProps.vendorId));
-    
+
     // After creating session
     Log("OpenXR Session Created");
-    
+
     // Log which GPU is being used
     Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 
@@ -391,26 +380,29 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
     // static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
-    for (uint32_t eye = 0; eye < viewCount; eye++) {
-      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
-    
-    // Attach the color layer for this eye
-    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-    
-    // Attach the depth layer for this eye  
-    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
-    
-    // Check framebuffer status
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
-    }
+    bool render2D = true;
+    // if (render2D) viewCount = 1;
 
-       glViewport(0, 0, swapchainWidth, swapchainHeight);
-    glScissor(0, 0, swapchainWidth, swapchainHeight);
-    
-    // Clear buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (uint32_t eye = 0; eye < render2D ? 1 : viewCount; eye++) {
+      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
+
+      // Attach the color layer for this eye
+      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
+
+      // Attach the depth layer for this eye
+      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
+
+      // Check framebuffer status
+      GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      if (status != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
+      }
+
+      glViewport(0, 0, swapchainWidth, swapchainHeight);
+      glScissor(0, 0, swapchainWidth, swapchainHeight);
+
+      // Clear buffers
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       XrPosef pose = views[eye].pose;
       XrFovf xrFov = views[eye].fov;
@@ -431,6 +423,20 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
       projectionViews[eye].subImage.imageArrayIndex = eye;
     }
 
+    if (render2D) {
+      // glCopyImageSubData(
+      //     swapchainImages[swapchainImageIndex].image, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,  // Source: layer 0
+      //     swapchainImages[swapchainImageIndex].image, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 1,  // Dest: layer 1
+      //     swapchainWidth, swapchainHeight, 1
+      // );
+      glBindTexture(GL_TEXTURE_2D_ARRAY, swapchainImages[swapchainImageIndex].image);
+glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
+                    0,                     // Mipmap level 0
+                    0, 0, 1,              // Destination (x, y, layer) -> layer 1
+                    0, 0,                 // Source (x, y) in framebuffer
+                    swapchainWidth, swapchainHeight);
+    }
+
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
 
@@ -441,31 +447,78 @@ glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
 
-    
     XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-endInfo.displayTime = frameState.predictedDisplayTime;
-endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+    endInfo.displayTime = frameState.predictedDisplayTime;
+    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 
-if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
-    XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-    layer.space = appSpace;
-    layer.viewCount = viewCount;
-    layer.views = projectionViews.data();
-    
-    const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
-    endInfo.layerCount = 1;
-    endInfo.layers = layers;
-} else {
-    endInfo.layerCount = 0;
-    endInfo.layers = nullptr;
-    std::cerr << "Warning: No valid layers to submit" << std::endl;
-}
+    if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
+      XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+      layer.space = appSpace;
+      layer.viewCount = viewCount;
+      layer.views = projectionViews.data();
 
-outputError(xrEndFrame(session, &endInfo));
+      const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
+      endInfo.layerCount = 1;
+      endInfo.layers = layers;
+    } else {
+      endInfo.layerCount = 0;
+      endInfo.layers = nullptr;
+      std::cerr << "Warning: No valid layers to submit" << std::endl;
+    }
+
+    outputError(xrEndFrame(session, &endInfo));
   }
 
-  void BindFrameBuffer(int bufferIndex = 0) {
-    glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+  void BindFrameBuffer(int bufferIndex = 0) { glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex); }
+
+  void HandleSessionStateChange(XrSessionState state, XrTime time) {
+    switch (state) {
+      case XR_SESSION_STATE_IDLE:
+        Log("Session state: IDLE");
+        break;
+      case XR_SESSION_STATE_READY:
+        Log("Session state: READY - Should call xrBeginSession");
+        BeginSession();
+        break;
+      case XR_SESSION_STATE_SYNCHRONIZED:
+        Log("Session state: SYNCHRONIZED");
+        break;
+      case XR_SESSION_STATE_VISIBLE:
+        Log("Session state: VISIBLE - Can render but shouldn't submit");
+        break;
+      case XR_SESSION_STATE_FOCUSED:
+        Log("Session state: FOCUSED - Can render AND submit frames");
+        // m_canSubmitFrames = true;  // Set a flag for your render loop
+        break;
+      case XR_SESSION_STATE_STOPPING:
+        Log("Session state: STOPPING - Should call xrEndSession");
+        xrEndSession(session);
+        drawVR = false;
+
+        // m_canSubmitFrames = false;
+        break;
+    }
+  }
+
+  void PollEvents() {
+    XrEventDataBuffer event = {XR_TYPE_EVENT_DATA_BUFFER};
+
+    while (xrPollEvent(instance, &event) == XR_SUCCESS) {
+      switch (event.type) {
+        case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+          XrEventDataSessionStateChanged* stateChanged = (XrEventDataSessionStateChanged*)&event;
+
+          XrSessionState currentState = stateChanged->state;
+          XrTime time = stateChanged->time;
+
+          // Handle the state transition
+          HandleSessionStateChange(currentState, time);
+
+        } break;
+          // Handle other event types...
+      }
+      event = {XR_TYPE_EVENT_DATA_BUFFER};  // Reset for next poll
+    }
   }
 
   void RedrawWindow() {
@@ -486,9 +539,9 @@ outputError(xrEndFrame(session, &endInfo));
   void Redraw() {
     if (drawVR) RedrawVR();
     GLenum err;
-while ((err = glGetError()) != GL_NO_ERROR) {
-    std::cerr << "OpenGL error: " << err << std::endl;
-}
+    while ((err = glGetError()) != GL_NO_ERROR) {
+      std::cerr << "OpenGL error: " << err << std::endl;
+    }
     if (drawWindow) RedrawWindow();
   }
 
@@ -497,16 +550,15 @@ while ((err = glGetError()) != GL_NO_ERROR) {
     // std::cerr << "Error code: " << result << "\n";
 
     char buf[XR_MAX_RESULT_STRING_SIZE];
-    if (xrResultToString(nullptr, result, buf) == XR_SUCCESS)
-      std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
+    if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
   }
 
   void CheckGLError(const char* location) {
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
-        std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
+      std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
     }
-}
+  }
 
   void Destroy() {
     xrDestroySession(session);
