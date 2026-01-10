@@ -191,7 +191,7 @@ public:
       }
 
       if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
-        this->DisableVR();
+        this->DestroyXR();
       }
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
