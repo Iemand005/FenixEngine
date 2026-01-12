@@ -115,50 +115,82 @@ class PhysicsObject {
   }
 
     static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
-                                        const std::vector<uint32_t>& indices,
-                                        float density = 1000.0f) {
+                                      const std::vector<uint32_t>& indices,
+                                      float density = 1000.0f) {
+    // Validate vertices
+    if (vertices.empty()) {
+        std::cerr << "Error: No vertices provided!" << std::endl;
+        return nullptr;
+    }
+    
+    // Validate indices
+    if (indices.empty()) {
+        std::cerr << "Error: No indices provided!" << std::endl;
+        return nullptr;
+    }
+    
+    if (indices.size() % 3 != 0) {
+        std::cerr << "Error: Index count must be divisible by 3! Got " 
+                  << indices.size() << " indices." << std::endl;
+        return nullptr;
+    }
+    
+    size_t triangleCount = indices.size() / 3;
+    if (triangleCount == 0) {
+        std::cerr << "Error: Need at least one triangle!" << std::endl;
+        return nullptr;
+    }
+    
+    std::cout << "Creating mesh with " << vertices.size() 
+              << " vertices and " << triangleCount << " triangles." << std::endl;
+    
+    // Check for valid index ranges
+    for (uint32_t index : indices) {
+        if (index >= vertices.size()) {
+            std::cerr << "Error: Index " << index 
+                      << " out of bounds (max: " << vertices.size() - 1 << ")" << std::endl;
+            return nullptr;
+        }
+    }
+    
     // Convert glm::vec3 to JPH::Float3
     JPH::VertexList vertexList;
-    vertexList.reserve(vertices.size());
+    // vertexList.reserve(vertices.size());
     for (const auto& v : vertices) {
-      vertexList.emplace_back(v.x, v.y, v.z);
+        vertexList.emplace_back(v.x, v.y, v.z);
     }
     
     // Create triangle list from indices
     JPH::IndexedTriangleList triangleList;
-    triangleList.reserve(indices.size() / 3);
-    
-    if (indices.size() % 3 != 0) {
-      std::cerr << "Error: Index count must be divisible by 3!" << std::endl;
-      return nullptr;
-    }
+    triangleList.reserve(triangleCount);
     
     for (size_t i = 0; i < indices.size(); i += 3) {
-      JPH::IndexedTriangle triangle;
-      triangle.mIdx[0] = indices[i];
-      triangle.mIdx[1] = indices[i + 1];
-      triangle.mIdx[2] = indices[i + 2];
-      triangle.mMaterialIndex = 0; // Default material
-      triangleList.push_back(triangle);
+        JPH::IndexedTriangle triangle(
+            indices[i], 
+            indices[i + 1], 
+            indices[i + 2], 
+            0  // Default material
+        );
+        triangleList.push_back(triangle);
     }
     
     // Create mesh shape settings
     JPH::MeshShapeSettings meshSettings(vertexList, triangleList);
     
-    // Important: For physics simulation, we need to create a triangle mesh
-    // with proper support for backfaces
-    // meshSettings.mTriangleWindingCounterClockwise = true;
-    
+    // IMPORTANT: Set Sanitize = true to clean up the mesh
+    // meshSettings.Sanitize();
+    // meshSettings.
     // Create the shape
     JPH::ShapeSettings::ShapeResult result = meshSettings.Create();
+
     
     if (result.HasError()) {
-      std::cerr << "Error creating mesh shape: " << result.GetError() << std::endl;
-      return nullptr;
+        std::cerr << "Error creating mesh shape: " << result.GetError() << std::endl;
+        return nullptr;
     }
     
     return result.Get();
-  }
+}
 
   void CreateBodyFromShape(JPH::ShapeRefC shape,
                           const glm::vec3& position,
@@ -187,7 +219,10 @@ class PhysicsObject {
     bodySettings.mAllowSleeping = true;
     
     if (motionType == JPH::EMotionType::Dynamic) {
-      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateMassAndInertia;
+      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+      JPH::MassProperties massProperties;
+      massProperties.mMass = 1.0f;
+      bodySettings.mMassPropertiesOverride = massProperties;
     }
     
     // Get body interface and create body

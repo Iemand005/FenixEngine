@@ -36,7 +36,7 @@ class VRGame : public Game {
  public:
   XrInstance instance = XR_NULL_HANDLE;
   XrSession session = XR_NULL_HANDLE;
-  
+
   XrSystemId systemId;
 
   XrSpace appSpace = XR_NULL_HANDLE;
@@ -80,9 +80,7 @@ class VRGame : public Game {
     if (IsInstanceValid()) drawVR = true;
   }
 
-  bool IsInstanceValid() {
-    return instance != XR_NULL_HANDLE;
-  }
+  bool IsInstanceValid() { return instance != XR_NULL_HANDLE; }
 
   void DisableVR() {
     outputError(xrRequestExitSession(session));
@@ -158,25 +156,23 @@ class VRGame : public Game {
     }
 
     // Try to find a supported format - GL_RGBA8 is usually 0x8058
-    int64_t chosenFormat = GL_RGBA8;  // Try RGBA8 first
-    bool formatFound = false;
-    // for (auto format : formats) {
-    //     if (format == GL_RGBA8 || format == GL_SRGB8_ALPHA8 || format == GL_RGBA8_SNORM) {
-    //         chosenFormat = format;
-    //         formatFound = true;
-    //         std::cout << "Using format: " << chosenFormat << std::endl;
-    //         break;
-    //     }
-    // }
-    {
-      formatFound = true;
-      chosenFormat = formats[1];
+    int64_t chosenFormat = formats[1];  // Try RGBA8 first
+    for (auto format : formats) {
+        if (format == GL_RGBA8) {
+            chosenFormat = format;
+            std::cout << "Using format: " << chosenFormat << std::endl;
+            break;
+        }
     }
+    // // {
+    // //   formatFound = true;
+    // //   chosenFormat = ;
+    // // }
 
-    if (!formatFound && !formats.empty()) {
-      chosenFormat = formats[0];
-      std::cout << "Falling back to format: " << chosenFormat << std::endl;
-    }
+    // if (!formats.empty()) {
+    //   chosenFormat = formats[0];
+    //   std::cout << "Falling back to format: " << chosenFormat << std::endl;
+    // }
 
     XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
     swapchainInfo.arraySize = viewCount;  // Stereo = 2 layers
@@ -356,7 +352,6 @@ class VRGame : public Game {
     PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
 
     outputError(xrBeginFrame(session, &frameBegin));
-
     outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
 
     XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
@@ -382,11 +377,8 @@ class VRGame : public Game {
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
     static float angle = 0.0f;
-    // static fe::Camera camera = fe::Camera(0.1f, 100.0f);
-    // static fe::Camera vrCamera = fe::Camera(0.1f, 100.0f);
 
     bool render2D = false;
-    // if (render2D) viewCount = 1;
 
     for (uint32_t eye = 0; eye < viewCount; eye++) {
       XrPosef pose = views[eye].pose;
@@ -397,29 +389,28 @@ class VRGame : public Game {
       glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
       if (!render2D) {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
 
-      glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-      glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
+        // Check framebuffer status
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+          std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
+        }
 
-      // Check framebuffer status
-      GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-      if (status != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
-      }
-
-      // glViewport(0, 0, swapchainWidth, swapchainHeight);
-      // glScissor(0, 0, swapchainWidth, swapchainHeight);
+        // glViewport(0, 0, swapchainWidth, swapchainHeight);
+        // glScissor(0, 0, swapchainWidth, swapchainHeight);
 
         camera->update(position + positionOffset, orientation, fov);
         scene->Render(*shader, *camera, swapchainWidth, swapchainHeight);
       } else {
         glBindTexture(GL_TEXTURE_2D_ARRAY, swapchainImages[swapchainImageIndex].image);
-glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
-                    0,                     // Mipmap level 0
-                    0, 0, 1,              // Destination (x, y, layer) -> layer 1
-                    0, 0,                 // Source (x, y) in framebuffer
-                    swapchainWidth, swapchainHeight);
+        glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
+                            0,                    // Mipmap level 0
+                            0, 0, 1,              // Destination (x, y, layer) -> layer 1
+                            0, 0,                 // Source (x, y) in framebuffer
+                            swapchainWidth, swapchainHeight);
       }
 
       projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
@@ -430,20 +421,6 @@ glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
       projectionViews[eye].subImage.imageRect.extent = {swapchainWidth, swapchainHeight};
       projectionViews[eye].subImage.imageArrayIndex = eye;
     }
-
-//     if (render2D) {
-//       // glCopyImageSubData(
-//       //     swapchainImages[swapchainImageIndex].image, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,  // Source: layer 0
-//       //     swapchainImages[swapchainImageIndex].image, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 1,  // Dest: layer 1
-//       //     swapchainWidth, swapchainHeight, 1
-//       // );
-//       glBindTexture(GL_TEXTURE_2D_ARRAY, swapchainImages[swapchainImageIndex].image);
-// glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
-//                     0,                     // Mipmap level 0
-//                     0, 0, 1,              // Destination (x, y, layer) -> layer 1
-//                     0, 0,                 // Source (x, y) in framebuffer
-//                     swapchainWidth, swapchainHeight);
-//     }
 
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
@@ -532,14 +509,7 @@ glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
   void RedrawWindow() {
     BindFrameBuffer();
 
-    // const Game* game = this;
-
-    // scene->Render(*shader, *camera);
-
-    // glfwSwapBuffers(window);
-    // glfwPollEvents();
     Game* game = this;
-    // game->Resize(game->width, game->height);
     game->Resize();
     game->Redraw();
   }
@@ -572,9 +542,8 @@ glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
     drawVR = false;
     xrDestroySession(session);
     xrDestroyInstance(instance);
-  session = XR_NULL_HANDLE;
+    session = XR_NULL_HANDLE;
     instance = XR_NULL_HANDLE;
-
   }
 
   void Destroy() {

@@ -71,6 +71,15 @@
       "console": "integratedTerminal",
       "preLaunchTask": "C/C++: cl.exe build FoxChat"
     },
+    // {
+    //   "name": "Build Precompiled Header",
+    //   "preLaunchTask": ["Generate Precompiled Header", "C/C++: cl.exe build Chizzle"],
+    //   "dependsOrder": "sequence",
+    //   "group": {
+    //     "kind": "build",
+    //     "isDefault": true
+    //   }
+    // }
     {
       "name": "C/C++: cl.exe build and debug Chizzle",
       "type": "cppvsdbg",

@@ -5,15 +5,13 @@
 #define NOMINMAX
 #endif
 
+#include "../stdafx.h"
+
 #include <GLFW/glfw3.h>
 #pragma comment(lib, "glfw3.lib")
 #include <glad/glad.h>
 
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
+
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

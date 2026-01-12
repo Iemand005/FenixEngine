@@ -67,7 +67,8 @@ public:
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
 
     for (auto &mesh : map1->meshes) {
-      auto vertices = std::vector<glm::vec3>(mesh.vertices.size());
+      // auto vertices = std::vector<glm::vec3>(mesh.vertices.size());
+      auto vertices = std::vector<glm::vec3>();
       for (auto &vertex : mesh.vertices)
         vertices.push_back(vertex.position);
       mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
