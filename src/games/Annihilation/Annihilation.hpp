@@ -86,7 +86,7 @@ class Annihilation : public Game {
 
     this->player = std::static_pointer_cast<fe::Character>(LoadObj("resources/models/citizen.obj", 0.1f));
 
-    this->player->SetPhysicsObject(physicsEngine->CreateObject());
+    this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
 
 
     // spawnZombies(10);
@@ -134,8 +134,8 @@ class Annihilation : public Game {
     }
 
     const float cameraSpeed = 0.0100f;
-    glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
-    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
+    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
 
     glm::vec3 velocity{};
     glm::vec3 acceleration{};
@@ -144,8 +144,8 @@ class Annihilation : public Game {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) velocity -= horizontalFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) velocity -= right;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += camera->up;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= camera->up;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
       // this->player->acceleration.y = 10.0f;
       // this->player->applyForce(glm::vec3(0.0f, 10.0f, 0.0f));

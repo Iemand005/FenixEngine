@@ -19,10 +19,10 @@ int main() {
     game.ProcessInput();
     game.player->state.rotation.y = -game.yaw + 90.0f;
     glm::vec3 pos = game.player->state.position + cameraOffset;
-    game.cameraPos = pos - game.cameraFront * 5.0f;
-    game.camera->SetPos(game.cameraPos);
+    // game.cameraPos = pos - game.cameraFront * 5.0f;
+    game.camera->SetPos(pos - game.camera->front * 5.0f);
 
-    game.camera->setFront(glm::normalize(pos - game.cameraPos));
+    game.camera->setFront(glm::normalize(pos - game.camera->GetPos()));
 
     if (game.isConnectedToServer) game.client->sendPosition(game.player->state.position, game.player->state.rotation);
 

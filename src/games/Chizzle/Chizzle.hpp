@@ -64,10 +64,8 @@ public:
     this->scene->AddObject(map1);
     this->maps.push_back(map1);
 
-    // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
 
     for (auto &mesh : map1->meshes) {
-      // auto vertices = std::vector<glm::vec3>(mesh.vertices.size());
       auto vertices = std::vector<glm::vec3>();
       for (auto &vertex : mesh.vertices)
         vertices.push_back(vertex.position);
@@ -75,7 +73,7 @@ public:
       // break;
     }
 
-    // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
 
@@ -88,6 +86,8 @@ public:
 
   void ProcessInput() {
     // double deltaTime = scene->getDeltaTime()
+    Game* game = this;
+    game->ProcessInput();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
@@ -97,19 +97,13 @@ public:
     }
 
     const float cameraSpeed = 0.0100f;
-    glm::vec3 horizontalFront = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
-    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, cameraUp));
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
+    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
 
     glm::vec3 velocity{};
     glm::vec3 acceleration{};
     // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) velocity += horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) velocity -= horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) velocity -= right;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= cameraUp;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += cameraUp;
+    
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity -= glm::vec3(0, 1, 0);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) velocity -= glm::vec3(0, -1, 0);
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
@@ -158,10 +152,9 @@ public:
       ProcessInput();
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;
-      cameraPos = pos - cameraFront * 6.0f;
-      camera->SetPos(cameraPos);
+      camera->SetPos(pos - camera->front * 6.0f);
 
-      camera->setFront(glm::normalize(pos - cameraPos));
+      camera->setFront(glm::normalize(pos - camera->GetPos()));
 
       if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
 
@@ -189,7 +182,7 @@ public:
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
-        this->EnableVR();
+        this->EnableXR ();
       }
 
       if (ImGui::Button("Disable VR", ImVec2(50, 20))) {

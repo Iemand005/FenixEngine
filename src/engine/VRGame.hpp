@@ -75,7 +75,7 @@ class VRGame : public Game {
     if (launchVR) LaunchVR();
   }
 
-  void EnableVR() {
+  void EnableXR() {
     if (!IsInstanceValid()) LaunchVR();
     if (IsInstanceValid()) drawVR = true;
   }

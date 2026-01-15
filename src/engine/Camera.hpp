@@ -10,13 +10,13 @@ namespace fe {
 class Camera {
  private:
   glm::vec3 position;
-  glm::vec3 front;
-  glm::vec3 up;
   glm::mat4 viewMatrix;
   unsigned int frustumVAO = 0, frustumVBO = 0;
   std::vector<glm::vec3> frustumVertices;
-
- public:
+  
+  public:
+  glm::vec3 up;
+  glm::vec3 front;
   float fov, aspect, nearDist, farDist;
   glm::mat4 projectionMatrix;
 
@@ -78,6 +78,7 @@ class Camera {
     this->position = pos;
     viewMatrix = glm::lookAt(position, position + front, up);
   }
+  glm::vec3 GetPos() const { return position; }
   void setFront(const glm::vec3& front) {
     this->front = front;
     updateView(position, front, up);
