@@ -72,6 +72,7 @@ public:
       for (auto &vertex : mesh.vertices)
         vertices.push_back(vertex.position);
       mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
+      break;
     }
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));

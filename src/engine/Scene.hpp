@@ -91,7 +91,7 @@ class Scene {
 
   void ResolveCollisions() {
     for (auto& object : objects) {
-      if (object->state.position.y < -200.0f) {
+      if (object->state.position.y < -10.0f) {
         auto pos = object->state.position;
         pos.y = 10;
         object->physicsObject->SetPosition(pos);

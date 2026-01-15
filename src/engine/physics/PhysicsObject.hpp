@@ -68,7 +68,7 @@ class PhysicsObject {
                 const std::vector<uint32_t>& indices,
                 const glm::vec3& position = glm::vec3(0.0f),
                 float density = 1000.0f,
-                bool isStatic = false)
+                bool isStatic = true)
     : physicsSystem(physicsSystem)
   {
     if (!physicsSystem) {
