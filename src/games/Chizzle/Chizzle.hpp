@@ -72,7 +72,7 @@ public:
       for (auto &vertex : mesh.vertices)
         vertices.push_back(vertex.position);
       mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
-      break;
+      // break;
     }
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
@@ -82,7 +82,7 @@ public:
     this->player = std::make_shared<fe::Character>();
     this->scene->AddObject(player);
 
-    this->player->SetPhysicsObject(physicsEngine->CreateObject());
+    this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
 
   }
 

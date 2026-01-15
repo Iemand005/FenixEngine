@@ -164,8 +164,8 @@ class PhysicsEngine {
     physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
   }
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(bool dynamic = true) {
-    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem, dynamic);
+  std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true) {
+    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem, size, dynamic);
     return std::move(obj);
   }
 

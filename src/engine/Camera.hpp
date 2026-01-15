@@ -69,6 +69,7 @@ class Camera {
   };
 
   void setAspect(float aspect) {
+    // if (aspect == -nan()) return;
     this->aspect = aspect;
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
   }

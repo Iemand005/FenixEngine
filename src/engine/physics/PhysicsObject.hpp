@@ -36,10 +36,10 @@ class PhysicsObject {
   Body* body;
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField, Compound };
 
-  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, bool dynamic = true) : physicsSystem(physicsSystem) {
-    float a = 100.0;
-    float b = 0.1;
-    float c = 100.5;
+  PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, glm::vec3 size, bool dynamic = true) : physicsSystem(physicsSystem) {
+    float a = size.x;
+    float b = size.y;
+    float c = size.z;
 
     JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
     bodyShapeSettings.mConvexRadius = 0.01;
