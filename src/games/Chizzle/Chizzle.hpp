@@ -193,6 +193,12 @@ public:
         std::cout << "Button clicked!" << std::endl;
       }
 
+      static bool wireframe = false;
+      if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
+        if (wireframe) this->EnableWireframeMode();
+        else this->DisableWireframeMode();
+      }
+
       fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {

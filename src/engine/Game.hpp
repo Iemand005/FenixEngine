@@ -300,7 +300,7 @@ class Game {
     scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
-    // drawImGui();
+
     DrawUI();
 
     glfwSwapBuffers(this->window);
@@ -320,70 +320,7 @@ class Game {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
-    // double deltaTime = scene->GetDeltaTime();
-
-    // physicsEngine->Update(deltaTime);
-
-    // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
-    // if (ImGui::GetIO().WantCaptureMouse) {
-    //   StopMouseCapture();
-    // } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-    //   StartMouseCapture();
-    // }
-
-    // // if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
-    // //     ImGui::SetNextFrameWantCaptureMouse(false);
-    // //     return;
-    // //   }
-
-    // const float cameraSpeed = 10.0f * deltaTime;
-    // glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
-    // glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
-    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->state.position += cameraSpeed * horizontalFront;
-    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->state.position -= cameraSpeed * horizontalFront;
-    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->state.position -= right * cameraSpeed;
-    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->state.position += right * cameraSpeed;
-    // if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) this->player->state.position += camera->up * cameraSpeed;
-    // if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) this->player->state.position -= camera->up * cameraSpeed;
-    // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {
-    //   // this->player->acceleration.y = 10.0f;
-    //   //this->player->ApplyForce(glm::vec3(0.0f, 10.0f, 0.0f));
-    //   this->player->physicsObject->AddLinearVelocity(glm::vec3(0, 10, 0));
-    //   canJump = false;
-    // }
-    // if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-    //   std::shared_ptr<fe::Object> newObj = this->player->Clone();
-    //   newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
-    //   glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
-    //   newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
-    //   newObj->state.rotation.x = 0.0f;
-    //   this->scene->AddObject(newObj);
-    // }
-    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-    //   DisableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-    //   DisableWireframeMode();
-
-    // if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
-    // if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
-    // // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    // //   client->sendPing();
-
-    // static bool ctrlWasDown = false;
-    // if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-    //   if (!ctrlWasDown) this->nextMap();
-    //   ctrlWasDown = true;
-    // } else
-    //   ctrlWasDown = false;
-
-    // static bool pWasDown = false;
-    // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-    //   // if (!pWasDown) client->sendPing();
-    //   pWasDown = true;
-    // } else
-    //   pWasDown = false;
+    
   }
 
   void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
