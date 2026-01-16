@@ -126,6 +126,9 @@ class Annihilation : public Game {
   void ProcessInput() {
     // double deltaTime = scene->getDeltaTime()
 
+    Game* game = this;
+    game->ProcessMovementInput();
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {
       StopMouseCapture();
@@ -139,11 +142,12 @@ class Annihilation : public Game {
 
     glm::vec3 velocity{};
     glm::vec3 acceleration{};
+    
     // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) velocity += horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) velocity -= horizontalFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) velocity -= right;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
+    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) velocity += horizontalFront;
+    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) velocity -= horizontalFront;
+    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) velocity -= right;
+    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) velocity += right;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) velocity += camera->up;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) velocity -= camera->up;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) {

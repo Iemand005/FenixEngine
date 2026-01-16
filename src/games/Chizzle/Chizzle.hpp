@@ -87,7 +87,7 @@ public:
   void ProcessInput() {
     // double deltaTime = scene->getDeltaTime()
     Game* game = this;
-    game->ProcessInput();
+    game->ProcessMovementInput();
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     if (ImGui::GetIO().WantCaptureMouse) {

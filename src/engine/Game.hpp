@@ -228,7 +228,7 @@ class Game {
       direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
       direction.y = sin(glm::radians(game->pitch));
       direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      // game->cameraFront = glm::normalize(direction);
+      game->camera->front = glm::normalize(direction);
     });
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
@@ -315,7 +315,7 @@ class Game {
     physicsEngine->Update(deltaTime);
   }
 
-  virtual void ProcessInput() {
+  virtual void ProcessMovementInput() {
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
