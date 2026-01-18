@@ -7,8 +7,8 @@
 
 #include "../stdafx.h"
 
-#include <GLFW/glfw3.h>
-#pragma comment(lib, "glfw3.lib")
+// #include <GLFW/glfw3.h>
+// #pragma comment(lib, "glfw3.lib")
 #include <glad/glad.h>
 
 
@@ -249,7 +249,6 @@ class Game {
       game->Redraw();
     });
 
-    glfwJoy
 
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
     return true;

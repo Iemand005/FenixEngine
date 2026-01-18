@@ -1,0 +1,7 @@
+
+namespace fe {
+
+  class IWindow {
+
+  }
+}
