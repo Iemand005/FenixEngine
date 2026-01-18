@@ -249,6 +249,8 @@ class Game {
       game->Redraw();
     });
 
+    glfwJoy
+
     // glfwGetWindowAttrib(window, GLFW_TOUCH);
     return true;
   }
