@@ -158,6 +158,20 @@ public:
     Destroy();
   }
 
+  void InitUI() override {
+    const char* glsl_version = "#version 330 core";
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+
+    ImGui::StyleColorsDark();
+
+    // ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
+    ImGui_ImplOpenGL3_Init(glsl_version);
+  }
+
   void DrawUI() override {
     ImGui_ImplOpenGL3_NewFrame();
     // ImGui_ImplDSL3_NewFrame();

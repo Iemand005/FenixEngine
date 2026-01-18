@@ -112,7 +112,7 @@ class Game {
 
     UpdateAspect();
     
-    InitImGui();
+    InitUI();
     
     StartMouseCapture();
   }
@@ -261,7 +261,9 @@ class Game {
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
-  virtual void DrawUI() {};
+  virtual void InitUI() { InitImGui(); }
+
+  virtual void DrawUI() {}
 
   void UpdateAspect() {
     if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
