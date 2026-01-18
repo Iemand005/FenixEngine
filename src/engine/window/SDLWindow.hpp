@@ -2,6 +2,9 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 
+#include <glad/glad.h>
+
+
 #include "IWindow.hpp"
 
 namespace fe {
@@ -17,6 +20,10 @@ namespace fe {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
         // return EXIT_FAILURE;
     }
+
+    
+
+    
 
     // 2. Set OpenGL attributes BEFORE creating window
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -45,8 +52,16 @@ namespace fe {
         SDL_Quit();
     }
 
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return;
+    }
+
     // 5. Enable VSync (optional but recommended)
     SDL_GL_SetSwapInterval(1);
+
+    glClearColor(0.2f, 0.3f, 0.4f, 1.0f);  // Background color
+    glViewport(0, 0, 800, 600);
   }
     void SetSwapInterval(int interval) override {
       SDL_GL_SetSwapInterval(interval);
@@ -54,6 +69,14 @@ namespace fe {
 
     void SwapBuffers() override {
       SDL_GL_SwapWindow(window);
+    }
+
+    SDL_Window* GetSDLWindow() {
+      return window;
+    }
+
+    SDL_GLContext GetSDLGLContext() {
+      return gl_context;
     }
 
     void Destroy() override {

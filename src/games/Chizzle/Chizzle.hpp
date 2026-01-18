@@ -83,54 +83,53 @@ public:
     Game* game = this;
     game->ProcessMovementInput();
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
-    if (ImGui::GetIO().WantCaptureMouse) {
-      StopMouseCapture();
-    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-      StartMouseCapture();
-    }
+    // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
+    // if (ImGui::GetIO().WantCaptureMouse) {
+    //   StopMouseCapture();
+    // } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+    //   StartMouseCapture();
+    // }
 
-    const float cameraSpeed = 0.0100f;
-    glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
-    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
+    // const float cameraSpeed = 0.0100f;
+    // glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
+    // glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
 
-    glm::vec3 velocity{};
-    glm::vec3 acceleration{};
-    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
+    // glm::vec3 velocity{};
+    // glm::vec3 acceleration{};
+    // // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
     
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity -= glm::vec3(0, 1, 0);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) velocity -= glm::vec3(0, -1, 0);
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-      std::shared_ptr<fe::Object> newObj = this->player->Clone();
-      newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
-      glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
-      newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
-      newObj->state.rotation.x = 0.0f;
-      this->scene->AddObject(newObj);
-    }
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-      DisableWireframeMode();
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-      DisableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity -= glm::vec3(0, 1, 0);
+    // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) velocity -= glm::vec3(0, -1, 0);
+    // if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+    //   std::shared_ptr<fe::Object> newObj = this->player->Clone();
+    //   newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
+    //   glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
+    //   newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
+    //   newObj->state.rotation.x = 0.0f;
+    //   this->scene->AddObject(newObj);
+    // }
+    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
+    //   DisableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
+    //   DisableWireframeMode();
 
-    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
-    // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    //   client->sendPing();
+    // if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
+    // if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
+    // // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+    // //   client->sendPing();
 
-    static bool ctrlWasDown = false;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-      if (!ctrlWasDown) this->nextMap();
-      ctrlWasDown = true;
-    } else
-      ctrlWasDown = false;
+    // static bool ctrlWasDown = false;
+    // if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+    //   if (!ctrlWasDown) this->nextMap();
+    //   ctrlWasDown = true;
+    // } else
+    //   ctrlWasDown = false;
 
-      this->player->physicsObject->AddPosition(velocity * cameraSpeed);
+    //   this->player->physicsObject->AddPosition(velocity * cameraSpeed);
   }
 
-  bool ShouldClose() { return glfwWindowShouldClose(this->window); }
 
   void Run() {
     DisableVSync();
@@ -161,7 +160,8 @@ public:
 
   void DrawUI() override {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    // ImGui_ImplDSL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Debug");

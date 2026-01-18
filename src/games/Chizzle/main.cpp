@@ -3,6 +3,8 @@
 
 int main() {
 
+  std::cout << "Hiii";
+
   Chizzle game;
   game.Run();
   return 0;

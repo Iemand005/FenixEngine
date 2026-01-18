@@ -18,7 +18,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_sdl3.h>
 #include <imgui/imgui_impl_opengl3.h>
 
 #include "engine.h"
@@ -257,6 +257,7 @@ class Game {
     ImGui::StyleColorsDark();
 
     // ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
