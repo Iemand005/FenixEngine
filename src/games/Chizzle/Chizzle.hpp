@@ -24,6 +24,7 @@ public:
 
   int mapIndex = 0;
 
+  Chizzle() : Chizzle(800, 640) {}
 
   Chizzle(int width, int height, bool vr = false) : VRGame(width, height, vr) {
 
@@ -65,14 +66,7 @@ public:
     this->maps.push_back(map1);
 
 
-    for (auto &mesh : map1->meshes) {
-      auto vertices = std::vector<glm::vec3>();
-      for (auto &vertex : mesh.vertices)
-        vertices.push_back(vertex.position);
-      mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
-      // break;
-    }
-
+    
     this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
@@ -170,7 +164,7 @@ public:
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Debug info");
+    ImGui::Begin("Debug");
     {
       ImGui::Text("Hello, World!");
       ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);

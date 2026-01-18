@@ -83,6 +83,7 @@ class Game {
 
   std::unique_ptr<fe::Level> level;
 
+  Game() : Game(0, 0) {}
 
   Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
     if (!InitGlfw(bpc10)) return;
@@ -263,7 +264,18 @@ class Game {
     Resize(width, height);
   }
 
-  void loadMap(int index) { scene->GetObjects()[0] = maps.at(index); }
+  void loadMap(int index) {
+    auto map = maps.at(index);
+    scene->GetObjects()[0] = map;
+
+    for (auto &mesh : map->meshes) {
+      auto vertices = std::vector<glm::vec3>();
+      for (auto &vertex : mesh.vertices)
+        vertices.push_back(vertex.position);
+      mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
+    }
+
+  }
 
   void nextMap() {
     loadMap(mapIndex);
@@ -320,7 +332,7 @@ class Game {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
-    
+
   }
 
   void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }

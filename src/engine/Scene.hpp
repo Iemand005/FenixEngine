@@ -43,7 +43,7 @@ class Scene {
 
     for (auto& model : objects) model->Render(shader);
 
-    camera.Render(shader);
+    // camera.Render(shader);
 
     this->EndRender();
   }

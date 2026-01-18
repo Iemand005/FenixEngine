@@ -3,7 +3,7 @@
 
 int main() {
 
-  Chizzle game(800, 600);
+  Chizzle game;
   game.Run();
   return 0;
 }

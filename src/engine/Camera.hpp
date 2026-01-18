@@ -102,6 +102,7 @@ class Camera {
   }
   glm::mat4 GetViewMatrix() const { return viewMatrix; }
   glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
+  
   void Render(ShaderProgram& shader) const {
     if (frustumVAO == 0) return;
     shader.Use();
