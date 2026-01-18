@@ -17,9 +17,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_sdl3.h>
-#include <imgui/imgui_impl_opengl3.h>
+// #include <imgui/imgui.h>
+// #include <imgui/imgui_impl_sdl3.h>
+// #include <imgui/imgui_impl_opengl3.h>
 
 #include "engine.h"
 #include "networking/networking.hpp"
@@ -79,7 +79,7 @@ class Game {
 
   std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
 
-  ImGuiIO io;
+  // ImGuiIO io;
 
   bool isConnectedToServer = false;
 
@@ -91,7 +91,7 @@ class Game {
 
   Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
     // if (!InitGlfw(bpc10)) return;
-    this->window = std::make_unique<fe::SDLWindow>();
+    this->window = std::make_unique<fe::SDLWindow>("Game");
     this->width = width;
     this->height = height;
 
@@ -225,43 +225,33 @@ class Game {
     physicsEngine->Update(deltaTime);
   }
 
-  virtual void ProcessMovementInput() {
-    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
-
-  }
-
   void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
   void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
   void StartMouseCapture() {
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    io.WantCaptureMouse = false;
+    // io.WantCaptureMouse = false;
   }
 
   void StopMouseCapture() {
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    io.WantCaptureMouse = true;
+    // io.WantCaptureMouse = true;
 
   }
 
-  void InitImGui() {
-    const char* glsl_version = "#version 330 core";
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+  virtual void InitUI() { 
+    // const char* glsl_version = "#version 330 core";
+    // IMGUI_CHECKVERSION();
+    // ImGui::CreateContext();
+    // io = ImGui::GetIO();
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
-    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsDark();
 
-    // ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    // // ImGui_ImplGlfw_InitForOpenGL(window, true);
+    // ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
+    // ImGui_ImplOpenGL3_Init(glsl_version);
   }
-
-  virtual void InitUI() { InitImGui(); }
 
   virtual void DrawUI() {}
 

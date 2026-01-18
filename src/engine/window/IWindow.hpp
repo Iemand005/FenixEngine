@@ -19,6 +19,8 @@ public:
   
   virtual void SwapBuffers() = 0;
 
+  // virtual void PollEvents() = 0;
+
 	virtual void Destroy() = 0;
 
   };

@@ -67,6 +67,10 @@ namespace fe {
       SDL_GL_SwapWindow(window);
     }
 
+    bool PollSDLEvents(SDL_Event *event) {
+      return SDL_PollEvent(event);
+    }
+
     SDL_Window* GetSDLWindow() {
       return window;
     }

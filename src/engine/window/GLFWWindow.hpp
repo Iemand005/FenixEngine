@@ -120,6 +120,9 @@ bool InitGlfw(bool tenBit = false) {
     return true;
   }
 
+  void PollGLFWEvents() {
+    glfwPollEvents();
+  }
 
   void SetSwapInterval(int interval) override {
     glfwSwapInterval(interval);

@@ -4,12 +4,18 @@
 
 #include <cstdio>
 #include <fstream>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <map>
 #include <string>
+
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl3.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 #include "../../engine/VRGame.hpp"
 
@@ -23,6 +29,8 @@ public:
   bool canJump = true;
 
   int mapIndex = 0;
+
+  ImGuiIO io;
 
   Chizzle() : Chizzle(800, 640) {}
 
@@ -58,6 +66,8 @@ public:
       std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username << std::endl;
       messages.push_back(sender.username + ": " + message);
     };
+
+    InitUI();
   }
 
   void LoadModels() {
@@ -79,10 +89,36 @@ public:
   }
 
   void ProcessInput() {
-    // double deltaTime = scene->getDeltaTime()
-    Game* game = this;
-    game->ProcessMovementInput();
+    SDL_Event event;
+    while (window->PollSDLEvents(&event)) switch (event.type) {
+      case SDL_EVENT_WINDOW_RESIZED:
+                case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+                    // Get actual pixel dimensions
+                    int w, h;
+                    SDL_GetWindowSizeInPixels(window->GetSDLWindow(), &w, &h);
+                    glViewport(0, 0, w, h);
+                    // window_changed = 1;
+                    break;
 
+      // case SDL_EVENT_WINDOW_RESIZED:{
+      //   Resize(event.window.data1, event.window.data2);
+      // }
+
+      // break;
+
+      // case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:{
+      //   Resize(event.window.data1, event.window.data2);
+      // }
+
+      // break;
+       }
+
+    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
+
+  // }
     // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     // if (ImGui::GetIO().WantCaptureMouse) {
     //   StopMouseCapture();
@@ -136,12 +172,13 @@ public:
   
     glm::vec3 cameraOffset = glm::vec3(0);
 
-    while (!ShouldClose()) {
-      glfwPollEvents();
+    SDL_Event event;
+    while (!window->ShouldClose()) {
 
       if (player->touchedGround) {
         canJump = true;
       }
+      // while (window->PollSDLEvents(&event))
       ProcessInput();
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;
