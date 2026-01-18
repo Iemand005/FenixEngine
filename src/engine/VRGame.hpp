@@ -28,7 +28,7 @@
 
 #include "engine.h"
 
-class VRGame : public Game {
+class VRGame : public fe::Game {
  private:
   bool drawVR = false;
   // bool vrInitialized = false;
@@ -88,7 +88,7 @@ class VRGame : public Game {
   }
 
   void LaunchVR() {
-    initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
+    // initOpenXR(GetDC(glfwGetWin32Window(window)), wglGetCurrentContext());
     initSwapchain();
     CheckGLError("after framebuffer setup");
     CreateActions();
@@ -548,7 +548,8 @@ class VRGame : public Game {
 
   void Destroy() {
     DestroyXR();
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
+    this->window->Destroy();
+    // glfwDestroyWindow(this->window);
+    // glfwTerminate();
   }
 };

@@ -6,10 +6,14 @@
 
 namespace fe {
 
-  class Window : IWindow {
+  class SDLWindow :public IWindow {
+
+    SDL_Window* window;
+    SDL_GLContext gl_context;
+
     public:
-    Window() {
-      if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    SDLWindow() {
+      if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
         // return EXIT_FAILURE;
     }
@@ -22,7 +26,7 @@ namespace fe {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     
- SDL_Window* window = SDL_CreateWindow(
+    window = SDL_CreateWindow(
         "SDL2 OpenGL Window",
         800, 600,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
@@ -34,7 +38,7 @@ namespace fe {
     }
 
     // 4. Create OpenGL context
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+    gl_context = SDL_GL_CreateContext(window);
     if (!gl_context) {
         std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
@@ -43,6 +47,19 @@ namespace fe {
 
     // 5. Enable VSync (optional but recommended)
     SDL_GL_SetSwapInterval(1);
+  }
+    void SetSwapInterval(int interval) override {
+      SDL_GL_SetSwapInterval(interval);
+    }
+
+    void SwapBuffers() override {
+      SDL_GL_SwapWindow(window);
+    }
+
+    void Destroy() override {
+      SDL_GL_DestroyContext(gl_context);
+      SDL_DestroyWindow(window);
+      SDL_Quit();
     }
   };
 

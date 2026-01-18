@@ -28,7 +28,8 @@
         "Opengl32.lib",
         "shell32.lib",
         "user32.lib",
-        "Jolt.lib"
+        "Jolt.lib",
+        "SDL3.lib"
       ],
       "options": {
         "cwd": "${workspaceFolder}\\cache"

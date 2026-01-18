@@ -29,13 +29,17 @@
 #include "ShaderProgram.hpp"
 #include "saver/Level.hpp"
 
+#include "window/SDLWindow.hpp"
+
 #define WAYLAND
+
+namespace fe {
 
 class Game {
  public:
   int width;
   int height;
-  GLFWwindow* window;
+  std::unique_ptr<fe::SDLWindow> window;
   std::unique_ptr<fe::Scene> scene;
   std::unique_ptr<fe::Camera> camera;
   std::unique_ptr<fe::ShaderProgram> shader;
@@ -86,7 +90,8 @@ class Game {
   Game() : Game(0, 0) {}
 
   Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
-    if (!InitGlfw(bpc10)) return;
+    // if (!InitGlfw(bpc10)) return;
+    this->window = std::make_unique<fe::SDLWindow>();
     this->width = width;
     this->height = height;
 
@@ -132,127 +137,17 @@ class Game {
     // isConnectedToServer =true;
   }
 
-  void SetSwapInterval(int interval) {
-    glfwSwapInterval(interval);
-  }
+  
 
   void EnableVSync() {
-    SetSwapInterval(1);
+    window->SetSwapInterval(1);
   }
 
   void DisableVSync() {
-    SetSwapInterval(0);
+    window->SetSwapInterval(0);
   }
 
-  bool InitGlfw(bool tenBit = false) {
-#ifdef WAYLAND
-    if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
-      glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-    } else {
-      std::cerr << "No Wayland Support" << std::endl;
-    }
-#endif
-
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    if (tenBit) {
-      glfwWindowHint(GLFW_RED_BITS, 10);
-      glfwWindowHint(GLFW_GREEN_BITS, 10);
-      glfwWindowHint(GLFW_BLUE_BITS, 10);
-      glfwWindowHint(GLFW_ALPHA_BITS, 2);
-    }
-
-    this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
-    if (window == NULL) {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return false;
-    }
-    glfwMakeContextCurrent(window);
-
-    // glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
-    EnableVSync();
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return false;
-    }
-
-    glfwSetWindowUserPointer(window, this);
-
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-      game->fov -= (float)yOffset;
-      if (game->fov < 1.0f) game->fov = 1.0f;
-      if (game->fov > 45.0f) game->fov = 45.0f;
-    });
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-    });
-
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
-      if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
-        // ImGui::SetNextFrameWantCaptureMouse(false);
-        return;
-      }
-
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-
-      float xOffset = xPos - game->lastX;
-      float yOffset = game->lastY - yPos;
-      if (game->lastX == 0 && game->lastY == 0) {
-        xOffset = 0;
-        yOffset = 0;
-      }
-      game->lastX = xPos;
-      game->lastY = yPos;
-
-      const float sensitivity = 0.1f;
-      xOffset *= sensitivity;
-      yOffset *= sensitivity;
-
-      game->yaw += xOffset;
-      game->pitch += yOffset;
-
-      if (game->pitch > 89.0f) game->pitch = 89.0f;
-      if (game->pitch < -89.0f) game->pitch = -89.0f;
-
-      glm::vec3 direction;
-      direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      direction.y = sin(glm::radians(game->pitch));
-      direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      game->camera->front = glm::normalize(direction);
-    });
-
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      // game->width = width;
-      // game->height = height;
-      // game->scene->resize(width, height);
-
-      // game->updateAspect();
-      game->Resize(width, height);
-
-      game->Redraw();
-    });
-    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->Resize(width, height);
-      game->Redraw();
-    });
-
-
-    // glfwGetWindowAttrib(window, GLFW_TOUCH);
-    return true;
-  }
+  
 
   void Resize(int width, int height) {
     this->width = width;
@@ -305,7 +200,7 @@ class Game {
     return model;
   }
 
-  double getDeltaTime() { return glfwGetTime(); }
+  double getDeltaTime() { return 1; }
 
   void SetClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
@@ -316,7 +211,9 @@ class Game {
 
     DrawUI();
 
-    glfwSwapBuffers(this->window);
+    window->SwapBuffers();
+
+    // glfwSwapBuffers(this->window);
   }
 
   void Update() { 
@@ -329,10 +226,10 @@ class Game {
   }
 
   virtual void ProcessMovementInput() {
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
+    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
 
   }
 
@@ -340,12 +237,12 @@ class Game {
   void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
   void StartMouseCapture() {
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     io.WantCaptureMouse = false;
   }
 
   void StopMouseCapture() {
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     io.WantCaptureMouse = true;
 
   }
@@ -359,7 +256,7 @@ class Game {
 
     ImGui::StyleColorsDark();
 
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    // ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
   }
 
@@ -369,10 +266,13 @@ class Game {
     if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
   }
 
-  bool ShouldClose() { return glfwWindowShouldClose(this->window); }
+  bool ShouldClose() { return this->window->ShouldClose(); }
 
   void destroy() {
-    glfwDestroyWindow(this->window);
-    glfwTerminate();
+    this->window->Destroy();
+    // glfwDestroyWindow(this->window);
+    // glfwTerminate();
   }
 };
+
+}
