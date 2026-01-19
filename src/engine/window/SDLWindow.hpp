@@ -13,6 +13,7 @@ namespace fe {
 
     SDL_Window* window;
     SDL_GLContext gl_context;
+    bool shouldClose = false;
 
     public:
     SDLWindow(std::string title) {
@@ -27,6 +28,9 @@ namespace fe {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     
     window = SDL_CreateWindow(
         title.c_str(),
@@ -51,13 +55,6 @@ namespace fe {
       std::cout << "Failed to initialize GLAD" << std::endl;
       return;
     }
-
-    // 5. Enable VSync (optional but recommended)
-    // SDL_GL_SetSwapInterval(1);
-    // Enable
-
-    // glClearColor(0.2f, 0.3f, 0.4f, 1.0f);  // Background color
-    // glViewport(0, 0, 800, 600);
   }
     void SetSwapInterval(int interval) override {
       SDL_GL_SetSwapInterval(interval);
@@ -78,6 +75,10 @@ namespace fe {
     SDL_GLContext GetSDLGLContext() {
       return gl_context;
     }
+
+    // bool ShouldClose() override {
+    //   return shouldClose;
+    // }
 
     void Destroy() override {
       SDL_GL_DestroyContext(gl_context);

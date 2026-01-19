@@ -3,9 +3,13 @@ namespace fe {
 
   class IWindow {
 
+    bool shouldClose = false;
+
 public:
 
-  bool ShouldClose() { return false; }
+  virtual bool ShouldClose() { return shouldClose; }
+
+  virtual void PrepareClose() { shouldClose = true; }
 
 	virtual void SetSwapInterval(int interval) = 0;
 

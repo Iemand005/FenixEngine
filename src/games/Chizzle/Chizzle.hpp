@@ -91,6 +91,7 @@ public:
   void ProcessInput() {
     SDL_Event event;
     while (window->PollSDLEvents(&event)) switch (event.type) {
+      case SDL_EVENT_QUIT: window->PrepareClose(); break;
       case SDL_EVENT_WINDOW_RESIZED:
                 case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
                     // Get actual pixel dimensions
