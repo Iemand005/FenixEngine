@@ -120,6 +120,17 @@ bool InitGlfw(bool tenBit = false) {
     return true;
   }
 
+  void StartMouseCapture() override {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // io.WantCaptureMouse = false;
+  }
+
+  void StopMouseCapture() override {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    // io.WantCaptureMouse = true;
+
+  }
+
   void PollGLFWEvents() {
     glfwPollEvents();
   }
@@ -130,6 +141,11 @@ bool InitGlfw(bool tenBit = false) {
 
   void SwapBuffers() override {
     glfwSwapBuffers(this->window);
+  }
+
+  void Destroy() override {
+    glfwDestroyWindow(this->window);
+    glfwTerminate();
   }
 };
 }

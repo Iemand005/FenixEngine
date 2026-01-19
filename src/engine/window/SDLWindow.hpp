@@ -1,60 +1,52 @@
 #pragma once
-#include <iostream>
-#include <functional>
 #include <SDL3/SDL.h>
-
 #include <glad/glad.h>
 
+#include <functional>
+#include <iostream>
 
 #include "IWindow.hpp"
 
-
-
 namespace fe {
 
-  using ResizeDelegate = std::function<void(int, int)>;
+using ResizeDelegate = std::function<void(int, int)>;
 
-  class SDLWindow :public IWindow {
+class SDLWindow : public IWindow {
+  SDL_Window* window;
+  SDL_GLContext gl_context;
+  bool shouldClose = false;
 
-    SDL_Window* window;
-    SDL_GLContext gl_context;
-    bool shouldClose = false;
-
-    static bool SDLCALL resize_watch(void* userdata, SDL_Event* event) {
-  SDLWindow *window = (SDLWindow*)userdata;
+  static bool SDLCALL ResizeWatch(void* userdata, SDL_Event* event) {
+    SDLWindow* window = (SDLWindow*)userdata;
     if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
-        // The window is being resized and needs a redraw.
-        // You can update the viewport and render here.
-        // glViewport(0, 0, 100, 100);
-        window->resizeEvent(window->width, window->height);
-        
-        // SDL_GL_SwapWindow(window);
+      // The window is being resized and needs a redraw.
+      // You can update the viewport and render here.
+      // glViewport(0, 0, 100, 100);
+      window->resizeEvent(window->width, window->height);
+
+      // SDL_GL_SwapWindow(window);
     }
     // Also watch for the standard resize events to update your stored size.
-    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
-        event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-        // Update your application's stored window size.
-        // current_width = event->window.data1;
-        // current_height = event->window.data2;
-        window->width = event->window.data1;
-        window->height = event->window.data2;
-        std::cout << "resized";
-
+    if (event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+      // Update your application's stored window size.
+      // current_width = event->window.data1;
+      // current_height = event->window.data2;
+      window->width = event->window.data1;
+      window->height = event->window.data2;
+      std::cout << "resized";
     }
-    return false; // Return 0 to allow the event to continue.
-}
+    return false;  // Return 0 to allow the event to continue.
+  }
 
-    public:
+ public:
+  ResizeDelegate resizeEvent;
 
-    ResizeDelegate resizeEvent;
+  int width, height;
 
-    int width, height;
-
-
-    SDLWindow(std::string title) {
-      if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
-        return;
+  SDLWindow(std::string title, int width, int height) : width(width), height(height) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+      std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
+      return;
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -66,24 +58,20 @@ namespace fe {
 
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    
-    window = SDL_CreateWindow(
-        title.c_str(),
-        800, 600,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
-    );
-    
+
+    window = SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+
     if (!window) {
-        std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
-        SDL_Quit();
+      std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
+      SDL_Quit();
     }
 
     // 4. Create OpenGL context
     gl_context = SDL_GL_CreateContext(window);
     if (!gl_context) {
-        std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+      std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
+      SDL_DestroyWindow(window);
+      SDL_Quit();
     }
 
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
@@ -91,41 +79,36 @@ namespace fe {
       return;
     }
 
-    
-
-// Before your main loop:
-// SDL_EventFilter
-    SDL_AddEventWatch(resize_watch, (void*)this);
+    // Before your main loop:
+    SDL_AddEventWatch(ResizeWatch, this);
   }
-    void SetSwapInterval(int interval) override {
-      SDL_GL_SetSwapInterval(interval);
-    }
+  void SetSwapInterval(int interval) override { SDL_GL_SetSwapInterval(interval); }
 
-    void SwapBuffers() override {
-      SDL_GL_SwapWindow(window);
-    }
+  void StartMouseCapture() override {
+    SDL_SetWindowMouseGrab(window, true);
+    SDL_HideCursor();
+  }
 
-    bool PollSDLEvents(SDL_Event *event) {
-      return SDL_PollEvent(event);
-    }
+  void StopMouseCapture() override {
+    SDL_SetWindowMouseGrab(window, false);
+    SDL_ShowCursor();
+    // io.WantCaptureMouse = true;
 
-    SDL_Window* GetSDLWindow() {
-      return window;
-    }
+  }
 
-    SDL_GLContext GetSDLGLContext() {
-      return gl_context;
-    }
+  void SwapBuffers() override { SDL_GL_SwapWindow(window); }
 
-    // bool ShouldClose() override {
-    //   return shouldClose;
-    // }
+  bool PollSDLEvents(SDL_Event* event) { return SDL_PollEvent(event); }
 
-    void Destroy() override {
-      SDL_GL_DestroyContext(gl_context);
-      SDL_DestroyWindow(window);
-      SDL_Quit();
-    }
-  };
+  SDL_Window* GetSDLWindow() { return window; }
 
-}
+  SDL_GLContext GetSDLGLContext() { return gl_context; }
+
+  void Destroy() override {
+    SDL_GL_DestroyContext(gl_context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+  }
+};
+
+}  // namespace fe

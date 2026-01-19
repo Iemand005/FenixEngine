@@ -169,7 +169,7 @@ public:
 
 
   void Run() {
-    DisableVSync();
+    window->DisableVSync();
   
     glm::vec3 cameraOffset = glm::vec3(0);
 

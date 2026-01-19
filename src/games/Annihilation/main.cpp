@@ -44,6 +44,6 @@ int main() {
 
   }
 
-  game.destroy();
+  game.Destroy();
   return 0;
 }

@@ -20,12 +20,23 @@ public:
   void DisableVSync() {
     SetSwapInterval(0);
   }
+
+  virtual void StartMouseCapture() {
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // io.WantCaptureMouse = false;
+  }
+
+  virtual void StopMouseCapture() {
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    // io.WantCaptureMouse = true;
+
+  }
   
   virtual void SwapBuffers() = 0;
 
   // virtual void PollEvents() = 0;
 
-	virtual void Destroy() = 0;
+	virtual void Destroy() {};
 
   };
 }

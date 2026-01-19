@@ -24,6 +24,8 @@ class Camera {
 
   Camera(float nearDist, float farDist) : nearDist(nearDist), farDist(farDist) {};
 
+  Camera(float fov, float nearDist, float farDist) : Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), fov, 1, nearDist, farDist) {};
+
   Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist)
       : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist) 
   {

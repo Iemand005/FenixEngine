@@ -37,25 +37,14 @@ namespace fe {
 
 class Game {
  public:
-  int width;
-  int height;
   std::unique_ptr<fe::SDLWindow> window;
   std::unique_ptr<fe::Scene> scene;
   std::unique_ptr<fe::Camera> camera;
   std::unique_ptr<fe::ShaderProgram> shader;
   fe::Timer fpsCounter;
 
-  // glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-  // glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-  // glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  // glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 
-  float fov = 45.0f;
-
-  float lastX = 0, lastY = 0;
-
-  float yaw = -90.0f;
-  float pitch = 0.0f;
+  float yaw = -90.0f,  pitch = 0.0f;
 
   bool vsync = true;
 
@@ -89,17 +78,14 @@ class Game {
 
   Game() : Game(0, 0) {}
 
-  Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
+  Game(int width, int height, bool bpc10 = true) {
     // if (!InitGlfw(bpc10)) return;
-    this->window = std::make_unique<fe::SDLWindow>("Game");
+    this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
 
     this->window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
       this->Redraw();
     };
-
-    this->width = width;
-    this->height = height;
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -112,11 +98,8 @@ class Game {
 
     this->scene = std::make_unique<fe::Scene>();
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
-    this->camera = std::make_unique<fe::Camera>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), fov, (float)this->width / (float)this->height, 0.1f, 100.0f);
+    this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
-
-
-    UpdateAspect();
     
     InitUI();
     
@@ -143,27 +126,13 @@ class Game {
     // isConnectedToServer =true;
   }
 
-  
-
-  void EnableVSync() {
-    window->SetSwapInterval(1);
-  }
-
-  void DisableVSync() {
-    window->SetSwapInterval(0);
-  }
-
-  
-
   void Resize(int width, int height) {
-    this->width = width;
-    this->height = height;
     this->scene->Resize(width, height);
-    this->UpdateAspect();
+    this->UpdateAspect(width, height);
   }
 
   void Resize() {
-    Resize(width, height);
+    Resize(this->window->width, this->window->height);
   }
 
   void loadMap(int index) {
@@ -235,42 +204,26 @@ class Game {
   void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
 
   void StartMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // io.WantCaptureMouse = false;
+    window->StartMouseCapture();
   }
 
   void StopMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     // io.WantCaptureMouse = true;
-
+    window->StopMouseCapture();
   }
 
-  virtual void InitUI() { 
-    // const char* glsl_version = "#version 330 core";
-    // IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    // io = ImGui::GetIO();
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
-
-    // ImGui::StyleColorsDark();
-
-    // // ImGui_ImplGlfw_InitForOpenGL(window, true);
-    // ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
-    // ImGui_ImplOpenGL3_Init(glsl_version);
-  }
+  virtual void InitUI() {}
 
   virtual void DrawUI() {}
 
-  void UpdateAspect() {
-    if (this->camera) this->camera->setAspect((float)this->width / (float)this->height);
+  void UpdateAspect(int width, int height) {
+    if (this->camera) this->camera->setAspect((float)this->window->width / (float)this->window->height);
   }
 
   bool ShouldClose() { return this->window->ShouldClose(); }
 
-  void destroy() {
+  void Destroy() {
     this->window->Destroy();
-    // glfwDestroyWindow(this->window);
-    // glfwTerminate();
   }
 };
 
