@@ -198,6 +198,18 @@ class Game {
   void SetClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
   void Redraw() {
+
+    // DwmFlush();
+
+    // int x, y;
+    // window->GetSize(&x, &y);
+    // Resize(x, y);
+    BOOL isEnabled;
+    HRESULT hr = DwmIsCompositionEnabled(&isEnabled);
+    if (hr == S_OK && isEnabled) {
+      std::cout << "Yees";
+    }
+
     scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();

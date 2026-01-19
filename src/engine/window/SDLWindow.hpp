@@ -48,8 +48,8 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
     SDLWindow* window = (SDLWindow*)userdata;
     switch (event->type) {
       case SDL_EVENT_WINDOW_EXPOSED:
-      // DwmFlush();
-      // if (window->resizeEvent) window->resizeEvent(window->width, window->height);
+      DwmFlush();
+      if (window->resizeEvent) window->resizeEvent(window->width, window->height);
         break;
       case SDL_EVENT_WINDOW_RESIZED:
       case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
@@ -57,7 +57,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
         // DwmFlush();
 
         window->width = event->window.data1, window->height = event->window.data2;
-        if (window->resizeEvent) window->resizeEvent(window->width, window->height);
+        // if (window->resizeEvent) window->resizeEvent(window->width, window->height);
         break;
 
       case SDL_EVENT_MOUSE_MOTION:
@@ -108,7 +108,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
       SDL_Quit();
     }
 
-    SDL_FlushOnResizeAndMove(window);
+    // SDL_FlushOnResizeAndMove(window);
 
     gl_context = SDL_GL_CreateContext(window);
     if (!gl_context) {
@@ -142,6 +142,10 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
     SDL_ShowCursor();
 
     // io.WantCaptureMouse = true;
+  }
+
+  void GetSize(int *w, int *h) {
+    SDL_GetWindowSize(window, w, h);
   }
 
   void SwapBuffers() override {
