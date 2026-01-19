@@ -92,8 +92,8 @@ class Game {
     this->window->mouseMoveEvent = [this](int x, int y) {
       
 
-      float xOffset = x - this->lastX;
-      float yOffset = this->lastY - y;
+      float xOffset = x;
+      float yOffset = y;
       if (this->lastX == 0 && this->lastY == 0) {
         xOffset = 0;
         yOffset = 0;
