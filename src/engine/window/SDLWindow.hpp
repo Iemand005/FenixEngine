@@ -30,26 +30,12 @@ class SDLWindow : public IWindow {
 
       case SDL_EVENT_MOUSE_MOTION:
         if (window->mouseMoveEvent) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+        if (window->capturingMouse) {
+          SDL_WarpMouseInWindow(window->window, window->width/2.0f, window->height/2.0f);
+        }
         break;
     }
     return false;
-    // if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
-    //   // The window is being resized and needs a redraw.
-    //   // You can update the viewport and render here.
-    //   // glViewport(0, 0, 100, 100);
-
-    //   // SDL_GL_SwapWindow(window);
-    // }
-    // // Also watch for the standard resize events to update your stored size.
-    // if (event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-    //   // Update your application's stored window size.
-    //   // current_width = event->window.data1;
-    //   // current_height = event->window.data2;
-    //   window->width = event->window.data1;
-    //   window->height = event->window.data2;
-    //   std::cout << "resized";
-    // }
-    // return false;  // Return 0 to allow the event to continue.
   }
 
   static void CheckError(bool success = false) {
@@ -64,6 +50,7 @@ class SDLWindow : public IWindow {
   MouseMoveDelegate mouseMoveEvent;
 
   int width, height;
+  bool capturingMouse = false;
 
   SDLWindow(std::string title, int width, int height) : width(width), height(height) {
     CheckError(SDL_Init(SDL_INIT_VIDEO));
@@ -103,12 +90,17 @@ class SDLWindow : public IWindow {
 
   void StartMouseCapture() override {
     SDL_SetWindowMouseGrab(window, true);
+    SDL_SetWindowRelativeMouseMode(window, true);
     SDL_HideCursor();
+    capturingMouse = true;
   }
 
   void StopMouseCapture() override {
     SDL_SetWindowMouseGrab(window, false);
+    SDL_SetWindowRelativeMouseMode(window, true);
     SDL_ShowCursor();
+    capturingMouse = false;
+
     // io.WantCaptureMouse = true;
   }
 
