@@ -48,7 +48,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
     SDLWindow* window = (SDLWindow*)userdata;
     switch (event->type) {
       case SDL_EVENT_WINDOW_EXPOSED:
-      DwmFlush();
+      // DwmFlush();
       if (window->resizeEvent) window->resizeEvent(window->width, window->height);
         break;
       case SDL_EVENT_WINDOW_RESIZED:
@@ -149,8 +149,19 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
   }
 
   void SwapBuffers() override {
-    SDL_GL_SwapWindow(window);
     DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    DwmFlush();
+    SDL_GL_SwapWindow(window);
   }
 
   bool IsKeyDown(SDL_Scancode key) {
