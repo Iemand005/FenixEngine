@@ -90,23 +90,10 @@ class Game {
     };
 
     this->window->mouseMoveEvent = [this](int x, int y) {
-      
-
-      float xOffset = x;
-      float yOffset = y;
-      if (this->lastX == 0 && this->lastY == 0) {
-        xOffset = 0;
-        yOffset = 0;
-      }
-      this->lastX = x;
-      this->lastY = y;
-
       const float sensitivity = 0.1f;
-      xOffset *= sensitivity;
-      yOffset *= sensitivity;
 
-      this->yaw += xOffset;
-      this->pitch += yOffset;
+      this->yaw += sensitivity * x;
+      this->pitch += sensitivity * -y;
 
       if (this->pitch > 89.0f) this->pitch = 89.0f;
       if (this->pitch < -89.0f) this->pitch = -89.0f;

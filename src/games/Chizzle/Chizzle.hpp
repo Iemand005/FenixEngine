@@ -114,6 +114,25 @@ public:
       // break;
        }
 
+      //  const bool* keyboardState = SDL_GetKeyboardState(NULL);
+
+      //  if (keyboardState[SDL_SCANCODE_W])KUKU
+      //  if (keyboardState[SDL_SCANCODE_W]) this->player->Move(fe::Direction::Forwards, camera.get());
+      //  if (keyboardState[SDL_SCANCODE_A]) this->player->Move(fe::Direction::Forwards, camera.get());
+      //  if (keyboardState[SDL_SCANCODE_S]) this->player->Move(fe::Direction::Forwards, camera.get());
+      //  if (keyboardState[SDL_SCANCODE_D]) this->player->Move(fe::Direction::Forwards, camera.get());
+    
+      if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
+
+      if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+
+      if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) StopMouseCapture();
+
+
     // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
     // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
     // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());

@@ -7,7 +7,9 @@ enum Direction {
   Forwards,
   Backwards,
   Left,
-  Right
+  Right,
+  Up,
+  Down
 };
 
 class Character : public Object {
@@ -19,18 +21,12 @@ public:
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
     glm::vec3 velocity{};
     switch (direction) {
-      case Forwards:
-        velocity += horizontalFront;
-        break;
-      case Backwards:
-        velocity -= horizontalFront;
-        break;
-      case Left:
-        velocity -= right;
-        break;
-      case Right:
-        velocity += right;
-        break;
+      case Forwards: velocity += horizontalFront; break;
+      case Backwards: velocity -= horizontalFront; break;
+      case Left: velocity -= right; break;
+      case Right: velocity += right; break;
+      case Up: velocity += camera->up; break;
+      case Down: velocity -= camera->up; break;
     }
 
     this->physicsObject->AddPosition(velocity * cameraSpeed);
