@@ -92,6 +92,12 @@ class Game {
   Game(int width, int height, bool bpc10 = true) : width(width), height(height) {
     // if (!InitGlfw(bpc10)) return;
     this->window = std::make_unique<fe::SDLWindow>("Game");
+
+    this->window->resizeEvent = [this](int width, int height) {
+      this->Resize(width, height);
+      this->Redraw();
+    };
+
     this->width = width;
     this->height = height;
 

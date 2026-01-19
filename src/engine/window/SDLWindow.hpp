@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <functional>
 #include <SDL3/SDL.h>
 
 #include <glad/glad.h>
@@ -7,7 +8,11 @@
 
 #include "IWindow.hpp"
 
+
+
 namespace fe {
+
+  using ResizeDelegate = std::function<void(int, int)>;
 
   class SDLWindow :public IWindow {
 
@@ -15,7 +20,37 @@ namespace fe {
     SDL_GLContext gl_context;
     bool shouldClose = false;
 
+    static bool SDLCALL resize_watch(void* userdata, SDL_Event* event) {
+  SDLWindow *window = (SDLWindow*)userdata;
+    if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
+        // The window is being resized and needs a redraw.
+        // You can update the viewport and render here.
+        // glViewport(0, 0, 100, 100);
+        window->resizeEvent(window->width, window->height);
+        
+        // SDL_GL_SwapWindow(window);
+    }
+    // Also watch for the standard resize events to update your stored size.
+    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
+        event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+        // Update your application's stored window size.
+        // current_width = event->window.data1;
+        // current_height = event->window.data2;
+        window->width = event->window.data1;
+        window->height = event->window.data2;
+        std::cout << "resized";
+
+    }
+    return false; // Return 0 to allow the event to continue.
+}
+
     public:
+
+    ResizeDelegate resizeEvent;
+
+    int width, height;
+
+
     SDLWindow(std::string title) {
       if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
@@ -55,6 +90,12 @@ namespace fe {
       std::cout << "Failed to initialize GLAD" << std::endl;
       return;
     }
+
+    
+
+// Before your main loop:
+// SDL_EventFilter
+    SDL_AddEventWatch(resize_watch, (void*)this);
   }
     void SetSwapInterval(int interval) override {
       SDL_GL_SetSwapInterval(interval);
