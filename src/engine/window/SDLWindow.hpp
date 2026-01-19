@@ -10,36 +10,52 @@
 namespace fe {
 
 using ResizeDelegate = std::function<void(int, int)>;
+using MouseMoveDelegate = std::function<void(int, int)>;
 
 class SDLWindow : public IWindow {
   SDL_Window* window;
   SDL_GLContext gl_context;
   bool shouldClose = false;
 
-  static bool SDLCALL ResizeWatch(void* userdata, SDL_Event* event) {
+  static bool SDLCALL EventWatch(void* userdata, SDL_Event* event) {
     SDLWindow* window = (SDLWindow*)userdata;
-    if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
-      // The window is being resized and needs a redraw.
-      // You can update the viewport and render here.
-      // glViewport(0, 0, 100, 100);
-      window->resizeEvent(window->width, window->height);
+    switch (event->type) {
+      case SDL_EVENT_WINDOW_EXPOSED:
+      if (window->resizeEvent)window->resizeEvent(window->width, window->height);
+break;
+case SDL_EVENT_WINDOW_RESIZED:
+case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+window->width = event->window.data1, window->height = event->window.data2;
+      break;
+    
+    case SDL_EVENT_MOUSE_MOTION:
+      if (window->mouseMoveEvent) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel)
+      ;
+      break;
+    }
+    return false;
+    // if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
+    //   // The window is being resized and needs a redraw.
+    //   // You can update the viewport and render here.
+    //   // glViewport(0, 0, 100, 100);
 
-      // SDL_GL_SwapWindow(window);
-    }
-    // Also watch for the standard resize events to update your stored size.
-    if (event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
-      // Update your application's stored window size.
-      // current_width = event->window.data1;
-      // current_height = event->window.data2;
-      window->width = event->window.data1;
-      window->height = event->window.data2;
-      std::cout << "resized";
-    }
-    return false;  // Return 0 to allow the event to continue.
+    //   // SDL_GL_SwapWindow(window);
+    // }
+    // // Also watch for the standard resize events to update your stored size.
+    // if (event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    //   // Update your application's stored window size.
+    //   // current_width = event->window.data1;
+    //   // current_height = event->window.data2;
+    //   window->width = event->window.data1;
+    //   window->height = event->window.data2;
+    //   std::cout << "resized";
+    // }
+    // return false;  // Return 0 to allow the event to continue.
   }
 
  public:
   ResizeDelegate resizeEvent;
+  MouseMoveDelegate mouseMoveEvent;
 
   int width, height;
 
@@ -80,7 +96,7 @@ class SDLWindow : public IWindow {
     }
 
     // Before your main loop:
-    SDL_AddEventWatch(ResizeWatch, this);
+    SDL_AddEventWatch(EventWatch, this);
   }
   void SetSwapInterval(int interval) override { SDL_GL_SetSwapInterval(interval); }
 

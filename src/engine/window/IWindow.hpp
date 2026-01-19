@@ -31,6 +31,8 @@ public:
     // io.WantCaptureMouse = true;
 
   }
+
+  bool CapturingMouse() {return false;};
   
   virtual void SwapBuffers() = 0;
 

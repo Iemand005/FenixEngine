@@ -46,6 +46,8 @@ class Game {
 
   float yaw = -90.0f,  pitch = 0.0f;
 
+  int lastX, lastY;
+
   bool vsync = true;
 
   bool capturingMouse = true;
@@ -85,6 +87,35 @@ class Game {
     this->window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
       this->Redraw();
+    };
+
+    this->window->mouseMoveEvent = [this](int x, int y) {
+      
+
+      float xOffset = x - this->lastX;
+      float yOffset = this->lastY - y;
+      if (this->lastX == 0 && this->lastY == 0) {
+        xOffset = 0;
+        yOffset = 0;
+      }
+      this->lastX = x;
+      this->lastY = y;
+
+      const float sensitivity = 0.1f;
+      xOffset *= sensitivity;
+      yOffset *= sensitivity;
+
+      this->yaw += xOffset;
+      this->pitch += yOffset;
+
+      if (this->pitch > 89.0f) this->pitch = 89.0f;
+      if (this->pitch < -89.0f) this->pitch = -89.0f;
+
+      glm::vec3 direction;
+      direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+      direction.y = sin(glm::radians(this->pitch));
+      direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+      this->camera->front = glm::normalize(direction);
     };
 
     glEnable(GL_DEPTH_TEST);
