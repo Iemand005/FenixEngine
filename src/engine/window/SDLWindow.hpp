@@ -149,8 +149,8 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
   }
 
   void SwapBuffers() override {
-    DwmFlush();
     SDL_GL_SwapWindow(window);
+    DwmFlush();
   }
 
   bool IsKeyDown(SDL_Scancode key) {

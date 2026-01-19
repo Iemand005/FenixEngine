@@ -247,7 +247,7 @@ class Game {
   virtual void DrawUI() {}
 
   void UpdateAspect(int width, int height) {
-    if (this->camera) this->camera->setAspect((float)this->window->width / (float)this->window->height);
+    if (this->camera) this->camera->SetAspect(width, height);
   }
 
   bool ShouldClose() { return this->window->ShouldClose(); }

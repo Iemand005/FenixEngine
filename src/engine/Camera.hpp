@@ -70,10 +70,14 @@ class Camera {
     glBindVertexArray(0);
   };
 
-  void setAspect(float aspect) {
+  void SetAspect(float aspect) {
     // if (aspect == -nan()) return;
     this->aspect = aspect;
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
+  }
+
+  void SetAspect(int wdith, int height) {
+    SetAspect((float)wdith / (float)height);
   }
 
   void SetPos(const glm::vec3& pos) {
