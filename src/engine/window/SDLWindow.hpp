@@ -21,17 +21,16 @@ class SDLWindow : public IWindow {
     SDLWindow* window = (SDLWindow*)userdata;
     switch (event->type) {
       case SDL_EVENT_WINDOW_EXPOSED:
-      if (window->resizeEvent)window->resizeEvent(window->width, window->height);
-break;
-case SDL_EVENT_WINDOW_RESIZED:
-case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-window->width = event->window.data1, window->height = event->window.data2;
-      break;
-    
-    case SDL_EVENT_MOUSE_MOTION:
-      if (window->mouseMoveEvent) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel)
-      ;
-      break;
+        if (window->resizeEvent) window->resizeEvent(window->width, window->height);
+        break;
+      case SDL_EVENT_WINDOW_RESIZED:
+      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        window->width = event->window.data1, window->height = event->window.data2;
+        break;
+
+      case SDL_EVENT_MOUSE_MOTION:
+        if (window->mouseMoveEvent) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+        break;
     }
     return false;
     // if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
@@ -53,6 +52,13 @@ window->width = event->window.data1, window->height = event->window.data2;
     // return false;  // Return 0 to allow the event to continue.
   }
 
+  static void CheckError(bool success = false) {
+    if (!success) {
+      auto error = SDL_GetError();
+      std::cerr << "SDL Error: " << error;
+    }
+  }
+
  public:
   ResizeDelegate resizeEvent;
   MouseMoveDelegate mouseMoveEvent;
@@ -60,10 +66,7 @@ window->width = event->window.data1, window->height = event->window.data2;
   int width, height;
 
   SDLWindow(std::string title, int width, int height) : width(width), height(height) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-      std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
-      return;
-    }
+    CheckError(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -78,14 +81,13 @@ window->width = event->window.data1, window->height = event->window.data2;
     window = SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     if (!window) {
-      std::cerr << "Window creation failed: " << SDL_GetError() << std::endl;
+      CheckError();
       SDL_Quit();
     }
 
-    // 4. Create OpenGL context
     gl_context = SDL_GL_CreateContext(window);
     if (!gl_context) {
-      std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
+      CheckError();
       SDL_DestroyWindow(window);
       SDL_Quit();
     }
@@ -95,7 +97,6 @@ window->width = event->window.data1, window->height = event->window.data2;
       return;
     }
 
-    // Before your main loop:
     SDL_AddEventWatch(EventWatch, this);
   }
   void SetSwapInterval(int interval) override { SDL_GL_SetSwapInterval(interval); }
@@ -109,7 +110,6 @@ window->width = event->window.data1, window->height = event->window.data2;
     SDL_SetWindowMouseGrab(window, false);
     SDL_ShowCursor();
     // io.WantCaptureMouse = true;
-
   }
 
   void SwapBuffers() override { SDL_GL_SwapWindow(window); }
