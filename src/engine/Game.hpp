@@ -206,11 +206,11 @@ class Game {
     // Resize(x, y);
     
 
-    scene->Render(*this->shader, *this->camera.get());
+    // scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
 
-    DrawUI();
+    // DrawUI();
 
     window->SwapBuffers();
 

@@ -123,7 +123,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
       return;
     }
 
-    SDL_AddEventWatch(EventWatch, this);
+    // SDL_AddEventWatch(EventWatch, this);
   }
   void SetSwapInterval(int interval) override { SDL_GL_SetSwapInterval(interval); }
 
