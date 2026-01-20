@@ -204,11 +204,11 @@ public:
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;
       camera->SetPos(pos - camera->front * 6.0f);
-
+      
       camera->setFront(glm::normalize(pos - camera->GetPos()));
-
+      
       if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
-
+      
       Update();
       Redraw();
     }
