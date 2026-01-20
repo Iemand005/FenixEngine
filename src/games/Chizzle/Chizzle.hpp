@@ -95,9 +95,10 @@ public:
       case SDL_EVENT_WINDOW_RESIZED:
                 case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
                     // Get actual pixel dimensions
-                    int w, h;
-                    SDL_GetWindowSizeInPixels(window->GetSDLWindow(), &w, &h);
-                    glViewport(0, 0, w, h);
+                    break;
+                    // int w, h;
+                    // SDL_GetWindowSizeInPixels(window->GetSDLWindow(), &w, &h);
+                    // glViewport(0, 0, w, h);
                     // window_changed = 1;
                     break;
 

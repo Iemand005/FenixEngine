@@ -85,6 +85,7 @@ class Game {
     this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
 
     this->window->resizeEvent = [this](int width, int height) {
+      return;
       this->Resize(width, height);
       this->Redraw();
     };
@@ -144,14 +145,7 @@ class Game {
     // isConnectedToServer =true;
   }
 
-  void Resize(int width, int height) {
-    this->scene->Resize(width, height);
-    this->UpdateAspect(width, height);
-  }
 
-  void Resize() {
-    Resize(this->window->width, this->window->height);
-  }
 
   void loadMap(int index) {
     auto map = maps.at(index);
@@ -197,6 +191,12 @@ class Game {
 
   void SetClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
+  void Resize() {Resize(this->window->width, this->window->height);}
+  void Resize(int width, int height) {
+    this->scene->Resize(width, height);
+    this->UpdateAspect(width, height);
+  }
+
   void Redraw() {
 
     // DwmFlush();
@@ -204,11 +204,7 @@ class Game {
     // int x, y;
     // window->GetSize(&x, &y);
     // Resize(x, y);
-    BOOL isEnabled;
-    HRESULT hr = DwmIsCompositionEnabled(&isEnabled);
-    if (hr == S_OK && isEnabled) {
-      std::cout << "Yees";
-    }
+    
 
     scene->Render(*this->shader, *this->camera.get());
 
