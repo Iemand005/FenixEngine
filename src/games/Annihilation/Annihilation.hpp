@@ -19,8 +19,8 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 // #include "engext/ine/networking/udp.cpp"
-#include "../../engine/Game.hpp"
-#include "../../engine/engine.h"
+#include <Game.hpp>
+#include <engine.h>
 
 class Annihilation : public fe::Game {
  public:
@@ -33,6 +33,7 @@ class Annihilation : public fe::Game {
 
   int mapIndex = 0;
 
+  ImGuiIO io;
 
   Annihilation(int width, int height) : Game(width, height) {
 
