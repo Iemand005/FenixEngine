@@ -23,7 +23,7 @@ target_link_libraries(Editor
         Qt::Core
         Qt::Widgets
         Qt6::OpenGL
-
+        Qt6::OpenGLWidgets
 )
 
 include(GNUInstallDirs)
