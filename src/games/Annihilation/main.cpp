@@ -1,5 +1,5 @@
 #include "Annihilation.hpp"
-#include "../../engine/physics/BasicDebugRenderer.hpp"
+// #include "../../engine/physics/BasicDebugRenderer.hpp"
 
 int main() {
 

@@ -1,14 +1,15 @@
 #pragma once
-#include <Jolt/Jolt.h>
-#include <Jolt/Renderer/DebugRendererSimple.h>
-#include <glad/glad.h>
+
 #include <vector>
 #include <string>
 #include <memory>
 #include <map>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+class JPH::DebugRendererSimple;
 
 class BasicDebugRenderer : public JPH::DebugRendererSimple
 {

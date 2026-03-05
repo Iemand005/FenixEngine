@@ -1,7 +1,15 @@
 #include "PhysicsObject.hpp"
 
+#include <Jolt/Geometry/IndexedTriangle.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+
 using namespace fe;
-using namespace JPH;
+// using namespace JPH;
 using namespace JPH::literals;
 
 namespace Layers {
@@ -15,8 +23,18 @@ static constexpr JPH::BroadPhaseLayer MOVING(0);
 };
 
 struct PhysicsObject::Impl {
-
+  JPH::BodyID bodyId;
+  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+  // std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
 };
+
+PhysicsObject::PhysicsObject() {
+  impl = std::make_unique<Impl>();
+  impl->bodyId = JPH::BodyId();
+  impl->physicsSystem = nullptr;
+}
+
+JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
 
 JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
                                       const std::vector<uint32_t>& indices,
@@ -96,6 +114,56 @@ JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
     return result.Get();
 }
 
+void CreateBodyFromShape(JPH::ShapeRefC shape,
+                          const glm::vec3& position,
+                          JPH::EMotionType motionType,
+                          JPH::ObjectLayer layer) {
+    if (!shape) {
+      std::cerr << "Error: Cannot create body with null shape!" << std::endl;
+      return;
+    }
+    
+    // Create body settings
+    JPH::BodyCreationSettings bodySettings(
+      shape,
+      JPH::RVec3(position.x, position.y, position.z),
+      JPH::Quat::sIdentity(),
+      motionType,
+      layer
+    );
+    
+    // Configure body properties
+    bodySettings.mFriction = 0.5f;
+    bodySettings.mRestitution = 0.1f;
+    bodySettings.mLinearDamping = 0.05f;
+    bodySettings.mAngularDamping = 0.05f;
+    bodySettings.mMaxLinearVelocity = 100.0f;
+    bodySettings.mAllowSleeping = true;
+    
+    if (motionType == JPH::EMotionType::Dynamic) {
+      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+      JPH::MassProperties massProperties;
+      massProperties.mMass = 1.0f;
+      bodySettings.mMassPropertiesOverride = massProperties;
+    }
+    
+    // Get body interface and create body
+    auto& bodyInterface = physicsSystem->GetBodyInterface();
+    JPH::Body* body = bodyInterface.CreateBody(bodySettings);
+    
+    if (!body) {
+      std::cerr << "Failed to create physics body!" << std::endl;
+      return;
+    }
+    
+    bodyId = body->GetID();
+    bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
+    
+    std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex()
+              << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic")
+              << ", Layer: " << layer << ")" << std::endl;
+  }
+
 PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
   float a = size.x;
   float b = size.y;
@@ -148,52 +216,12 @@ PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem,
 }
 
 
-void PhysicsObject::CreateBodyFromShape(JPH::ShapeRefC shape,
-                          const glm::vec3& position,
-                          JPH::EMotionType motionType,
-                          JPH::ObjectLayer layer) {
-    if (!shape) {
-      std::cerr << "Error: Cannot create body with null shape!" << std::endl;
-      return;
-    }
-    
-    // Create body settings
-    JPH::BodyCreationSettings bodySettings(
-      shape,
-      JPH::RVec3(position.x, position.y, position.z),
-      JPH::Quat::sIdentity(),
-      motionType,
-      layer
-    );
-    
-    // Configure body properties
-    bodySettings.mFriction = 0.5f;
-    bodySettings.mRestitution = 0.1f;
-    bodySettings.mLinearDamping = 0.05f;
-    bodySettings.mAngularDamping = 0.05f;
-    bodySettings.mMaxLinearVelocity = 100.0f;
-    bodySettings.mAllowSleeping = true;
-    
-    if (motionType == JPH::EMotionType::Dynamic) {
-      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-      JPH::MassProperties massProperties;
-      massProperties.mMass = 1.0f;
-      bodySettings.mMassPropertiesOverride = massProperties;
-    }
-    
-    // Get body interface and create body
-    auto& bodyInterface = physicsSystem->GetBodyInterface();
-    JPH::Body* body = bodyInterface.CreateBody(bodySettings);
-    
-    if (!body) {
-      std::cerr << "Failed to create physics body!" << std::endl;
-      return;
-    }
-    
-    bodyId = body->GetID();
-    bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
-    
-    std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex()
-              << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic")
-              << ", Layer: " << layer << ")" << std::endl;
-  }
+void PhysicsObject::SetPosition(glm::vec3 position) {
+  GetBody()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate);
+}
+
+void PhysicsObject::AddPosition(glm::vec3 position) {
+  SetPosition(position + GetPosition());
+}
+
+void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) { GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z)); }

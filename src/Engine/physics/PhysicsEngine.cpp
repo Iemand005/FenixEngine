@@ -22,7 +22,7 @@
 
 // JPH_SUPPRESS_WARNINGS
 
-using namespace JPH;
+// using namespace JPH;
 
 using namespace fe;
 
@@ -39,14 +39,12 @@ using namespace fe;
 // };
 
 static void TraceImpl(const char* inFMT, ...) {
-  // Format the message
   va_list list;
   va_start(list, inFMT);
   char buffer[1024];
   vsnprintf(buffer, sizeof(buffer), inFMT, list);
   va_end(list);
 
-  // Print to the TTY
   std::cout << buffer << std::endl;
 }
 
@@ -55,10 +53,23 @@ static void TraceImpl(const char* inFMT, ...) {
 struct PhysicsEngine::Impl {
   std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
   std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
+  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+  std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
+  std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
+  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
 };
 
+// PhysicsEngine::PhysicsEngine() {
+//   impl->physicsSystem = nullptr;
+//   impl->temp_allocator = nullptr;
+//   impl->jobSystem = nullptr;
+// };
+
 PhysicsEngine::PhysicsEngine() {
+  impl = std::make_unique<Impl>();
+
   RegisterDefaultAllocator();
+
   Trace = TraceImpl;
   JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
   Factory::sInstance = new Factory();
@@ -97,7 +108,7 @@ ObjectState PhysicsEngine::SyncToRender() {
   state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
   // state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
   // state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
-  state.velocity = ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
+  state.velocity = JPH::ParseVec3(bodyInterface->GetLinearVelocity(bodyId));
   return state;
 }
 
@@ -122,4 +133,12 @@ void PhysicsEngine::Update(double dt) {
     float deltaTime = static_cast<float>(dt);
     
     physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
+  }
+
+  void PhysicsEngine::EnableGravity() {
+    physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+  }
+
+  void PhysicsEngine::DisableGravity() {
+    physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
   }

@@ -62,11 +62,8 @@ class PhysicsEngine {
   struct Impl;
   std::unique_ptr<Impl> impl;
 
-  std::shared_ptr<PhysicsSystem> physicsSystem;
 
-  std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
-  std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
-  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+
 
   std::vector<std::unique_ptr<fe::PhysicsObject>> physicsObjects;
 
@@ -76,19 +73,14 @@ class PhysicsEngine {
   ObjectState SyncToRender();
 
   std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true) {
-    auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem, size, dynamic);
+    auto obj = std::make_unique<fe::PhysicsObject>(this, size, dynamic);
     return std::move(obj);
   }
 
   std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
-    return std::make_unique<fe::PhysicsObject>(physicsSystem, vertices, indices);
+    return std::make_unique<fe::PhysicsObject>(this, vertices, indices);
   }
   
-  void EnableGravity() {
-    physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
-  }
-
-  void DisableGravity() {
-    physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
-  }
+  void EnableGravity();
+  void DisableGravity();
 };
