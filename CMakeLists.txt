@@ -23,14 +23,17 @@ if(MINGW OR UNIX)
 endif()
 
 
-# Configure JoltPhysics options BEFORE adding it as subdirectory
 set(JPH_USE_DX12 OFF CACHE BOOL "Use DirectX" FORCE)
 set(JPH_USE_DXC OFF CACHE BOOL "Use DXC shader compiler" FORCE)
 set(JPH_USE_VK OFF CACHE BOOL "Use Vulkan" FORCE)
 set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY ON CACHE BOOL "Use Static MSVC++" FORCE)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-add_subdirectory(third_party/glfw)
-add_subdirectory(third_party/JoltPhysics/Build)
+add_subdirectory(external/glfw)
+add_subdirectory(external/JoltPhysics/Build)
+add_subdirectory(external/SDL)
+add_subdirectory(external/OpenXR-SDK)
 # add_subdirectory(third_party/glfw)
 # add_subdirectory(third_party/imgui)
 # add_subdirectory(third_party/OpenXR-SDK)
@@ -57,17 +60,17 @@ else()
     set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib/release")
 endif()
 
-if(MSVC)
-    target_compile_options(main PRIVATE
-        $<$<CONFIG:Debug>:/MDd /Zi>
-        $<$<CONFIG:Release>:/MD /O2>
-    )
-else()
-    target_compile_options(main PRIVATE
-        $<$<CONFIG:Debug>:-g>
-        $<$<CONFIG:Release>:-O3>
-    )
-endif()
+# if(MSVC)
+#     target_compile_options(main PRIVATE
+#         $<$<CONFIG:Debug>:/MDd /Zi>
+#         $<$<CONFIG:Release>:/MD /O2>
+#     )
+# else()
+#     target_compile_options(main PRIVATE
+#         $<$<CONFIG:Debug>:-g>
+#         $<$<CONFIG:Release>:-O3>
+#     )
+# endif()
 
 target_compile_definitions(main PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
@@ -127,18 +130,21 @@ if(WIN32)
         opengl32
         shell32
         user32
+        gdi32
         Jolt
+        SDL3::SDL3
+        OpenXR::openxr_loader
     )
     
-    if(MSVC)
-        target_compile_options(editor PRIVATE
-            $<$<CONFIG:Debug>:/MDd /Zi>
-            $<$<CONFIG:Release>:/MD /O2>
-        )
-        target_link_options(editor PRIVATE
-            $<$<CONFIG:Debug>:/DEBUG>
-        )
-    endif()
+    # if(MSVC)
+    #     target_compile_options(editor PRIVATE
+    #         $<$<CONFIG:Debug>:/MDd /Zi>
+    #         $<$<CONFIG:Release>:/MD /O2>
+    #     )
+    #     target_link_options(editor PRIVATE
+    #         $<$<CONFIG:Debug>:/DEBUG>
+    #     )
+    # endif()
 endif()
 
 

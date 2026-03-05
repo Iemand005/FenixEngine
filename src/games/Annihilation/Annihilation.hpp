@@ -128,7 +128,7 @@ class Annihilation : public fe::Game {
     // double deltaTime = scene->getDeltaTime()
 
     Game* game = this;
-    game->ProcessMovementInput();
+    // game->ProcessMovementInput();
 
     // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
     // if (ImGui::GetIO().WantCaptureMouse) {
