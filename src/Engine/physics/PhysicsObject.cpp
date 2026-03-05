@@ -1,7 +1,7 @@
 #include "PhysicsObject.hpp"
 
-#include <Jolt/Geometry/IndexedTriangle.h>
 #include <Jolt/Jolt.h>
+#include <Jolt/Geometry/IndexedTriangle.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
@@ -25,6 +25,7 @@ static constexpr JPH::BroadPhaseLayer MOVING(0);
 struct PhysicsObject::Impl {
   JPH::BodyID bodyId;
   std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+  JPH::Body* body;
   // std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
 };
 
@@ -35,6 +36,14 @@ PhysicsObject::PhysicsObject() {
 }
 
 JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
+
+  glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+
+  void AddLinearVelocity(glm::vec3 velocity) {
+    this->physicsSystem->GetBodyInterface()->AddLinearVelocity(bodyId, VecConv(velocity));
+  }
+
+  glm::vec3 GetPosition() { return ParseVec3(this->physicsSystem->GetBodyInterface()->GetPosition(bodyId)); }
 
 JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
                                       const std::vector<uint32_t>& indices,
@@ -164,7 +173,7 @@ void CreateBodyFromShape(JPH::ShapeRefC shape,
               << ", Layer: " << layer << ")" << std::endl;
   }
 
-PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
+PhysicsObject::PhysicsObject(PhysicsEngine *physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
   float a = size.x;
   float b = size.y;
   float c = size.z;
@@ -191,7 +200,7 @@ PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem, 
   // bodyInterface->SetGravityFactor()
 }
 
-PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem,
+PhysicsObject::PhysicsObject(PhysicsEngine *physicsSystem,
               const std::vector<glm::vec3>& vertices,
               const std::vector<uint32_t>& indices,
               const glm::vec3& position = glm::vec3(0.0f),
@@ -217,11 +226,13 @@ PhysicsObject::PhysicsObject(std::shared_ptr<JPH::PhysicsSystem> physicsSystem,
 
 
 void PhysicsObject::SetPosition(glm::vec3 position) {
-  GetBody()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate);
+  this->physicsSystem->GetBodyInterface()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate);
 }
 
 void PhysicsObject::AddPosition(glm::vec3 position) {
   SetPosition(position + GetPosition());
 }
 
-void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) { GetBody()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z)); }
+void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) {
+  this->physicsSystem->GetBodyInterface()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+}

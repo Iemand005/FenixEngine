@@ -50,6 +50,37 @@ static void TraceImpl(const char* inFMT, ...) {
 
 #endif  // JPH_ENABLE_ASSERTS
 
+class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter {
+ public:
+  virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
+};
+
+class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface {
+ public:
+  virtual uint GetNumBroadPhaseLayers() const override { return 1; }
+
+  virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override { return BroadPhaseLayer(0); }
+
+#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
+  virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override { return "MOVING"; }
+#endif
+};
+
+class ObjectVsBroadPhaseLayerFilterImpl : public ObjectVsBroadPhaseLayerFilter {
+ public:
+  virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
+};
+
+#ifdef JPH_ENABLE_ASSERTS
+
+// Callback for asserts, connect this to your own assert handler if you have one
+static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine) {
+  std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
+  return true;
+};
+
+#endif
+
 struct PhysicsEngine::Impl {
   std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
   std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
@@ -96,7 +127,7 @@ PhysicsEngine::PhysicsEngine() {
 ObjectState PhysicsEngine::SyncToRender() {
   auto bodyInterface = &this->physicsSystem->GetBodyInterface();
 
-  JPH::RMat44 transform = bodyInterface->GetWorldTransform(bodyId);
+  JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
   JPH::RVec3 position = transform.GetTranslation();
   JPH::Vec3 x = transform.GetAxisX();
   JPH::Vec3 y = transform.GetAxisY();
