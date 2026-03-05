@@ -45,9 +45,9 @@ if(MSVC)
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES
-    src/extern/*.c
-    src/extern/imgui/*.cpp
-    src/engine/*.cpp
+    # src/extern/*.c
+    # src/extern/imgui/*.cpp
+    # src/engine/*.cpp
     src/games/Annihilation/*.cpp
 )
 
@@ -82,13 +82,13 @@ target_include_directories(main PRIVATE
     src
     src/extern
     src/engine
-    third_party/JoltPhysics
+    # third_party/JoltPhysics
 )
 
 file(GLOB_RECURSE EDITOR_SOURCE_FILES
-    src/extern/*.c
-    src/extern/imgui/*.cpp
-    src/engine/*.cpp
+    # src/extern/*.c
+    # src/extern/imgui/*.cpp
+    # src/engine/*.cpp
     src/games/Chizzle/*.cpp
 )
 
@@ -99,7 +99,7 @@ target_include_directories(editor PRIVATE
     src
     src/extern
     src/engine
-    third_party/JoltPhysics
+    # third_party/JoltPhysics
 )
 
 if(WIN32)
@@ -107,12 +107,13 @@ if(WIN32)
     target_link_directories(main PRIVATE "${LIB_DIR}")
     
     target_link_libraries(main PRIVATE
-        gdi32
-        glfw3
-        opengl32
-        shell32
-        user32
-        Jolt
+        # gdi32
+        # glfw3
+        # opengl32
+        # shell32
+        # user32
+        # Jolt
+        engine
     )
     
     if(MSVC)
@@ -126,15 +127,16 @@ if(WIN32)
     target_link_directories(editor PRIVATE "${LIB_DIR}")
     
     target_link_libraries(editor PRIVATE
-        gdi32
-        glfw3
-        opengl32
-        shell32
-        user32
-        gdi32
-        Jolt
-        SDL3::SDL3
-        OpenXR::openxr_loader
+        # gdi32
+        # glfw3
+        # opengl32
+        # shell32
+        # user32
+        # gdi32
+        # Jolt
+        # SDL3::SDL3
+        # OpenXR::openxr_loader
+        engine
     )
     
     # if(MSVC)
