@@ -2,6 +2,7 @@
 #define EDITORWINDOW_H
 
 #include <QMainWindow>
+#include <QtOpenGLWidgets/QtOpenGLWidgets>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,5 +19,6 @@ class EditorWindow : public QMainWindow {
 
  private:
   Ui::EditorWindow* ui;
+  QOpenGLWidget e;
 };
 #endif  // EDITORWINDOW_H
