@@ -19,6 +19,3 @@
 [submodule "OpenCL-SDK"]
 	path = OpenCL-SDK
 	url = https://github.com/KhronosGroup/OpenCL-SDK.git
-[submodule "third_party/OpenCL-SDK"]
-	path = third_party/OpenCL-SDK
-	url = https://github.com/KhronosGroup/OpenCL-SDK.git
