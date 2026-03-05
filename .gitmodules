@@ -13,6 +13,6 @@
 [submodule "third_party/JoltPhysics"]
 	path = external/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "OpenCL-SDK"]
-	path = OpenCL-SDK
-	url = https://github.com/KhronosGroup/OpenCL-SDK.git
+[submodule "external/SDL"]
+	path = external/SDL
+	url = https://github.com/libsdl-org/SDL
