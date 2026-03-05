@@ -11,6 +11,7 @@ qt_add_executable(Editor
     editorwindow.cpp
     editorwindow.h
     editorwindow.ui
+    enginewidget.h enginewidget.cpp
 )
 
 qt_add_translations(
