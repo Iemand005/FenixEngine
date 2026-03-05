@@ -17,39 +17,13 @@
 
 #include "PhysicsObject.hpp"
 
-JPH_SUPPRESS_WARNINGS
 
-using namespace JPH;
 
 // namespace BroadPhaseLayers
 // {
 //   static constexpr BroadPhaseLayer MOVING(0);
 // };
-#ifdef JPH_ENABLE_ASSERTS
 
-// // Callback for asserts, connect this to your own assert handler if you have one
-// static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
-// {
-// 	// Print to the TTY
-// 	std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
-
-// 	// Breakpoint
-// 	return true;
-// };
-
-static void TraceImpl(const char* inFMT, ...) {
-  // Format the message
-  va_list list;
-  va_start(list, inFMT);
-  char buffer[1024];
-  vsnprintf(buffer, sizeof(buffer), inFMT, list);
-  va_end(list);
-
-  // Print to the TTY
-  std::cout << buffer << std::endl;
-}
-
-#endif  // JPH_ENABLE_ASSERTS
 
 class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter {
  public:
@@ -84,15 +58,9 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
 
 class PhysicsEngine {
  public:
-  // PhysicsSystem physicsSystem;
-  // JobSystemThreadPool *jobSystem;
-  // TempAllocatorMalloc temp_allocator;
 
-  class Impl;
+  struct Impl;
   std::unique_ptr<Impl> impl;
-
-  std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;  // Unique ownership
-  std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
 
   std::shared_ptr<PhysicsSystem> physicsSystem;
 
@@ -102,53 +70,10 @@ class PhysicsEngine {
 
   std::vector<std::unique_ptr<fe::PhysicsObject>> physicsObjects;
 
-  PhysicsEngine() {
-    RegisterDefaultAllocator();
-    Trace = TraceImpl;
-    JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
-    Factory::sInstance = new Factory();
-    RegisterTypes();
 
-    // Create heap-allocated members
-    temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-    jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+  void Update(double dt);
 
-    physicsSystem = std::make_shared<JPH::PhysicsSystem>();
-
-    broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
-    object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
-    objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
-
-    physicsSystem->Init(1024, 0, 1024, 1024, *broad_phase_layer_interface, *objectVsBroadphaseLayerFilter, *object_vs_object_layer_filter);
-
-    EnableGravity();
-
-    physicsSystem->OptimizeBroadPhase();
-
-  }
-
-  void Update(double dt) {
-    // Validate input parameters
-    if (dt <= 0.0) {
-      // Log warning or handle invalid delta time
-      std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
-      return;
-    }
-
-    // Ensure physics system and dependencies are initialized
-    if (!physicsSystem || !temp_allocator || !jobSystem) {
-      std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
-      return;
-    }
-
-    // Number of collision steps (configurable, currently set to 1 for simplicity)
-    const int collisionSteps = 1;
-
-    // Cast dt to float as required by Jolt Physics
-    float deltaTime = static_cast<float>(dt);
-    
-    physicsSystem->Update(deltaTime, collisionSteps, temp_allocator.get(), jobSystem.get());
-  }
+  ObjectState SyncToRender();
 
   std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true) {
     auto obj = std::make_unique<fe::PhysicsObject>(physicsSystem, size, dynamic);
