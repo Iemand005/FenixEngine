@@ -9,7 +9,13 @@ namespace fe {
     private:
       GLFWwindow* window;
 
+      std::string title;
+
     public:
+
+    GLFW3Window(std::string title, int width, int height) : IWindow(width, height), title(title) {
+      InitGlfw();
+    }
 
 bool InitGlfw(bool tenBit = false) {
 #ifdef WAYLAND

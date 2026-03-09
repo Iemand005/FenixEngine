@@ -29,16 +29,17 @@
 #include "ShaderProgram.hpp"
 #include "saver/Level.hpp"
 
+#include "window/IWindow.hpp"
 #include "window/SDLWindow.hpp"
+#include "window/GLFW3Window.hpp"
 
 #define WAYLAND
 
 namespace fe {
 
-  template <typename WindowT = SDLWindow>
 class Game {
  public:
-  std::unique_ptr<WindowT> window;
+  std::unique_ptr<IWindow> window;
   std::unique_ptr<Scene> scene;
   std::unique_ptr<Camera> camera;
   std::unique_ptr<ShaderProgram> shader;
@@ -81,7 +82,7 @@ class Game {
 
   Game(int width, int height, bool bpc10 = true) {
 
-    this->window = std::make_unique<WindowT>(CreateWindow(width, height));
+    this->window = std::make_unique<IWindow>(CreateWindow(width, height));
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -102,15 +103,17 @@ class Game {
     StartMouseCapture();
   }
 
-  WindowT CreateWindow(int width, int height) {
-    fe::WindowT window("Game", width, height);
+  IWindow *CreateWindow(std::string title, int width, int height, bool sdl = true) {
+    // IWindow window("Game", width, height);
 
-    window.resizeEvent = [this](int width, int height) {
+    IWindow *window = sdl ? (IWindow*)new SDLWindow(title, width, height) : (IWindow*)new GLFW3Window(title, width, height);
+
+    window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
       this->Redraw();
     };
 
-    window.mouseMoveEvent = [this](int x, int y) {
+    window->mouseMoveEvent = [this](int x, int y) {
       const float sensitivity = 0.1f;
 
       this->yaw += sensitivity * x;
