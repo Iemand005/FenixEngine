@@ -33,10 +33,10 @@ class PhysicsEngine {
   struct Impl;
   std::unique_ptr<Impl> impl;
 
+  PhysicsEngine();
 
 
-
-  std::vector<std::unique_ptr<fe::PhysicsObject>> physicsObjects;
+  std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
 
 
   void Update(double dt);

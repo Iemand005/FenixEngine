@@ -24,13 +24,18 @@ class PhysicsObject {
 
   PhysicsObject();
 
-  ~PhysicsObject() {};
+  ~PhysicsObject();
 
   std::unique_ptr<PhysicsObject> Clone() {
     return nullptr;
   }
 
   ObjectState SyncToRender();
+
+  // CreateBodyFromShape(JPH::ShapeRefC shape,
+  //                         const glm::vec3& position,
+  //                         JPH::EMotionType motionType,
+  //                         JPH::ObjectLayer layer);
 
   // BodyInterface* GetBody() { return &this->physicsSystem->GetBodyInterface(); }
 

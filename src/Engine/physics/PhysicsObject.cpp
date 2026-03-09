@@ -6,10 +6,11 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
 using namespace fe;
-// using namespace JPH;
+using namespace JPH;
 using namespace JPH::literals;
 
 namespace Layers {
@@ -27,25 +28,8 @@ struct PhysicsObject::Impl {
   std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
   JPH::Body* body;
   // std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-};
 
-PhysicsObject::PhysicsObject() {
-  impl = std::make_unique<Impl>();
-  impl->bodyId = JPH::BodyId();
-  impl->physicsSystem = nullptr;
-}
-
-JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
-
-  glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
-
-  void AddLinearVelocity(glm::vec3 velocity) {
-    this->physicsSystem->GetBodyInterface()->AddLinearVelocity(bodyId, VecConv(velocity));
-  }
-
-  glm::vec3 GetPosition() { return ParseVec3(this->physicsSystem->GetBodyInterface()->GetPosition(bodyId)); }
-
-JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
+   static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
                                       const std::vector<uint32_t>& indices,
                                       float density = 1000.0f) {
     // Validate vertices
@@ -123,7 +107,7 @@ JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
     return result.Get();
 }
 
-void CreateBodyFromShape(JPH::ShapeRefC shape,
+  void CreateBodyFromShape(JPH::ShapeRefC shape,
                           const glm::vec3& position,
                           JPH::EMotionType motionType,
                           JPH::ObjectLayer layer) {
@@ -173,7 +157,31 @@ void CreateBodyFromShape(JPH::ShapeRefC shape,
               << ", Layer: " << layer << ")" << std::endl;
   }
 
-PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
+  JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
+
+  glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+}; // Impl
+
+PhysicsObject::PhysicsObject() {
+  impl = std::make_unique<Impl>();
+  impl->bodyId = JPH::BodyID();
+  impl->physicsSystem = nullptr;
+}
+
+PhysicsObject::~PhysicsObject() = default;
+
+
+
+  void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
+    this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
+  }
+
+  glm::vec3 PhysicsObject::GetPosition() { return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId)); }
+
+
+PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) {
+
+  impl->physicsSystem = std::make_shared<PhysicsSystem>(physicsSystem);
   float a = size.x;
   float b = size.y;
   float c = size.z;
@@ -193,40 +201,40 @@ PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) 
 
   // this->physicsSystem = physicsSystem;
 
-  auto bodyInterface = &this->physicsSystem->GetBodyInterface();
-  this->body = bodyInterface->CreateBody(bodySettings);
-  this->bodyId = body->GetID();
-  bodyInterface->AddBody(this->body->GetID(), JPH::EActivation::Activate);
+  auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+  this->impl->body = bodyInterface->CreateBody(bodySettings);
+  this->impl->bodyId = impl->body->GetID();
+  bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
   // bodyInterface->SetGravityFactor()
 }
 
 PhysicsObject::PhysicsObject(void *physicsSystem,
               const std::vector<glm::vec3>& vertices,
               const std::vector<uint32_t>& indices,
-              const glm::vec3& position = glm::vec3(0.0f),
-              float density = 1000.0f,
-              bool isStatic = true)
-  : physicsSystem(physicsSystem)
+              const glm::vec3& position,
+              float density,
+              bool isStatic)
 {
+  impl->physicsSystem = std::make_shared<PhysicsSystem>(physicsSystem);
   if (!physicsSystem) {
     std::cerr << "Error: PhysicsObject created with null physicsSystem!" << std::endl;
     return;
   }
   
-  JPH::ShapeRefC shape = CreateMeshShape(vertices, indices, density);
+  JPH::ShapeRefC shape = impl->CreateMeshShape(vertices, indices, density);
   if (!shape) {
     std::cerr << "Failed to create mesh shape!" << std::endl;
     return;
   }
   
-  CreateBodyFromShape(shape, position, 
+  impl->CreateBodyFromShape(shape, position, 
                       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
                       isStatic ? Layers::NON_MOVING : Layers::MOVING);
 }
 
 
 void PhysicsObject::SetPosition(glm::vec3 position) {
-  this->physicsSystem->GetBodyInterface()->SetPosition(bodyId, VecConv(position), JPH::EActivation::Activate);
+  this->impl->physicsSystem->GetBodyInterface().SetPosition(impl->bodyId, impl->VecConv(position), JPH::EActivation::Activate);
 }
 
 void PhysicsObject::AddPosition(glm::vec3 position) {
@@ -234,5 +242,25 @@ void PhysicsObject::AddPosition(glm::vec3 position) {
 }
 
 void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) {
-  this->physicsSystem->GetBodyInterface()->SetLinearVelocity(bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+  this->impl->physicsSystem->GetBodyInterface().SetLinearVelocity(impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+}
+
+
+ObjectState PhysicsObject::SyncToRender() {
+  auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+
+  JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
+  JPH::RVec3 position = transform.GetTranslation();
+  JPH::Vec3 x = transform.GetAxisX();
+  JPH::Vec3 y = transform.GetAxisY();
+  JPH::Vec3 z = transform.GetAxisZ();
+  float translation[3] = {(float)position.GetX(), (float)position.GetY(), (float)position.GetZ()};
+  float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
+  ObjectState state;
+  state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
+  state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
+  // state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
+  // state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
+  state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
+  return state;
 }
