@@ -22,7 +22,7 @@
 
 // JPH_SUPPRESS_WARNINGS
 
-// using namespace JPH;
+using namespace JPH;
 
 using namespace fe;
 
@@ -50,12 +50,12 @@ static void TraceImpl(const char* inFMT, ...) {
 
 #endif  // JPH_ENABLE_ASSERTS
 
-class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter {
+class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter {
  public:
   virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
 };
 
-class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface {
+class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
  public:
   virtual uint GetNumBroadPhaseLayers() const override { return 1; }
 
@@ -66,7 +66,7 @@ class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface {
 #endif
 };
 
-class ObjectVsBroadPhaseLayerFilterImpl : public ObjectVsBroadPhaseLayerFilter {
+class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter {
  public:
   virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
 };

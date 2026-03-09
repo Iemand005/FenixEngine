@@ -173,7 +173,7 @@ void CreateBodyFromShape(JPH::ShapeRefC shape,
               << ", Layer: " << layer << ")" << std::endl;
   }
 
-PhysicsObject::PhysicsObject(PhysicsEngine *physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
+PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) : physicsSystem(physicsSystem) {
   float a = size.x;
   float b = size.y;
   float c = size.z;
@@ -200,7 +200,7 @@ PhysicsObject::PhysicsObject(PhysicsEngine *physicsSystem, glm::vec3 size, bool 
   // bodyInterface->SetGravityFactor()
 }
 
-PhysicsObject::PhysicsObject(PhysicsEngine *physicsSystem,
+PhysicsObject::PhysicsObject(void *physicsSystem,
               const std::vector<glm::vec3>& vertices,
               const std::vector<uint32_t>& indices,
               const glm::vec3& position = glm::vec3(0.0f),

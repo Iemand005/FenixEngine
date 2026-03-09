@@ -4,10 +4,10 @@
 
 #include "../engine.h"
 #include "../bases.h"
+#include <memory>
 // #include "PhysicsEngine.hpp"
 
-class PhysicsEngine
-;
+// 7
 
 namespace fe {
 class PhysicsObject {
@@ -18,9 +18,9 @@ class PhysicsObject {
   // std::unique_ptr<JPH::Body> body;`
   enum class ShapeType { Box, Sphere, Capsule, Mesh, HeightField, Compound };
 
-  PhysicsObject(PhysicsEngine *physicsSystem, glm::vec3 size, bool dynamic = true);
+  PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic = true);
 
-  PhysicsObject(PhysicsEngine *physicsSystem, const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices,const glm::vec3& position = glm::vec3(0.0f), float density = 1000.0f,bool isStatic = true);
+  PhysicsObject(void *physicsSystem, const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices,const glm::vec3& position = glm::vec3(0.0f), float density = 1000.0f,bool isStatic = true);
 
   PhysicsObject();
 
