@@ -28,6 +28,8 @@
 
 #include "engine.h"
 
+typedef int64_t XrTime;
+
 class XRGame : public fe::Game {
  private:
   // bool vrInitialized = false;
@@ -46,12 +48,9 @@ class XRGame : public fe::Game {
   
   uint32_t swapchainImageIndex;
 
-  XRGame(bool launchVR = true) : XRGame(0, 0, false) { LaunchVR(); }
-
-  XRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
-    this->drawWindow = drawWindow;
-    if (launchVR) LaunchVR();
-  }
+  XRGame(bool launchVR = true);
+  XRGame(int width, int height, bool launchVR = true, bool drawWindow = true);
+  ~XRGame();
 
   bool IsInstanceValid();
   

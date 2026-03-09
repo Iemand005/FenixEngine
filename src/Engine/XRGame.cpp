@@ -298,6 +298,14 @@ struct XRGame::Impl {
   }
 }; // Impl
 
+XRGame::XRGame(bool launchVR) : XRGame(0, 0, launchVR, true) {}
+
+XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow) : Game(width, height), impl(std::make_unique<Impl>()) {
+  this->drawWindow = drawWindow;
+  if (launchVR) LaunchVR();
+}
+
+XRGame::~XRGame() = default;
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     XrVector2f joystickInput = {0.0f, 0.0f};
