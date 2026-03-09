@@ -5,7 +5,7 @@
 
 namespace fe {
 
-  class GLFWWindow : public IWindow {
+  class GLFW3Window : public IWindow {
     private:
       GLFWwindow* window;
 
@@ -43,25 +43,25 @@ bool InitGlfw(bool tenBit = false) {
     // glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
     EnableVSync();
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return false;
-    }
+    // if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    //   std::cout << "Failed to initialize GLAD" << std::endl;
+    //   return false;
+    // }
 
     glfwSetWindowUserPointer(window, this);
 
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-      game->fov -= (float)yOffset;
-      if (game->fov < 1.0f) game->fov = 1.0f;
-      if (game->fov > 45.0f) game->fov = 45.0f;
-    });
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
-    });
+    // glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
+    //   auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+    //   ImGuiIO& io = ImGui::GetIO();
+    //   if (io.WantCaptureMouse) return;
+    //   game->fov -= (float)yOffset;
+    //   if (game->fov < 1.0f) game->fov = 1.0f;
+    //   if (game->fov > 45.0f) game->fov = 45.0f;
+    // });
+    // glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+    //   ImGuiIO& io = ImGui::GetIO();
+    //   if (io.WantCaptureMouse) return;
+    // });
 
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
       if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
@@ -69,51 +69,51 @@ bool InitGlfw(bool tenBit = false) {
         return;
       }
 
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.WantCaptureMouse) return;
+      // auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+      // ImGuiIO& io = ImGui::GetIO();
+      // if (io.WantCaptureMouse) return;
 
-      float xOffset = xPos - game->lastX;
-      float yOffset = game->lastY - yPos;
-      if (game->lastX == 0 && game->lastY == 0) {
-        xOffset = 0;
-        yOffset = 0;
-      }
-      game->lastX = xPos;
-      game->lastY = yPos;
+      // float xOffset = xPos - game->lastX;
+      // float yOffset = game->lastY - yPos;
+      // if (game->lastX == 0 && game->lastY == 0) {
+      //   xOffset = 0;
+      //   yOffset = 0;
+      // }
+      // game->lastX = xPos;
+      // game->lastY = yPos;
 
-      const float sensitivity = 0.1f;
-      xOffset *= sensitivity;
-      yOffset *= sensitivity;
+      // const float sensitivity = 0.1f;
+      // xOffset *= sensitivity;
+      // yOffset *= sensitivity;
 
-      game->yaw += xOffset;
-      game->pitch += yOffset;
+      // game->yaw += xOffset;
+      // game->pitch += yOffset;
 
-      if (game->pitch > 89.0f) game->pitch = 89.0f;
-      if (game->pitch < -89.0f) game->pitch = -89.0f;
+      // if (game->pitch > 89.0f) game->pitch = 89.0f;
+      // if (game->pitch < -89.0f) game->pitch = -89.0f;
 
-      glm::vec3 direction;
-      direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      direction.y = sin(glm::radians(game->pitch));
-      direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-      game->camera->front = glm::normalize(direction);
+      // glm::vec3 direction;
+      // direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
+      // direction.y = sin(glm::radians(game->pitch));
+      // direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
+      // game->camera->front = glm::normalize(direction);
     });
 
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      // game->width = width;
-      // game->height = height;
-      // game->scene->resize(width, height);
+      // auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+      // // game->width = width;
+      // // game->height = height;
+      // // game->scene->resize(width, height);
 
-      // game->updateAspect();
-      game->Resize(width, height);
+      // // game->updateAspect();
+      // game->Resize(width, height);
 
-      game->Redraw();
+      // game->Redraw();
     });
     glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-      auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-      game->Resize(width, height);
-      game->Redraw();
+      // auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+      // game->Resize(width, height);
+      // game->Redraw();
     });
 
 

@@ -1,5 +1,8 @@
 
+
 namespace fe {
+  using ResizeDelegate = std::function<void(int, int)>;
+  using MouseMoveDelegate = std::function<void(int, int)>;
 
   class IWindow {
 
@@ -8,6 +11,9 @@ namespace fe {
 public:
 
   int width, height;
+
+  ResizeDelegate resizeEvent;
+  MouseMoveDelegate mouseMoveEvent;
 
   IWindow(int width, int height) : width(width), height(height) {}
 

@@ -12,8 +12,7 @@
 
 namespace fe {
 
-using ResizeDelegate = std::function<void(int, int)>;
-using MouseMoveDelegate = std::function<void(int, int)>;
+
 
 LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -83,8 +82,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
   }
 
  public:
-  ResizeDelegate resizeEvent;
-  MouseMoveDelegate mouseMoveEvent;
+  
 
   bool capturingMouse = false;
 
