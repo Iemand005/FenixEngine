@@ -6,6 +6,8 @@
 class EngineWidget : public QOpenGLWidget {
  public:
   EngineWidget();
+  EngineWidget(QWidget* parent = nullptr);
+  ~EngineWidget() {}
 
   void initializeGL() override;
 };
