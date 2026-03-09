@@ -123,6 +123,8 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
       return;
     }
 
+    keyboardState = SDL_GetKeyboardState(NULL);
+
     // SDL_AddEventWatch(EventWatch, this);
   }
   void SetSwapInterval(int interval) override { SDL_GL_SetSwapInterval(interval); }
@@ -171,7 +173,31 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
 
   bool PollSDLEvents(SDL_Event* event, bool getKeyboardState = true) {
     if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
-    return SDL_PollEvent(event);
+    if (!SDL_PollEvent(event)) return false;
+
+    switch (event->type) {
+      case SDL_EVENT_WINDOW_EXPOSED:
+        if (resizeEvent) resizeEvent(width, height);
+        break;
+      case SDL_EVENT_WINDOW_RESIZED:
+      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        width = event->window.data1;
+        height = event->window.data2;
+        if (resizeEvent) resizeEvent(width, height);
+        break;
+      case SDL_EVENT_MOUSE_MOTION:
+        if (mouseMoveEvent && capturingMouse) {
+          mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+        }
+        break;
+      case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        if (event->button.button == SDL_BUTTON_LEFT) StartMouseCapture();
+        break;
+      default:
+        break;
+    }
+
+    return true;
   }
 
   SDL_Window* GetSDLWindow() { return window; }
