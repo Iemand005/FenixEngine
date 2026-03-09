@@ -34,6 +34,7 @@ class PhysicsEngine {
   std::unique_ptr<Impl> impl;
 
   PhysicsEngine();
+  ~PhysicsEngine();
 
 
   std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
@@ -43,14 +44,9 @@ class PhysicsEngine {
 
   ObjectState SyncToRender();
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true) {
-    auto obj = std::make_unique<fe::PhysicsObject>(this, size, dynamic);
-    return std::move(obj);
-  }
+  std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
-    return std::make_unique<fe::PhysicsObject>(this, vertices, indices);
-  }
+  std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
   
   void EnableGravity();
   void DisableGravity();

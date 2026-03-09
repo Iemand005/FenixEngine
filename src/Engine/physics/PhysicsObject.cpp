@@ -1,5 +1,7 @@
 #include "PhysicsObject.hpp"
 
+#include <iostream>
+
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
@@ -166,11 +168,27 @@ PhysicsObject::PhysicsObject() {
   impl = std::make_unique<Impl>();
   impl->bodyId = JPH::BodyID();
   impl->physicsSystem = nullptr;
+  impl->body = nullptr;
 }
 
 PhysicsObject::~PhysicsObject() = default;
 
+PhysicsObject::PhysicsObject(glm::vec3 size, bool dynamic) : PhysicsObject() {
+  (void)size;
+  (void)dynamic;
+}
 
+PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices,
+                             const std::vector<uint32_t>& indices,
+                             const glm::vec3& position,
+                             float density,
+                             bool isStatic) : PhysicsObject() {
+  (void)vertices;
+  (void)indices;
+  (void)position;
+  (void)density;
+  (void)isStatic;
+}
 
   void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
     this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
@@ -179,9 +197,16 @@ PhysicsObject::~PhysicsObject() = default;
   glm::vec3 PhysicsObject::GetPosition() { return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId)); }
 
 
-PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) {
+void PhysicsObject::BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
+  impl->physicsSystem = std::move(physicsSystem);
+}
 
-  impl->physicsSystem = std::make_shared<PhysicsSystem>(physicsSystem);
+void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
+  if (!impl->physicsSystem) {
+    std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
+    return;
+  }
+
   float a = size.x;
   float b = size.y;
   float c = size.z;
@@ -208,16 +233,13 @@ PhysicsObject::PhysicsObject(void *physicsSystem, glm::vec3 size, bool dynamic) 
   // bodyInterface->SetGravityFactor()
 }
 
-PhysicsObject::PhysicsObject(void *physicsSystem,
-              const std::vector<glm::vec3>& vertices,
-              const std::vector<uint32_t>& indices,
-              const glm::vec3& position,
-              float density,
-              bool isStatic)
-{
-  impl->physicsSystem = std::make_shared<PhysicsSystem>(physicsSystem);
-  if (!physicsSystem) {
-    std::cerr << "Error: PhysicsObject created with null physicsSystem!" << std::endl;
+void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
+                                       const std::vector<uint32_t>& indices,
+                                       const glm::vec3& position,
+                                       float density,
+                                       bool isStatic) {
+  if (!impl->physicsSystem) {
+    std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
     return;
   }
   

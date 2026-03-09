@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/glm.hpp>
 
 struct ObjectState {
   glm::vec3 position;
