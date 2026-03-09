@@ -63,7 +63,6 @@ class SDLWindow : public IWindow {
         }
         break;
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (event->button.button == SDL_BUTTON_LEFT) window->StartMouseCapture();
         // case SLD_
     }
     return false;

@@ -90,17 +90,22 @@ public:
 
   void ProcessInput() {
     SDL_Event event;
-    while (window->PollSDLEvents(&event)) switch (event.type) {
-      case SDL_EVENT_QUIT: window->PrepareClose(); break;
-      case SDL_EVENT_WINDOW_RESIZED:
-                case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-                    // Get actual pixel dimensions
-                    break;
-                    // int w, h;
-                    // SDL_GetWindowSizeInPixels(window->GetSDLWindow(), &w, &h);
-                    // glViewport(0, 0, w, h);
-                    // window_changed = 1;
-                    break;
+    while (window->PollSDLEvents(&event)) {
+      ImGui_ImplSDL3_ProcessEvent(&event);
+      ImGuiIO& imguiIO = ImGui::GetIO();
+      switch (event.type) {
+        case SDL_EVENT_QUIT:
+          window->PrepareClose();
+          break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+          if (event.button.button == SDL_BUTTON_LEFT && !imguiIO.WantCaptureMouse) {
+            StartMouseCapture();
+          }
+          break;
+        case SDL_EVENT_WINDOW_RESIZED:
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+          // Get actual pixel dimensions
+          break;
 
       // case SDL_EVENT_WINDOW_RESIZED:{
       //   Resize(event.window.data1, event.window.data2);
@@ -113,7 +118,8 @@ public:
       // }
 
       // break;
-       }
+      }
+    }
 
       //  const bool* keyboardState = SDL_GetKeyboardState(NULL);
 
@@ -132,6 +138,7 @@ public:
       if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
       if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) StopMouseCapture();
+      if (ImGui::GetIO().WantCaptureMouse) StopMouseCapture();
 
 
     // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
