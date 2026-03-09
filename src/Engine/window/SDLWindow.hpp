@@ -62,8 +62,6 @@ class SDLWindow : public IWindow {
           // SDL_WarpMouseInWindow(window->window, window->width/2.0f, window->height/2.0f);
         }
         break;
-      case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        // case SLD_
     }
     return false;
   }

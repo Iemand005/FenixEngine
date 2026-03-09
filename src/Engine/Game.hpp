@@ -82,28 +82,30 @@ class Game {
 
   Game(int width, int height, bool bpc10 = true) {
     // if (!InitGlfw(bpc10)) return;
-    this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
+    // this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
 
-    this->window->resizeEvent = [this](int width, int height) {
-      this->Resize(width, height);
-      this->Redraw();
-    };
+    // this->window->resizeEvent = [this](int width, int height) {
+    //   this->Resize(width, height);
+    //   this->Redraw();
+    // };
 
-    this->window->mouseMoveEvent = [this](int x, int y) {
-      const float sensitivity = 0.1f;
+    // this->window->mouseMoveEvent = [this](int x, int y) {
+    //   const float sensitivity = 0.1f;
 
-      this->yaw += sensitivity * x;
-      this->pitch += sensitivity * -y;
+    //   this->yaw += sensitivity * x;
+    //   this->pitch += sensitivity * -y;
 
-      if (this->pitch > 89.0f) this->pitch = 89.0f;
-      if (this->pitch < -89.0f) this->pitch = -89.0f;
+    //   if (this->pitch > 89.0f) this->pitch = 89.0f;
+    //   if (this->pitch < -89.0f) this->pitch = -89.0f;
 
-      glm::vec3 direction;
-      direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-      direction.y = sin(glm::radians(this->pitch));
-      direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-      this->camera->front = glm::normalize(direction);
-    };
+    //   glm::vec3 direction;
+    //   direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+    //   direction.y = sin(glm::radians(this->pitch));
+    //   direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+    //   this->camera->front = glm::normalize(direction);
+    // };
+
+    this->window = std::make_unique<fe::SDLWindow>(CreateSDLWindow(width, height));
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -122,6 +124,32 @@ class Game {
     InitUI();
     
     StartMouseCapture();
+  }
+
+  fe::SDLWindow CreateSDLWindow(int width, int height) {
+    fe::SDLWindow window("Game", width, height);
+
+    window.resizeEvent = [this](int width, int height) {
+      this->Resize(width, height);
+      this->Redraw();
+    };
+
+    window.mouseMoveEvent = [this](int x, int y) {
+      const float sensitivity = 0.1f;
+
+      this->yaw += sensitivity * x;
+      this->pitch += sensitivity * -y;
+
+      if (this->pitch > 89.0f) this->pitch = 89.0f;
+      if (this->pitch < -89.0f) this->pitch = -89.0f;
+
+      glm::vec3 direction;
+      direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+      direction.y = sin(glm::radians(this->pitch));
+      direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+      this->camera->front = glm::normalize(direction);
+    };
+    return window;
   }
 
   void SaveLevel(std::string fileName = "level.fes") {
