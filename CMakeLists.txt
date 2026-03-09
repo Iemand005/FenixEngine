@@ -27,8 +27,8 @@ set(JPH_USE_DX12 OFF CACHE BOOL "Use DirectX" FORCE)
 set(JPH_USE_DXC OFF CACHE BOOL "Use DXC shader compiler" FORCE)
 set(JPH_USE_VK OFF CACHE BOOL "Use Vulkan" FORCE)
 set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
-set(USE_STATIC_MSVC_RUNTIME_LIBRARY ON CACHE BOOL "Use Static MSVC++" FORCE)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use Static MSVC++" FORCE)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
 # add_subdirectory(external/glfw)  
 # add_subdirectory(external/JoltPhysics/Build)
@@ -107,13 +107,9 @@ if(WIN32)
     target_link_directories(main PRIVATE "${LIB_DIR}")
     
     target_link_libraries(main PRIVATE
-        # gdi32
-        # glfw3
-        # opengl32
-        # shell32
-        # user32
-        # Jolt
         engine
+        SDL3::SDL3
+        OpenXR::openxr_loader
     )
     
     if(MSVC)
@@ -127,16 +123,9 @@ if(WIN32)
     target_link_directories(editor PRIVATE "${LIB_DIR}")
     
     target_link_libraries(editor PRIVATE
-        # gdi32
-        # glfw3
-        # opengl32
-        # shell32
-        # user32
-        # gdi32
-        # Jolt
-        # SDL3::SDL3
-        # OpenXR::openxr_loader
         engine
+        SDL3::SDL3
+        OpenXR::openxr_loader
     )
     
     # if(MSVC)
