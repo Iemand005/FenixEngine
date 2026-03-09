@@ -4,7 +4,7 @@
 int main() {
 
   Annihilation game(800, 600);
-  game.DisableVSync();
+  // game.DisableVSync();
   
   glm::vec3 cameraOffset = glm::vec3(0.0f, 6.5f, 0.0f);
 

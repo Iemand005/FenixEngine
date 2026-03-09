@@ -176,9 +176,6 @@ class SDLWindow : public IWindow {
           mouseMoveEvent(event->motion.xrel, event->motion.yrel);
         }
         break;
-      case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (event->button.button == SDL_BUTTON_LEFT) StartMouseCapture();
-        break;
       default:
         break;
     }
