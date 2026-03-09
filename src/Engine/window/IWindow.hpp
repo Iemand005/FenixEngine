@@ -7,6 +7,10 @@ namespace fe {
 
 public:
 
+  int width, height;
+
+  IWindow(int width, int height) : width(width), height(height) {}
+
   virtual bool ShouldClose() { return shouldClose; }
 
   virtual void PrepareClose() { shouldClose = true; }

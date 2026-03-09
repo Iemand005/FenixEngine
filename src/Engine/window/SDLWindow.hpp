@@ -86,10 +86,9 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
   ResizeDelegate resizeEvent;
   MouseMoveDelegate mouseMoveEvent;
 
-  int width, height;
   bool capturingMouse = false;
 
-  SDLWindow(std::string title, int width, int height) : width(width), height(height) {
+  SDLWindow(std::string title, int width, int height) : IWindow(width, height) {
     CheckError(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
