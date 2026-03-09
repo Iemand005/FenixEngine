@@ -28,7 +28,7 @@
 
 #include "engine.h"
 
-class VRGame : public fe::Game {
+class XRGame : public fe::Game {
  private:
   bool drawVR = false;
   // bool vrInitialized = false;
@@ -68,9 +68,9 @@ class VRGame : public fe::Game {
   XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
   uint32_t swapchainImageIndex;
 
-  VRGame(bool launchVR = true) : VRGame(0, 0, false) { LaunchVR(); }
+  XRGame(bool launchVR = true) : XRGame(0, 0, false) { LaunchVR(); }
 
-  VRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
+  XRGame(int width, int height, bool launchVR = true, bool drawWindow = true) : Game(width, height) {
     this->drawWindow = drawWindow;
     if (launchVR) LaunchVR();
   }

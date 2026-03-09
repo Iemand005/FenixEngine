@@ -17,9 +17,9 @@
 #include <imgui/imgui_impl_sdl3.h>
 #include <imgui/imgui_impl_opengl3.h>
 
-#include "../../engine/VRGame.hpp"
+#include "../../engine/XRGame.hpp"
 
-class Chizzle : public VRGame {
+class Chizzle : public XRGame {
 public:
 
   std::vector<std::string> messages;
@@ -34,7 +34,7 @@ public:
 
   Chizzle() : Chizzle(800, 640) {}
 
-  Chizzle(int width, int height, bool vr = false) : VRGame(width, height, vr) {
+  Chizzle(int width, int height, bool vr = false) : XRGame(width, height, vr) {
 
     LoadModels();
 

@@ -1,9 +1,9 @@
 // #include "../../engine/networking/networking.hpp"
-#include "../../engine/VRGame.hpp"
+#include "../../engine/XRGame.hpp"
 
-class FoxChat : public VRGame {
+class FoxChat : public XRGame {
 public:
-  FoxChat() : VRGame(800, 600) {
+  FoxChat() : XRGame(800, 600) {
 
   }
   void start() {
