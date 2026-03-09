@@ -1,31 +1,28 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <dwmapi.h>
 #include <glad/glad.h>
 
 #include <functional>
 #include <iostream>
-
-#include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
 #include "IWindow.hpp"
 
 namespace fe {
 
-
-
 inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
+  WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+  LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
 
-  switch(msg) {
-  case WM_MOVING:
-  case WM_TIMER: {
-    DwmFlush();
-  }
+  switch (msg) {
+    case WM_MOVING:
+    case WM_TIMER: {
+      DwmFlush();
+    }
   }
 
-return res;
+  return res;
 }
 class SDLWindow : public IWindow {
   SDL_Window* window;
@@ -34,22 +31,21 @@ class SDLWindow : public IWindow {
 
   const bool* keyboardState = nullptr;
 
-
-void SDL_FlushOnResizeAndMove(SDL_Window* window) {
-	HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+  void SDL_FlushOnResizeAndMove(SDL_Window* window) {
+    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
-	WNDPROC ogProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(ogProc));
+      WNDPROC ogProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
+      SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(ogProc));
     }
-}
+  }
 
   static bool SDLCALL EventWatch(void* userdata, SDL_Event* event) {
     SDLWindow* window = (SDLWindow*)userdata;
     switch (event->type) {
       case SDL_EVENT_WINDOW_EXPOSED:
-      // DwmFlush();
-      
-      if (window->resizeEvent) window->resizeEvent(window->width, window->height);
+        // DwmFlush();
+
+        if (window->resizeEvent) window->resizeEvent(window->width, window->height);
         break;
       case SDL_EVENT_WINDOW_RESIZED:
       case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
@@ -67,9 +63,8 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
         }
         break;
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (event->button.button == SDL_BUTTON_LEFT)
-          window->StartMouseCapture();
-      // case SLD_
+        if (event->button.button == SDL_BUTTON_LEFT) window->StartMouseCapture();
+        // case SLD_
     }
     return false;
   }
@@ -82,8 +77,6 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
   }
 
  public:
-  
-
   bool capturingMouse = false;
 
   SDLWindow(std::string title, int width, int height) : IWindow(width, height) {
@@ -144,9 +137,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
     // io.WantCaptureMouse = true;
   }
 
-  void GetSize(int *w, int *h) {
-    SDL_GetWindowSize(window, w, h);
-  }
+  void GetSize(int* w, int* h) { SDL_GetWindowSize(window, w, h); }
 
   void SwapBuffers() override {
     // DwmFlush();
@@ -164,9 +155,7 @@ void SDL_FlushOnResizeAndMove(SDL_Window* window) {
     SDL_GL_SwapWindow(window);
   }
 
-  bool IsKeyDown(SDL_Scancode key) {
-    return keyboardState[key];
-  }
+  bool IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
 
   bool PollSDLEvents(SDL_Event* event, bool getKeyboardState = true) {
     if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
