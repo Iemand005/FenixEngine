@@ -14,7 +14,7 @@ namespace fe {
 
 
 
-LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
 
