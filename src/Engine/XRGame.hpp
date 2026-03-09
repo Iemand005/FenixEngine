@@ -30,19 +30,11 @@
 
 class XRGame : public fe::Game {
  private:
-  bool drawVR = false;
   // bool vrInitialized = false;
   struct Impl;
   std::unique_ptr<Impl> impl;
 
  public:
-  
-  std::vector<GLuint> depthTextures;
-  std::vector<GLuint> framebuffers;
-  uint32_t viewCount = 2;  // Stereo
-  int32_t swapchainWidth, swapchainHeight;
-
-  
 
   float playerHeight = 1.7f;
 
@@ -61,22 +53,17 @@ class XRGame : public fe::Game {
     if (launchVR) LaunchVR();
   }
 
-  void EnableXR() {
-    if (!IsInstanceValid()) LaunchVR();
-    if (IsInstanceValid()) drawVR = true;
-  }
-
   bool IsInstanceValid();
-
+  
+  void EnableXR();
   void DisableVR();
-
   void LaunchVR();
 
+  void Redraw() ;
+  void RedrawVR();
   void RedrawWindow();
 
-  void Redraw() ;
-
-  
+  void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 
   void CheckGLError(const char* location) {
     GLenum err;

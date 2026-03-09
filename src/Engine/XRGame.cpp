@@ -16,6 +16,13 @@ struct XRGame::Impl {
   XrSwapchain swapchain;
   std::vector<XrSwapchainImageOpenGLKHR> swapchainImages;
 
+  std::vector<GLuint> depthTextures;
+  std::vector<GLuint> framebuffers;
+  uint32_t viewCount = 2;  // Stereo
+  int32_t swapchainWidth, swapchainHeight;
+
+  bool drawVR = false;
+
 
   XrActionSet actionSet = XR_NULL_HANDLE;
   XrAction moveAction = XR_NULL_HANDLE;
@@ -154,61 +161,7 @@ struct XRGame::Impl {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
-  void PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
-    XrVector2f joystickInput = {0.0f, 0.0f};
-    XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
-
-    XrActiveActionSet activeActionSet{actionSet, XR_NULL_PATH};
-    XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
-    syncInfo.activeActionSets = &activeActionSet;
-    syncInfo.countActiveActionSets = 1;
-    xrSyncActions(session, &syncInfo);
-
-    XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
-    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-    getInfo.action = moveAction;
-    xrGetActionStateVector2f(session, &getInfo, &moveState);
-
-    if (moveState.isActive) {
-      joystickInput = moveState.currentState;
-    } else {
-      joystickInput = {0.0f, 0.0f};
-    }
-
-    XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
-    headSpace = appSpace;
-    xrLocateSpace(headSpace, appSpace, predictedDisplayTime, &headLocation);
-
-    if (headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
-      headPose = headLocation.pose;
-    }
-
-    auto ori = headPose.orientation;
-
-    if (fabsf(joystickInput.x) > 0.1f || fabsf(joystickInput.y) > 0.1f) {
-      glm::vec3 forward = glm::vec3(-2.0f * (ori.x * ori.z + ori.w * ori.y), -2.0f * (ori.y * ori.z - ori.w * ori.x), -1.0f + 2.0f * (ori.x * ori.x + ori.y * ori.y));
-      glm::vec3 right = glm::vec3(1.0f - 2.0f * (ori.y * ori.y + ori.z * ori.z), 2.0f * (ori.x * ori.y + ori.w * ori.z), 2.0f * (ori.x * ori.z - ori.w * ori.y));
-
-      // Normalize and apply joystick input
-      forward = glm::normalize(forward);
-      right = glm::normalize(right);
-
-      XrVector3f movement;
-      float moveSpeed = 0.1f;  // meters per second
-      movement.x = .3f * forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
-      movement.y = 0.0f;  // Typically no vertical movement from joystick
-      movement.z = -.3f * forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
-
-      // Apply movement speed and delta time
-      // float deltaTime = GetFrameDeltaTime(); // Implement this
-      // movement = movement //ScaleVector(movement, moveSpeed * 1);
-      player->state.position.x += movement.x;
-      player->state.position.z += movement.z;
-
-      positionOffset.x += movement.x;
-      positionOffset.z += movement.z;
-    }
-  }
+  
 
   void Log(const std::string& message) { std::cout << message << std::endl; }
 
@@ -282,113 +235,7 @@ struct XRGame::Impl {
     outputError(xrBeginSession(session, &beginInfo));
   }
 
-  void RedrawVR() {
-    outputError(xrWaitFrame(session, &waitInfo, &frameState));
-
-    PollActionsAndUpdateMovement(frameState.predictedDisplayTime);
-
-    outputError(xrBeginFrame(session, &frameBegin));
-    outputError(xrAcquireSwapchainImage(swapchain, &acquireInfo, &swapchainImageIndex));
-
-    XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-    waitImageInfo.timeout = XR_INFINITE_DURATION;
-    outputError(xrWaitSwapchainImage(swapchain, &waitImageInfo));
-
-    XrViewState viewState{XR_TYPE_VIEW_STATE};
-    XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
-    viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-    viewLocateInfo.displayTime = frameState.predictedDisplayTime;
-    viewLocateInfo.space = appSpace;
-
-    uint32_t viewCount = 0;
-    outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
-
-    std::vector<XrView> views(viewCount, {XR_TYPE_VIEW});
-    std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
-    outputError(xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
-
-    outputError(xrLocateViews(session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
-
-    std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
-    static float angle = 0.0f;
-
-    bool render2D = false;
-
-    for (uint32_t eye = 0; eye < viewCount; eye++) {
-      XrPosef pose = views[eye].pose;
-      XrFovf xrFov = views[eye].fov;
-
-      glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
-      glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
-      glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
-
-      if (!render2D) {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[swapchainImageIndex]);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, swapchainImages[swapchainImageIndex].image, 0, eye);
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextures[swapchainImageIndex], 0, eye);
-
-        // Check framebuffer status
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
-          std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
-        }
-
-        // glViewport(0, 0, swapchainWidth, swapchainHeight);
-        // glScissor(0, 0, swapchainWidth, swapchainHeight);
-
-        camera->update(position + positionOffset, orientation, fov);
-        scene->Render(*shader, *camera, swapchainWidth, swapchainHeight);
-      } else {
-        glBindTexture(GL_TEXTURE_2D_ARRAY, swapchainImages[swapchainImageIndex].image);
-        glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
-                            0,                    // Mipmap level 0
-                            0, 0, 1,              // Destination (x, y, layer) -> layer 1
-                            0, 0,                 // Source (x, y) in framebuffer
-                            swapchainWidth, swapchainHeight);
-      }
-
-      projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-      projectionViews[eye].pose = views[eye].pose;
-      projectionViews[eye].fov = views[eye].fov;
-      projectionViews[eye].subImage.swapchain = swapchain;
-      projectionViews[eye].subImage.imageRect.offset = {0, 0};
-      projectionViews[eye].subImage.imageRect.extent = {swapchainWidth, swapchainHeight};
-      projectionViews[eye].subImage.imageArrayIndex = eye;
-    }
-
-    XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-    outputError(xrReleaseSwapchainImage(swapchain, &releaseInfo));
-
-    XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-    layer.space = appSpace;
-    layer.viewCount = viewCount;
-    layer.views = projectionViews.data();
-
-    const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
-
-    XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-    endInfo.displayTime = frameState.predictedDisplayTime;
-    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-
-    if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
-      XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-      layer.space = appSpace;
-      layer.viewCount = viewCount;
-      layer.views = projectionViews.data();
-
-      const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
-      endInfo.layerCount = 1;
-      endInfo.layers = layers;
-    } else {
-      endInfo.layerCount = 0;
-      endInfo.layers = nullptr;
-      std::cerr << "Warning: No valid layers to submit" << std::endl;
-    }
-
-    outputError(xrEndFrame(session, &endInfo));
-  }
+  
 
   void BindFrameBuffer(int bufferIndex = 0) { glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex); }
 
@@ -452,6 +299,62 @@ struct XRGame::Impl {
 }; // Impl
 
 
+void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
+    XrVector2f joystickInput = {0.0f, 0.0f};
+    XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
+
+    XrActiveActionSet activeActionSet{impl->actionSet, XR_NULL_PATH};
+    XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
+    syncInfo.activeActionSets = &activeActionSet;
+    syncInfo.countActiveActionSets = 1;
+    xrSyncActions(impl->session, &syncInfo);
+
+    XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
+    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+    getInfo.action = impl->moveAction;
+    xrGetActionStateVector2f(impl->session, &getInfo, &moveState);
+
+    if (moveState.isActive) {
+      joystickInput = moveState.currentState;
+    } else {
+      joystickInput = {0.0f, 0.0f};
+    }
+
+    XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
+    impl->headSpace = impl->appSpace;
+    xrLocateSpace(impl->headSpace, impl->appSpace, predictedDisplayTime, &headLocation);
+
+    if (headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+      headPose = headLocation.pose;
+    }
+
+    auto ori = headPose.orientation;
+
+    if (fabsf(joystickInput.x) > 0.1f || fabsf(joystickInput.y) > 0.1f) {
+      glm::vec3 forward = glm::vec3(-2.0f * (ori.x * ori.z + ori.w * ori.y), -2.0f * (ori.y * ori.z - ori.w * ori.x), -1.0f + 2.0f * (ori.x * ori.x + ori.y * ori.y));
+      glm::vec3 right = glm::vec3(1.0f - 2.0f * (ori.y * ori.y + ori.z * ori.z), 2.0f * (ori.x * ori.y + ori.w * ori.z), 2.0f * (ori.x * ori.z - ori.w * ori.y));
+
+      // Normalize and apply joystick input
+      forward = glm::normalize(forward);
+      right = glm::normalize(right);
+
+      XrVector3f movement;
+      float moveSpeed = 0.1f;  // meters per second
+      movement.x = .3f * forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
+      movement.y = 0.0f;  // Typically no vertical movement from joystick
+      movement.z = -.3f * forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
+
+      // Apply movement speed and delta time
+      // float deltaTime = GetFrameDeltaTime(); // Implement this
+      // movement = movement //ScaleVector(movement, moveSpeed * 1);
+      player->state.position.x += movement.x;
+      player->state.position.z += movement.z;
+
+      positionOffset.x += movement.x;
+      positionOffset.z += movement.z;
+    }
+  }
+
   bool XRGame::IsInstanceValid() { return impl->instance != XR_NULL_HANDLE; }
 
 
@@ -460,7 +363,7 @@ void XRGame::DisableVR() {
 }
 
 void XRGame::DestroyXR() {
-  drawVR = false;
+  impl->drawVR = false;
   xrDestroySession(impl->session);
   xrDestroyInstance(impl->instance);
   impl->session = XR_NULL_HANDLE;
@@ -482,9 +385,14 @@ void XRGame::RedrawWindow() {
   game->Redraw();
 }
 
+void XRGame::EnableXR() {
+  if (!IsInstanceValid()) LaunchVR();
+  if (IsInstanceValid()) impl->drawVR = true;
+}
+
 void XRGame::Redraw() {
   {
-    if (drawVR) impl->RedrawVR();
+    if (impl->drawVR) RedrawVR();
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
       std::cerr << "OpenGL error: " << err << std::endl;
@@ -492,3 +400,111 @@ void XRGame::Redraw() {
     if (drawWindow) RedrawWindow();
   }
 }
+
+void XRGame::RedrawVR() {
+    impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
+
+    PollActionsAndUpdateMovement(impl->frameState.predictedDisplayTime);
+
+    impl->outputError(xrBeginFrame(impl->session, &impl->frameBegin));
+    impl->outputError(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo, &swapchainImageIndex));
+
+    XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
+    waitImageInfo.timeout = XR_INFINITE_DURATION;
+    impl->outputError(xrWaitSwapchainImage(impl->swapchain, &waitImageInfo));
+
+    XrViewState viewState{XR_TYPE_VIEW_STATE};
+    XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
+    viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+    viewLocateInfo.displayTime = impl->frameState.predictedDisplayTime;
+    viewLocateInfo.space = impl->appSpace;
+
+    uint32_t viewCount = 0;
+    impl->outputError(xrEnumerateViewConfigurationViews(impl->instance, impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
+
+    std::vector<XrView> views(viewCount, {XR_TYPE_VIEW});
+    std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
+    impl->outputError(xrEnumerateViewConfigurationViews(impl->instance, impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
+
+    impl->outputError(xrLocateViews(impl->session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
+
+    std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, impl->framebuffers[swapchainImageIndex]);
+    static float angle = 0.0f;
+
+    bool render2D = false;
+
+    for (uint32_t eye = 0; eye < viewCount; eye++) {
+      XrPosef pose = views[eye].pose;
+      XrFovf xrFov = views[eye].fov;
+
+      glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
+      glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+      glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
+
+      if (!render2D) {
+        glBindFramebuffer(GL_FRAMEBUFFER, impl->framebuffers[swapchainImageIndex]);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, impl->swapchainImages[swapchainImageIndex].image, 0, eye);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, impl->depthTextures[swapchainImageIndex], 0, eye);
+
+        // Check framebuffer status
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+          std::cerr << "Framebuffer incomplete for eye " << eye << ": " << status << std::endl;
+        }
+
+        // glViewport(0, 0, swapchainWidth, swapchainHeight);
+        // glScissor(0, 0, swapchainWidth, swapchainHeight);
+
+        camera->update(position + positionOffset, orientation, fov);
+        scene->Render(*shader, *camera, impl->swapchainWidth, impl->swapchainHeight);
+      } else {
+        glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImages[swapchainImageIndex].image);
+        glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array
+                            0,                    // Mipmap level 0
+                            0, 0, 1,              // Destination (x, y, layer) -> layer 1
+                            0, 0,                 // Source (x, y) in framebuffer
+                            impl->swapchainWidth, impl->swapchainHeight);
+      }
+
+      projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
+      projectionViews[eye].pose = views[eye].pose;
+      projectionViews[eye].fov = views[eye].fov;
+      projectionViews[eye].subImage.swapchain = impl->swapchain;
+      projectionViews[eye].subImage.imageRect.offset = {0, 0};
+      projectionViews[eye].subImage.imageRect.extent = {impl->swapchainWidth, impl->swapchainHeight};
+      projectionViews[eye].subImage.imageArrayIndex = eye;
+    }
+
+    XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
+    impl->outputError(xrReleaseSwapchainImage(impl->swapchain, &releaseInfo));
+
+    XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+    layer.space = impl->appSpace;
+    layer.viewCount = viewCount;
+    layer.views = projectionViews.data();
+
+    const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
+
+    XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
+    endInfo.displayTime = impl->frameState.predictedDisplayTime;
+    endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+
+    if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
+      XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+      layer.space = impl->appSpace;
+      layer.viewCount = viewCount;
+      layer.views = projectionViews.data();
+
+      const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
+      endInfo.layerCount = 1;
+      endInfo.layers = layers;
+    } else {
+      endInfo.layerCount = 0;
+      endInfo.layers = nullptr;
+      std::cerr << "Warning: No valid layers to submit" << std::endl;
+    }
+
+    impl->outputError(xrEndFrame(impl->session, &endInfo));
+  }
