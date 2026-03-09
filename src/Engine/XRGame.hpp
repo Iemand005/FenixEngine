@@ -30,7 +30,7 @@
 
 typedef int64_t XrTime;
 
-class XRGame : public fe::Game {
+class XRGame : public fe::Game<fe::SDLWindow> {
  private:
   // bool vrInitialized = false;
   struct Impl;

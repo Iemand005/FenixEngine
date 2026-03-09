@@ -35,12 +35,13 @@
 
 namespace fe {
 
+  template <typename WindowT = SDLWindow>
 class Game {
  public:
-  std::unique_ptr<fe::SDLWindow> window;
-  std::unique_ptr<fe::Scene> scene;
-  std::unique_ptr<fe::Camera> camera;
-  std::unique_ptr<fe::ShaderProgram> shader;
+  std::unique_ptr<WindowT> window;
+  std::unique_ptr<Scene> scene;
+  std::unique_ptr<Camera> camera;
+  std::unique_ptr<ShaderProgram> shader;
   fe::Timer fpsCounter;
 
 
@@ -70,8 +71,6 @@ class Game {
 
   std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
 
-  // ImGuiIO io;
-
   bool isConnectedToServer = false;
 
   std::unique_ptr<PhysicsEngine> physicsEngine;
@@ -81,31 +80,8 @@ class Game {
   Game() : Game(0, 0) {}
 
   Game(int width, int height, bool bpc10 = true) {
-    // if (!InitGlfw(bpc10)) return;
-    // this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
 
-    // this->window->resizeEvent = [this](int width, int height) {
-    //   this->Resize(width, height);
-    //   this->Redraw();
-    // };
-
-    // this->window->mouseMoveEvent = [this](int x, int y) {
-    //   const float sensitivity = 0.1f;
-
-    //   this->yaw += sensitivity * x;
-    //   this->pitch += sensitivity * -y;
-
-    //   if (this->pitch > 89.0f) this->pitch = 89.0f;
-    //   if (this->pitch < -89.0f) this->pitch = -89.0f;
-
-    //   glm::vec3 direction;
-    //   direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    //   direction.y = sin(glm::radians(this->pitch));
-    //   direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    //   this->camera->front = glm::normalize(direction);
-    // };
-
-    this->window = std::make_unique<fe::SDLWindow>(CreateSDLWindow(width, height));
+    this->window = std::make_unique<WindowT>(CreateWindow(width, height));
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -126,8 +102,8 @@ class Game {
     StartMouseCapture();
   }
 
-  fe::SDLWindow CreateSDLWindow(int width, int height) {
-    fe::SDLWindow window("Game", width, height);
+  WindowT CreateWindow(int width, int height) {
+    fe::WindowT window("Game", width, height);
 
     window.resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
