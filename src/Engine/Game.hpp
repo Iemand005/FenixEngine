@@ -85,7 +85,6 @@ class Game {
     this->window = std::make_unique<fe::SDLWindow>("Game", width, height);
 
     this->window->resizeEvent = [this](int width, int height) {
-      return;
       this->Resize(width, height);
       this->Redraw();
     };
@@ -206,11 +205,11 @@ class Game {
     // Resize(x, y);
     
 
-    // scene->Render(*this->shader, *this->camera.get());
+    scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
 
-    // DrawUI();
+    DrawUI();
 
     window->SwapBuffers();
 
