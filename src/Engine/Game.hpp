@@ -102,6 +102,28 @@ class Game {
     NewWindow(width, height);
     Init();
   }
+  void NewWindow(int width, int height) {
+    this->window = MakeWindow("Gamer", width, height);
+    Init();
+    StartMouseCapture();
+  }
+
+  
+  template<typename WindowT = SDLWindow>
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
+    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
+    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
+    
+    window->resizeEvent = [this](int width, int height) {
+      this->Resize(width, height);
+      this->Redraw();
+    };
+    
+    window->mouseMoveEvent = [this](int x, int y) {
+      MouseMove(x, y);
+    };
+    return std::move(window);
+  }
   #endif
   
   void InitGL();
@@ -118,15 +140,7 @@ class Game {
     this->level = std::make_unique<fe::Level>();
     InitUI();
   }
-
-#ifndef FE_EXCLUDE_SDL
   
-  void NewWindow(int width, int height) {
-    this->window = MakeWindow("Gamer", width, height);
-    Init();
-    StartMouseCapture();
-  }
-
   void MouseMove(int x, int y) {
       const float sensitivity = 0.1f;
 
@@ -142,24 +156,6 @@ class Game {
       direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
       this->camera->front = glm::normalize(direction);
   }
-
-  template<typename WindowT = SDLWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
-    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
-
-    window->resizeEvent = [this](int width, int height) {
-      this->Resize(width, height);
-      this->Redraw();
-    };
-
-    window->mouseMoveEvent = [this](int x, int y) {
-      MouseMove(x, y);
-    };
-    return std::move(window);
-  }
-
-#endif
 
   void SaveLevel(std::string fileName = "level.fes") {
     this->level->Save(this->scene->GetFilteredObjects(player), fileName);

@@ -46,7 +46,7 @@ void EngineWidget::mouseMoveEvent(QMouseEvent* e) {
   QPoint center = rect().center();
   QPoint delta = e->pos() - center;
   // delta.x(), delta.y()
-
+  game->MouseMove(delta.x(), delta.y());
   QCursor::setPos(mapToGlobal(center));
 }
 
