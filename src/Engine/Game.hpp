@@ -86,7 +86,7 @@ class Game {
 
   Game(int width, int height, bool bpc10 = true) {
 
-    this->window = std::make_unique<IWindow>(CreateWindow(width, height));
+    this->window = std::make_unique<IWindow>(NewWindow("Gamer", width, height));
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -107,10 +107,10 @@ class Game {
     StartMouseCapture();
   }
 
-  IWindow CreateWindow(std::string title, int width, int height, bool sdl = true) {
+  IWindow *NewWindow(std::string title, int width, int height, bool sdl = true) {
     // IWindow window("Game", width, height);
 
-    IWindow window = sdl ? (IWindow)SDLWindow(title, width, height) : (IWindow)GLFW3Window(title, width, height);
+    IWindow *window = sdl ? (IWindow*)new SDLWindow(title, width, height) : (IWindow*)new GLFW3Window(title, width, height);
 
     window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);

@@ -93,13 +93,13 @@ public:
     fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     while (window->PollSDLEvents(&event)) {
       ImGui_ImplSDL3_ProcessEvent(&event);
-      ImGuiIO& imguiIO = ImGui::GetIO();
+      auto io = ImGui::GetIO();
       switch (event.type) {
         case SDL_EVENT_QUIT:
           // window->PrepareClose();
           break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-          if (event.button.button == SDL_BUTTON_LEFT && !imguiIO.WantCaptureMouse) {
+          if (event.button.button == SDL_BUTTON_LEFT && !io.WantCaptureMouse) {
             StartMouseCapture();
           }
           break;
