@@ -47,6 +47,9 @@ struct fe::SDLWindow::Impl {
   
 }; // Impl
 
+fe::SDLWindow::~SDLWindow() {
+  Destroy();
+}
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height) : IWindow(width, height) {
     CheckError(SDL_Init(SDL_INIT_VIDEO));

@@ -38,6 +38,7 @@ class SDLWindow : public IWindow {
   bool capturingMouse = false;
 
   SDLWindow(std::string title, int width, int height);
+  ~SDLWindow();
 
   void SetSwapInterval(int interval) override;
 
@@ -79,9 +80,9 @@ class SDLWindow : public IWindow {
   //   return true;
   // }
 
-  // SDL_Window* GetSDLWindow() { return window; }
+  SDL_Window* GetSDLWindow() { return window; }
 
-  // SDL_GLContext GetSDLGLContext() { return gl_context; }
+  SDL_GLContext GetSDLGLContext() { return gl_context; }
 
   void Destroy() override;
 };
