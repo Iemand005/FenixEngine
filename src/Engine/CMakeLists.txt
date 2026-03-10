@@ -25,13 +25,13 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 
 
-add_library(engine STATIC ${SOURCE_FILES})
+add_library(Engine STATIC ${SOURCE_FILES})
 
-target_include_directories(engine PRIVATE
+target_include_directories(Engine PRIVATE
     ../../include
 )
 
-target_link_libraries(engine PUBLIC
+target_link_libraries(Engine PUBLIC
     gdi32
     glfw
     opengl32
