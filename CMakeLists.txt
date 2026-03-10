@@ -4,8 +4,6 @@ project(editor)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/debug")
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/release")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -30,14 +28,7 @@ set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use Static MSVC++" FORCE)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
-# add_subdirectory(external/glfw)  
-# add_subdirectory(external/JoltPhysics/Build)
-# add_subdirectory(external/SDL)
-# add_subdirectory(external/OpenXR-SDK)
-add_subdirectory(src/Engine )
-# add_subdirectory(third_party/glfw)
-# add_subdirectory(third_party/imgui)
-# add_subdirectory(third_party/OpenXR-SDK)
+add_subdirectory(src/Engine)
 
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)
@@ -61,18 +52,6 @@ else()
     set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib/release")
 endif()
 
-# if(MSVC)
-#     target_compile_options(main PRIVATE
-#         $<$<CONFIG:Debug>:/MDd /Zi>
-#         $<$<CONFIG:Release>:/MD /O2>
-#     )
-# else()
-#     target_compile_options(main PRIVATE
-#         $<$<CONFIG:Debug>:-g>
-#         $<$<CONFIG:Release>:-O3>
-#     )
-# endif()
-
 target_compile_definitions(main PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
 )
@@ -82,13 +61,20 @@ target_include_directories(main PRIVATE
     src
     src/extern
     src/engine
-    # third_party/JoltPhysics
 )
 
 file(GLOB_RECURSE EDITOR_SOURCE_FILES
-    # src/extern/*.c
-    # src/extern/imgui/*.cpp
-    # src/engine/*.cpp
+    external/imgui/imgui.cpp
+    external/imgui/backends/imgui_impl_sdl3.cpp
+    external/imgui/backends/imgui_impl_sdlgpu3.cpp
+    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_opengl3.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/imgui_demo.cpp
+    external/imgui/imgui_draw.cpp
+
     src/games/Chizzle/*.cpp
 )
 
@@ -97,9 +83,9 @@ add_executable(editor ${EDITOR_SOURCE_FILES})
 target_include_directories(editor PRIVATE
     include
     src
-    src/extern
+    external
+    external/imgui
     src/engine
-    # third_party/JoltPhysics
 )
 
 if(WIN32)

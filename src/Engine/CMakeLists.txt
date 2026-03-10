@@ -19,9 +19,9 @@ add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
 
 file(GLOB_RECURSE SOURCE_FILES
-    ../extern/*.c
+    glad/*.c
     ../extern/imgui/*.cpp
-    ./*.cpp
+    *.cpp
 )
 
 
