@@ -16,18 +16,23 @@ namespace fe {
 
 class Shader {
  public:
-  unsigned int Id;
+  unsigned int id;
 
   std::string shaderText;
 
-  Shader(std::string fileName, GLenum shaderType) {
+  Shader(GLenum shaderType) {
+    id = glCreateShader(shaderType);
+  }
+
+  Shader(std::string fileName, GLenum shaderType) : Shader(shaderType) {
     if (!loadShaderFile(fileName)) return;
 
-    this->Id = glCreateShader(shaderType);
+  }
 
-    const char* shaderString = shaderText.c_str();
-    glShaderSource(this->Id, 1, &shaderString, NULL);
-    glCompileShader(this->Id);
+  void LoadText(std::string shaderText) {
+    const GLchar* shaderString = shaderText.c_str();
+    glShaderSource(id, 1, &shaderString, NULL);
+    glCompileShader(id);
   }
 
   bool loadShaderFile(std::string fileName) {
@@ -43,11 +48,13 @@ class Shader {
 
     file.close();
 
+    LoadText(shaderText);
+
     return true;
   }
 
-  void deleteShader() { glDeleteShader(this->Id); }
+  void deleteShader() { glDeleteShader(this->id); }
 
-  void attachToProgram(unsigned int programId) { glAttachShader(programId, this->Id); }
+  void attachToProgram(unsigned int programId) { glAttachShader(programId, this->id); }
 };
 }

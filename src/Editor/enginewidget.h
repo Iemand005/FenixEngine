@@ -24,6 +24,8 @@ class EngineWidget : public QOpenGLWidget {
   EngineWidget(QWidget* parent = nullptr);
   ~EngineWidget() {}
 
+  XRGame *game() { return game; }
+
   void startMouseCapture();
   void stopMouseCapture();
 
@@ -34,6 +36,10 @@ class EngineWidget : public QOpenGLWidget {
   void mouseMoveEvent(QMouseEvent* e) override;
   void mousePressEvent(QMouseEvent* e) override;
   void keyPressEvent(QKeyEvent *event) override;
+
+ // public slots:
+ //  void compileShaders();
+
 };
 
 #endif  // ENGINEWIDGET_H

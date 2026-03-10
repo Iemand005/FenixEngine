@@ -22,6 +22,9 @@ class EditorWindow : public QMainWindow {
   EditorWindow(QWidget* parent = nullptr);
   ~EditorWindow();
 
+ public slots:
+  void compileShaders();
+
  private:
   Ui::EditorWindow* ui;
   QOpenGLWidget e;

@@ -133,12 +133,17 @@ class Game {
     this->SetClearColor(0.1f, 0.4f, 1.0f);
 
     this->physicsEngine = std::make_unique<PhysicsEngine>();
+
+    LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     
     this->scene = std::make_unique<fe::Scene>();
-    this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
     InitUI();
+  }
+  
+  void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
+    this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
   }
   
   void MouseMove(int x, int y) {

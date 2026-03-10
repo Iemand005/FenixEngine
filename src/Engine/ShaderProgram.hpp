@@ -18,36 +18,49 @@ namespace fe {
 
 
 class ShaderProgram {
- public:
-  unsigned int Id;
+  unsigned int id;
 
   int modelLoc;
   int viewLoc;
   int projectionLoc;
   int texLoc;
 
-  ShaderProgram(Shader vertexShader, Shader fragmentShader) {
-    Id = glCreateProgram();
+  Shader vertexShader;
+  Shader fragmentShader;
 
-    vertexShader.attachToProgram(Id);
-    fragmentShader.attachToProgram(Id);
+ public:
 
-    glLinkProgram(Id);
+  ShaderProgram() {
+    id = glCreateProgram();
+  }
+
+  ShaderProgram(Shader vertexShader, Shader fragmentShader) : ShaderProgram() {
+
+    vertexShader.attachToProgram(id);
+    fragmentShader.attachToProgram(id);
+
+    glLinkProgram(i7d);
 
     vertexShader.deleteShader();
     fragmentShader.deleteShader();
 
-    modelLoc = glGetUniformLocation(this->Id, "model");
-    viewLoc = glGetUniformLocation(this->Id, "view");
-    projectionLoc = glGetUniformLocation(this->Id, "projection");
-    texLoc = glGetUniformLocation(this->Id, "ourTexture");
+    modelLoc = glGetUniformLocation(this->id, "model");
+    viewLoc = glGetUniformLocation(this->id, "view");
+    projectionLoc = glGetUniformLocation(this->id, "projection");
+    texLoc = glGetUniformLocation(this->id, "ourTexture");
+
     glUniform1i(texLoc, 0);
   }
+
   ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
-  void Use() { glUseProgram(this->Id); }
+  LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
 
-  void SetMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->Id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
+  }
+
+  void Use() { glUseProgram(this->id); }
+
+  void SetMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
 };
 }
 
