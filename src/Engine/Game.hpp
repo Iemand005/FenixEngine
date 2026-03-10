@@ -9,7 +9,7 @@
 
 // #include <GLFW/glfw3.h>
 // #pragma comment(lib, "glfw3.lib")
-#include <glad/glad.h>
+// #include <glad/glad.h>
 
 
 
@@ -22,7 +22,9 @@
 // #include <imgui/imgui_impl_opengl3.h>
 
 #include "engine.h"
+#ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
+#endif
 #include "physics/PhysicsEngine.hpp"
 #include "Object.hpp"
 #include "Camera.hpp"
@@ -83,12 +85,14 @@ class Game {
   std::unique_ptr<fe::Level> level;
 
   Game() {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_MULTISAMPLE);
-    
-    
-    this->SetClearColor(0.1f, 0.4f, 1.0f, 1.0f);
+    // this->GLInit();
+    if (!gladLoadGL()) {
+      std::cerr << "Failed to load OpenGL functions (GLAD)";
+    }
+
+    // glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_CULL_FACE);
+    // glEnable(GL_MULTISAMPLE);
     
     this->physicsEngine = std::make_unique<PhysicsEngine>();
     
@@ -101,9 +105,13 @@ class Game {
   Game(int width, int height, bool bpc10 = true): Game() {
     NewWindow(width, height);
   }
+
+  void GLInit();
   
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
+    this->GLInit();
+    this->SetClearColor(0.1f, 0.4f, 1.0f);
     InitUI();
     StartMouseCapture();
   }
@@ -149,11 +157,7 @@ class Game {
   }
 
   void connectToServer(std::string address, unsigned short port, std::string username) {
-    // this->client->username = username;
-    // if (!this->client)
-
     this->client->Connect(address, port, username);
-    // isConnectedToServer =true;
   }
 
 
@@ -200,7 +204,7 @@ class Game {
 
   double getDeltaTime() { return 1; }
 
-  void SetClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+  void SetClearColor(float r, float g, float b, float a = 1);
 
   void Resize() {Resize(this->window->width, this->window->height);}
   void Resize(int width, int height) {
@@ -209,14 +213,6 @@ class Game {
   }
 
   void Redraw() {
-
-    // DwmFlush();
-
-    // int x, y;
-    // window->GetSize(&x, &y);
-    // Resize(x, y);
-    
-
     scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
@@ -224,8 +220,6 @@ class Game {
     DrawUI();
 
     window->SwapBuffers();
-
-    // glfwSwapBuffers(this->window);
   }
 
   void Update() { 
@@ -237,8 +231,8 @@ class Game {
     physicsEngine->Update(deltaTime);
   }
 
-  void EnableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }
-  void DisableWireframeMode() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }
+  void EnableWireframeMode();
+  void DisableWireframeMode();
 
   void StartMouseCapture() {
     window->StartMouseCapture();

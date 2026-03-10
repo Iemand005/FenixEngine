@@ -49,7 +49,6 @@ class Scene {
   }
 
   void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
-
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
 
 

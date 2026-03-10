@@ -23,6 +23,10 @@ qt_add_translations(
 
 add_subdirectory(../../Engine build/bin)
 
+target_include_directories(Editor PRIVATE
+    ../../Engine
+)
+
 target_link_libraries(Editor
     PRIVATE
         Qt::Core

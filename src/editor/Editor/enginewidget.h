@@ -3,7 +3,13 @@
 
 #include <QOpenGLWidget>
 
+#define EXCLUDE_NETWORKING
+#include <Game.hpp>
+
 class EngineWidget : public QOpenGLWidget {
+
+
+
  public:
   EngineWidget();
   EngineWidget(QWidget* parent = nullptr);
