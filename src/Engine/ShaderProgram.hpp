@@ -34,7 +34,7 @@ class ShaderProgram {
     id = glCreateProgram();
   }
 
-  ShaderProgram(Shader &vertexShader, Shader &fragmentShader) : ShaderProgram() {
+  ShaderProgram(Shader vertexShader, Shader fragmentShader) : ShaderProgram() {
 
     this->vertexShader = vertexShader;
     this->fragmentShader = fragmentShader;

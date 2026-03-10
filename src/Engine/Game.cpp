@@ -29,3 +29,7 @@ Game::Game(GLADloadproc loadProc) {
   this->SetClearColor(0.1f, 0.4f, 1.0f);
   Init();
 }
+
+void Game::BindFrameBuffer(int bufferIndex) {
+  glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+}

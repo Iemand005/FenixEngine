@@ -17,6 +17,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <type_traits>
 
 // #include <imgui/imgui.h>
 // #include <imgui/imgui_impl_sdl3.h>
@@ -94,6 +95,9 @@ class Game {
     // }
     
   }
+
+  template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
+  Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {}
 
   Game(GLADloadproc loadProc);
   
@@ -232,7 +236,7 @@ class Game {
     this->UpdateAspect(width, height);
   }
 
-  void Redraw() {
+  void Redraw(GLuint fbo = 0) {
     scene->Render(*this->shader, *this->camera.get());
 
     fpsCounter.update();
@@ -259,9 +263,10 @@ class Game {
   }
 
   void StopMouseCapture() {
-    // io.WantCaptureMouse = true;
     window->StopMouseCapture();
   }
+
+  void BindFrameBuffer(int bufferIndex = 0);
 
   virtual void InitUI() {}
 

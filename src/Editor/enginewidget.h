@@ -13,9 +13,10 @@
 #include <QOpenGLContext>
 #include <QMouseEvent>
 
+// template<typename GameT = fe::Game>
 class EngineWidget : public QOpenGLWidget {
 
-  std::unique_ptr<fe::XRGame> game;
+  std::unique_ptr<fe::Game> game;
 
   bool capturing = false;
 
@@ -24,7 +25,7 @@ class EngineWidget : public QOpenGLWidget {
   EngineWidget(QWidget* parent = nullptr);
   ~EngineWidget() {}
 
-  fe::XRGame *getGame() { return game.get(); }
+  fe::Game *getGame() { return game.get(); }
 
   void startMouseCapture();
   void stopMouseCapture();

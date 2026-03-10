@@ -244,9 +244,9 @@ struct fe::XRGame::Impl {
 
   
 
-  void BindFrameBuffer(int bufferIndex = 0) {
-    glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
-  }
+  // void BindFrameBuffer(int bufferIndex = 0) {
+  //   glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+  // }
 
   void HandleSessionStateChange(XrSessionState state, XrTime time) {
     switch (state) {
@@ -399,9 +399,8 @@ void XRGame::LaunchVR() {
 }
 
 void XRGame::RedrawWindow(GLuint fbo) {
-  if (window && window.get()) {
-    impl->BindFrameBuffer(fbo);
-  }
+  // if (window && window.get())
+  BindFrameBuffer(fbo);
   Game::Redraw();
 }
 

@@ -7,7 +7,7 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
 }
 
 void EngineWidget::initializeGL() {
-  this->game = std::make_unique<fe::XRGame>((GLADloadproc)[](const char* name) {
+  this->game = std::make_unique<fe::Game>((GLADloadproc)[](const char* name) {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
 
