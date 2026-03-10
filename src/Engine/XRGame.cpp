@@ -399,11 +399,10 @@ void XRGame::LaunchVR() {
 }
 
 void XRGame::RedrawWindow() {
-  impl->BindFrameBuffer();
-
-  Game* game = this;
-  // game->Resize();
-  game->Redraw();
+  if (window) {
+    impl->BindFrameBuffer();
+  }
+  Game::Redraw();
 }
 
 void XRGame::EnableXR() {
