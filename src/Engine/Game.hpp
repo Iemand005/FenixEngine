@@ -104,24 +104,26 @@ class Game {
   }
   #endif
   
-  void GLInit();
+  void InitGL();
   
   void Init() {
+    this->InitGL();
+    this->SetClearColor(0.1f, 0.4f, 1.0f);
+
     this->physicsEngine = std::make_unique<PhysicsEngine>();
     
     this->scene = std::make_unique<fe::Scene>();
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
+    InitUI();
   }
 
 #ifndef FE_EXCLUDE_SDL
   
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
-    this->GLInit();
-    this->SetClearColor(0.1f, 0.4f, 1.0f);
-    InitUI();
+    Init();
     StartMouseCapture();
   }
 

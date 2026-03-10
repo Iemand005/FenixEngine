@@ -11,12 +11,16 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
 
 void EngineWidget::initializeGL() {
   this->game = std::make_unique<fe::Game>((GLADloadproc)[](const char* name) {
-        return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
-      });
-  // if (!gladLoadGLLoader() {
-  //   // handle error
-  //   return;
-  // }
+    return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
+  });
 
   glEnable(GL_CULL_FACE);
+}
+
+void EngineWidget::resizeGL(int w, int h) {
+  this->game->Resize(w, h);
+}
+
+void EngineWidget::paintGL() {
+  this->game->Redraw();
 }

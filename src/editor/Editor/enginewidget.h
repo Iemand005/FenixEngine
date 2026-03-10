@@ -22,6 +22,8 @@ class EngineWidget : public QOpenGLWidget {
   ~EngineWidget() {}
 
   void initializeGL() override;
+  void resizeGL(int w, int h) override;
+  void paintGL() override;
 };
 
 #endif  // ENGINEWIDGET_H

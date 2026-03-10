@@ -4,7 +4,7 @@
 
 using namespace fe;
 
-void Game::GLInit() {
+void Game::InitGL() {
   // glEnable(GL_DEPTH_TEST);
   // glEnable(GL_CULL_FACE);
   glEnable(GL_MULTISAMPLE);
@@ -25,4 +25,7 @@ Game::Game(GLADloadproc loadProc) {
   if (!gladLoadGLLoader(loadProc)) {
       std::cerr << "Failed to load OpenGL functions (GLAD)";
   }
+  this->InitGL();
+  this->SetClearColor(0.1f, 0.4f, 1.0f);
+  Init();
 }
