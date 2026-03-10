@@ -1,4 +1,4 @@
-
+#pragma once
 
 namespace fe {
   using ResizeDelegate = std::function<void(int, int)>;

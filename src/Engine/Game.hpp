@@ -30,8 +30,12 @@
 #include "saver/Level.hpp"
 
 #include "window/IWindow.hpp"
+#ifndef FE_EXCLUDE_SDL
 #include "window/SDLWindow.hpp"
+#endif
+#ifndef FE_EXCLUDE_GLFW
 #include "window/GLFW3Window.hpp"
+#endif
 
 #define WAYLAND
 
@@ -103,10 +107,10 @@ class Game {
     StartMouseCapture();
   }
 
-  IWindow *CreateWindow(std::string title, int width, int height, bool sdl = true) {
+  IWindow CreateWindow(std::string title, int width, int height, bool sdl = true) {
     // IWindow window("Game", width, height);
 
-    IWindow *window = sdl ? (IWindow*)new SDLWindow(title, width, height) : (IWindow*)new GLFW3Window(title, width, height);
+    IWindow window = sdl ? (IWindow)SDLWindow(title, width, height) : (IWindow)GLFW3Window(title, width, height);
 
     window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);

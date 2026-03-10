@@ -90,12 +90,13 @@ public:
 
   void ProcessInput() {
     SDL_Event event;
+    fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     while (window->PollSDLEvents(&event)) {
       ImGui_ImplSDL3_ProcessEvent(&event);
       ImGuiIO& imguiIO = ImGui::GetIO();
       switch (event.type) {
         case SDL_EVENT_QUIT:
-          window->PrepareClose();
+          // window->PrepareClose();
           break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
           if (event.button.button == SDL_BUTTON_LEFT && !imguiIO.WantCaptureMouse) {
@@ -196,6 +197,7 @@ public:
 
 
   void Run() {
+    fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     window->DisableVSync();
   
     glm::vec3 cameraOffset = glm::vec3(0);
@@ -224,6 +226,7 @@ public:
   }
 
   void InitUI() override {
+    fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     const char* glsl_version = "#version 330 core";
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
