@@ -32,17 +32,34 @@ class ShaderProgram {
 
   ShaderProgram() {
     id = glCreateProgram();
+    vertexShader = Shader(GL_VERTEX_SHADER);
+    fragmentShader = Shader(GL_FRAGMENT_SHADER);
   }
 
-  ShaderProgram(Shader vertexShader, Shader fragmentShader) : ShaderProgram() {
+  ShaderProgram(Shader &vertexShader, Shader &fragmentShader) : ShaderProgram() {
+
+    this->vertexShader = vertexShader;
+    this->fragmentShader = fragmentShader;
 
     vertexShader.attachToProgram(id);
     fragmentShader.attachToProgram(id);
 
-    glLinkProgram(i7d);
+    LinkShaders();
+  }
 
-    vertexShader.deleteShader();
-    fragmentShader.deleteShader();
+  ShaderProgram(std::string &vertexShaderFile, std::string &fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
+
+  void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
+    // vertexShader = Shader(GL_VERTEX_SHADER);
+    // fragmentShader = Shader(GL_VERTEX_SHADER);
+
+    vertexShader.LoadText(vertexShaderText);
+    fragmentShader.LoadText(fragmentShaderText);
+    LinkShaders();
+  }
+
+  void LinkShaders() {
+    glLinkProgram(id);
 
     modelLoc = glGetUniformLocation(this->id, "model");
     viewLoc = glGetUniformLocation(this->id, "view");
@@ -50,12 +67,6 @@ class ShaderProgram {
     texLoc = glGetUniformLocation(this->id, "ourTexture");
 
     glUniform1i(texLoc, 0);
-  }
-
-  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
-
-  LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
-
   }
 
   void Use() { glUseProgram(this->id); }
