@@ -45,6 +45,7 @@ void EngineWidget::mouseMoveEvent(QMouseEvent* e) {
   int y = delta.y();
   game->MouseMove(x, y);
   QCursor::setPos(mapToGlobal(center));
+  update();
 }
 
 void EngineWidget::mousePressEvent(QMouseEvent *e) {
