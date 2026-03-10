@@ -31,7 +31,7 @@ target_include_directories(Engine PRIVATE
     ../../include
 )
 
-target_link_libraries(Engine PUBLIC
+target_link_libraries(Engine PRIVATE
     gdi32
     glfw
     opengl32

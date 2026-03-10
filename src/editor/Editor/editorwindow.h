@@ -1,7 +1,10 @@
 #ifndef EDITORWINDOW_H
 #define EDITORWINDOW_H
 
-#include <glad/glad.h>
+#define EXCLUDE_NETWORKING
+#define FE_EXCLUDE_SDL
+#define FE_EXCLUDE_GLFW
+#include <Game.hpp>
 
 #include <QMainWindow>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
