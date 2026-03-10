@@ -30,51 +30,53 @@
 
 typedef int64_t XrTime;
 
-class XRGame : public fe::Game {
- private:
-  struct Impl;
-  std::unique_ptr<Impl> impl;
+namespace fe {
+  class XRGame : public fe::Game {
+  private:
+    struct Impl;
+    std::unique_ptr<Impl> impl;
 
- public:
+  public:
 
-  float playerHeight = 1.7f;
+    float playerHeight = 1.7f;
 
-  bool drawWindow = true;
+    bool drawWindow = true;
 
-  glm::vec3 positionOffset = glm::vec3(1.0f);
+    glm::vec3 positionOffset = glm::vec3(1.0f);
 
-  bool running = true;
-  
-  uint32_t swapchainImageIndex;
+    bool running = true;
+    
+    uint32_t swapchainImageIndex;
 
-  XRGame(bool launchVR = true);
-  XRGame(int width, int height, bool launchVR = true, bool drawWindow = true);
-  XRGame(GLADloadproc loadProc) : Game(loadProc) {};
-  ~XRGame();
+    XRGame(bool launchVR = true);
+    XRGame(int width, int height, bool launchVR = true, bool drawWindow = true);
+    XRGame(GLADloadproc loadProc) : Game(loadProc) {};
+    ~XRGame();
 
-  bool IsInstanceValid();
-  
-  void EnableXR();
-  void DisableVR();
-  void LaunchVR();
+    bool IsInstanceValid();
+    
+    void EnableXR();
+    void DisableVR();
+    void LaunchVR();
 
-  void Redraw() ;
-  void RedrawVR();
-  void RedrawWindow();
+    void Redraw() ;
+    void RedrawVR();
+    void RedrawWindow();
 
-  void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
+    void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 
-  void CheckGLError(const char* location) {
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-      std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
+    void CheckGLError(const char* location) {
+      GLenum err;
+      while ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
+      }
     }
-  }
 
-  void DestroyXR();
+    void DestroyXR();
 
-  void Destroy() {
-    DestroyXR();
-    this->window->Destroy();
-  }
-};
+    void Destroy() {
+      DestroyXR();
+      this->window->Destroy();
+    }
+  };
+}
