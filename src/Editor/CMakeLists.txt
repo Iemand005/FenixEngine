@@ -21,11 +21,11 @@ qt_add_translations(
     TS_FILES Editor_en_US.ts
 )
 
-add_subdirectory(../../Engine build/bin)
+add_subdirectory(../Engine build/bin)
 
 target_include_directories(Editor PRIVATE
-    ../../../include
-    ../../Engine
+    ../../include
+    ../Engine
 )
 
 target_link_libraries(Editor
