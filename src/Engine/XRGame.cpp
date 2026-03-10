@@ -4,6 +4,15 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
+using namespace fe;
+
+void CheckGLError(const char* location) {
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
+  }
+}
+
 struct XRGame::Impl {
 
   XrInstance instance = XR_NULL_HANDLE;

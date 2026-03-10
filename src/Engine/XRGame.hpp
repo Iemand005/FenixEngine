@@ -65,18 +65,11 @@ namespace fe {
 
     void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 
-    void CheckGLError(const char* location) {
-      GLenum err;
-      while ((err = glGetError()) != GL_NO_ERROR) {
-        std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
-      }
-    }
-
     void DestroyXR();
 
     void Destroy() {
       DestroyXR();
-      this->window->Destroy();
+      if (window) window->Destroy();
     }
   };
 }
