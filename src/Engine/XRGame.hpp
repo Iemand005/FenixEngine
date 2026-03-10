@@ -19,6 +19,7 @@
 // #include <GLFW/glfw3native.h>
 
 #include <cstring>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -31,7 +32,6 @@ typedef int64_t XrTime;
 
 class XRGame : public fe::Game {
  private:
-  // bool vrInitialized = false;
   struct Impl;
   std::unique_ptr<Impl> impl;
 
@@ -49,6 +49,7 @@ class XRGame : public fe::Game {
 
   XRGame(bool launchVR = true);
   XRGame(int width, int height, bool launchVR = true, bool drawWindow = true);
+  XRGame(GLADloadproc loadProc) : Game(loadProc) {};
   ~XRGame();
 
   bool IsInstanceValid();

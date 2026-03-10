@@ -7,7 +7,7 @@
 #define EXCLUDE_NETWORKING
 #define FE_EXCLUDE_SDL
 #define FE_EXCLUDE_GLFW
-#include <Game.hpp>
+#include <XRGame.hpp>
 
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
@@ -15,7 +15,7 @@
 
 class EngineWidget : public QOpenGLWidget {
 
-  std::unique_ptr<fe::Game> game;
+  std::unique_ptr<fe::XRGame> game;
 
   bool capturing = false;
 

@@ -1,21 +1,17 @@
 #include "enginewidget.h"
 
-EngineWidget::EngineWidget() {
-  //this->game = std::make_unique<fe::Game>();
-      }
+EngineWidget::EngineWidget() {}
 EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
 }
 
-// EngineWidget::
-
 void EngineWidget::initializeGL() {
-  this->game = std::make_unique<fe::Game>((GLADloadproc)[](const char* name) {
+  this->game = std::make_unique<fe::XRGame>((GLADloadproc)[](const char* name) {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
 
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
 
   auto map1 = game->loadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
