@@ -13,7 +13,7 @@ void CheckGLError(const char* location) {
   }
 }
 
-struct XRGame::Impl {
+struct fe::XRGame::Impl {
 
   XrInstance instance = XR_NULL_HANDLE;
   XrSession session = XR_NULL_HANDLE;
@@ -314,7 +314,9 @@ XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow) : Game(wid
   if (launchVR) LaunchVR();
 }
 
-XRGame::~XRGame() = default;
+XRGame::~XRGame() {
+  Destroy();
+};
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     XrVector2f joystickInput = {0.0f, 0.0f};
