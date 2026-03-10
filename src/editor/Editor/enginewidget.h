@@ -15,7 +15,7 @@
 
 class EngineWidget : public QOpenGLWidget {
 
-  std::unique_ptr<fe::XRGame> game;
+  std::unique_ptr<fe::Game> game;
 
   bool capturing = false;
 

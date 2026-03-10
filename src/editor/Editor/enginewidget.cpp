@@ -7,11 +7,9 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
 }
 
 void EngineWidget::initializeGL() {
-  this->game = std::make_unique<fe::XRGame>((GLADloadproc)[](const char* name) {
+  this->game = std::make_unique<fe::Game>((GLADloadproc)[](const char* name) {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
-
-  // glEnable(GL_CULL_FACE);
 
   auto map1 = game->loadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
@@ -22,6 +20,7 @@ void EngineWidget::resizeGL(int w, int h) {
 }
 
 void EngineWidget::paintGL() {
+  // this->game->Update();
   this->game->Redraw();
 }
 
@@ -42,8 +41,9 @@ void EngineWidget::mouseMoveEvent(QMouseEvent* e) {
   if (!capturing) return;
   QPoint center = rect().center();
   QPoint delta = e->pos() - center;
-  // delta.x(), delta.y()
-  game->MouseMove(delta.x(), delta.y());
+  int x = delta.x();
+  int y = delta.y();
+  game->MouseMove(x, y);
   QCursor::setPos(mapToGlobal(center));
 }
 

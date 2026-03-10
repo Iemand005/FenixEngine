@@ -137,7 +137,7 @@ void PhysicsEngine::Update(double dt) {
     }
 
     // Ensure physics system and dependencies are initialized
-    if (!impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
+    if (!impl || !impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
       std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
       return;
     }

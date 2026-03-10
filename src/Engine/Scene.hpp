@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Camera.hpp"
 #include "Timer.hpp"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"

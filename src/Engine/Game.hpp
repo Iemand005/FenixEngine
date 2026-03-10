@@ -83,9 +83,9 @@ class Game {
 
   bool isConnectedToServer = false;
 
-  std::unique_ptr<PhysicsEngine> physicsEngine;
+  std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
 
-  std::unique_ptr<fe::Level> level;
+  std::unique_ptr<fe::Level> level = nullptr;
 
   Game() {
     // this->GLInit();
@@ -154,7 +154,7 @@ class Game {
       direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
       direction.y = sin(glm::radians(this->pitch));
       direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-      this->camera->front = glm::normalize(direction);
+      this->camera->setFront(glm::normalize(direction));
   }
 
   void SaveLevel(std::string fileName = "level.fes") {
@@ -243,7 +243,7 @@ class Game {
    }
 
   void UpdatePhysics(double deltaTime) {
-    physicsEngine->Update(deltaTime);
+    if (physicsEngine) physicsEngine->Update(deltaTime);
   }
 
   void EnableWireframeMode();
