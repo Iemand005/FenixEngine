@@ -402,7 +402,7 @@ void XRGame::RedrawWindow() {
   impl->BindFrameBuffer();
 
   Game* game = this;
-  game->Resize();
+  // game->Resize();
   game->Redraw();
 }
 
