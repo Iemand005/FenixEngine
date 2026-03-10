@@ -45,12 +45,10 @@ class ShaderProgram {
     LinkShaders();
   }
 
-  ShaderProgram(std::string &vertexShaderFile, std::string &fragmentShaderFile) : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
+  ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
+      : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
   void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
-    // vertexShader = Shader(GL_VERTEX_SHADER);
-    // fragmentShader = Shader(GL_VERTEX_SHADER);
-
     vertexShader.LoadText(vertexShaderText);
     fragmentShader.LoadText(fragmentShaderText);
     LinkShaders();

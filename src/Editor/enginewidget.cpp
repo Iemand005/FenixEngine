@@ -22,7 +22,7 @@ void EngineWidget::resizeGL(int w, int h) {
 void EngineWidget::paintGL() {
   // this->game->Update();
   GLuint fbo = defaultFramebufferObject();
-  this->game->Redraw();
+  this->game->Redraw(fbo);
 }
 
 void EngineWidget::startMouseCapture() {

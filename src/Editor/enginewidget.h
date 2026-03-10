@@ -24,7 +24,7 @@ class EngineWidget : public QOpenGLWidget {
   EngineWidget(QWidget* parent = nullptr);
   ~EngineWidget() {}
 
-  XRGame *game() { return game; }
+  fe::XRGame *getGame() { return game.get(); }
 
   void startMouseCapture();
   void stopMouseCapture();

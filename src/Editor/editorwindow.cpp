@@ -6,6 +6,6 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
 
 EditorWindow::~EditorWindow() { delete ui; }
 
-EditorWindow::compileShaders() {
-
+void EditorWindow::compileShaders() {
+  engineWidget->getGame()->shader->LoadShaders("", "");
 }
