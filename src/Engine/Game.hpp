@@ -82,32 +82,33 @@ class Game {
 
   std::unique_ptr<fe::Level> level;
 
-  Game() : Game(0, 0) {}
-
-  Game(int width, int height, bool bpc10 = true) {
-
-    this->window = MakeWindow("Gamer", width, height);
-
+  Game() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
-
-
+    
+    
     this->SetClearColor(0.1f, 0.4f, 1.0f, 1.0f);
-
+    
     this->physicsEngine = std::make_unique<PhysicsEngine>();
-
+    
     this->scene = std::make_unique<fe::Scene>();
     this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
-    
+  }
+
+  Game(int width, int height, bool bpc10 = true): Game() {
+    NewWindow(width, height);
+  }
+  
+  void NewWindow(int width, int height) {
+    this->window = MakeWindow("Gamer", width, height);
     InitUI();
-    
     StartMouseCapture();
   }
 
-  template<typename WindowT =  SDLWindow>
+  template<typename WindowT = SDLWindow>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
     std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
