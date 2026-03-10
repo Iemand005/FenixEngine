@@ -24,6 +24,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "engine.h"
@@ -50,7 +51,7 @@ namespace fe {
 
     XRGame(bool launchVR = true);
     XRGame(int width, int height, bool launchVR = true, bool drawWindow = true);
-    XRGame(GLADloadproc loadProc) : Game(loadProc) {};
+    XRGame(GLADloadproc loadProc);
     ~XRGame();
 
     bool IsInstanceValid();
