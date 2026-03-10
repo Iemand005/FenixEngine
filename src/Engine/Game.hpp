@@ -86,7 +86,7 @@ class Game {
 
   Game(int width, int height, bool bpc10 = true) {
 
-    this->window = std::make_unique<IWindow>(NewWindow("Gamer", width, height));
+    this->window = MakeWindow("Gamer", width, height);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -107,10 +107,10 @@ class Game {
     StartMouseCapture();
   }
 
-  IWindow *NewWindow(std::string title, int width, int height, bool sdl = true) {
-    // IWindow window("Game", width, height);
-
-    IWindow *window = sdl ? (IWindow*)new SDLWindow(title, width, height) : (IWindow*)new GLFW3Window(title, width, height);
+  template<typename WindowT =  SDLWindow>
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
+    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
+    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
 
     window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
@@ -132,7 +132,7 @@ class Game {
       direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
       this->camera->front = glm::normalize(direction);
     };
-    return window;
+    return std::move(window);
   }
 
   void SaveLevel(std::string fileName = "level.fes") {
