@@ -33,6 +33,7 @@ class EngineWidget : public QOpenGLWidget {
 
   void mouseMoveEvent(QMouseEvent* e) override;
   void mousePressEvent(QMouseEvent* e) override;
+  void keyPressEvent(QKeyEvent *event) override;
 };
 
 #endif  // ENGINEWIDGET_H

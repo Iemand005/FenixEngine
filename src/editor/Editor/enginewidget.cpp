@@ -33,6 +33,7 @@ void EngineWidget::startMouseCapture() {
   grabMouse();
   grabKeyboard();
   setCursor(Qt::BlankCursor);
+  capturing = true;
 }
 
 void EngineWidget::stopMouseCapture() {
@@ -54,4 +55,11 @@ void EngineWidget::mousePressEvent(QMouseEvent *e) {
   if (e->button() == Qt::LeftButton)
     startMouseCapture();
   QOpenGLWidget::mousePressEvent(e);
+}
+
+void EngineWidget::keyPressEvent(QKeyEvent *event) {
+  if (event->key() == Qt::Key_Escape) {
+    stopMouseCapture();
+    capturing = false;
+  }
 }
