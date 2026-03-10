@@ -107,28 +107,9 @@ public:
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
           // Get actual pixel dimensions
           break;
-
-      // case SDL_EVENT_WINDOW_RESIZED:{
-      //   Resize(event.window.data1, event.window.data2);
-      // }
-
-      // break;
-
-      // case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:{
-      //   Resize(event.window.data1, event.window.data2);
-      // }
-
-      // break;
       }
     }
 
-      //  const bool* keyboardState = SDL_GetKeyboardState(NULL);
-
-      //  if (keyboardState[SDL_SCANCODE_W])KUKU
-      //  if (keyboardState[SDL_SCANCODE_W]) this->player->Move(fe::Direction::Forwards, camera.get());
-      //  if (keyboardState[SDL_SCANCODE_A]) this->player->Move(fe::Direction::Forwards, camera.get());
-      //  if (keyboardState[SDL_SCANCODE_S]) this->player->Move(fe::Direction::Forwards, camera.get());
-      //  if (keyboardState[SDL_SCANCODE_D]) this->player->Move(fe::Direction::Forwards, camera.get());
     
       if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
       if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
@@ -140,59 +121,6 @@ public:
 
       if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) StopMouseCapture();
       if (ImGui::GetIO().WantCaptureMouse) StopMouseCapture();
-
-
-    // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->Move(fe::Direction::Forwards, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) this->player->Move(fe::Direction::Backwards, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) this->player->Move(fe::Direction::Left, camera.get());
-    // if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) this->player->Move(fe::Direction::Right, camera.get());
-
-  // }
-    // if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) StopMouseCapture();
-    // if (ImGui::GetIO().WantCaptureMouse) {
-    //   StopMouseCapture();
-    // } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-    //   StartMouseCapture();
-    // }
-
-    // const float cameraSpeed = 0.0100f;
-    // glm::vec3 horizontalFront = glm::normalize(glm::vec3(camera->front.x, 0.0f, camera->front.z));
-    // glm::vec3 right = glm::normalize(glm::cross(horizontalFront, camera->up));
-
-    // glm::vec3 velocity{};
-    // glm::vec3 acceleration{};
-    // // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) this->player->physicsComponent->physicsSystem->GetBodyInterface().SetLinearVelocity() += cameraSpeed * horizontalFront;
-    
-    // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity -= glm::vec3(0, 1, 0);
-    // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump) velocity -= glm::vec3(0, -1, 0);
-    // if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-    //   std::shared_ptr<fe::Object> newObj = this->player->Clone();
-    //   newObj->state.position = this->player->state.position + horizontalFront * 2.0f;
-    //   glm::vec3 dir = glm::normalize(this->player->state.position - newObj->state.position);
-    //   newObj->state.rotation.y = glm::degrees(atan2(dir.z, dir.x)) - 90.0f;
-    //   newObj->state.rotation.x = 0.0f;
-    //   this->scene->AddObject(newObj);
-    // }
-    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-    //   DisableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-    //   DisableWireframeMode();
-
-    // if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
-    // if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
-    // // if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    // //   client->sendPing();
-
-    // static bool ctrlWasDown = false;
-    // if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-    //   if (!ctrlWasDown) this->nextMap();
-    //   ctrlWasDown = true;
-    // } else
-    //   ctrlWasDown = false;
-
-    //   this->player->physicsObject->AddPosition(velocity * cameraSpeed);
   }
 
 
@@ -242,7 +170,6 @@ public:
 
   void DrawUI() override {
     ImGui_ImplOpenGL3_NewFrame();
-    // ImGui_ImplDSL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
@@ -257,15 +184,15 @@ public:
         for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 
-      if (ImGui::Button("Enable VR", ImVec2(50, 20))) {
+      if (ImGui::Button("Enable VR", ImVec2(70, 20))) {
         this->EnableXR ();
       }
 
-      if (ImGui::Button("Disable VR", ImVec2(50, 20))) {
+      if (ImGui::Button("Disable VR", ImVec2(70, 20))) {
         this->DestroyXR();
       }
 
-      if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
+      if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }
 
@@ -300,18 +227,14 @@ public:
       static char mapNameBuffer[512] = "level.fes\0";
       ImGui::InputText("Map file", mapNameBuffer, IM_ARRAYSIZE(mapNameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
 
-      if (ImGui::Button("Save map!")) {
+      if (ImGui::Button("Save map!"))
         this->SaveLevel();
-      }
 
-      if (ImGui::Button("Load map!")) {
+      if (ImGui::Button("Load map!"))
         this->LoadLevel();
-      }
 
-
-      if (ImGui::Button("Clear objects")) {
+      if (ImGui::Button("Clear objects"))
         this->scene->ClearObjects();
-      }
 
       static bool snapToGrid = true;
       ImGui::Checkbox("Snap to grid", &snapToGrid);

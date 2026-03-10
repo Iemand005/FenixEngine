@@ -5,6 +5,8 @@
 #include <iostream>
 #include <memory>
 
+#include <SDL3/SDL.h>
+
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
@@ -48,41 +50,28 @@ class SDLWindow : public IWindow {
 
   void StopMouseCapture() override;
 
+  // void SetMouseCapture(bool captureMouse = true);
+
   void GetSize(int* w, int* h);
 
   void SwapBuffers() override;
 
-  // bool IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
 
-  // bool PollSDLEvents(SDL_Event* event, bool getKeyboardState = true) {
-  //   if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
-  //   if (!SDL_PollEvent(event)) return false;
+// struct SDL_Window;
+// enum SDL_Scancode;
+  bool IsKeyDown(SDL_Scancode key);
 
-  //   switch (event->type) {
-  //     case SDL_EVENT_WINDOW_EXPOSED:
-  //       if (resizeEvent) resizeEvent(width, height);
-  //       break;
-  //     case SDL_EVENT_WINDOW_RESIZED:
-  //     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-  //       width = event->window.data1;
-  //       height = event->window.data2;
-  //       if (resizeEvent) resizeEvent(width, height);
-  //       break;
-  //     case SDL_EVENT_MOUSE_MOTION:
-  //       if (mouseMoveEvent && capturingMouse) {
-  //         mouseMoveEvent(event->motion.xrel, event->motion.yrel);
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
+  // union SDL_Event;
 
-  //   return true;
-  // }
+  bool PollSDLEvents(SDL_Event* event, bool getKeyboardState = true);;
+  
 
-  SDL_Window* GetSDLWindow() { return window; }
+  // struct SDL_Window;
+  // struct SDL_GLContext;
 
-  SDL_GLContext GetSDLGLContext() { return gl_context; }
+  SDL_Window* GetSDLWindow();
+
+  SDL_GLContext GetSDLGLContext();
 
   void Destroy() override;
 };

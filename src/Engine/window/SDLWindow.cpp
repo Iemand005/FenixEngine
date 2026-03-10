@@ -11,6 +11,27 @@ inline void CheckError(bool success = false) {
   }
 }
 
+// inline bool SDLCALL EventWatch(void* userdata, SDL_Event* event) {
+//   SDLWindow* window = (SDLWindow*)userdata;
+//   switch (event->type) {
+//     case SDL_EVENT_WINDOW_EXPOSED:
+//       if (window->resizeEvent) window->resizeEvent(window->width, window->height);
+//       break;
+//     case SDL_EVENT_WINDOW_RESIZED:
+//     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+//       window->width = event->window.data1, window->height = event->window.data2;
+//       break;
+
+//     case SDL_EVENT_MOUSE_MOTION:
+//       if (window->mouseMoveEvent && window->capturingMouse) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+//       if (window->capturingMouse) {
+//         SDL_WarpMouseInWindow(window->impl->window, window->width/2.0f, window->height/2.0f);
+//       }
+//       break;
+//   }
+//   return false;
+// }
+
 struct fe::SDLWindow::Impl {
   SDL_Window* window;
   SDL_GLContext gl_context;
@@ -23,26 +44,7 @@ struct fe::SDLWindow::Impl {
     }
   }
 
-    static bool SDLCALL EventWatch(void* userdata, SDL_Event* event) {
-    SDLWindow* window = (SDLWindow*)userdata;
-    switch (event->type) {
-      case SDL_EVENT_WINDOW_EXPOSED:
-        if (window->resizeEvent) window->resizeEvent(window->width, window->height);
-        break;
-      case SDL_EVENT_WINDOW_RESIZED:
-      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-        window->width = event->window.data1, window->height = event->window.data2;
-        break;
-
-      case SDL_EVENT_MOUSE_MOTION:
-        if (window->mouseMoveEvent && window->capturingMouse) window->mouseMoveEvent(event->motion.xrel, event->motion.yrel);
-        if (window->capturingMouse) {
-          SDL_WarpMouseInWindow(window->impl->window, window->width/2.0f, window->height/2.0f);
-        }
-        break;
-    }
-    return false;
-  }
+    
 
   
 }; // Impl
@@ -52,6 +54,7 @@ fe::SDLWindow::~SDLWindow() {
 }
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height) : IWindow(width, height) {
+  impl = std::make_unique<Impl>();
     CheckError(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -98,7 +101,7 @@ void fe::SDLWindow::SwapBuffers() {
     SDL_GL_SetSwapInterval(interval);
   }
 
-  void fe::SDLWindow::SetMouseCapture(bool captureMouse = true) {
+  void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
     SDL_SetWindowMouseGrab(impl->window, captureMouse);
     SDL_SetWindowRelativeMouseMode(impl->window, captureMouse);
     capturingMouse = captureMouse;
@@ -123,4 +126,37 @@ void fe::SDLWindow::SwapBuffers() {
     SDL_GL_DestroyContext(impl->gl_context);
     SDL_DestroyWindow(impl->window);
     SDL_Quit();
+  }
+
+SDL_Window* fe::SDLWindow::GetSDLWindow() { return impl->window; }
+
+SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
+
+ bool fe::SDLWindow::IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
+
+  bool fe::SDLWindow::PollSDLEvents(SDL_Event* event, bool getKeyboardState) {
+    if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
+    if (!SDL_PollEvent(event)) return false;
+
+    switch (event->type) {
+      case SDL_EVENT_WINDOW_EXPOSED:
+        if (resizeEvent) resizeEvent(width, height);
+        break;
+      case SDL_EVENT_WINDOW_RESIZED:
+      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        width = event->window.data1;
+        height = event->window.data2;
+        if (resizeEvent) resizeEvent(width, height);
+        break;
+      case SDL_EVENT_MOUSE_MOTION:
+        if (mouseMoveEvent && capturingMouse) {
+          mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+          SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
+        }
+        break;
+      default:
+        break;
+    }
+
+    return true;
   }
