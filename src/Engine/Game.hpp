@@ -234,7 +234,7 @@ class Game {
 
     DrawUI();
 
-    window->SwapBuffers();
+    if (window) window->SwapBuffers();
   }
 
   void Update() { 
