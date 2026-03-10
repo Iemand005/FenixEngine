@@ -8,7 +8,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets OpenGL OpenGLWidgets Lingu
 qt_standard_project_setup()
 
 qt_add_executable(Editor
-    WIN32 MACOSX_BUNDLE
+    # WIN32 MACOSX_BUNDLE
     main.cpp
     editorwindow.cpp
     editorwindow.h

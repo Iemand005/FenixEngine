@@ -15,6 +15,9 @@ void EngineWidget::initializeGL() {
   });
 
   glEnable(GL_CULL_FACE);
+
+  auto map1 = game->loadStaticOBJ("resources/models/collisiontest.obj");
+  game->scene->AddObject(map1);
 }
 
 void EngineWidget::resizeGL(int w, int h) {
