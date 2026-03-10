@@ -110,7 +110,7 @@ if(WIN32)
     
     target_link_libraries(editor PRIVATE
         engine
-        SDL3::SDL3
+        # SDL3::SDL3
         # OpenXR::openxr_loader
     )
     
