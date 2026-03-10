@@ -110,19 +110,8 @@ if(WIN32)
     
     target_link_libraries(editor PRIVATE
         engine
-        # SDL3::SDL3
-        # OpenXR::openxr_loader
     )
     
-    # if(MSVC)
-    #     target_compile_options(editor PRIVATE
-    #         $<$<CONFIG:Debug>:/MDd /Zi>
-    #         $<$<CONFIG:Release>:/MD /O2>
-    #     )
-    #     target_link_options(editor PRIVATE
-    #         $<$<CONFIG:Debug>:/DEBUG>
-    #     )
-    # endif()
 endif()
 
 

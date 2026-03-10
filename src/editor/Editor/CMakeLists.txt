@@ -19,12 +19,16 @@ qt_add_translations(
     TS_FILES Editor_en_US.ts
 )
 
+add_subdirectory(../../Engine build/bin)
+
 target_link_libraries(Editor
     PRIVATE
         Qt::Core
         Qt::Widgets
         Qt6::OpenGL
         Qt6::OpenGLWidgets
+
+        Engine
 )
 
 include(GNUInstallDirs)
