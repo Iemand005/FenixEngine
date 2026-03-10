@@ -94,8 +94,6 @@ if(WIN32)
     
     target_link_libraries(main PRIVATE
         engine
-        SDL3::SDL3
-        # OpenXR::openxr_loader
     )
     
     if(MSVC)
@@ -109,7 +107,7 @@ if(WIN32)
     target_link_directories(editor PRIVATE "${LIB_DIR}")
     
     target_link_libraries(editor PRIVATE
-        engine
+        Engine
     )
     
 endif()
