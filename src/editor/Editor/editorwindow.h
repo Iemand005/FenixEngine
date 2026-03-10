@@ -1,6 +1,8 @@
 #ifndef EDITORWINDOW_H
 #define EDITORWINDOW_H
 
+#include <glad/glad.h>
+
 #include <QMainWindow>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
 

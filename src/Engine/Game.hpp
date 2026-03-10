@@ -5,6 +5,7 @@
 #define NOMINMAX
 #endif
 
+#include <glad/glad.h>
 #include "../stdafx.h"
 
 // #include <GLFW/glfw3.h>
@@ -74,9 +75,11 @@ class Game {
 
   int mapIndex = 0;
 
+#ifndef EXCLUDE_NETWORKING
   std::unique_ptr<Networker> client = nullptr;
+#endif
 
-  std::unordered_map<u_char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
+  std::unordered_map<unsigned char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
 
   bool isConnectedToServer = false;
 
@@ -86,14 +89,24 @@ class Game {
 
   Game() {
     // this->GLInit();
-    if (!gladLoadGL()) {
-      std::cerr << "Failed to load OpenGL functions (GLAD)";
-    }
-
-    // glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
-    // glEnable(GL_MULTISAMPLE);
+    // if (!gladLoadGL()) {
+    //   std::cerr << "Failed to load OpenGL functions (GLAD)";
+    // }
     
+  }
+
+  Game(GLADloadproc loadProc);
+  
+  #ifndef FE_EXCLUDE_SDL
+  Game(int width, int height, bool bpc10 = true): Game() {
+    NewWindow(width, height);
+    Init();
+  }
+  #endif
+  
+  void GLInit();
+  
+  void Init() {
     this->physicsEngine = std::make_unique<PhysicsEngine>();
     
     this->scene = std::make_unique<fe::Scene>();
@@ -102,11 +115,7 @@ class Game {
     this->level = std::make_unique<fe::Level>();
   }
 
-  Game(int width, int height, bool bpc10 = true): Game() {
-    NewWindow(width, height);
-  }
-
-  void GLInit();
+#ifndef FE_EXCLUDE_SDL
   
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
@@ -144,6 +153,8 @@ class Game {
     return std::move(window);
   }
 
+#endif
+
   void SaveLevel(std::string fileName = "level.fes") {
     this->level->Save(this->scene->GetFilteredObjects(player), fileName);
   }
@@ -156,10 +167,11 @@ class Game {
       this->scene->AddObject(object);
   }
 
+#ifndef EXCLUDE_NETWORKING
   void connectToServer(std::string address, unsigned short port, std::string username) {
     this->client->Connect(address, port, username);
   }
-
+#endif
 
 
   void loadMap(int index) {
@@ -181,10 +193,11 @@ class Game {
     if (mapIndex >= maps.size()) mapIndex = 0;
   }
   
-  void SpawnPlayer(u_char playerId) {
+  void SpawnPlayer(unsigned char playerId) {
     auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
 
     this->players.insert_or_assign(playerId, newPlayer);
+
     this->scene->AddObject(newPlayer);
   }
 

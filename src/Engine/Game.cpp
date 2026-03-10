@@ -20,3 +20,9 @@ void Game::EnableWireframeMode() {
 void Game::DisableWireframeMode() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
+
+Game::Game(GLADloadproc loadProc) {
+  if (!gladLoadGLLoader(loadProc)) {
+      std::cerr << "Failed to load OpenGL functions (GLAD)";
+  }
+}
