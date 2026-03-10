@@ -46,7 +46,7 @@ namespace fe {
 
 class Game {
  public:
-  std::unique_ptr<IWindow> window;
+  std::unique_ptr<IWindow> window = nullptr;
   std::unique_ptr<Scene> scene;
   std::unique_ptr<Camera> camera;
   std::unique_ptr<ShaderProgram> shader;

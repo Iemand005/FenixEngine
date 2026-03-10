@@ -25,15 +25,13 @@ class ShaderProgram {
   int projectionLoc;
   int texLoc;
 
-  Shader vertexShader;
-  Shader fragmentShader;
+  Shader vertexShader = Shader(GL_VERTEX_SHADER);
+  Shader fragmentShader = Shader(GL_FRAGMENT_SHADER);
 
  public:
 
   ShaderProgram() {
     id = glCreateProgram();
-    vertexShader = Shader(GL_VERTEX_SHADER);
-    fragmentShader = Shader(GL_FRAGMENT_SHADER);
   }
 
   ShaderProgram(Shader &vertexShader, Shader &fragmentShader) : ShaderProgram() {

@@ -60,9 +60,9 @@ namespace fe {
     void DisableVR();
     void LaunchVR();
 
-    void Redraw() ;
+    void Redraw(GLuint fbo = 0) ;
     void RedrawVR();
-    void RedrawWindow();
+    void RedrawWindow(GLuint fbo = 0);
 
     void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 

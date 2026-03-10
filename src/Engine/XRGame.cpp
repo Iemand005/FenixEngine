@@ -233,8 +233,6 @@ struct fe::XRGame::Impl {
     spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
     outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
-
-    // vrInitialized = true;
   }
 
   void BeginSession() {
@@ -246,7 +244,9 @@ struct fe::XRGame::Impl {
 
   
 
-  void BindFrameBuffer(int bufferIndex = 0) { glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex); }
+  void BindFrameBuffer(int bufferIndex = 0) {
+    glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+  }
 
   void HandleSessionStateChange(XrSessionState state, XrTime time) {
     switch (state) {
@@ -398,9 +398,9 @@ void XRGame::LaunchVR() {
   StopMouseCapture();
 }
 
-void XRGame::RedrawWindow() {
-  if (window) {
-    impl->BindFrameBuffer();
+void XRGame::RedrawWindow(GLuint fbo) {
+  if (window && window.get()) {
+    impl->BindFrameBuffer(fbo);
   }
   Game::Redraw();
 }
@@ -410,14 +410,14 @@ void XRGame::EnableXR() {
   if (IsInstanceValid()) impl->drawVR = true;
 }
 
-void XRGame::Redraw() {
+void XRGame::Redraw(GLuint fbo) {
   {
     if (impl->drawVR) RedrawVR();
     GLenum err;
     while ((err = glGetError()) != GL_NO_ERROR) {
       std::cerr << "OpenGL error: " << err << std::endl;
     }
-    if (drawWindow) RedrawWindow();
+    if (drawWindow) RedrawWindow(fbo);
   }
 }
 
