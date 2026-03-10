@@ -127,17 +127,7 @@ class Game {
     StartMouseCapture();
   }
 
-  template<typename WindowT = SDLWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
-    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
-
-    window->resizeEvent = [this](int width, int height) {
-      this->Resize(width, height);
-      this->Redraw();
-    };
-
-    window->mouseMoveEvent = [this](int x, int y) {
+  void MouseMove(int x, int y) {
       const float sensitivity = 0.1f;
 
       this->yaw += sensitivity * x;
@@ -151,6 +141,20 @@ class Game {
       direction.y = sin(glm::radians(this->pitch));
       direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
       this->camera->front = glm::normalize(direction);
+  }
+
+  template<typename WindowT = SDLWindow>
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
+    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
+    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
+
+    window->resizeEvent = [this](int width, int height) {
+      this->Resize(width, height);
+      this->Redraw();
+    };
+
+    window->mouseMoveEvent = [this](int x, int y) {
+      MouseMove(x, y);
     };
     return std::move(window);
   }

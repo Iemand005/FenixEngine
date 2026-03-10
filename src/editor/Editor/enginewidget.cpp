@@ -4,7 +4,8 @@ EngineWidget::EngineWidget() {
   //this->game = std::make_unique<fe::Game>();
       }
 EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
-
+  setFocusPolicy(Qt::StrongFocus);
+  setMouseTracking(true);
 }
 
 // EngineWidget::
@@ -26,4 +27,31 @@ void EngineWidget::resizeGL(int w, int h) {
 
 void EngineWidget::paintGL() {
   this->game->Redraw();
+}
+
+void EngineWidget::startMouseCapture() {
+  grabMouse();
+  grabKeyboard();
+  setCursor(Qt::BlankCursor);
+}
+
+void EngineWidget::stopMouseCapture() {
+  releaseMouse();
+  releaseKeyboard();
+  unsetCursor();
+}
+
+void EngineWidget::mouseMoveEvent(QMouseEvent* e) {
+  if (!capturing) return;
+  QPoint center = rect().center();
+  QPoint delta = e->pos() - center;
+  // delta.x(), delta.y()
+
+  QCursor::setPos(mapToGlobal(center));
+}
+
+void EngineWidget::mousePressEvent(QMouseEvent *e) {
+  if (e->button() == Qt::LeftButton)
+    startMouseCapture();
+  QOpenGLWidget::mousePressEvent(e);
 }
