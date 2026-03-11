@@ -13,11 +13,6 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
 EditorWindow::~EditorWindow() { delete ui; }
 
 void EditorWindow::compileShaders() {
-  // engineWidget->getGame()->shader->LoadShaders("", "");
-  // this->engineWidget()
 
-  auto game = this->ui->engineWidget->getGame();
-  // this->ui->shaderButton()
-
-  ui->engineWidget->getGame()->shader->LoadShaderTexts("", "");
+  ui->engineWidget->getGame()->shader->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
 }
