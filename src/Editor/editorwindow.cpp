@@ -8,6 +8,11 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   ui->setupUi(this);
 
   connect(ui->shaderButton, SIGNAL(clicked()), SLOT(compileShaders()));
+
+  connect(ui->xrButton, &QPushButton::clicked, [&]() {
+    fe::XRGame game = ui->engineWidget->getGame();
+    // game->
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

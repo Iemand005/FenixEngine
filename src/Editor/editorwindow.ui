@@ -162,7 +162,7 @@ void main()
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="xrButton">
             <property name="text">
              <string>Enter XR</string>
             </property>
