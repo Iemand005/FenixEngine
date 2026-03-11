@@ -16,7 +16,7 @@
 // template<typename GameT = fe::Game>
 class EngineWidget : public QOpenGLWidget {
 
-  std::unique_ptr<fe::Game> game;
+  std::unique_ptr<fe::XRGame> game;
 
   bool capturing = false;
 
