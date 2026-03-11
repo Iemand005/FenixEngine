@@ -7,9 +7,7 @@
 EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::EditorWindow) {
   ui->setupUi(this);
 
-  connect(ui->shaderButton, &QPushButton::clicked, []() {
-
-  });
+  connect(ui->shaderButton, SIGNAL(clicked()), SLOT(compileShaders()));
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
