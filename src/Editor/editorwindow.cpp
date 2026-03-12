@@ -108,7 +108,7 @@ void EditorWindow::reloadModelList() {
 
     model->insertRow(row);
     QModelIndex index = model->index(row);
-    model->setData(index, "Your New String");
+    model->setData(index, name.c_str());
 
   }
   // model->edi

@@ -42,7 +42,8 @@ class Scene {
   void Render(ShaderProgram shader, Camera const& camera) {
     this->PrepareRender(shader, camera);
 
-    for (auto& model : objects) model->Render(shader);
+    for (auto& model : objects)
+      model->Render(shader);
 
     // camera.Render(shader);
 

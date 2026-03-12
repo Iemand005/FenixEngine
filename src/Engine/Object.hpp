@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -54,7 +55,7 @@ class Object {
 
   std::string sourcePath;
 
-  std::string name = "a";
+  std::string name = "unkle";
 
   std::shared_ptr<ShaderProgram> shader = nullptr;
 
@@ -68,8 +69,11 @@ class Object {
     meshes.push_back(mesh);
   }
 
-  Object(std::string objFilePath, float scale = 1.0f) : Object() { LoadObj(objFilePath, scale);
-  sourcePath = objFilePath;
+  Object(std::string objFilePath, float scale = 1.0f) : Object() {
+    LoadObj(objFilePath, scale);
+    std::filesystem::path path(objFilePath);
+    name = path.filename().string();
+    sourcePath = objFilePath;
   }
 
   Object(std::string objFilePath, ObjectState state) : Object() { LoadObj(objFilePath);
