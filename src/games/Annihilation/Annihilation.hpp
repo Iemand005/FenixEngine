@@ -165,12 +165,12 @@ class Annihilation : public fe::Game {
     //   newObj->state.rotation.x = 0.0f;
     //   this->scene->AddObject(newObj);
     // }
-    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframeMode();
-    // if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframeMode();
+    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) EnableWireframe();
+    // if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) DisableWireframe();
     // if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)  // Host server
-    //   DisableWireframeMode();
+    //   DisableWireframe();
     // if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)  // Join server
-    //   DisableWireframeMode();
+    //   DisableWireframe();
 
     // if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) glEnable(GL_MULTISAMPLE);
     // if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) glDisable(GL_MULTISAMPLE);
@@ -199,7 +199,7 @@ class Annihilation : public fe::Game {
       ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
       for (auto& obj : this->scene->GetObjects())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
+        for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {

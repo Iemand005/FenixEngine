@@ -30,9 +30,24 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->autoRefreshBox, &QCheckBox::clicked, [&](bool checked) {
     ui->engineWidget->toggleTimer(checked);
   });
+
+  connect(ui->wireframeBox, &QCheckBox::clicked, [&](bool checked) {
+    auto game = ui->engineWidget->getGame();
+    auto fbo = ui->engineWidget->defaultFramebufferObject();
+    game ->BindFrameBuffer(fbo);
+    game->ToggleWireframe(checked);
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
+
+bool EditorWindow::event(QEvent* event) {
+  if (event->type() == QEvent::WindowDeactivate) {
+    ui->engineWidget->stopMouseCapture();
+  }
+
+  return QMainWindow::event(event);
+}
 
 void EditorWindow::compileShaders() {
 

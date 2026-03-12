@@ -30,6 +30,7 @@ void EngineWidget::resizeGL(int w, int h) {
 void EngineWidget::paintGL() {
   // this->game->Update();
   GLuint fbo = defaultFramebufferObject();
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   this->game->Redraw(fbo);
 }
 
@@ -44,6 +45,7 @@ void EngineWidget::stopMouseCapture() {
   releaseMouse();
   releaseKeyboard();
   unsetCursor();
+  capturing = false;
 }
 
 void EngineWidget::mouseMoveEvent(QMouseEvent* e) {

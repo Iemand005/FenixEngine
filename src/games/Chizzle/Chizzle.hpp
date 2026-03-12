@@ -181,7 +181,7 @@ public:
       ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
       for (auto& obj : this->scene->GetObjects())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.getVertices().size();
+        for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable VR", ImVec2(70, 20))) {
@@ -198,8 +198,8 @@ public:
 
       static bool wireframe = false;
       if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
-        if (wireframe) this->EnableWireframeMode();
-        else this->DisableWireframeMode();
+        if (wireframe) this->EnableWireframe();
+        else this->DisableWireframe();
       }
 
       fe::Object* model = this->player.get();

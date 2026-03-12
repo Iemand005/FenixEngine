@@ -94,11 +94,13 @@ class Game {
     // if (!gladLoadGL()) {
     //   std::cerr << "Failed to load OpenGL functions (GLAD)";
     // }
-    
+    // Init();
   }
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-  Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {}
+  Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {
+    Init();
+  }
 
   Game(GLADloadproc loadProc);
   
@@ -269,8 +271,9 @@ class Game {
     if (physicsEngine) physicsEngine->Update(deltaTime);
   }
 
-  void EnableWireframeMode();
-  void DisableWireframeMode();
+  void EnableWireframe();
+  void DisableWireframe();
+  void ToggleWireframe(bool enabled = false);
 
   void StartMouseCapture() {
     window->StartMouseCapture();

@@ -14,11 +14,16 @@ void Game::SetClearColor(float r, float g, float b, float a) {
   glClearColor(r, g, b, a);
 }
 
-void Game::EnableWireframeMode() {
+void Game::EnableWireframe() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
-void Game::DisableWireframeMode() {
+void Game::DisableWireframe() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void fe::Game::ToggleWireframe(bool enabled) {
+  if (enabled) EnableWireframe();
+  else DisableWireframe();
 }
 
 Game::Game(GLADloadproc loadProc) {

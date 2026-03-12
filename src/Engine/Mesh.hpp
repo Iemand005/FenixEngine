@@ -19,7 +19,7 @@ namespace fe {
 class Mesh {
   unsigned int indexCount;
 
-  unsigned int VAO = 0;
+  unsigned int vao = 0;
   unsigned int VBO = 0;
   unsigned int EBO = 0;
   unsigned int texture = 0;
@@ -55,7 +55,7 @@ class Mesh {
   Mesh& operator=(const Mesh& other) {
         if (this != &other) {
             indexCount = other.indexCount;
-            VAO = other.VAO;
+            vao = other.vao;
             VBO = other.VBO;
             EBO = other.EBO;
             texture = other.texture;
@@ -72,7 +72,7 @@ class Mesh {
 
   Mesh(const Mesh& other)
       : indexCount(other.indexCount),
-        VAO(other.VAO),
+        vao(other.vao),
         VBO(other.VBO),
         EBO(other.EBO),
         texture(other.texture),
@@ -82,10 +82,10 @@ class Mesh {
         physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
 
   void init() {
-    unsigned int VAO, VBO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    this->VAO = VAO;
+    unsigned int vao, VBO, EBO;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    this->vao = vao;
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -165,40 +165,39 @@ class Mesh {
     return true;
   }
 
-  glm::mat4 getModelMatrix() { return this->modelMatrix; }
+  glm::mat4 getModelMatrix() { return modelMatrix; }
 
-  void render(ShaderProgram& shader) { this->render(shader, this->getModelMatrix()); }
+  void Render(ShaderProgram& shader) { Render(shader, this->getModelMatrix()); }
 
-  void prepareRender(ShaderProgram& shader) {
-    if (VAO == 0) return;
+  void PrepareRender(ShaderProgram& shader) {
+    if (vao == 0) return;
     shader.Use();
-    glBindVertexArray(this->VAO);
+    glBindVertexArray(vao);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
   }
 
-  void draw() { glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0); }
+  void Draw() { glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); }
 
-  void render(ShaderProgram& shader, glm::mat4 modelMatrix) {
-    this->prepareRender(shader);
+  void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
+    PrepareRender(shader);
     shader.SetMat4("model", modelMatrix);
-
-    this->draw();
+    Draw();
   }
 
-  void renderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
-    this->prepareRender(shader);
+  void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
+    PrepareRender(shader);
 
     for (const auto& modelMatrix : modelMatrices) {
       shader.SetMat4("model", modelMatrix);
-      this->draw();
+      Draw();
     }
   }
 
-  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
+  void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
 
-  std::vector<Vertex> getVertices() { return this->vertices; }
+  std::vector<Vertex> GetVertices() { return vertices; }
 };
 
 }  // namespace fe

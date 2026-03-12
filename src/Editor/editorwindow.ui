@@ -88,7 +88,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="tab">
         <property name="sizePolicy">
@@ -348,6 +348,13 @@ void main()
          <string>Settings</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="wireframeBox">
+           <property name="text">
+            <string>Wireframe mode</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QCheckBox" name="autoRefreshBox">
            <property name="text">

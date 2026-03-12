@@ -22,6 +22,9 @@ class EditorWindow : public QMainWindow {
   EditorWindow(QWidget* parent = nullptr);
   ~EditorWindow();
 
+ protected:
+  bool event(QEvent* event) override;
+
  public slots:
   void compileShaders();
 

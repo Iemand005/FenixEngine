@@ -261,11 +261,11 @@ struct fe::XRGame::Impl {
         Log("Session state: SYNCHRONIZED");
         break;
       case XR_SESSION_STATE_VISIBLE:
-        Log("Session state: VISIBLE - Can render but shouldn't submit");
+        Log("Session state: VISIBLE - Can Render but shouldn't submit");
         break;
       case XR_SESSION_STATE_FOCUSED:
-        Log("Session state: FOCUSED - Can render AND submit frames");
-        // m_canSubmitFrames = true;  // Set a flag for your render loop
+        Log("Session state: FOCUSED - Can Render AND submit frames");
+        // m_canSubmitFrames = true;  // Set a flag for your Render loop
         break;
       case XR_SESSION_STATE_STOPPING:
         Log("Session state: STOPPING - Should call xrEndSession");

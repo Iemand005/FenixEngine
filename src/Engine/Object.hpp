@@ -54,6 +54,7 @@ class Object {
 
   std::string sourcePath;
 
+  std::shared_ptr<ShaderProgram> shader = nullptr;
 
   Object() {
     //acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -94,7 +95,8 @@ class Object {
   }
 
   void Render(ShaderProgram& shader) {
-    for (auto& mesh : meshes) mesh.render(shader, this->GetModelMatrix());
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
       shader.Use();
       shader.SetMat4("model", this->GetModelMatrix());
