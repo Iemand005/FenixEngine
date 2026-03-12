@@ -7,9 +7,9 @@
 #include "ShaderProgram.hpp"
 
 namespace fe {
-class Camera : public Object {
+class Camera {
  private:
-  // glm::vec3 position;
+  glm::vec3 position;
   glm::mat4 viewMatrix;
   unsigned int frustumVAO = 0, frustumVBO = 0;
   std::vector<glm::vec3> frustumVertices;
@@ -28,7 +28,7 @@ class Camera : public Object {
 
   Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist) : front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist) 
   {
-    state.position = position;
+    this->position = position;
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 
@@ -78,13 +78,13 @@ class Camera : public Object {
   }
 
   void SetPos(const glm::vec3& pos) {
-    this->state.position = pos;
-    viewMatrix = glm::lookAt(state.position, state.position + front, up);
+    this->position = pos;
+    viewMatrix = glm::lookAt(position, position + front, up);
   }
-  glm::vec3 GetPos() const { return state.position; }
+  glm::vec3 GetPos() const { return position; }
   void setFront(const glm::vec3& front) {
     this->front = front;
-    updateView(state.position, front, up);
+    updateView(position, front, up);
   }
 
   void update(glm::vec3 position, glm::quat orientation, glm::vec4 fov) {
@@ -105,6 +105,24 @@ class Camera : public Object {
   }
   glm::mat4 GetViewMatrix() const { return viewMatrix; }
   glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
+
+  void Move(Direction direction) {
+
+    const float cameraSpeed = 0.100f;
+    glm::vec3 horizontalFront = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
+    glm::vec3 right = glm::normalize(glm::cross(horizontalFront, up));
+    glm::vec3 velocity{};
+    switch (direction) {
+      case Forwards: velocity += horizontalFront; break;
+      case Backwards: velocity -= horizontalFront; break;
+      case Left: velocity -= right; break;
+      case Right: velocity += right; break;
+      case Up: velocity += up; break;
+      case Down: velocity -= up; break;
+    }
+
+    this->position += velocity * cameraSpeed;
+  }
   
   void Render(ShaderProgram& shader) const {
     if (frustumVAO == 0) return;

@@ -159,6 +159,10 @@ class Game {
   void MovePlayer(Direction direction){
     this->player->Move(direction, camera.get());
   }
+
+  void MoveCamera(Direction direction){
+    this->camera->Move(direction);
+  }
   
   void MouseMove(int x, int y) {
       const float sensitivity = 0.1f;

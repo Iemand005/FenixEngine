@@ -62,9 +62,9 @@ void EngineWidget::keyPressEvent(QKeyEvent *event) {
   }
 
   switch (event->key()) {
-    case Qt::Key_W: game->MovePlayer(fe::Direction::Forwards); break;
-    case Qt::Key_A: game->MovePlayer(fe::Direction::Left); break;
-    case Qt::Key_S: game->MovePlayer(fe::Direction::Backwards); break;
-    case Qt::Key_D: game->MovePlayer(fe::Direction::Right); break;
+    case Qt::Key_W: game->MoveCamera(fe::Direction::Forwards); break;
+    case Qt::Key_A: game->MoveCamera(fe::Direction::Left); break;
+    case Qt::Key_S: game->MoveCamera(fe::Direction::Backwards); break;
+    case Qt::Key_D: game->MoveCamera(fe::Direction::Right); break;
   }
 }
