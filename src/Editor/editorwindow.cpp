@@ -38,8 +38,11 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     fe::XRGame *game = ui->engineWidget->getGame();
     QString file = QFileDialog::getOpenFileName(this, "Open Model", "", "Models (*.obj);;All Files (*)");
     if (!file.isEmpty()) {
+      ui->engineWidget->makeCurrent();
       auto obj = game->LoadStaticOBJ(file.toStdString());
+      ui->engineWidget->doneCurrent();
       game->scene->AddObject(obj);
+      ui->engineWidget->update();
     }
   });
 

@@ -2,6 +2,8 @@
 #define OBJ_LOADER
 #include "engine.h"
 
+#include <filesystem>
+
 #include "OBJ_Loader.h"
 
 namespace fe {
@@ -32,6 +34,9 @@ bool Object::LoadObj(std::string path, float scale) {
   bool success = objectLoader.LoadFile(path);
   if (!success) return false;
 
+  const std::filesystem::path objPath(path);
+  const std::filesystem::path objDir = objPath.parent_path();
+
   for (auto &loadedMesh : objectLoader.LoadedMeshes) {
     std::cout << "Mesh Name: " << loadedMesh.MeshName << std::endl;
     std::cout << "Vertices: " << loadedMesh.Vertices.size() << std::endl;
@@ -48,7 +53,11 @@ bool Object::LoadObj(std::string path, float scale) {
     for (size_t i = 0; i < indices.size(); i++) indices[i] = loadedMesh.Indices[i];
 
     Mesh mesh(vertices, indices);
-    mesh.loadTexture(loadedMesh.MeshMaterial.map_Kd);
+    if (!loadedMesh.MeshMaterial.map_Kd.empty()) {
+      std::filesystem::path texPath(loadedMesh.MeshMaterial.map_Kd);
+      if (texPath.is_relative()) texPath = objDir / texPath;
+      mesh.loadTexture(texPath.string());
+    }
 
     this->meshes.push_back(mesh);
   }
