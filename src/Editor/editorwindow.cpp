@@ -51,6 +51,10 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     ui->engineWidget->update();
   });
 
+  connect(ui->objectsButton, &QPushButton::clicked, [&]() {
+    reloadModelList();
+  });
+
   // timer = new QTimer(this);
   // QObject::connect(timer, &QTimer::timeout, [&]() {
   //   auto game = ui->engineWidget->getGame();
@@ -88,9 +92,12 @@ void EditorWindow::reloadModelList() {
   auto model = new QStandardItemModel;
   for (auto &object : objects) {
     auto name = object->GetName();
-    ui->modelTreeView->setModel(model);
-    model->appendRow()
+    // ui->modelTreeView->setModel(model);
+    // model->appendRow()
+    model->appendRow(QLabel(name));
+
   }
+  ui->objectListView->setModel(model);
 }
 
 void EditorWindow::compileShaders() {

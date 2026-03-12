@@ -223,13 +223,20 @@ void main()
           </layout>
          </item>
          <item>
+          <widget class="QPushButton" name="objectsButton">
+           <property name="text">
+            <string>Reload Objects</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QGroupBox" name="groupBox_4">
            <property name="title">
             <string>Objects</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item>
-             <widget class="QTreeView" name="modelTreeView"/>
+             <widget class="QListView" name="objectListView"/>
             </item>
             <item>
              <widget class="QGroupBox" name="groupBox_3">
