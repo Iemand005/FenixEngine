@@ -122,6 +122,7 @@ class Camera {
     }
 
     this->position += velocity * cameraSpeed;
+    updateView(position, front, up);
   }
   
   void Render(ShaderProgram& shader) const {
