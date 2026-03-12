@@ -5,9 +5,13 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLContext>
 
 #ifdef _WIN32
   #include <windows.h>
+  #include <wingdi.h>
 #endif
 
 EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::EditorWindow) {
@@ -18,10 +22,14 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->xrButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
 #ifdef _WIN32
-    HWND hWnd = reinterpret_cast<HWND>(winId());
-    HDC hdc = GetDC(hWnd);
+    // auto native = QOpenGLContext::currentContext()->nativeHandle();
+    // QWGLNativeContext wgl = native.value<QWGLNativeContext>();
+    // HDC hdc = wgl.hdc();
+    // HGLRC hglrc = wgl.context();
 
-    game->initOpenXR(hdc);
+    HDC hdc = wglGetCurrentDC();
+    HGLRC hglrc = wglGetCurrentContext();
+    game->initOpenXR(hdc, hglrc);
 #endif
     game->EnableXR();
   });
