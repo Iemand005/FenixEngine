@@ -104,7 +104,7 @@ class Game {
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
     Init();
-    StartMouseCapture();
+    window->StartMouseCapture();
   }
 
   

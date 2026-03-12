@@ -396,7 +396,7 @@ void XRGame::LaunchVR() {
   impl->initSwapchain();
   CheckGLError("after framebuffer setup");
   impl->CreateActions();
-  StopMouseCapture();
+  window->StopMouseCapture();
 }
 
 void XRGame::RedrawWindow(GLuint fbo) {
