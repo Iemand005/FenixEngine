@@ -18,6 +18,7 @@
 
 // template<typename GameT = fe::Game>
 class EngineWidget : public QOpenGLWidget {
+  Q_OBJECT
 
   std::unique_ptr<fe::XRGame> game;
 
