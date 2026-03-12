@@ -59,8 +59,6 @@ class Game {
 
   int lastX, lastY;
 
-  bool vsync = true;
-
   bool capturingMouse = true;
 
   std::shared_ptr<fe::Character> player;

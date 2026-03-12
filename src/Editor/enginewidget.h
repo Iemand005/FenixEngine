@@ -42,6 +42,7 @@ class EngineWidget : public QOpenGLWidget {
   void toggleTimer(bool enabled = true);
 
   bool wireframe = false;
+  unsigned long long renderedFrames = 0;
 
  // public slots:
  //  void compileShaders();

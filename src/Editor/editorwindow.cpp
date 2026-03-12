@@ -41,7 +41,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, [&]() {
     auto game = ui->engineWidget->getGame();
-    ui->statusbar->showMessage(QString("fps: %1").arg(game->GetFPS()));
+    ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
     update();
   });
 

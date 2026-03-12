@@ -23,6 +23,8 @@ void EngineWidget::initializeGL() {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
 
+  // this->game->vsync = false;
+
   auto map1 = game->LoadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
 }
@@ -36,7 +38,9 @@ void EngineWidget::paintGL() {
   GLuint fbo = defaultFramebufferObject();
   game->ToggleWireframe(wireframe);
   game->Redraw(fbo);
+  renderedFrames++;
 
+  // update();
 }
 
 void EngineWidget::startMouseCapture() {
