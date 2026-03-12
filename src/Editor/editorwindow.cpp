@@ -4,6 +4,7 @@
 
 #include <QPushButton>
 #include <QMessageBox>
+#include <QFileDialog>
 
 EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::EditorWindow) {
   ui->setupUi(this);
@@ -18,7 +19,12 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->modelButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
     // game->LoadObj();
-
+    QFileDialog dialog;
+    if (dialog.exec() == QFileDialog::Accepted) {
+      QString file;
+      dialog.fileSelected(file);
+      game->LoadObj(file.toStdString());
+    }
   });
 }
 
