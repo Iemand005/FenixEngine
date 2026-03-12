@@ -6,7 +6,9 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setMouseTracking(true);
 
   timer = new QTimer(this);
-  connect(timer, &QTimer::timeout, this, QOverload<>::of(&QOpenGLWidget::update));
+  connect(timer, &QTimer::timeout, [&]() {
+    update();
+  });
 }
 
 void EngineWidget::initializeGL() {
