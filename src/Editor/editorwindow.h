@@ -29,10 +29,12 @@ class EditorWindow : public QMainWindow {
 
  public slots:
   void compileShaders();
+  void updateSelectedObjectState();
 
  private:
   Ui::EditorWindow* ui;
   QOpenGLWidget e;
   QTimer* timer = nullptr;
+  fe::Object *selectedObject;
 };
 #endif  // EDITORWINDOW_H

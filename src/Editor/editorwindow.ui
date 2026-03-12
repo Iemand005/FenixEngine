@@ -256,7 +256,7 @@ void main()
                  <item row="0" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
                    <item>
-                    <widget class="QDial" name="dial_3">
+                    <widget class="QDial" name="xPosDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -266,7 +266,7 @@ void main()
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDial" name="dial_2">
+                    <widget class="QDial" name="yPosDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -276,7 +276,7 @@ void main()
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDial" name="dial">
+                    <widget class="QDial" name="zPosDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -297,7 +297,7 @@ void main()
                  <item row="1" column="1">
                   <layout class="QHBoxLayout" name="horizontalLayout_3">
                    <item>
-                    <widget class="QDial" name="dial_4">
+                    <widget class="QDial" name="xRotDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -307,7 +307,7 @@ void main()
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDial" name="dial_5">
+                    <widget class="QDial" name="yRotDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>
@@ -317,7 +317,7 @@ void main()
                     </widget>
                    </item>
                    <item>
-                    <widget class="QDial" name="dial_6">
+                    <widget class="QDial" name="zRotDial">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                        <horstretch>0</horstretch>

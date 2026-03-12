@@ -123,10 +123,33 @@ void EditorWindow::reloadModelList() {
       qDebug() << "Selected item:" << text;
       auto i =indexes.first();
       // ui->objectListView->selectionModel()->model()->ite
+      auto game = ui->engineWidget->getGame();
       int row = i.row();
       auto objects = game->scene->GetObjects();
       auto objec = objects[row];
+      selectedObject = objec.get();
+      auto pos = selectedObject->state.position;
+      auto rot = selectedObject->state.position;
+
+      ui->xPosDial->setValue(pos.x);
+      ui->yPosDial->setValue(pos.y);
+      ui->zPosDial->setValue(pos.z);
+
+      ui->xRotDial->setValue(rot.x);
+      ui->yRotDial->setValue(rot.y);
+      ui->zRotDial->setValue(rot.z);
     }
+  });
+
+
+  connect(ui->xPosDial, &QDial::valueChanged, [&](int value) {
+    selectedObject->state.position.x = ui->xPosDial->value();
+    selectedObject->state.position.y = ui->yPosDial->value();
+    selectedObject->state.position.z = ui->zPosDial->value();
+
+    selectedObject->state.rotation.x = ui->xRotDial->value();
+    selectedObject->state.rotation.y = ui->yRotDial->value();
+    selectedObject->state.rotation.z = ui->zRotDial->value();
   });
 }
 
