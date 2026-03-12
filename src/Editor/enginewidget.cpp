@@ -27,8 +27,8 @@ void EngineWidget::initializeGL() {
   auto map1 = game->LoadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
 
-  auto map2 = game->LoadStaticOBJ("C:/Users/Lasse/3D Objects/Car.obj");
-  game->scene->AddObject(map2);
+  // auto map2 = game->LoadStaticOBJ("C:/Users/Lasse/3D Objects/Car.obj");
+  // game->scene->AddObject(map2);
 }
 
 void EngineWidget::resizeGL(int w, int h) {
