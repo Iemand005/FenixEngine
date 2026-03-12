@@ -44,6 +44,8 @@ void EngineWidget::startMouseCapture() {
   grabKeyboard();
   setCursor(Qt::BlankCursor);
   capturing = true;
+
+  QCursor::setPos(mapToGlobal(rect().center()));
 }
 
 void EngineWidget::stopMouseCapture() {
