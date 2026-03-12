@@ -1,16 +1,8 @@
 
+#include "bases.h"
 #include "Object.hpp"
 
 namespace fe {
-
-enum Direction {
-  Forwards,
-  Backwards,
-  Left,
-  Right,
-  Up,
-  Down
-};
 
 class Character : public Object {
 public:

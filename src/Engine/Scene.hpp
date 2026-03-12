@@ -34,12 +34,12 @@ class Scene {
     this->EnableFaceCulling();
   }
 
-  void Render(ShaderProgram shader, Camera &camera, int width, int height) {
+  void Render(ShaderProgram shader, Camera const& camera, int width, int height) {
     this->Resize(width, height);
     this->Render(shader, camera);
   }
   
-  void Render(ShaderProgram shader, Camera &camera) {
+  void Render(ShaderProgram shader, Camera const& camera) {
     this->PrepareRender(shader, camera);
 
     for (auto& model : objects) model->Render(shader);
@@ -68,7 +68,7 @@ class Scene {
   void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
 
 
-  void PrepareRender(ShaderProgram shader, Camera camera) {
+  void PrepareRender(ShaderProgram shader, Camera const& camera) {
     this->Clear();
     shader.Use();
     shader.SetMat4("view", camera.GetViewMatrix());

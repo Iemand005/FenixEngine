@@ -7,9 +7,9 @@
 #include "ShaderProgram.hpp"
 
 namespace fe {
-class Camera {
+class Camera : public Object {
  private:
-  glm::vec3 position;
+  // glm::vec3 position;
   glm::mat4 viewMatrix;
   unsigned int frustumVAO = 0, frustumVBO = 0;
   std::vector<glm::vec3> frustumVertices;
@@ -26,9 +26,9 @@ class Camera {
 
   Camera(float fov, float nearDist, float farDist) : Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), fov, 1, nearDist, farDist) {};
 
-  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist)
-      : position(position), front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist) 
+  Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fov, float aspect, float nearDist, float farDist) : front{front}, up{up}, fov(fov), aspect(aspect), nearDist(nearDist), farDist(farDist) 
   {
+    state.position = position;
     viewMatrix = glm::lookAt(position, position + front, up);
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 
@@ -53,11 +53,9 @@ class Camera {
     glm::vec3 farBottomLeft = farCenter - up * (farHeight / 2) - right * (farWidth / 2);
     glm::vec3 farBottomRight = farCenter - up * (farHeight / 2) + right * (farWidth / 2);
 
-    frustumVertices = {// near plane
+    frustumVertices = {
                        nearTopLeft, nearTopRight, nearTopRight, nearBottomRight, nearBottomRight, nearBottomLeft, nearBottomLeft, nearTopLeft,
-                       // far plane
                        farTopLeft, farTopRight, farTopRight, farBottomRight, farBottomRight, farBottomLeft, farBottomLeft, farTopLeft,
-                       // sides
                        nearTopLeft, farTopLeft, nearTopRight, farTopRight, nearBottomRight, farBottomRight, nearBottomLeft, farBottomLeft};
 
     glGenVertexArrays(1, &frustumVAO);
@@ -71,7 +69,6 @@ class Camera {
   };
 
   void SetAspect(float aspect) {
-    // if (aspect == -nan()) return;
     this->aspect = aspect;
     projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
   }
@@ -81,13 +78,13 @@ class Camera {
   }
 
   void SetPos(const glm::vec3& pos) {
-    this->position = pos;
-    viewMatrix = glm::lookAt(position, position + front, up);
+    this->state.position = pos;
+    viewMatrix = glm::lookAt(state.position, state.position + front, up);
   }
-  glm::vec3 GetPos() const { return position; }
+  glm::vec3 GetPos() const { return state.position; }
   void setFront(const glm::vec3& front) {
     this->front = front;
-    updateView(position, front, up);
+    updateView(state.position, front, up);
   }
 
   void update(glm::vec3 position, glm::quat orientation, glm::vec4 fov) {

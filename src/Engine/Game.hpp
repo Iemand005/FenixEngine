@@ -28,6 +28,7 @@
 #include "networking/networking.hpp"
 #endif
 #include "physics/PhysicsEngine.hpp"
+#include "bases.h"
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
