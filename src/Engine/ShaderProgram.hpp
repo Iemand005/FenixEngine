@@ -39,9 +39,7 @@ class ShaderProgram {
     this->vertexShader = vertexShader;
     this->fragmentShader = fragmentShader;
 
-    vertexShader.attachToProgram(id);
-    fragmentShader.attachToProgram(id);
-
+    AttachShaders();
     LinkShaders();
   }
 
@@ -51,8 +49,14 @@ class ShaderProgram {
   void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
     vertexShader.LoadText(vertexShaderText);
     fragmentShader.LoadText(fragmentShaderText);
+    AttachShaders();
     LinkShaders();
     ErrorCheck();
+  }
+
+  void AttachShaders() {
+    vertexShader.attachToProgram(id);
+    fragmentShader.attachToProgram(id);
   }
 
   void LinkShaders() {
