@@ -52,20 +52,32 @@ class ShaderProgram {
     vertexShader.LoadText(vertexShaderText);
     fragmentShader.LoadText(fragmentShaderText);
     LinkShaders();
+    ErrorCheck();
   }
 
   void LinkShaders() {
     glLinkProgram(id);
 
-    modelLoc = glGetUniformLocation(this->id, "model");
-    viewLoc = glGetUniformLocation(this->id, "view");
-    projectionLoc = glGetUniformLocation(this->id, "projection");
-    texLoc = glGetUniformLocation(this->id, "ourTexture");
+    modelLoc = glGetUniformLocation(id, "model");
+    viewLoc = glGetUniformLocation(id, "view");
+    projectionLoc = glGetUniformLocation(id, "projection");
+    texLoc = glGetUniformLocation(id, "ourTexture");
 
     glUniform1i(texLoc, 0);
   }
 
-  void Use() { glUseProgram(this->id); }
+  void ErrorCheck() {
+    GLint ok = 0, len = 0;
+    glGetProgramiv(id, GL_LINK_STATUS, &ok);
+    glGetProgramiv(id, GL_INFO_LOG_LENGTH, &len);
+    if (!ok || len > 1) {
+        std::string log(len, '\0');
+        glGetProgramInfoLog(id, len, nullptr, log.data());
+        fprintf(stderr, "Program link log:\n%s\n", log.c_str());
+    }
+  }
+
+  void Use() { glUseProgram(id); }
 
   void SetMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
 };

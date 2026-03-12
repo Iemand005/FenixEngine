@@ -147,7 +147,12 @@ class Game {
   }
   
   void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
-    this->shader = std::make_unique<fe::ShaderProgram>("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+    this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
+  }
+
+  void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
+    this->shader = std::make_unique<fe::ShaderProgram>();
+    this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
   }
   
   void MouseMove(int x, int y) {
