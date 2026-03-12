@@ -174,66 +174,7 @@ struct fe::XRGame::Impl {
 
   void Log(const std::string& message) { std::cout << message << std::endl; }
 
-  void initOpenXR(HDC hDC, HGLRC hGLRC) {
-    XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
-
-    const char* enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
-    createInfo.enabledExtensionCount = 1;
-    createInfo.enabledExtensionNames = enabledExtensions;
-
-    createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
-    createInfo.applicationInfo.applicationVersion = 1;
-    createInfo.applicationInfo.engineVersion = 1;
-    strcpy(createInfo.applicationInfo.engineName, "FoxEngine");
-    strcpy(createInfo.applicationInfo.applicationName, "FoxEngineTest");
-
-    outputError(xrCreateInstance(&createInfo, &instance));
-
-    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
-    systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
-
-    outputError(xrGetSystem(instance, &systemInfo, &systemId));
-
-    XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
-    outputError(xrGetSystemProperties(instance, systemId, &systemProps));
-    Log("System Name: " + std::string(systemProps.systemName));
-    Log("Vendor ID: " + std::to_string(systemProps.vendorId));
-
-    // After creating session
-    Log("OpenXR Session Created");
-
-    // Log which GPU is being used
-    Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
-
-    XrGraphicsBindingOpenGLWin32KHR gfx{};
-    gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
-    gfx.hDC = hDC;
-    gfx.hGLRC = hGLRC;
-
-    XrSessionCreateInfo sci{XR_TYPE_SESSION_CREATE_INFO};
-    sci.systemId = systemId;
-    sci.next = &gfx;
-
-    XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
-    sessionInfo.systemId = systemId;
-    sessionInfo.next = &gfx;
-
-    XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
-    PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
-
-    outputError(xrGetInstanceProcAddr(instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
-    outputError(pfnGetOpenGLGraphicsRequirementsKHR(instance, systemId, &glReqs));
-    outputError(xrCreateSession(instance, &sessionInfo, &session));
-
-    BeginSession();
-
-    XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
-    spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
-    spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
-    spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
-
-    outputError(xrCreateReferenceSpace(session, &spaceInfo, &appSpace));
-  }
+  
 
   void BeginSession() {
     XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
@@ -319,6 +260,65 @@ XRGame::XRGame(GLADloadproc loadProc) : Game(loadProc), impl(std::make_unique<Im
 XRGame::~XRGame() {
   Destroy();
 };
+
+void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
+    XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
+
+    const char* enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
+    createInfo.enabledExtensionCount = 1;
+    createInfo.enabledExtensionNames = enabledExtensions;
+
+    createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
+    createInfo.applicationInfo.applicationVersion = 1;
+    createInfo.applicationInfo.engineVersion = 1;
+    strcpy(createInfo.applicationInfo.engineName, "FoxEngine");
+    strcpy(createInfo.applicationInfo.applicationName, "FoxEngineTest");
+
+    impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
+
+    XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
+    systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
+
+    impl->outputError(xrGetSystem(impl->instance, &systemInfo, &impl->systemId));
+
+    XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
+    impl->outputError(xrGetSystemProperties(impl->instance, impl->systemId, &systemProps));
+    impl->Log("System Name: " + std::string(systemProps.systemName));
+    impl->Log("Vendor ID: " + std::to_string(systemProps.vendorId));
+
+    impl->Log("OpenXR Session Created");
+
+    impl->Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
+
+    XrGraphicsBindingOpenGLWin32KHR gfx{};
+    gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
+    gfx.hDC = hDC;
+    gfx.hGLRC = hGLRC;
+
+    XrSessionCreateInfo sci{XR_TYPE_SESSION_CREATE_INFO};
+    sci.systemId = impl->systemId;
+    sci.next = &gfx;
+
+    XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
+    sessionInfo.systemId = impl->systemId;
+    sessionInfo.next = &gfx;
+
+    XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
+    PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
+
+    impl->outputError(xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
+    impl->outputError(pfnGetOpenGLGraphicsRequirementsKHR(impl->instance, impl->systemId, &glReqs));
+    impl->outputError(xrCreateSession(impl->instance, &sessionInfo, &impl->session));
+
+    impl->BeginSession();
+
+    XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
+    spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+    spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
+    spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
+
+    impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
+  }
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     XrVector2f joystickInput = {0.0f, 0.0f};

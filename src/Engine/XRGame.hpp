@@ -55,6 +55,8 @@ namespace fe {
     ~XRGame();
 
     bool IsInstanceValid();
+
+    void initOpenXR(HDC hDC, HGLRC hGLRC);
     
     void EnableXR();
     void DisableVR();

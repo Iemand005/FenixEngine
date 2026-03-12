@@ -6,6 +6,10 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#ifdef _WIN32
+  #include <windows.h>
+#endif
+
 EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::EditorWindow) {
   ui->setupUi(this);
 
@@ -13,15 +17,19 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
 
   connect(ui->xrButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
+#ifdef _WIN32
+    HWND hWnd = reinterpret_cast<HWND>(winId());
+    HDC hdc = GetDC(hWnd);
+
+    game->initOpenXR(hdc);
+#endif
     game->EnableXR();
   });
 
   connect(ui->modelButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
-    QFileDialog dialog;
-    if (dialog.exec() == QFileDialog::Accepted) {
-      QString file;
-      dialog.fileSelected(file);
+    QString file = QFileDialog::getOpenFileName(this, "Open Model", "", "Models (*.obj);;All Files (*)");
+    if (!file.isEmpty()) {
       game->LoadObj(file.toStdString());
     }
   });
