@@ -67,4 +67,6 @@ void EngineWidget::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_S: game->MoveCamera(fe::Direction::Backwards); break;
     case Qt::Key_D: game->MoveCamera(fe::Direction::Right); break;
   }
+
+  update();
 }
