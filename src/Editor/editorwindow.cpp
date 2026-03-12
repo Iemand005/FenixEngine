@@ -142,15 +142,23 @@ void EditorWindow::reloadModelList() {
   });
 
 
-  connect(ui->xPosDial, &QDial::valueChanged, [&](int value) {
-    selectedObject->state.position.x = ui->xPosDial->value();
-    selectedObject->state.position.y = ui->yPosDial->value();
-    selectedObject->state.position.z = ui->zPosDial->value();
+  connect(ui->xPosDial, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
 
-    selectedObject->state.rotation.x = ui->xRotDial->value();
-    selectedObject->state.rotation.y = ui->yRotDial->value();
-    selectedObject->state.rotation.z = ui->zRotDial->value();
-  });
+
+
+  for (auto &a: {ui->xPosDial, ui->yPosDial, ui->zPosDial, ui->xRotDial, ui->yRotDial, ui->zRotDial})
+    connect(a, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
+
+}
+
+void EditorWindow::updateSelectedObjectState() {
+  selectedObject->state.position.x = ui->xPosDial->value();
+  selectedObject->state.position.y = ui->yPosDial->value();
+  selectedObject->state.position.z = ui->zPosDial->value();
+
+  selectedObject->state.rotation.x = ui->xRotDial->value();
+  selectedObject->state.rotation.y = ui->yRotDial->value();
+  selectedObject->state.rotation.z = ui->zRotDial->value();
 }
 
 void EditorWindow::compileShaders() {
