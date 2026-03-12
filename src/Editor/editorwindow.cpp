@@ -18,7 +18,6 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
 
   connect(ui->modelButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
-    // game->LoadObj();
     QFileDialog dialog;
     if (dialog.exec() == QFileDialog::Accepted) {
       QString file;

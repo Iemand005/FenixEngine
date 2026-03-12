@@ -8,10 +8,13 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
 
-  // connect(timer, &QTimer::timeout, [&]() {
-  //   // update();
-  //   QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
-  // });
+  QObject::connect(timer, &QTimer::timeout, [&]() {
+    update();
+  });
+
+  QSurfaceFormat format;
+  format.setSwapInterval(0);
+  setFormat(format);
 }
 
 void EngineWidget::initializeGL() {
@@ -30,9 +33,9 @@ void EngineWidget::resizeGL(int w, int h) {
 void EngineWidget::paintGL() {
   // this->game->Update();
   GLuint fbo = defaultFramebufferObject();
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   game->ToggleWireframe(wireframe);
   game->Redraw(fbo);
+
 }
 
 void EngineWidget::startMouseCapture() {
@@ -67,22 +70,22 @@ void EngineWidget::mousePressEvent(QMouseEvent *e) {
 }
 
 void EngineWidget::keyPressEvent(QKeyEvent *event) {
-  if (event->key() == Qt::Key_Escape) {
-    stopMouseCapture();
-    capturing = false;
-  }
-
   switch (event->key()) {
+    case Qt::Key_Escape: stopMouseCapture(); break;
     case Qt::Key_W: game->MoveCamera(fe::Direction::Forwards); break;
     case Qt::Key_A: game->MoveCamera(fe::Direction::Left); break;
     case Qt::Key_S: game->MoveCamera(fe::Direction::Backwards); break;
     case Qt::Key_D: game->MoveCamera(fe::Direction::Right); break;
+    case Qt::Key_Space: game->MoveCamera(fe::Direction::Up); break;
+    case Qt::Key_Shift: game->MoveCamera(fe::Direction::Down); break;
   }
 
   update();
+
+  QOpenGLWidget::keyPressEvent(event);
 }
 
 void EngineWidget::toggleTimer(bool enabled) {
-   if (enabled) timer->start(0);
+   if (enabled) timer->start(16);
    else timer->stop();
 }
