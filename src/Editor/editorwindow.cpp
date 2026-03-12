@@ -8,6 +8,9 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLContext>
+#include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #ifdef _WIN32
   #include <windows.h>
@@ -18,6 +21,16 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   ui->setupUi(this);
 
   connect(ui->shaderButton, SIGNAL(clicked()), SLOT(compileShaders()));
+
+  ui->lightDirDial->setRange(0, 360);
+  ui->lightDirDial->setWrapping(true);
+  connect(ui->lightDirDial, &QDial::valueChanged, [&](int value) {
+    auto game = ui->engineWidget->getGame();
+    if (!game) return;
+    float rad = glm::radians(static_cast<float>(value));
+    game->lightDir = glm::normalize(glm::vec3(std::cos(rad), 0.0f, std::sin(rad)));
+    ui->engineWidget->update();
+  });
 
   connect(ui->xrButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
@@ -127,10 +140,9 @@ void EditorWindow::reloadModelList() {
   connect(ui->zPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.z = ui->zPosDial->value(); });
   connect(ui->xRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.x = ui->xRotDial->value(); });
   connect(ui->yRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.y = ui->yRotDial->value(); });
-  connect(ui->zRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.z = ui->zRotDial->value(); });
+  connect(ui->zRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.z = ui->zRotDial->value(); });///..//file:///C:/Users/Lasse/AppData/Local/Packages/Microsoft.ScreenSketch_8wekyb3d8bbwe/TempState/Recordings/20260312-1750-48.4422010.mp4
 
   connect(ui->xPosDial, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
-
 
 
   for (auto &a: {ui->xPosDial, ui->yPosDial, ui->zPosDial, ui->xRotDial, ui->yRotDial, ui->zRotDial})
