@@ -18,6 +18,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <type_traits>
+#include <array>
+#include <algorithm>
 
 // #include <imgui/imgui.h>
 // #include <imgui/imgui_impl_sdl3.h>
@@ -56,7 +58,16 @@ class Game {
 
 
   float yaw = -90.0f,  pitch = 0.0f;
-  glm::vec3 lightDir = glm::normalize(glm::vec3(0.5f, 0.5f, 0.5f));
+
+  struct PointLight {
+    glm::vec3 position{0.0f};
+    glm::vec3 color{1.0f};
+    float intensity{1.0f};
+    float radius{10.0f};
+  };
+  static constexpr int kMaxPointLights = 8;
+  std::array<PointLight, kMaxPointLights> pointLights{};
+  int lightCount = 1;
 
   int lastX, lastY;
 
@@ -139,6 +150,10 @@ class Game {
     this->scene = std::make_unique<fe::Scene>();
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
+    pointLights[0].position = glm::vec3(3.0f, 3.0f, 3.0f);
+    pointLights[0].color = glm::vec3(1.0f);
+    pointLights[0].intensity = 1.0f;
+    pointLights[0].radius = 10.0f;
     InitUI();
   }
   
@@ -253,7 +268,15 @@ class Game {
   void Redraw() {
     if (shader) {
       shader->Use();
-      shader->SetVec3("lightDir", lightDir);
+      int count = std::clamp(lightCount, 0, kMaxPointLights);
+      shader->SetInt("lightCount", count);
+      for (int i = 0; i < count; ++i) {
+        const auto& l = pointLights[i];
+        shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+        shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+        shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+        shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+      }
     }
     scene->Render(*this->shader, *this->camera.get());
 

@@ -88,6 +88,8 @@ class ShaderProgram {
 
   void SetMat4(const std::string& name, const glm::mat4& mat) const { glUniformMatrix4fv(glGetUniformLocation(this->id, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
   void SetVec3(const std::string& name, const glm::vec3& vec) const { glUniform3f(glGetUniformLocation(this->id, name.c_str()), vec.x, vec.y, vec.z); }
+  void SetFloat(const std::string& name, float value) const { glUniform1f(glGetUniformLocation(this->id, name.c_str()), value); }
+  void SetInt(const std::string& name, int value) const { glUniform1i(glGetUniformLocation(this->id, name.c_str()), value); }
 };
 }
 
