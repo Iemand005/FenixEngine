@@ -7,3 +7,12 @@ struct ObjectState {
   glm::vec3 velocity;
   glm::vec3 scale;
 };
+
+enum Direction {
+  Forwards,
+  Backwards,
+  Left,
+  Right,
+  Up,
+  Down
+};
