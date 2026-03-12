@@ -142,6 +142,13 @@ void EditorWindow::reloadModelList() {
   });
 
 
+  connect(ui->xPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.x = ui->xPosDial->value(); });
+  connect(ui->yPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.y = ui->yPosDial->value(); });
+  connect(ui->zPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.z = ui->zPosDial->value(); });
+  connect(ui->xRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.x = ui->xRotDial->value(); });
+  connect(ui->yRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.y = ui->yRotDial->value(); });
+  connect(ui->zRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.z = ui->zRotDial->value(); });
+
   connect(ui->xPosDial, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
 
 
