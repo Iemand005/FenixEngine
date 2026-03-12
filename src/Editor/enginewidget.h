@@ -12,6 +12,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
 #include <QMouseEvent>
+#include <QTimer>
 
 // template<typename GameT = fe::Game>
 class EngineWidget : public QOpenGLWidget {
@@ -38,8 +39,12 @@ class EngineWidget : public QOpenGLWidget {
   void mousePressEvent(QMouseEvent* e) override;
   void keyPressEvent(QKeyEvent *event) override;
 
+  void toggleTimer(bool enabled = true);
+
  // public slots:
  //  void compileShaders();
+ private:
+  QTimer* timer = nullptr;
 
 };
 

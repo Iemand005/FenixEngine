@@ -26,6 +26,10 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
       game->LoadObj(file.toStdString());
     }
   });
+
+  connect(ui->autoRefreshBox, &QCheckBox::clicked, [&](bool checked) {
+    ui->engineWidget->toggleTimer(checked);
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

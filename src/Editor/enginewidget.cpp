@@ -4,6 +4,9 @@ EngineWidget::EngineWidget() {}
 EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
+
+  timer = new QTimer(this);
+  connect(timer, &QTimer::timeout, this, QOverload<>::of(&QOpenGLWidget::update));
 }
 
 void EngineWidget::initializeGL() {
@@ -69,4 +72,9 @@ void EngineWidget::keyPressEvent(QKeyEvent *event) {
   }
 
   update();
+}
+
+void EngineWidget::toggleTimer(bool enabled) {
+   if (enabled) timer->start(0);
+   else timer->stop();
 }
