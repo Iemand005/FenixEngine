@@ -95,7 +95,6 @@ class Object {
   }
 
   void Render(ShaderProgram& shader) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
       shader.Use();

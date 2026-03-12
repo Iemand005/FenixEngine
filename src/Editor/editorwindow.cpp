@@ -36,6 +36,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     auto fbo = ui->engineWidget->defaultFramebufferObject();
     game ->BindFrameBuffer(fbo);
     game->ToggleWireframe(checked);
+    ui->engineWidget->wireframe = checked;
   });
 }
 

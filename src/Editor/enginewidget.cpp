@@ -31,7 +31,8 @@ void EngineWidget::paintGL() {
   // this->game->Update();
   GLuint fbo = defaultFramebufferObject();
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  this->game->Redraw(fbo);
+  game->ToggleWireframe(wireframe);
+  game->Redraw(fbo);
 }
 
 void EngineWidget::startMouseCapture() {
