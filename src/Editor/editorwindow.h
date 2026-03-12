@@ -22,6 +22,10 @@ class EditorWindow : public QMainWindow {
   EditorWindow(QWidget* parent = nullptr);
   ~EditorWindow();
 
+  void reloadModelList() {
+    auto game = ui->engineWidget->getGame();
+  }
+
  protected:
   bool event(QEvent* event) override;
 

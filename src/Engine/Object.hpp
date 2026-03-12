@@ -54,6 +54,8 @@ class Object {
 
   std::string sourcePath;
 
+  std::string name = "a";
+
   std::shared_ptr<ShaderProgram> shader = nullptr;
 
   Object() {
@@ -119,6 +121,10 @@ class Object {
 
     this->state.rotation.x = pitch;
     this->state.rotation.y = -yaw + 90.0f;
+  }
+
+  std::string GetName() {
+    return name;
   }
 };
 

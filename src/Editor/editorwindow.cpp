@@ -82,6 +82,17 @@ bool EditorWindow::event(QEvent* event) {
   return QMainWindow::event(event);
 }
 
+void EditorWindow::reloadModelList() {
+  auto game = ui->engineWidget->getGame();
+  auto objects = game->scene->GetObjects();
+  auto model = new QStandardItemModel;
+  for (auto &object : objects) {
+    auto name = object->GetName();
+    ui->modelTreeView->setModel(model);
+    model->appendRow()
+  }
+}
+
 void EditorWindow::compileShaders() {
 
   try {

@@ -53,7 +53,7 @@ class Scene {
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
 
 
-  std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
+  std::vector<std::shared_ptr<Object>>& f() { return objects; }
 
   std::vector<std::shared_ptr<Object>> GetFilteredObjects(std::shared_ptr<Object> exclude) const {
     std::vector<std::shared_ptr<Object>> filtered;
