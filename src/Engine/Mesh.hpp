@@ -14,14 +14,6 @@
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
-//#ifndef STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION
-//#include <stb_image.h>
-//#endif  // !STB_IMAGE_IMPLEMENTATION
-
-//#define OBJ_LOADER
-//#include "OBJ_Loader.h"
-
 namespace fe {
 
 class Mesh {

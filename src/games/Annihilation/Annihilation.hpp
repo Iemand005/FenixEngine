@@ -68,7 +68,7 @@ class Annihilation : public fe::Game {
   }
 
   void LoadModels() {
-    auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
+    auto map1 = LoadStaticOBJ("resources/models/collisiontest.obj");
     this->scene->AddObject(map1);
     this->maps.push_back(map1);
 

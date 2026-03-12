@@ -14,13 +14,17 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     fe::XRGame *game = ui->engineWidget->getGame();
     game->EnableXR();
   });
+
+  connect(ui->modelButton, &QPushButton::clicked, [&]() {
+    fe::XRGame *game = ui->engineWidget->getGame();
+    // game->LoadObj();
+
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
 
 void EditorWindow::compileShaders() {
-
-  // ui->engineWidget->getGame()->shader->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
 
   try {
     bool success = ui->engineWidget->getGame()->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
@@ -35,7 +39,6 @@ void EditorWindow::compileShaders() {
     messageBox.exec();
   }
 
-  // ui->engineWidget->getGame()->Redraw();
   update();
   ui->engineWidget->update();
 }

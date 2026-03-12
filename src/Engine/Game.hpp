@@ -234,7 +234,7 @@ class Game {
 
   std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) { return std::make_shared<fe::Object>(path, scale); }
 
-  std::shared_ptr<fe::Object> loadStaticOBJ(std::string path, float scale = 1.0f) {
+  std::shared_ptr<fe::Object> LoadStaticOBJ(std::string path, float scale = 1.0f) {
     std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
     model->isStatic = true;
     return model;

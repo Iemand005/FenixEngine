@@ -36,11 +36,6 @@ class Object {
  private:
  public:
   ObjectState state{};
-  //glm::vec3 position;
-  //glm::vec3 rotation;
-  //glm::vec3 velocity;
-  //glm::vec3 acceleration;
-
   glm::mat4 modelMatrix;
 
   std::vector<Mesh> meshes;
@@ -59,7 +54,6 @@ class Object {
 
   std::string sourcePath;
 
-  // bool needsUpdate = true;
 
   Object() {
     //acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -80,38 +74,7 @@ class Object {
     sourcePath = objFilePath;
   }
 
-  bool LoadObj(std::string path, float scale = 1.0f)
-  /*{
-    objl::Loader objectLoader;
-
-    bool success = objectLoader.LoadFile(path);
-    if (!success) return false;
-
-    for (auto& loadedMesh : objectLoader.LoadedMeshes) {
-      std::cout << "Mesh Name: " << loadedMesh.MeshName << std::endl;
-      std::cout << "Vertices: " << loadedMesh.Vertices.size() << std::endl;
-      std::cout << "Indices: " << loadedMesh.Indices.size() << std::endl;
-
-      auto vertices = std::vector<Vertex>(loadedMesh.Vertices.size());
-      auto indices = std::vector<unsigned int>(loadedMesh.Indices.size());
-
-      for (int i = 0; i < loadedMesh.Vertices.size(); i++) {
-        objl::Vertex v = loadedMesh.Vertices[i];
-        vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
-      }
-
-      for (size_t i = 0; i < indices.size(); i++) indices[i] = loadedMesh.Indices[i];
-
-      Mesh mesh(vertices, indices);
-      mesh.loadTexture(loadedMesh.MeshMaterial.map_Kd);
-
-      this->meshes.push_back(mesh);
-    }
-
-    this->state.scale = glm::vec3(scale);
-
-    return true;
-  }*/;
+  bool LoadObj(std::string path, float scale = 1.0f);
 
   void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
@@ -119,8 +82,6 @@ class Object {
     if (this->physicsObject) {
       auto state = this->physicsObject->SyncToRender();
       this->state = state;
-     /* this->velocity = state.velocity;
-      this->rotation = state.rotation;*/
     }
   }
 

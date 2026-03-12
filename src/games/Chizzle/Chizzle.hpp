@@ -71,13 +71,13 @@ public:
   }
 
   void LoadModels() {
-    auto map1 = loadStaticOBJ("resources/models/collisiontest.obj");
+    auto map1 = LoadStaticOBJ("resources/models/collisiontest.obj");
     this->scene->AddObject(map1);
     this->maps.push_back(map1);
 
 
     
-    this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+    this->maps.push_back(LoadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
 
