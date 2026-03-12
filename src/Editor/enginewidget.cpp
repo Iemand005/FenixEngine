@@ -5,15 +5,18 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
 
-  timer = new QTimer(this);
-  timer->setTimerType(Qt::PreciseTimer);
-  connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
-  frameTimer.start();
-  lastFrameNs = frameTimer.nsecsElapsed();
-
   QSurfaceFormat format;
   format.setSwapInterval(0);
   setFormat(format);
+
+  timer = new QTimer(this);
+  connect(timer, &QTimer::timeout, [&]() {
+    update();
+    // window()
+    // ->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
+    emit fpsUpdate(game->GetFPS());
+  });
+  timer->start(0);
 }
 
 void EngineWidget::initializeGL() {
@@ -23,6 +26,9 @@ void EngineWidget::initializeGL() {
 
   auto map1 = game->LoadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
+
+  auto map2 = game->LoadStaticOBJ("C:/Users/Lasse/3D Objects/Car.obj");
+  game->scene->AddObject(map2);
 }
 
 void EngineWidget::resizeGL(int w, int h) {
@@ -30,7 +36,6 @@ void EngineWidget::resizeGL(int w, int h) {
 }
 
 void EngineWidget::paintGL() {
-  // this->game->Update();
   GLuint fbo = defaultFramebufferObject();
   game->ToggleWireframe(wireframe);
   game->Redraw(fbo);
@@ -42,8 +47,6 @@ void EngineWidget::paintGL() {
   if (dt < 0.0) dt = 0.0;
   if (dt > 0.1) dt = 0.1;
   processInput(dt);
-
-  // update();
 }
 
 void EngineWidget::startMouseCapture() {
@@ -82,15 +85,6 @@ void EngineWidget::mousePressEvent(QMouseEvent *event) {
 void EngineWidget::keyPressEvent(QKeyEvent *event) {
   if (event->isAutoRepeat()) return;
   if (event->key() == Qt::Key_Escape) stopMouseCapture();
-  // switch (event->key()) {
-  //   case Qt::Key_Escape: stopMouseCapture(); break;
-  //   case Qt::Key_W: game->MoveCamera(fe::Direction::Forwards); break;
-  //   case Qt::Key_A: game->MoveCamera(fe::Direction::Left); break;
-  //   case Qt::Key_S: game->MoveCamera(fe::Direction::Backwards); break;
-  //   case Qt::Key_D: game->MoveCamera(fe::Direction::Right); break;
-  //   case Qt::Key_Space: game->MoveCamera(fe::Direction::Up); break;
-  //   case Qt::Key_Shift: game->MoveCamera(fe::Direction::Down); break;
-  // }
 
   keysDown.insert(event->key());
 

@@ -47,6 +47,8 @@ class EngineWidget : public QOpenGLWidget {
 
   bool wireframe = false;
   unsigned long long renderedFrames = 0;
+ signals:
+  void fpsUpdate(float fps);
  public slots:
  private:
   QTimer* timer = nullptr;

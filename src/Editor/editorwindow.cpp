@@ -38,7 +38,8 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     fe::XRGame *game = ui->engineWidget->getGame();
     QString file = QFileDialog::getOpenFileName(this, "Open Model", "", "Models (*.obj);;All Files (*)");
     if (!file.isEmpty()) {
-      game->LoadObj(file.toStdString());
+      auto obj = game->LoadStaticOBJ(file.toStdString());
+      game->scene->AddObject(obj);
     }
   });
 
@@ -64,24 +65,16 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     }
   });
 
+  connect(ui->engineWidget, &EngineWidget::fpsUpdate, [&](float fps) {
+    ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(fps).arg(ui->engineWidget->renderedFrames));
+  });
+
   // timer = new QTimer(this);
-  // QObject::connect(timer, &QTimer::timeout, [&]() {
+  // connect(timer, &QTimer::timeout, [&]() {
+  //   QMetaObject::invokeMethod(ui->engineWidget, "update");
   //   auto game = ui->engineWidget->getGame();
   //   ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
-  //   QMetaObject::invokeMethod(qApp, [&]() {
-  //     update();
-  //     ui->engineWidget->repaint();
-  //   });
   // });
-
-  timer = new QTimer(this);
-  connect(timer, &QTimer::timeout, [&]() {
-    QMetaObject::invokeMethod(ui->engineWidget, "update");
-    auto game = ui->engineWidget->getGame();
-    ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
-  });
-  timer->start(0);
-
   // timer->start(0);
 }
 
@@ -101,9 +94,6 @@ void EditorWindow::reloadModelList() {
   auto model = new QStringListModel;
   for (auto &object : objects) {
     auto name = object->GetName();
-    // ui->modelTreeView->setModel(model);
-    // model->appendRow()
-    // model->appendRow(QLabel(name));
     int row = model->rowCount();
 
     model->insertRow(row);
@@ -111,18 +101,14 @@ void EditorWindow::reloadModelList() {
     model->setData(index, name.c_str());
 
   }
-  // model->edi
-  // connect()
 
   ui->objectListView->setModel(model);
   connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-    // selected.first().model
     QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty()) {
       QString text = indexes.first().data().toString();
       qDebug() << "Selected item:" << text;
       auto i =indexes.first();
-      // ui->objectListView->selectionModel()->model()->ite
       auto game = ui->engineWidget->getGame();
       int row = i.row();
       auto objects = game->scene->GetObjects();
