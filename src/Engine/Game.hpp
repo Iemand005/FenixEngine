@@ -253,6 +253,9 @@ class Game {
   void Redraw(GLuint fbo = 0) {
     scene->Render(*this->shader, *this->camera.get());
 
+    glFlush();
+    glFinish();
+
     fpsCounter.update();
 
     DrawUI();

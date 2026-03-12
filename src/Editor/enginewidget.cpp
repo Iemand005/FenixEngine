@@ -6,10 +6,12 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setMouseTracking(true);
 
   timer = new QTimer(this);
-  QObject::connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
+  // QObject::connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
 
   QObject::connect(timer, &QTimer::timeout, [&]() {
-    update();
+    repaint();
+    this->window()->update();
+    this->window()->repaint();
     updateGeometry();
   });
 

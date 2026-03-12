@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
 
-  QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+  QSurfaceFormat format;
   format.setAlphaBufferSize(8);
   format.setDepthBufferSize(24);
   format.setStencilBufferSize(8);
@@ -19,6 +19,9 @@ int main(int argc, char* argv[]) {
 
   QCoreApplication::setApplicationName("Editor");
   QCoreApplication::setOrganizationName("Lasse Lauwerys");
+  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+
 
   QTranslator translator;
   const QStringList uiLanguages = QLocale::system().uiLanguages();
