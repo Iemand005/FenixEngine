@@ -263,6 +263,12 @@ void main()
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -273,6 +279,12 @@ void main()
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -282,6 +294,12 @@ void main()
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
+                     </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
@@ -304,6 +322,12 @@ void main()
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -314,6 +338,12 @@ void main()
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -323,6 +353,12 @@ void main()
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
+                     </property>
+                     <property name="minimum">
+                      <number>-100</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
                      </property>
                     </widget>
                    </item>
