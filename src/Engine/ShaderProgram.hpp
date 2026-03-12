@@ -46,12 +46,12 @@ class ShaderProgram {
   ShaderProgram(std::string vertexShaderFile, std::string fragmentShaderFile)
       : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
-  void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
+  bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
     vertexShader.LoadText(vertexShaderText);
     fragmentShader.LoadText(fragmentShaderText);
     AttachShaders();
     LinkShaders();
-    ErrorCheck();
+    return ErrorCheck();
   }
 
   void AttachShaders() {
@@ -70,7 +70,7 @@ class ShaderProgram {
     glUniform1i(texLoc, 0);
   }
 
-  void ErrorCheck() {
+  bool ErrorCheck() {
     GLint ok = 0, len = 0;
     glGetProgramiv(id, GL_LINK_STATUS, &ok);
     glGetProgramiv(id, GL_INFO_LOG_LENGTH, &len);
@@ -78,7 +78,9 @@ class ShaderProgram {
         std::string log(len, '\0');
         glGetProgramInfoLog(id, len, nullptr, log.data());
         fprintf(stderr, "Program link log:\n%s\n", log.c_str());
+        return false;
     }
+    return true;
   }
 
   void Use() { glUseProgram(id); }

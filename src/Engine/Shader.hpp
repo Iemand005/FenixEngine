@@ -29,9 +29,8 @@ class Shader {
 
   }
 
-  void ErrorCheck() {
+  bool ErrorCheck() {
     GLint success, length;
-    // GLchar infoLog[512];
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
 
@@ -39,14 +38,16 @@ class Shader {
       std::string log(length, '\0');
       glGetShaderInfoLog(id, length, NULL, log.data());
       std::cout << "SHADER COMPILE ERROR:\n" << log << std::endl;
+      return false;
     }
+    return true;
   }
 
-  void LoadText(std::string shaderText) {
+  bool LoadText(std::string shaderText) {
     const GLchar* shaderString = shaderText.c_str();
     glShaderSource(id, 1, &shaderString, NULL);
     glCompileShader(id);
-    ErrorCheck();
+    return yuErrorCheck();
   }
 
   bool loadShaderFile(std::string fileName) {
