@@ -38,7 +38,7 @@ class Shader {
       std::string log(length, '\0');
       glGetShaderInfoLog(id, length, NULL, log.data());
         std::cout << "SHADER COMPILE ERROR:\n" << log << std::endl;
-      throw std::exception(log.c_str(), length);
+      throw std::runtime_error(log);
       return false;
     }
     return true;

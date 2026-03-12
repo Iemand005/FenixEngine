@@ -78,7 +78,7 @@ class ShaderProgram {
         std::string log(length, '\0');
         glGetProgramInfoLog(id, length, nullptr, log.data());
         fprintf(stderr, "Program link log:\n%s\n", log.c_str());
-        throw std::exception(log.c_str(), length);
+        throw std::runtime_error(log);
         return false;
     }
     return true;
