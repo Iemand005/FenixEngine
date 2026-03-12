@@ -60,4 +60,11 @@ void EngineWidget::keyPressEvent(QKeyEvent *event) {
     stopMouseCapture();
     capturing = false;
   }
+
+  switch (event->key()) {
+    case Qt::Key_W: game->MovePlayer(fe::Direction::Forwards); break;
+    case Qt::Key_A: game->MovePlayer(fe::Direction::Left); break;
+    case Qt::Key_S: game->MovePlayer(fe::Direction::Backwards); break;
+    case Qt::Key_D: game->MovePlayer(fe::Direction::Right); break;
+  }
 }

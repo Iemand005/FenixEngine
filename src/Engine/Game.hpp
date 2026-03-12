@@ -150,9 +150,13 @@ class Game {
     this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
   }
 
-  void LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
+  bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
     this->shader = std::make_unique<fe::ShaderProgram>();
-    this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
+    return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
+  }
+
+  void MovePlayer(Direction direction){
+    this->player->Move(direction, camera.get());
   }
   
   void MouseMove(int x, int y) {

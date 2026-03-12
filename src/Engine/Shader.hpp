@@ -64,8 +64,6 @@ class Shader {
     file.close();
 
     return LoadText(shaderText);
-
-    // return true;
   }
 
   void deleteShader() { glDeleteShader(this->id); }
