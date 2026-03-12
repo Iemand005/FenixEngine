@@ -21,7 +21,12 @@ void EditorWindow::compileShaders() {
 
   // ui->engineWidget->getGame()->shader->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
 
-  bool success = ui->engineWidget->getGame()->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
+  try {
+    bool success = ui->engineWidget->getGame()->LoadShaderTexts(ui->vertexShaderTextEdit->toPlainText().toStdString(), ui->fragmentShaderTextEdit->toPlainText().toStdString());
+  } catch (std::exception ex) {
+    std::cout << ex.what();
+  }
+
   // ui->engineWidget->getGame()->Redraw();
   update();
   ui->engineWidget->update();

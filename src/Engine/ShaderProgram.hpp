@@ -71,13 +71,14 @@ class ShaderProgram {
   }
 
   bool ErrorCheck() {
-    GLint ok = 0, len = 0;
+    GLint ok = 0, length = 0;
     glGetProgramiv(id, GL_LINK_STATUS, &ok);
-    glGetProgramiv(id, GL_INFO_LOG_LENGTH, &len);
-    if (!ok || len > 1) {
-        std::string log(len, '\0');
-        glGetProgramInfoLog(id, len, nullptr, log.data());
+    glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
+    if (!ok || length > 1) {
+        std::string log(length, '\0');
+        glGetProgramInfoLog(id, length, nullptr, log.data());
         fprintf(stderr, "Program link log:\n%s\n", log.c_str());
+        throw std::exception(log.c_str(), length);
         return false;
     }
     return true;
