@@ -61,11 +61,11 @@ class Game {
 
   bool capturingMouse = true;
 
-  std::shared_ptr<fe::Character> player;
+  std::shared_ptr<Character> player;
 
-  std::vector<std::shared_ptr<fe::Character>> npcs = std::vector<std::shared_ptr<fe::Character>>();
+  std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
 
-  std::vector<std::shared_ptr<fe::Object>> maps = std::vector<std::shared_ptr<fe::Object>>();
+  std::vector<std::shared_ptr<Object>> maps = std::vector<std::shared_ptr<Object>>();
 
   std::vector<std::string> messages;
 
@@ -79,7 +79,7 @@ class Game {
   std::unique_ptr<Networker> client = nullptr;
 #endif
 
-  std::unordered_map<unsigned char, std::shared_ptr<fe::Character>> players = std::unordered_map<unsigned char, std::shared_ptr<fe::Character>>();
+  std::unordered_map<unsigned char, std::shared_ptr<Character>> players = std::unordered_map<unsigned char, std::shared_ptr<Character>>();
 
   bool isConnectedToServer = false;
 
@@ -87,13 +87,7 @@ class Game {
 
   std::unique_ptr<fe::Level> level = nullptr;
 
-  Game() {
-    // this->GLInit();
-    // if (!gladLoadGL()) {
-    //   std::cerr << "Failed to load OpenGL functions (GLAD)";
-    // }
-    // Init();
-  }
+  Game() {}
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
   Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {
@@ -290,13 +284,7 @@ class Game {
   void DisableWireframe();
   void ToggleWireframe(bool enabled = false);
 
-  void StartMouseCapture() {
-    window->StartMouseCapture();
-  }
-
-  void StopMouseCapture() {
-    window->StopMouseCapture();
-  }
+  IWindow *GetWindow() { return window.get(); }
 
   double GetFPS() {
     return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
@@ -305,7 +293,6 @@ class Game {
   void BindFrameBuffer(int bufferIndex = 0);
 
   virtual void InitUI() {}
-
   virtual void DrawUI() {}
 
   void UpdateAspect(int width, int height) {

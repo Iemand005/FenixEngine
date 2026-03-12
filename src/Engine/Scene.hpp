@@ -45,13 +45,13 @@ class Scene {
     for (auto& model : objects)
       model->Render(shader);
 
-    // camera.Render(shader);
-
     this->EndRender();
   }
 
   void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
+  void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
   void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
+  void DisableFaceCulling() { glDisable(GL_CULL_FACE); }
 
 
   std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
