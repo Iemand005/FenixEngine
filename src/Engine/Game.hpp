@@ -250,8 +250,15 @@ class Game {
     this->UpdateAspect(width, height);
   }
 
-  void Redraw(GLuint fbo = 0) {
+  void Redraw(GLuint fbo) {
+    BindFrameBuffer(fbo);
+    Redraw();
+  }
+
+  void Redraw() {
     scene->Render(*this->shader, *this->camera.get());
+
+    CheckErrors();
 
     glFlush();
     glFinish();
@@ -261,6 +268,13 @@ class Game {
     DrawUI();
 
     if (window) window->SwapBuffers();
+  }
+
+  void CheckErrors() {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+      std::cerr << "OpenGL error: " << err << std::endl;
+    }
   }
 
   void Update() { 

@@ -402,7 +402,8 @@ void XRGame::LaunchVR() {
 void XRGame::RedrawWindow(GLuint fbo) {
   // if (window && window.get())
   BindFrameBuffer(fbo);
-  Game::Redraw();
+  CheckErrors();
+  Game::Redraw(fbo);
 }
 
 void XRGame::EnableXR() {
@@ -413,11 +414,8 @@ void XRGame::EnableXR() {
 void XRGame::Redraw(GLuint fbo) {
   {
     if (impl->drawVR) RedrawVR();
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-      std::cerr << "OpenGL error: " << err << std::endl;
-    }
     if (drawWindow) RedrawWindow(fbo);
+    CheckErrors();
   }
 }
 

@@ -38,17 +38,25 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     ui->engineWidget->wireframe = checked;
   });
 
+  // timer = new QTimer(this);
+  // QObject::connect(timer, &QTimer::timeout, [&]() {
+  //   auto game = ui->engineWidget->getGame();
+  //   ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
+  //   QMetaObject::invokeMethod(qApp, [&]() {
+  //     update();
+  //     ui->engineWidget->repaint();
+  //   });
+  // });
+
   timer = new QTimer(this);
-  QObject::connect(timer, &QTimer::timeout, [&]() {
+  connect(timer, &QTimer::timeout, [&]() {
+    QMetaObject::invokeMethod(ui->engineWidget, "update");
     auto game = ui->engineWidget->getGame();
     ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
-    QMetaObject::invokeMethod(qApp, [&]() {
-      update();
-      ui->engineWidget->repaint();
-    });
   });
+  timer->start(1000);
 
-  timer->start(0);
+  // timer->start(0);
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

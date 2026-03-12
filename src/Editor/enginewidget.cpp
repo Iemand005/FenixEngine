@@ -6,8 +6,8 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   setMouseTracking(true);
 
   timer = new QTimer(this);
+  timer->setTimerType(Qt::PreciseTimer);
   connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
-  timer->start(16); // 60 FPS
 
   QSurfaceFormat format;
   format.setSwapInterval(0);
@@ -87,6 +87,7 @@ void EngineWidget::keyPressEvent(QKeyEvent *event) {
 }
 
 void EngineWidget::toggleTimer(bool enabled) {
-   if (enabled) timer->start(16);
-   else timer->stop();
+  if (!timer) return;
+  if (enabled) timer->start(16);
+  else timer->stop();
 }
