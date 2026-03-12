@@ -160,8 +160,8 @@ class Game {
     this->player->Move(direction, camera.get());
   }
 
-  void MoveCamera(Direction direction){
-    this->camera->Move(direction);
+  void MoveCamera(Direction direction, float dt = 1.0f){
+    this->camera->Move(direction, dt);
   }
   
   void MouseMove(int x, int y) {

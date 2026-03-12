@@ -12,6 +12,8 @@
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
 #include <QMouseEvent>
+#include <QSet>
+#include <QElapsedTimer>
 #include <QTimer>
 
 // template<typename GameT = fe::Game>
@@ -30,7 +32,7 @@ class EngineWidget : public QOpenGLWidget {
 
   void startMouseCapture();
   void stopMouseCapture();
-  void processInput();
+  void processInput(double dt);
 
   void initializeGL() override;
   void resizeGL(int w, int h) override;
@@ -48,6 +50,8 @@ class EngineWidget : public QOpenGLWidget {
  public slots:
  private:
   QTimer* timer = nullptr;
+  QElapsedTimer frameTimer;
+  qint64 lastFrameNs = 0;
   QSet<int> keysDown;
 
 };

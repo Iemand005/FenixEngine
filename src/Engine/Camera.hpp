@@ -108,7 +108,7 @@ class Camera {
 
   void Move(Direction direction, float dt = 1.0f) {
 
-    const float cameraSpeed = 0.100f;
+    const float cameraSpeed = 10.100f;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
     glm::vec3 right = glm::normalize(glm::cross(horizontalFront, up));
     glm::vec3 velocity{};
@@ -121,7 +121,7 @@ class Camera {
       case Down: velocity -= up; break;
     }
 
-    this->position += velocity * cameraSpeed;
+    this->position += velocity * (cameraSpeed * dt);
     updateView(position, front, up);
   }
   

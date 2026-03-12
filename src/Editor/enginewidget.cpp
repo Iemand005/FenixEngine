@@ -8,6 +8,8 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   timer = new QTimer(this);
   timer->setTimerType(Qt::PreciseTimer);
   connect(timer, &QTimer::timeout, this, QOverload<>::of(&EngineWidget::update));
+  frameTimer.start();
+  lastFrameNs = frameTimer.nsecsElapsed();
 
   QSurfaceFormat format;
   format.setSwapInterval(0);
@@ -34,7 +36,12 @@ void EngineWidget::paintGL() {
   game->Redraw(fbo);
   renderedFrames++;
 
-  processInput();
+  const qint64 now = frameTimer.nsecsElapsed();
+  double dt = (now - lastFrameNs) / 1e9;
+  lastFrameNs = now;
+  if (dt < 0.0) dt = 0.0;
+  if (dt > 0.1) dt = 0.1;
+  processInput(dt);
 
   // update();
 }
@@ -99,13 +106,13 @@ void EngineWidget::keyReleaseEvent(QKeyEvent *event) {
   QOpenGLWidget::keyReleaseEvent(event);
 }
 
-void EngineWidget::processInput() {
-  if (keysDown.contains(Qt::Key_W)) game->MoveCamera(fe::Direction::Forwards);
-  if (keysDown.contains(Qt::Key_S)) game->MoveCamera(fe::Direction::Backwards);
-  if (keysDown.contains(Qt::Key_A)) game->MoveCamera(fe::Direction::Left);
-  if (keysDown.contains(Qt::Key_D)) game->MoveCamera(fe::Direction::Right);
-  if (keysDown.contains(Qt::Key_Space)) game->MoveCamera(fe::Direction::Up);
-  if (keysDown.contains(Qt::Key_Shift)) game->MoveCamera(fe::Direction::Down);
+void EngineWidget::processInput(double dt) {
+  if (keysDown.contains(Qt::Key_W)) game->MoveCamera(fe::Direction::Forwards, (float)dt);
+  if (keysDown.contains(Qt::Key_S)) game->MoveCamera(fe::Direction::Backwards, (float)dt);
+  if (keysDown.contains(Qt::Key_A)) game->MoveCamera(fe::Direction::Left, (float)dt);
+  if (keysDown.contains(Qt::Key_D)) game->MoveCamera(fe::Direction::Right, (float)dt);
+  if (keysDown.contains(Qt::Key_Space)) game->MoveCamera(fe::Direction::Up, (float)dt);
+  if (keysDown.contains(Qt::Key_Shift)) game->MoveCamera(fe::Direction::Down, (float)dt);
 }
 
 void EngineWidget::toggleTimer(bool enabled) {
