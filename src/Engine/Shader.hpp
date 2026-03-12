@@ -25,7 +25,7 @@ class Shader {
   }
 
   Shader(std::string fileName, GLenum shaderType) : Shader(shaderType) {
-    if (!loadShaderFile(fileName)) return;
+    if (!LoadShaderFile(fileName)) return;
 
   }
 
@@ -47,10 +47,10 @@ class Shader {
     const GLchar* shaderString = shaderText.c_str();
     glShaderSource(id, 1, &shaderString, NULL);
     glCompileShader(id);
-    return yuErrorCheck();
+    return ErrorCheck();
   }
 
-  bool loadShaderFile(std::string fileName) {
+  bool LoadShaderFile(std::string fileName) {
     std::ifstream file(fileName.c_str());
 
     if (!file.is_open()) {
@@ -63,9 +63,9 @@ class Shader {
 
     file.close();
 
-    LoadText(shaderText);
+    return LoadText(shaderText);
 
-    return true;
+    // return true;
   }
 
   void deleteShader() { glDeleteShader(this->id); }

@@ -47,8 +47,8 @@ class ShaderProgram {
       : ShaderProgram(Shader(vertexShaderFile, GL_VERTEX_SHADER), Shader(fragmentShaderFile, GL_FRAGMENT_SHADER)) {}
 
   bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
-    vertexShader.LoadText(vertexShaderText);
-    fragmentShader.LoadText(fragmentShaderText);
+    if (!vertexShader.LoadText(vertexShaderText)) return false; // TODO: Use error throw insteadto pass message;
+    if (!fragmentShader.LoadText(fragmentShaderText)) return false;
     AttachShaders();
     LinkShaders();
     return ErrorCheck();
