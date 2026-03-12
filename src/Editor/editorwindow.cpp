@@ -55,6 +55,15 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     reloadModelList();
   });
 
+  connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+    // selected.first().model
+    QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty()) {
+      QString text = indexes.first().data().toString();
+      qDebug() << "Selected item:" << text;
+    }
+  });
+
   // timer = new QTimer(this);
   // QObject::connect(timer, &QTimer::timeout, [&]() {
   //   auto game = ui->engineWidget->getGame();
@@ -89,15 +98,36 @@ bool EditorWindow::event(QEvent* event) {
 void EditorWindow::reloadModelList() {
   auto game = ui->engineWidget->getGame();
   auto objects = game->scene->GetObjects();
-  auto model = new QStandardItemModel;
+  auto model = new QStringListModel;
   for (auto &object : objects) {
     auto name = object->GetName();
     // ui->modelTreeView->setModel(model);
     // model->appendRow()
-    model->appendRow(QLabel(name));
+    // model->appendRow(QLabel(name));
+    int row = model->rowCount();
+
+    model->insertRow(row);
+    QModelIndex index = model->index(row);
+    model->setData(index, "Your New String");
 
   }
+  // model->edi
+  // connect()
+
   ui->objectListView->setModel(model);
+  connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+    // selected.first().model
+    QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty()) {
+      QString text = indexes.first().data().toString();
+      qDebug() << "Selected item:" << text;
+      auto i =indexes.first();
+      // ui->objectListView->selectionModel()->model()->ite
+      int row = i.row();
+      auto objects = game->scene->GetObjects();
+      auto objec = objects[row];
+    }
+  });
 }
 
 void EditorWindow::compileShaders() {
