@@ -37,6 +37,15 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     game->ToggleWireframe(checked);
     ui->engineWidget->wireframe = checked;
   });
+
+  timer = new QTimer(this);
+  QObject::connect(timer, &QTimer::timeout, [&]() {
+    auto game = ui->engineWidget->getGame();
+    ui->statusbar->showMessage(QString("fps: %1").arg(game->GetFPS()));
+    update();
+  });
+
+  timer->start(0);
 }
 
 EditorWindow::~EditorWindow() { delete ui; }

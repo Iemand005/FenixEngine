@@ -31,5 +31,6 @@ class EditorWindow : public QMainWindow {
  private:
   Ui::EditorWindow* ui;
   QOpenGLWidget e;
+  QTimer* timer = nullptr;
 };
 #endif  // EDITORWINDOW_H

@@ -10,6 +10,7 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
 
   QObject::connect(timer, &QTimer::timeout, [&]() {
     update();
+    updateGeometry();
   });
 
   QSurfaceFormat format;

@@ -283,6 +283,10 @@ class Game {
     window->StopMouseCapture();
   }
 
+  double GetFPS() {
+    return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
+  }
+
   void BindFrameBuffer(int bufferIndex = 0);
 
   virtual void InitUI() {}
