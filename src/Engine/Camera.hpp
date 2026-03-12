@@ -106,7 +106,7 @@ class Camera {
   glm::mat4 GetViewMatrix() const { return viewMatrix; }
   glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
 
-  void Move(Direction direction) {
+  void Move(Direction direction, float dt = 1.0f) {
 
     const float cameraSpeed = 0.100f;
     glm::vec3 horizontalFront = glm::normalize(glm::vec3(front.x, 0.0f, front.z));

@@ -30,14 +30,16 @@ class EngineWidget : public QOpenGLWidget {
 
   void startMouseCapture();
   void stopMouseCapture();
+  void processInput();
 
   void initializeGL() override;
   void resizeGL(int w, int h) override;
   void paintGL() override;
 
-  void mouseMoveEvent(QMouseEvent* e) override;
-  void mousePressEvent(QMouseEvent* e) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
   void keyPressEvent(QKeyEvent *event) override;
+  void keyReleaseEvent(QKeyEvent *event) override;
 
   void toggleTimer(bool enabled = true);
 
@@ -46,6 +48,7 @@ class EngineWidget : public QOpenGLWidget {
  public slots:
  private:
   QTimer* timer = nullptr;
+  QSet<int> keysDown;
 
 };
 
