@@ -19,8 +19,6 @@ void EngineWidget::initializeGL() {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
 
-  // this->game->vsync = false;
-
   auto map1 = game->LoadStaticOBJ("resources/models/collisiontest.obj");
   game->scene->AddObject(map1);
 }

@@ -31,11 +31,8 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   });
 
   connect(ui->wireframeBox, &QCheckBox::clicked, [&](bool checked) {
-    auto game = ui->engineWidget->getGame();
-    auto fbo = ui->engineWidget->defaultFramebufferObject();
-    game ->BindFrameBuffer(fbo);
-    game->ToggleWireframe(checked);
     ui->engineWidget->wireframe = checked;
+    ui->engineWidget->update();
   });
 
   // timer = new QTimer(this);
