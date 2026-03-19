@@ -81,6 +81,14 @@ class Scene {
 
   void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
 
+  void AddLight() {
+    ++lightCount;
+  }
+
+  void RemoveLight() {
+    --lightCount;
+  }
+
   void SetLight(int index = 0) {
     pointLights[index].position = glm::vec3(3.0f, 3.0f, 3.0f);
     pointLights[index].color = glm::vec3(1.0f);

@@ -17,9 +17,9 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "../../engine/XRGame.hpp"
+#include "../../engine/EditableGame.hpp"
 
-class Pool : public fe::XRGame {
+class Pool : public fe::EditableGame {
 public:
 
   std::vector<std::string> messages;
@@ -34,40 +34,8 @@ public:
 
   Pool() : Pool(800, 640) {}
 
-  Pool(int width, int height, bool vr = false) : fe::XRGame(width, height, vr) {
-
+  Pool(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
     LoadModels();
-
-    this->physicsEngine->DisableGravity();
-
-
-    this->client = std::make_unique<Networker>(2130);
-
-    this->client->receiveHandler = [this](PacketData data, PacketType type, const ClientData sender) {
-      switch (type) {
-        case PacketType::Position: {
-          auto packet = data.As<PositionPacket>();
-          if (!this->players.count(sender.id)) this->SpawnPlayer(sender.id);
-          auto player = this->players.at(sender.id);
-          player->state.position = packet.position;
-          player->state.rotation = packet.rotation;
-        } break;
-        case PacketType::ClientList: {
-          this->players.clear();
-          for (auto& [id, client] : this->client->clientClients) {
-            this->SpawnPlayer(id);
-            isConnectedToServer = true;
-          }
-        } break;
-      }
-    };
-
-    client->messageReceiveHandler = [this](std::string message, ClientData sender) {
-      std::cout << "The server broadcasted a messageay: " << message << " Which came from  with username " << sender.username << std::endl;
-      messages.push_back(sender.username + ": " + message);
-    };
-
-    InitUI();
   }
 
   void LoadModels() {
@@ -75,8 +43,6 @@ public:
     this->scene->AddObject(map1);
     this->maps.push_back(map1);
 
-
-    
     this->maps.push_back(LoadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
     loadMap(0);
@@ -85,7 +51,6 @@ public:
     this->scene->AddObject(player);
 
     this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
-
   }
 
   void ProcessInput() {
