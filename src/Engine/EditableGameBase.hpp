@@ -9,6 +9,7 @@ namespace fe
     // std::unique_ptr<XRGame> game;
 
     void DrawGizmo() {
+      if (!scene) return;
       scene->DrawCircle(10, 32);
     }
 
@@ -26,13 +27,13 @@ namespace fe
     }
 
     void Init() {
-      this->onDraw = [&]() {
+      this->onDraw = [this]() {
        this->DrawGizmo();
      };
     }
 
     ~EditableGameBase() {
-
+      onDraw = nullptr;
     };
   };
   

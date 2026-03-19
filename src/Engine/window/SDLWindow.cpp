@@ -123,8 +123,18 @@ void fe::SDLWindow::SwapBuffers() {
 
 
   void fe::SDLWindow::Destroy() {
-    SDL_GL_DestroyContext(impl->gl_context);
-    SDL_DestroyWindow(impl->window);
+    if (!impl) return;
+
+    if (impl->gl_context) {
+      SDL_GL_DestroyContext(impl->gl_context);
+      impl->gl_context = nullptr;
+    }
+
+    if (impl->window) {
+      SDL_DestroyWindow(impl->window);
+      impl->window = nullptr;
+    }
+
     SDL_Quit();
   }
 
