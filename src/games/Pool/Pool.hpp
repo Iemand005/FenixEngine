@@ -110,22 +110,21 @@ public:
       }
     }
 
-    
-      if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
 
-      if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
-      if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) window->StopMouseCapture();
-      if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
+    if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) window->StopMouseCapture();
+    if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
   }
 
 
   void Run() {
-    fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
+    auto window = this->GetWindow<fe::SDLWindow>();
     window->DisableVSync();
   
     glm::vec3 cameraOffset = glm::vec3(0);
@@ -136,7 +135,7 @@ public:
       if (player->touchedGround) {
         canJump = true;
       }
-      // while (window->PollSDLEvents(&event))
+
       ProcessInput();
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;

@@ -135,11 +135,6 @@ class Game {
     };
     return std::move(window);
   }
-
-  template<typename WindowT = SDLWindow>
-  WindowT *GetWindow() {
-    return (WindowT *)this->window.get();
-  }
   #endif
   
   void InitGL();
@@ -317,8 +312,12 @@ class Game {
   void DisableWireframe();
   void ToggleWireframe(bool enabled = false);
 
-  IWindow *GetWindow() { return window.get(); }
+  // IWindow *GetWindow() { return window.get(); }
   // WindowT *GetWindow() { return window.get(); }
+  template<typename WindowT = IWindow>
+  WindowT *GetWindow() {
+    return (WindowT *)this->window.get();
+  }
 
   double GetFPS() {
     return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;

@@ -95,6 +95,7 @@ class Scene {
       if (object->state.position.y < -10.0f) {
         auto pos = object->state.position;
         pos.y = 10;
+        if (!object->physicsObject) continue;
         object->physicsObject->SetPosition(pos);
         object->physicsObject->SetLinearVelocity(glm::vec3(0.0f));
       }

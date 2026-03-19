@@ -126,7 +126,7 @@ public:
 
   void Run() {
     // fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
-    fe::SDLWindow *window = this->GetWindow();
+    auto window = this->GetWindow<fe::SDLWindow>();
     window->DisableVSync();
   
     glm::vec3 cameraOffset = glm::vec3(0);
