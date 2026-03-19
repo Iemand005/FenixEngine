@@ -80,6 +80,14 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->engineWidget, &EngineWidget::fpsUpdate, [&](float fps) {
     ui->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(fps).arg(ui->engineWidget->renderedFrames));
   });
+
+  connect(ui->loadLevelButton, &QPushButton::clicked, [&]() {
+    game()->LoadLevel();
+  });
+
+  connect(ui->saveButton, &QPushButton::clicked, [&]() {
+    game()->SaveLevel();
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
