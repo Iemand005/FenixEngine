@@ -81,12 +81,8 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     ui->engineWidget->getGame()->scene->AddLight();
   });
 
-  connect(ui->lightListWidget->selectionModel(), &QListWidget::currentRowChanged, [&](int row) {
-    QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
-    if (!indexes.isEmpty()) {
-      QString text = indexes.first().data().toString();
-      qDebug() << "Selected item:" << text;
-    }
+  connect(ui->lightListWidget, &QListWidget::currentRowChanged, [&](int row) {
+    qDebug() << "Selected item:" << row;
   });
 
   connect(ui->engineWidget, &EngineWidget::fpsUpdate, [&](float fps) {
