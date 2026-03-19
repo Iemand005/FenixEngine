@@ -84,6 +84,10 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     }
   });
 
+  connect(ui->addLightButton, &QPushButton::clicked, [&]() {
+    ui->engineWidget->getGame()->scene->AddLight();
+  });
+
   connect(ui->lightListWidget->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
     QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty()) {
@@ -160,6 +164,13 @@ void EditorWindow::reloadModelList() {
   for (auto &a: {ui->xPosDial, ui->yPosDial, ui->zPosDial, ui->xRotDial, ui->yRotDial, ui->zRotDial})
     connect(a, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
 
+
+  // Load lights
+
+  // auto lightCount = game->scene->GetLightCount();
+  auto lights = game->scene->GetLightArray();
+  for (auto &light : lights)
+    new QListWidgetItem(tr("Light"), ui->lightListWidget);
 }
 
 void EditorWindow::updateSelectedObjectState() {
@@ -190,3 +201,7 @@ void EditorWindow::compileShaders() {
   update();
   ui->engineWidget->update();
 }
+
+// fe::XRGame EditorWindow::getGame() {
+//   ui->engineWidget->getGame();
+// }

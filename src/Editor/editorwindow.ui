@@ -271,6 +271,13 @@ void main()
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
+             <widget class="QPushButton" name="addLightButton">
+              <property name="text">
+               <string>Add Light</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QListWidget" name="lightListWidget"/>
             </item>
             <item>

@@ -9,6 +9,8 @@
 #include <QMainWindow>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
 
+// namespace fe{ class XRGame; }
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class EditorWindow;
@@ -23,6 +25,9 @@ class EditorWindow : public QMainWindow {
   ~EditorWindow();
 
   void reloadModelList();
+
+
+  // fe::XRGame getGame();
 
  protected:
   bool event(QEvent* event) override;
