@@ -69,17 +69,6 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     reloadModelList();
   });
 
-  // connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-  //   // QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
-  //   // if (!indexes.isEmpty()) {
-  //   //   QString text = indexes.first().data().toString();
-  //   //   qDebug() << "Selected item:" << text;
-  //   // }
-  //   auto row = ui->objectListView->selectionModel()->currentIndex().row();
-  //   qDebug() << "Selected itemsx:" << row;
-  //   game()->SelectObjectByIndex(row);
-  // });
-
   connect(ui->addLightButton, &QPushButton::clicked, [&]() {
     ui->engineWidget->getGame()->scene->AddLight();
   });
@@ -129,7 +118,7 @@ void EditorWindow::reloadModelList() {
       auto objects = game->scene->GetObjects();
       auto objec = objects[row];
       selectedObject = objec.get();
-      game()->SelectObjectByIndex(row);
+
       auto pos = selectedObject->state.position;
       auto rot = selectedObject->state.position;
 
@@ -140,16 +129,18 @@ void EditorWindow::reloadModelList() {
       ui->xRotDial->setValue(rot.x);
       ui->yRotDial->setValue(rot.y);
       ui->zRotDial->setValue(rot.z);
+
+      this->game()->SelectObjectByIndex(row);
     }
   });
 
 
-  connect(ui->xPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.x = ui->xPosDial->value(); });
-  connect(ui->yPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.y = ui->yPosDial->value(); });
-  connect(ui->zPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.z = ui->zPosDial->value(); });
-  connect(ui->xRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.x = ui->xRotDial->value(); });
-  connect(ui->yRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.y = ui->yRotDial->value(); });
-  connect(ui->zRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.z = ui->zRotDial->value(); });///..//file:///C:/Users/Lasse/AppData/Local/Packages/Microsoft.ScreenSketch_8wekyb3d8bbwe/TempState/Recordings/20260312-1750-48.4422010.mp4
+  connect(ui->xPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.x = ui->xPosDial->value() / 10.0f; });
+  connect(ui->yPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.y = ui->yPosDial->value() / 10.0f; });
+  connect(ui->zPosDial, &QDial::valueChanged, [&]() { selectedObject->state.position.z = ui->zPosDial->value() / 10.0f; });
+  connect(ui->xRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.x = ui->xRotDial->value() / 10.0f; });
+  connect(ui->yRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.y = ui->yRotDial->value() / 10.0f; });
+  connect(ui->zRotDial, &QDial::valueChanged, [&]() { selectedObject->state.rotation.z = ui->zRotDial->value() / 10.0f; });
 
   connect(ui->xPosDial, SIGNAL(valueChanged()), this, SLOT(updateSelectedObjectState()));
 
