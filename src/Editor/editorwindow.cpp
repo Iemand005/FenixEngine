@@ -70,11 +70,13 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   });
 
   connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-    QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
-    if (!indexes.isEmpty()) {
-      QString text = indexes.first().data().toString();
-      qDebug() << "Selected item:" << text;
-    }
+    // QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
+    // if (!indexes.isEmpty()) {
+    //   QString text = indexes.first().data().toString();
+    //   qDebug() << "Selected item:" << text;
+    // }
+    auto row = ui->objectListView->selectionModel()->currentIndex().row();
+    qDebug() << "Selected itemsx:" << row;
   });
 
   connect(ui->addLightButton, &QPushButton::clicked, [&]() {
