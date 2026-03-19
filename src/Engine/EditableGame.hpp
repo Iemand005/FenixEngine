@@ -75,11 +75,11 @@ namespace fe
         for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
       ImGui::Text("Vertices: %zu", totalVertices);
 
-      if (ImGui::Button("Enable VR", ImVec2(70, 20))) {
+      if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
         this->EnableXR ();
       }
 
-      if (ImGui::Button("Disable VR", ImVec2(70, 20))) {
+      if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
         this->DestroyXR();
       }
 
@@ -140,7 +140,9 @@ namespace fe
         ++i;
       }
 
-      // i = 0;
+      if (ImGui::Button("Add light"))
+        this->scene->AddLight();
+
       auto lights = scene->GetLights();
       for (int i = 0; i < scene->GetLightCount(); ++i) {
         ImGui::Text("Light %zu", i);
@@ -148,7 +150,6 @@ namespace fe
         ImGui::DragFloat3(("Colour##light" + std::to_string(i)).c_str(), &lights[i].color.x, step);
         ImGui::DragFloat(("Radius##light" + std::to_string(i)).c_str(), &lights[i].radius, step);
         ImGui::DragFloat(("Intensity##light" + std::to_string(i)).c_str(), &lights[i].intensity, step);
-        ++i;
       }
     }
     ImGui::End();
