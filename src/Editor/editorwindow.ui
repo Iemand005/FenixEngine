@@ -267,18 +267,30 @@ void main()
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="title">
-            <string>Light</string>
+            <string>Lights</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Direction</string>
-              </property>
-             </widget>
+             <widget class="QListWidget" name="lightListWidget"/>
             </item>
             <item>
-             <widget class="QDial" name="lightDirDial"/>
+             <widget class="QGroupBox" name="groupBox_6">
+              <property name="title">
+               <string>Properties</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Direction</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDial" name="lightDirDial"/>
+               </item>
+              </layout>
+             </widget>
             </item>
            </layout>
           </widget>

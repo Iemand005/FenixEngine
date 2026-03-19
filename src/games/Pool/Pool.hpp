@@ -74,6 +74,8 @@ public:
           break;
       }
     }
+    // ucll-event
+    // 03-KNdUJNrR
 
     if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
     if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());

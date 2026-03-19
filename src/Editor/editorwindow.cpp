@@ -30,7 +30,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     float rad = glm::radians(static_cast<float>(value));
     auto lightCount = game->scene->GetLightCount();
     auto pointLights = game->scene->GetLights();
-    // if (lightCount < 1) lightCount = 1;
+
     float r = 5.0f;
     pointLights[0].position = glm::vec3(std::cos(rad) * r, 2.0f, std::sin(rad) * r);
     ui->engineWidget->update();
@@ -77,6 +77,14 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   });
 
   connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+    QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty()) {
+      QString text = indexes.first().data().toString();
+      qDebug() << "Selected item:" << text;
+    }
+  });
+
+  connect(ui->lightListWidget->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
     QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty()) {
       QString text = indexes.first().data().toString();

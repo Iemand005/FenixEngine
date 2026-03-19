@@ -114,9 +114,6 @@ class Game {
     Init();
   }
 
-  virtual void InitUI() {}
-  virtual void DrawUI() {}
-
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
     Init();
@@ -309,6 +306,9 @@ class Game {
   void UpdatePhysics(double deltaTime) {
     if (physicsEngine) physicsEngine->Update(deltaTime);
   }
+
+  virtual void InitUI() {}
+  virtual void DrawUI() {}
 
   void EnableWireframe();
   void DisableWireframe();
