@@ -131,7 +131,7 @@ namespace fe
       ImGui::Checkbox("Snap to grid", &snapToGrid);
       float step = snapToGrid ? 0.1f : 0.0001f;
 
-      size_t i = 0;
+      size_t i = 0;//gda5 breakdown gta5 frame breakdown
       for (auto &object : scene->GetObjects()) {
         ImGui::Text("Object %zu", i);
         ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
