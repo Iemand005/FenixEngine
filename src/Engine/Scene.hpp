@@ -302,11 +302,24 @@ void main() {
   void Resize(int width, int height) { glViewport(0, 0, width, height); }
 
   void DrawCircle(float radius, int segments) {
+    DrawCircle(radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+  }
+
+  void DrawCircle(
+      float radius,
+      int segments,
+      const glm::vec3& rotationDegrees,
+      const glm::vec3& color) {
     if (radius <= 0.0f) return;
     segments = std::max(segments, 3);
     if (!hasCameraMatrices) return;
 
     EnsureGizmoRenderer();
+
+    glm::mat4 rotation(1.0f);
+    rotation = glm::rotate(rotation, glm::radians(rotationDegrees.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    rotation = glm::rotate(rotation, glm::radians(rotationDegrees.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    rotation = glm::rotate(rotation, glm::radians(rotationDegrees.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
     std::vector<glm::vec3> circleVertices;
     circleVertices.reserve(static_cast<size_t>(segments));
@@ -314,9 +327,10 @@ void main() {
     constexpr float kTwoPi = 6.28318530717958647692f;
     for (int i = 0; i < segments; ++i) {
       float t = kTwoPi * (static_cast<float>(i) / static_cast<float>(segments));
-      circleVertices.emplace_back(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
+      glm::vec3 localPoint(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
+      circleVertices.emplace_back(glm::vec3(rotation * glm::vec4(localPoint, 1.0f)));
     }
-    DrawGizmoLines(circleVertices, GL_LINE_LOOP, glm::vec3(0.95f, 0.80f, 0.15f));
+    DrawGizmoLines(circleVertices, GL_LINE_LOOP, color);
   }
 
   void DrawArrow(

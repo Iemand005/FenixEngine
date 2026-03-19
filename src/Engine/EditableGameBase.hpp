@@ -5,12 +5,12 @@ namespace fe
 {
   class EditableGameBase : public XRGame
   {
-    void DrawGizmo() {
+    void DrawGizmo(const glm::vec3& position) {
       if (!scene) return;
-      scene->DrawCircle(10, 32);
-      scene->DrawArrow({0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
-      scene->DrawArrow({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
-      scene->DrawArrow({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
+      scene->DrawCircle(10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+      scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
+      scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
+      scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
     }
 
   public:
@@ -24,7 +24,7 @@ namespace fe
     }
 
     void OnDraw() override {
-      DrawGizmo();
+      DrawGizmo({0, 1, 0});
     }
   };
   

@@ -12,15 +12,13 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, [&]() {
     update();
-    // window()
-    // ->statusbar->showMessage(QString("FPS: %1 Frames rendered: %2").arg(game->GetFPS()).arg(ui->engineWidget->renderedFrames));
     emit fpsUpdate(game->GetFPS());
   });
   timer->start(0);
 }
 
 void EngineWidget::initializeGL() {
-  this->game = std::make_unique<fe::EditableGameBase>((GLADloadproc)[](const char* name) {
+  this->game = std::make_unique<fe::EditableGameBase>([](const char* name) {
     return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
   });
 
