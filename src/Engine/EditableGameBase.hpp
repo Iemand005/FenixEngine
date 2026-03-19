@@ -29,6 +29,10 @@ namespace fe
       int lightCount = scene->GetLightCount();
       for (int i = 0; i < lightCount; ++i)
         DrawGizmo(lights[i].position);
+
+      auto objects = scene->GetObjects();
+      for (auto &object : objects)
+        DrawGizmo(object->state.position);
     }
   };
   
