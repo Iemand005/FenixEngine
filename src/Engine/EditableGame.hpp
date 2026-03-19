@@ -37,6 +37,8 @@ namespace fe
     // virtual void DrawUI();
     
   private:
+    // fe::Object *selectedObject;
+
     ImGuiIO io;
 
     void InitImGUI() {
@@ -57,6 +59,7 @@ namespace fe
     // void DrawUI() override {
 
     // }
+
 
     public:
     void DrawDebugUI() {
