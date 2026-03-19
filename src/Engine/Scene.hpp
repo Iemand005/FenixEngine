@@ -87,6 +87,14 @@ class Scene {
     pointLights[index].radius = 10.0f;
   }
 
+  int GetLightCount() {
+    return lightCount;
+  }
+
+  PointLight *GetLights() {
+    return pointLights.data();
+  }
+
   void PrepareRender(ShaderProgram shader, Camera const& camera) {
     this->Clear();
     shader.Use();

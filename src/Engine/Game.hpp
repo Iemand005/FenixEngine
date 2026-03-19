@@ -269,7 +269,8 @@ class Game {
   void Redraw() {
     if (shader) {
       shader->Use();
-      int count = std::clamp(lightCount, 0, kMaxPointLights);
+      int count = scene->GetLightCount();
+      auto pointLights = scene->GetLights();
       shader->SetInt("lightCount", count);
       for (int i = 0; i < count; ++i) {
         const auto& l = pointLights[i];
