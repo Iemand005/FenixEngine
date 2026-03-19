@@ -14,6 +14,12 @@ namespace fe
 
   public:
     EditableGameBase() {
+     this->onDraw = [&]() {
+       this->DrawGizmo();
+     };
+    }
+
+    EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {
 
     }
 
@@ -21,6 +27,10 @@ namespace fe
       this->onDraw = [&]() {
         this->DrawGizmo();
       };
+    }
+
+    void Init() {
+      
     }
 
     ~EditableGameBase() {

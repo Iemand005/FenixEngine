@@ -264,7 +264,7 @@ class Game {
     Redraw();
   }
 
-  std::function<void()> onDraw = nullptr;
+  std::function<void()> onDraw = [](){};
 
   void Redraw() {
     if (shader) {
@@ -282,9 +282,10 @@ class Game {
     }
     scene->Render(*this->shader, *this->camera.get());
 
-    if (onDraw) {
-      onDraw();
-    }
+    // if (onDraw != nullptr) {
+    //   onDraw();
+    // }
+    onDraw();
 
     CheckErrors();
 

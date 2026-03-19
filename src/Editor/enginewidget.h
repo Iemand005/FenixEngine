@@ -21,7 +21,7 @@
 class EngineWidget : public QOpenGLWidget {
   Q_OBJECT
 
-  std::unique_ptr<fe::XRGame> game;
+  std::unique_ptr<fe::EditableGameBase> game;
 
   bool capturing = false;
 
@@ -30,7 +30,7 @@ class EngineWidget : public QOpenGLWidget {
   EngineWidget(QWidget* parent = nullptr);
   ~EngineWidget() {}
 
-  fe::XRGame *getGame() { return game.get(); }
+  fe::EditableGameBase *getGame() { return game.get(); }
 
   void startMouseCapture();
   void stopMouseCapture();
