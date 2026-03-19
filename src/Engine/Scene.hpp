@@ -378,8 +378,8 @@ void main() {
       const glm::vec3& direction,
       float length,
       const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f),
-      float headLengthScale = 0.20f,
-      float headRadiusScale = 0.12f) {
+      float headLengthScale = 0.10f,
+      float headRadiusScale = 0.5f) {
     if (length <= 0.0f) return;
 
     float directionLength = glm::length(direction);
