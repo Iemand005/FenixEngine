@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <array>
 #include <algorithm>
+#include <functional>
 
 // #include <imgui/imgui.h>
 // #include <imgui/imgui_impl_sdl3.h>
@@ -263,6 +264,8 @@ class Game {
     Redraw();
   }
 
+  std::function<void()> onDraw = nullptr;
+
   void Redraw() {
     if (shader) {
       shader->Use();
@@ -278,6 +281,10 @@ class Game {
       }
     }
     scene->Render(*this->shader, *this->camera.get());
+
+    if (onDraw) {
+      onDraw();
+    }
 
     CheckErrors();
 

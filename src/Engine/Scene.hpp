@@ -144,6 +144,45 @@ class Scene {
   double GetDeltaTime() { return timer.deltaTime; }
 
   void Resize(int width, int height) { glViewport(0, 0, width, height); }
+
+  void DrawCircle(float radius, int segments) {
+    // glBegin(GL_LINE_LOOP); 
+    // for (int i = 0; i < segments; i++) {
+    //   float theta = 2.0f * glm::pi<float>() * float(i) / float(segments);
+      
+    //   float x = radius * cosf(theta);
+    //   float y = radius * sinf(theta);
+    //   glVertex3f(x, y, 0);
+    // }
+    // glEnd();
+
+    std::vector<glm::vec3> circleVertices;
+    int segments = 64;
+    for (int i = 0; i < segments; i++) {
+        float theta = 2.0f * glm::pi<float>() * float(i) / float(segments);
+        circleVertices.push_back(glm::vec3(cosf(theta), sinf(theta), 0.0f));
+    }
+
+    GLuint vao, vbo;
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, circleVertices.size() * sizeof(glm::vec3), circleVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    shader.use();
+    shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f)); // Red for X-axis
+    shader.setMat4("model", transformMatrix);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_LINE_LOOP, 0, segments); 
+
+
+  }
 };
 
 } 
