@@ -28,9 +28,11 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     auto game = ui->engineWidget->getGame();
     if (!game) return;
     float rad = glm::radians(static_cast<float>(value));
-    if (game->lightCount < 1) game->lightCount = 1;
+    auto lightCount = game->scene->GetLightCount();
+    auto pointLights = game->scene->GetLights();
+    // if (lightCount < 1) lightCount = 1;
     float r = 5.0f;
-    game->pointLights[0].position = glm::vec3(std::cos(rad) * r, 2.0f, std::sin(rad) * r);
+    pointLights[0].position = glm::vec3(std::cos(rad) * r, 2.0f, std::sin(rad) * r);
     ui->engineWidget->update();
   });
 
