@@ -25,7 +25,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   ui->lightDirDial->setRange(0, 360);
   ui->lightDirDial->setWrapping(true);
   connect(ui->lightDirDial, &QDial::valueChanged, [&](int value) {
-    auto game = ui->engineWidget->getGame();
+    auto game = this->game();
     if (!game) return;
     float rad = glm::radians(static_cast<float>(value));
     auto lightCount = game->scene->GetLightCount();
@@ -37,23 +37,21 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   });
 
   connect(ui->xrButton, &QPushButton::clicked, [&]() {
-    fe::XRGame *game = ui->engineWidget->getGame();
 #ifdef _WIN32
     HDC hdc = wglGetCurrentDC();
     HGLRC hglrc = wglGetCurrentContext();
-    game->initOpenXR(hdc, hglrc);
+    game()->initOpenXR(hdc, hglrc);
 #endif
-    game->EnableXR();
+    game()->EnableXR();
   });
 
   connect(ui->modelButton, &QPushButton::clicked, [&]() {
-    fe::XRGame *game = ui->engineWidget->getGame();
     QString file = QFileDialog::getOpenFileName(this, "Open Model", "", "Models (*.obj);;All Files (*)");
     if (!file.isEmpty()) {
       ui->engineWidget->makeCurrent();
-      auto obj = game->LoadStaticOBJ(file.toStdString());
+      auto obj = game()->LoadStaticOBJ(file.toStdString());
       ui->engineWidget->doneCurrent();
-      game->scene->AddObject(obj);
+      game()->scene->AddObject(obj);
       ui->engineWidget->update();
     }
   });
@@ -162,7 +160,7 @@ void EditorWindow::reloadModelList() {
 
   // Load lights
 
-  // auto lightCount = game->scene->GetLightCount();
+  auto lightCount = game->scene->GetLightCount();
   auto lights = game->scene->GetLightArray();
   for (auto &light : lights)
     new QListWidgetItem(tr("Light"), ui->lightListWidget);
@@ -197,6 +195,6 @@ void EditorWindow::compileShaders() {
   ui->engineWidget->update();
 }
 
-// fe::XRGame EditorWindow::getGame() {
-//   ui->engineWidget->getGame();
-// }
+fe::XRGame *EditorWindow::game() {
+  return ui->engineWidget->getGame();
+}
