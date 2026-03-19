@@ -30,7 +30,7 @@ namespace fe
 
     void OnDraw() override {
       // for (auto &light : scene->GetLightArray())
-      // auto lights = scene->GetLights();
+      auto lights = scene->GetLights();
       // int lightCount = scene->GetLightCount();
       // for (int i = 0; i < lightCount; ++i)
       if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)DrawGizmo(lights[lighselecIndex].position);

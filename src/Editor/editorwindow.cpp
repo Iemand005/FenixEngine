@@ -140,7 +140,7 @@ void EditorWindow::reloadModelList() {
       ui->zRotDial->setValue(rot.z);
 
       this->game()->SelectObjectByIndex(row);
-    }
+    } else this->game()->UnselectObject();
   });
 
 
