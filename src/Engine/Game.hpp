@@ -15,7 +15,6 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
-#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -247,8 +246,6 @@ class Game {
     Redraw();
   }
 
-  std::function<void()> onDraw = nullptr;
-
   void Redraw() {
     if (!scene || !camera || !shader) return;
 
@@ -268,9 +265,7 @@ class Game {
 
     scene->Render(*this->shader, *this->camera.get());
 
-    if (onDraw) {
-      onDraw();
-    }
+    OnDraw();
 
     CheckErrors();
 
@@ -302,6 +297,7 @@ class Game {
 
   virtual void InitUI() {}
   virtual void DrawUI() {}
+  virtual void OnDraw() {}
 
   void EnableWireframe();
   void DisableWireframe();
@@ -325,7 +321,6 @@ class Game {
   bool ShouldClose() { return this->window->ShouldClose(); }
 
   void Destroy() {
-    onDraw = nullptr;
     if (window) window->Destroy();
   }
 };
