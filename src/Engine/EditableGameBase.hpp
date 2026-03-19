@@ -3,21 +3,21 @@
 
 namespace fe
 {
-  class GameEditor
+  class EditableGameBase
   {
   private:
     std::unique_ptr<XRGame> game;
   public:
-    GameEditor();
-    ~GameEditor();
+    EditableGameBase();
+    ~EditableGameBase();
   };
   
-  GameEditor::GameEditor()
+  EditableGameBase::EditableGameBase()
   {
     
   }
   
-  GameEditor::~GameEditor()
+  EditableGameBase::~EditableGameBase()
   {
   }
   
