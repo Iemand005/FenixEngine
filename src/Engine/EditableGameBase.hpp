@@ -8,6 +8,7 @@ namespace fe
   {
 
     fe::Object *selectedObject = nullptr;
+    int lighselecIndex = -1;
 
     void DrawGizmo(const glm::vec3& position) {
       if (!scene) return;
@@ -29,10 +30,10 @@ namespace fe
 
     void OnDraw() override {
       // for (auto &light : scene->GetLightArray())
-      auto lights = scene->GetLights();
-      int lightCount = scene->GetLightCount();
-      for (int i = 0; i < lightCount; ++i)
-        DrawGizmo(lights[i].position);
+      // auto lights = scene->GetLights();
+      // int lightCount = scene->GetLightCount();
+      // for (int i = 0; i < lightCount; ++i)
+      if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)DrawGizmo(lights[lighselecIndex].position);
 
       // auto objects = scene->GetObjects();
       // for (auto &object : objects)
@@ -46,6 +47,18 @@ namespace fe
       auto objs = scene->GetObjects();
       auto objec = objs[index];
       selectedObject = objec.get();
+    }
+
+    void UnselectObject() {
+      selectedObject = nullptr;
+    }
+
+    void SelectLightByIndex(int index) {
+      lighselecIndex = index;
+    }
+
+    void UnselectLight() {
+      lighselecIndex = -1;
     }
   };
   

@@ -75,6 +75,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
 
   connect(ui->lightListWidget, &QListWidget::currentRowChanged, [&](int row) {
     qDebug() << "Selected item:" << row;
+    game()->SelectLightByIndex(row);
   });
 
   connect(ui->engineWidget, &EngineWidget::fpsUpdate, [&](float fps) {
