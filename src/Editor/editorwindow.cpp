@@ -69,15 +69,16 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     reloadModelList();
   });
 
-  connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
-    // QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
-    // if (!indexes.isEmpty()) {
-    //   QString text = indexes.first().data().toString();
-    //   qDebug() << "Selected item:" << text;
-    // }
-    auto row = ui->objectListView->selectionModel()->currentIndex().row();
-    qDebug() << "Selected itemsx:" << row;
-  });
+  // connect(ui->objectListView->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+  //   // QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
+  //   // if (!indexes.isEmpty()) {
+  //   //   QString text = indexes.first().data().toString();
+  //   //   qDebug() << "Selected item:" << text;
+  //   // }
+  //   auto row = ui->objectListView->selectionModel()->currentIndex().row();
+  //   qDebug() << "Selected itemsx:" << row;
+  //   game()->SelectObjectByIndex(row);
+  // });
 
   connect(ui->addLightButton, &QPushButton::clicked, [&]() {
     ui->engineWidget->getGame()->scene->AddLight();
@@ -128,6 +129,7 @@ void EditorWindow::reloadModelList() {
       auto objects = game->scene->GetObjects();
       auto objec = objects[row];
       selectedObject = objec.get();
+      game()->SelectObjectByIndex(row);
       auto pos = selectedObject->state.position;
       auto rot = selectedObject->state.position;
 
@@ -195,6 +197,6 @@ void EditorWindow::compileShaders() {
   ui->engineWidget->update();
 }
 
-fe::XRGame *EditorWindow::game() {
+fe::EditableGameBase *EditorWindow::game() {
   return ui->engineWidget->getGame();
 }

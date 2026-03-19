@@ -5,7 +5,7 @@
 #define FE_EXCLUDE_SDL
 #define FE_EXCLUDE_GLFW
 
-#include <XRGame.hpp>
+#include <EditableGameBase.hpp>
 
 #include <QMainWindow>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
@@ -28,7 +28,7 @@ class EditorWindow : public QMainWindow {
   void reloadModelList();
 
 
-  fe::XRGame *game();
+  fe::EditableGameBase *game();
 
  protected:
   bool event(QEvent* event) override;

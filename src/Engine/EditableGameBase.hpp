@@ -1,3 +1,4 @@
+#pragma once
 
 #include "XRGame.hpp"
 
@@ -6,7 +7,7 @@ namespace fe
   class EditableGameBase : public XRGame
   {
 
-    fe::Object *selectedObject;
+    fe::Object *selectedObject = nullptr;
 
     void DrawGizmo(const glm::vec3& position) {
       if (!scene) return;
