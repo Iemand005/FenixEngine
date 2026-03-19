@@ -18,16 +18,16 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "XRGame.hpp"
+#include "EditableGameBase.hpp"
 
 namespace fe
 {
   
-  class EditableGame : public XRGame {
+  class EditableGame : public EditableGameBase {
 
     
     public:
-    EditableGame(int width, int height, bool vr = false) : XRGame(width, height, vr) {
+    EditableGame(int width, int height, bool vr = false) : EditableGameBase(width, height, vr) {
       this->physicsEngine->DisableGravity();
       
       InitImGUI();
