@@ -154,8 +154,15 @@ namespace fe
     ImGui::End();
 
 
+    if (this->client) DrawNetworkDebugUI();
+    
 
-    ImGui::Begin("Multiplayer");
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void DrawNetworkDebugUI() {
+ImGui::Begin("Multiplayer");
     {
       static char usernameBuffer[32] = "Bill\0";
       static char addressBuffer[256] = "127.0.0.1\0";
@@ -223,9 +230,6 @@ namespace fe
       }
     }
     ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
   
   };
