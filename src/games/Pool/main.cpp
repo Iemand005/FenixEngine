@@ -1,10 +1,10 @@
-#include "Chizzle.hpp"
+#include "Pool.hpp"
 
 int main() {
 
   std::cout << "Hiii";
 
-  Chizzle game;
+  Pool game;
   game.Run();
   return 0;
 }

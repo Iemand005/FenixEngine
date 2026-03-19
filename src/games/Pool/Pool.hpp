@@ -19,7 +19,7 @@
 
 #include "../../engine/XRGame.hpp"
 
-class Chizzle : public fe::XRGame {
+class Pool : public fe::XRGame {
 public:
 
   std::vector<std::string> messages;
@@ -32,9 +32,9 @@ public:
 
   ImGuiIO io;
 
-  Chizzle() : Chizzle(800, 640) {}
+  Pool() : Pool(800, 640) {}
 
-  Chizzle(int width, int height, bool vr = false) : fe::XRGame(width, height, vr) {
+  Pool(int width, int height, bool vr = false) : fe::XRGame(width, height, vr) {
 
     LoadModels();
 
@@ -111,13 +111,13 @@ public:
     }
 
     
-      if (window->IsKeyDown(SDL_SCANCODE_W)) player->Move(fe::Direction::Forwards, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_A)) player->Move(fe::Direction::Left, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_S)) player->Move(fe::Direction::Backwards, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_D)) player->Move(fe::Direction::Right, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
 
-      if (window->IsKeyDown(SDL_SCANCODE_SPACE)) player->Move(fe::Direction::Up, camera.get());
-      if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) player->Move(fe::Direction::Down, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
+      if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
       if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) window->StopMouseCapture();
       if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
@@ -125,8 +125,7 @@ public:
 
 
   void Run() {
-    // fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
-    fe::SDLWindow *window = this->GetWindow();
+    fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     window->DisableVSync();
   
     glm::vec3 cameraOffset = glm::vec3(0);

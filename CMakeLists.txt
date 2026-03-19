@@ -88,12 +88,38 @@ target_include_directories(editor PRIVATE
     src/engine
 )
 
+
+file(GLOB_RECURSE POOL_SOURCE_FILES
+    external/imgui/imgui.cpp
+    external/imgui/backends/imgui_impl_sdl3.cpp
+    external/imgui/backends/imgui_impl_sdlgpu3.cpp
+    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_opengl3.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/imgui_demo.cpp
+    external/imgui/imgui_draw.cpp
+
+    src/games/Pool/*.cpp
+)
+
+add_executable(pool ${POOL_SOURCE_FILES})
+
+target_include_directories(pool PRIVATE
+    include
+    src
+    external
+    external/imgui
+    src/engine
+)
+
 if(WIN32)
     # Main game
     target_link_directories(main PRIVATE "${LIB_DIR}")
     
     target_link_libraries(main PRIVATE
-        engine
+        Engine
     )
     
     if(MSVC)
@@ -107,6 +133,14 @@ if(WIN32)
     target_link_directories(editor PRIVATE "${LIB_DIR}")
     
     target_link_libraries(editor PRIVATE
+        Engine
+    )
+
+
+    # Pool test game
+    target_link_directories(pool PRIVATE "${LIB_DIR}")
+    
+    target_link_libraries(pool PRIVATE
         Engine
     )
     
