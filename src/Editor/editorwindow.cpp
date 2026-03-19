@@ -81,7 +81,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
     ui->engineWidget->getGame()->scene->AddLight();
   });
 
-  connect(ui->lightListWidget->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
+  connect(ui->lightListWidget->selectionModel(), &QListWidget::itemSelectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected) {
     QModelIndexList indexes = ui->objectListView->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty()) {
       QString text = indexes.first().data().toString();
@@ -160,9 +160,11 @@ void EditorWindow::reloadModelList() {
 
   // Load lights
 
+  ui->lightListWidget->clear();
+
   auto lightCount = game->scene->GetLightCount();
-  auto lights = game->scene->GetLightArray();
-  for (auto &light : lights)
+  // auto lights = game->scene->GetLights();
+  for (int i = 0; i < lightCount; ++i)
     new QListWidgetItem(tr("Light"), ui->lightListWidget);
 }
 
