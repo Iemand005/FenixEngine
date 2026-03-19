@@ -24,7 +24,11 @@ namespace fe
     }
 
     void OnDraw() override {
-      DrawGizmo({0, 1, 0});
+      // for (auto &light : scene->GetLightArray())
+      auto lights = scene->GetLights();
+      int lightCount = scene->GetLightCount();
+      for (int i = 0; i < lightCount; ++i)
+        DrawGizmo(lights[i].position);
     }
   };
   
