@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,7 +32,7 @@ struct PointLight {
 };
 
 class Scene {
- private:
+  private:
   std::vector<std::shared_ptr<Object>> objects;
   glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
   Timer timer;
@@ -93,6 +94,10 @@ class Scene {
 
   PointLight *GetLights() {
     return pointLights.data();
+  }
+
+  std::array<PointLight, kMaxPointLights> GetLightArray() {
+    return pointLights;
   }
 
   void PrepareRender(ShaderProgram shader, Camera const& camera) {

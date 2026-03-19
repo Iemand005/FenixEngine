@@ -248,12 +248,13 @@ public:
         ++i;
       }
 
-      size_t i = 0;
-      for (auto &object : scene->()) {
-        ImGui::Text("Object %zu", i);
-        ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
-        ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
-        ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
+      i = 0;
+      for (auto &light : scene->GetLightArray()) {
+        ImGui::Text("Light %zu", i);
+        ImGui::DragFloat3(("Position##light" + std::to_string(i)).c_str(), &light.position.x, step);
+        ImGui::DragFloat3(("Colour##light" + std::to_string(i)).c_str(), &light.color.x, step);
+        ImGui::DragFloat(("Radius##light" + std::to_string(i)).c_str(), &light.radius, step);
+        ImGui::DragFloat(("Intensity##light" + std::to_string(i)).c_str(), &light.intensity, step);
         ++i;
       }
     }
