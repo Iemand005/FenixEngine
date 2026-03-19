@@ -8,6 +8,7 @@ namespace fe
     void DrawGizmo() {
       if (!scene) return;
       scene->DrawCircle(10, 32);
+      scene->DrawArrow({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 5.0f, {1.0f, 0.2f, 0.2f});
     }
 
   public:

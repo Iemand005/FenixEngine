@@ -91,6 +91,41 @@ class Scene {
     return true;
   }
 
+  void DrawGizmoLines(const std::vector<glm::vec3>& vertices, GLenum mode, const glm::vec3& color, float lineWidth = 2.0f) {
+    if (vertices.empty() || !hasCameraMatrices) return;
+
+    EnsureGizmoRenderer();
+
+    GLint previousProgram = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+
+    GLboolean depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
+    GLfloat previousLineWidth = 1.0f;
+    glGetFloatv(GL_LINE_WIDTH, &previousLineWidth);
+
+    glDisable(GL_DEPTH_TEST);
+
+    glUseProgram(gizmoProgram);
+    const glm::mat4 model(1.0f);
+    glUniformMatrix4fv(gizmoModelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(gizmoViewLoc, 1, GL_FALSE, glm::value_ptr(lastViewMatrix));
+    glUniformMatrix4fv(gizmoProjectionLoc, 1, GL_FALSE, glm::value_ptr(lastProjectionMatrix));
+    glUniform3f(gizmoColorLoc, color.r, color.g, color.b);
+
+    glBindVertexArray(gizmoVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STREAM_DRAW);
+    glLineWidth(lineWidth);
+    glDrawArrays(mode, 0, static_cast<GLsizei>(vertices.size()));
+    glLineWidth(previousLineWidth);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glUseProgram(static_cast<GLuint>(previousProgram));
+    if (depthWasEnabled) glEnable(GL_DEPTH_TEST);
+    else glDisable(GL_DEPTH_TEST);
+  }
+
   void EnsureGizmoRenderer() {
     if (gizmoRendererReady) return;
 
@@ -281,35 +316,81 @@ void main() {
       float t = kTwoPi * (static_cast<float>(i) / static_cast<float>(segments));
       circleVertices.emplace_back(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
     }
+    DrawGizmoLines(circleVertices, GL_LINE_LOOP, glm::vec3(0.95f, 0.80f, 0.15f));
+  }
 
-    GLint previousProgram = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+  void DrawArrow(
+      const glm::vec3& from,
+      const glm::vec3& to,
+      const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f),
+      float headLengthScale = 0.20f,
+      float headRadiusScale = 0.12f) {
+    if (!hasCameraMatrices) return;
 
-    GLboolean depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
-    GLfloat previousLineWidth = 1.0f;
-    glGetFloatv(GL_LINE_WIDTH, &previousLineWidth);
+    glm::vec3 direction = to - from;
+    float length = glm::length(direction);
+    if (length <= 0.0001f) return;
 
-    glDisable(GL_DEPTH_TEST);
+    glm::vec3 forward = direction / length;
+    float headLength = std::clamp(length * headLengthScale, 0.0f, length * 0.95f);
+    float headRadius = std::clamp(length * headRadiusScale, 0.0f, headLength * 0.75f);
+    if (headRadius <= 0.0001f) {
+      headRadius = length * 0.05f;
+    }
 
-    glUseProgram(gizmoProgram);
-    const glm::mat4 model(1.0f);
-    glUniformMatrix4fv(gizmoModelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(gizmoViewLoc, 1, GL_FALSE, glm::value_ptr(lastViewMatrix));
-    glUniformMatrix4fv(gizmoProjectionLoc, 1, GL_FALSE, glm::value_ptr(lastProjectionMatrix));
-    glUniform3f(gizmoColorLoc, 0.95f, 0.80f, 0.15f);
+    glm::vec3 shaftEnd = to - forward * headLength;
 
-    glBindVertexArray(gizmoVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO);
-    glBufferData(GL_ARRAY_BUFFER, circleVertices.size() * sizeof(glm::vec3), circleVertices.data(), GL_STREAM_DRAW);
-    glLineWidth(2.0f);
-    glDrawArrays(GL_LINE_LOOP, 0, static_cast<GLsizei>(circleVertices.size()));
-    glLineWidth(previousLineWidth);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    glm::vec3 reference = std::abs(forward.y) < 0.999f ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 right = glm::cross(forward, reference);
+    if (glm::length(right) <= 0.0001f) {
+      reference = glm::vec3(0.0f, 0.0f, 1.0f);
+      right = glm::cross(forward, reference);
+    }
+    right = glm::normalize(right);
+    glm::vec3 up = glm::normalize(glm::cross(right, forward));
 
-    glUseProgram(static_cast<GLuint>(previousProgram));
-    if (depthWasEnabled) glEnable(GL_DEPTH_TEST);
-    else glDisable(GL_DEPTH_TEST);
+    std::array<glm::vec3, 4> headRing = {
+        shaftEnd + right * headRadius + up * headRadius,
+        shaftEnd - right * headRadius + up * headRadius,
+        shaftEnd - right * headRadius - up * headRadius,
+        shaftEnd + right * headRadius - up * headRadius};
+
+    std::vector<glm::vec3> arrowVertices;
+    arrowVertices.reserve(18);
+    arrowVertices.push_back(from);
+    arrowVertices.push_back(shaftEnd);
+
+    for (const auto& point : headRing) {
+      arrowVertices.push_back(to);
+      arrowVertices.push_back(point);
+    }
+
+    for (size_t i = 0; i < headRing.size(); ++i) {
+      arrowVertices.push_back(headRing[i]);
+      arrowVertices.push_back(headRing[(i + 1) % headRing.size()]);
+    }
+
+    DrawGizmoLines(arrowVertices, GL_LINES, color);
+  }
+
+  void DrawArrow(
+      const glm::vec3& origin,
+      const glm::vec3& direction,
+      float length,
+      const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f),
+      float headLengthScale = 0.20f,
+      float headRadiusScale = 0.12f) {
+    if (length <= 0.0f) return;
+
+    float directionLength = glm::length(direction);
+    if (directionLength <= 0.0001f) return;
+
+    DrawArrow(
+        origin,
+        origin + (direction / directionLength) * length,
+        color,
+        headLengthScale,
+        headRadiusScale);
   }
 };
 
