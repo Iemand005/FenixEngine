@@ -21,11 +21,23 @@
 
 namespace fe {
 
+static constexpr int kMaxPointLights = 8;
+
+struct PointLight {
+  glm::vec3 position{0.0f};
+  glm::vec3 color{1.0f};
+  float intensity{1.0f};
+  float radius{10.0f};
+};
+
 class Scene {
  private:
   std::vector<std::shared_ptr<Object>> objects;
   glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
   Timer timer;
+
+  std::array<PointLight, kMaxPointLights> pointLights{};
+  int lightCount = 1;
 
  public:
   Scene() {
@@ -68,6 +80,12 @@ class Scene {
 
   void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
 
+  void SetLight(int index = 0) {
+    pointLights[index].position = glm::vec3(3.0f, 3.0f, 3.0f);
+    pointLights[index].color = glm::vec3(1.0f);
+    pointLights[index].intensity = 1.0f;
+    pointLights[index].radius = 10.0f;
+  }
 
   void PrepareRender(ShaderProgram shader, Camera const& camera) {
     this->Clear();

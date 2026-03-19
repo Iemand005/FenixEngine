@@ -59,15 +59,15 @@ class Game {
 
   float yaw = -90.0f,  pitch = 0.0f;
 
-  struct PointLight {
-    glm::vec3 position{0.0f};
-    glm::vec3 color{1.0f};
-    float intensity{1.0f};
-    float radius{10.0f};
-  };
-  static constexpr int kMaxPointLights = 8;
-  std::array<PointLight, kMaxPointLights> pointLights{};
-  int lightCount = 1;
+  // struct PointLight {
+  //   glm::vec3 position{0.0f};
+  //   glm::vec3 color{1.0f};
+  //   float intensity{1.0f};
+  //   float radius{10.0f};
+  // };
+  // static constexpr int kMaxPointLights = 8;
+  // std::array<PointLight, kMaxPointLights> pointLights{};
+  // int lightCount = 1;
 
   int lastX, lastY;
 
@@ -123,7 +123,6 @@ class Game {
     window->StartMouseCapture();
   }
 
-  
   template<typename WindowT = SDLWindow>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
@@ -154,10 +153,8 @@ class Game {
     this->scene = std::make_unique<fe::Scene>();
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
     this->level = std::make_unique<fe::Level>();
-    pointLights[0].position = glm::vec3(3.0f, 3.0f, 3.0f);
-    pointLights[0].color = glm::vec3(1.0f);
-    pointLights[0].intensity = 1.0f;
-    pointLights[0].radius = 10.0f;
+    
+    this->scene->SetLight();
     InitUI();
   }
   

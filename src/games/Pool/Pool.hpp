@@ -247,6 +247,15 @@ public:
         ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
         ++i;
       }
+
+      size_t i = 0;
+      for (auto &object : scene->()) {
+        ImGui::Text("Object %zu", i);
+        ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
+        ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
+        ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
+        ++i;
+      }
     }
     ImGui::End();
 
