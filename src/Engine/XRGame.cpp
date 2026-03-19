@@ -385,8 +385,8 @@ void XRGame::DisableVR() {
 
 void XRGame::DestroyXR() {
   impl->drawVR = false;
-  xrDestroySession(impl->session);
-  xrDestroyInstance(impl->instance);
+  if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
+  if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
   impl->session = XR_NULL_HANDLE;
   impl->instance = XR_NULL_HANDLE;
 }

@@ -7,7 +7,8 @@
 #define EXCLUDE_NETWORKING
 #define FE_EXCLUDE_SDL
 #define FE_EXCLUDE_GLFW
-#include <XRGame.hpp>
+
+#include <EditableGameBase.hpp>
 
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
