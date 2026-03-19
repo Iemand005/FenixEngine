@@ -39,11 +39,6 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->xrButton, &QPushButton::clicked, [&]() {
     fe::XRGame *game = ui->engineWidget->getGame();
 #ifdef _WIN32
-    // auto native = QOpenGLContext::currentContext()->nativeHandle();
-    // QWGLNativeContext wgl = native.value<QWGLNativeContext>();
-    // HDC hdc = wgl.hdc();
-    // HGLRC hglrc = wgl.context();
-
     HDC hdc = wglGetCurrentDC();
     HGLRC hglrc = wglGetCurrentContext();
     game->initOpenXR(hdc, hglrc);
