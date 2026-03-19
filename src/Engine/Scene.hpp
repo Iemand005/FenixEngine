@@ -279,7 +279,6 @@ void main() {
     constexpr float kTwoPi = 6.28318530717958647692f;
     for (int i = 0; i < segments; ++i) {
       float t = kTwoPi * (static_cast<float>(i) / static_cast<float>(segments));
-      // Flat ring in the XZ plane so the gizmo sits on the world floor.
       circleVertices.emplace_back(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
     }
 
