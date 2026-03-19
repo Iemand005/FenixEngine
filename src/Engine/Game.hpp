@@ -113,6 +113,10 @@ class Game {
     NewWindow(width, height);
     Init();
   }
+
+  virtual void InitUI() {}
+  virtual void DrawUI() {}
+
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Gamer", width, height);
     Init();
@@ -299,10 +303,10 @@ class Game {
     }
   }
 
-  void Update() { 
+  void Update() {
     double dt = scene->Update();
     UpdatePhysics(dt);
-   }
+  }
 
   void UpdatePhysics(double deltaTime) {
     if (physicsEngine) physicsEngine->Update(deltaTime);
@@ -312,8 +316,6 @@ class Game {
   void DisableWireframe();
   void ToggleWireframe(bool enabled = false);
 
-  // IWindow *GetWindow() { return window.get(); }
-  // WindowT *GetWindow() { return window.get(); }
   template<typename WindowT = IWindow>
   WindowT *GetWindow() {
     return (WindowT *)this->window.get();
@@ -324,9 +326,6 @@ class Game {
   }
 
   void BindFrameBuffer(int bufferIndex = 0);
-
-  virtual void InitUI() {}
-  virtual void DrawUI() {}
 
   void UpdateAspect(int width, int height) {
     if (this->camera) this->camera->SetAspect(width, height);
