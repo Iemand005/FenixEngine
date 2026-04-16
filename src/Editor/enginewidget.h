@@ -17,6 +17,8 @@
 #include <QElapsedTimer>
 #include <QTimer>
 
+#include "mjpegserver.h"
+
 // template<typename GameT = fe::Game>
 class EngineWidget : public QOpenGLWidget {
   Q_OBJECT
@@ -47,6 +49,8 @@ class EngineWidget : public QOpenGLWidget {
 
   void toggleTimer(bool enabled = true);
 
+  void sendFrame();
+
   bool wireframe = false;
   unsigned long long renderedFrames = 0;
  signals:
@@ -57,7 +61,7 @@ class EngineWidget : public QOpenGLWidget {
   QElapsedTimer frameTimer;
   qint64 lastFrameNs = 0;
   QSet<int> keysDown;
-
+  MjpegServer *mjpegServer;
 };
 
 #endif  // ENGINEWIDGET_H

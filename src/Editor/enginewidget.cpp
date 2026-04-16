@@ -9,12 +9,20 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   format.setSwapInterval(0);
   setFormat(format);
 
+  mjpegServer = new MjpegServer(this);
+  mjpegServer->startServer(8080);
+
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, [&]() {
     update();
+    sendFrame();
     emit fpsUpdate(game->GetFPS());
   });
   timer->start(0);
+}
+
+void EngineWidget::sendFrame() {
+  mjpegServer->sendFrame(grabFramebuffer());
 }
 
 void EngineWidget::initializeGL() {

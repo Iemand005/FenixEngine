@@ -10,8 +10,6 @@
 #include <QMainWindow>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
 
-#include "mjpegserver.h"
-
 // namespace fe{ class XRGame; }
 
 QT_BEGIN_NAMESPACE
@@ -44,6 +42,5 @@ class EditorWindow : public QMainWindow {
   QOpenGLWidget e;
   QTimer* timer = nullptr;
   fe::Object *selectedObject;
-  MjpegServer *mjpegServer;
 };
 #endif  // EDITORWINDOW_H

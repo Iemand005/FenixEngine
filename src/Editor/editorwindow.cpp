@@ -20,9 +20,6 @@
 EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::EditorWindow) {
   ui->setupUi(this);
 
-  mjpegServer = new MjpegServer(this);
-  mjpegServer->startServer(8080);
-
   connect(ui->shaderButton, SIGNAL(clicked()), SLOT(compileShaders()));
 
   ui->lightDirDial->setRange(0, 360);
@@ -94,9 +91,7 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   });
 
   connect(ui->sendFrameButton, &QPushButton::clicked, [&]() {
-    QImage frame = ui->engineWidget->grabFramebuffer();
-
-    mjpegServer->sendFrame(frame);
+    ui->engineWidget->sendFrame();
   });
 }
 
