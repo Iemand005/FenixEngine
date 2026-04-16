@@ -59,7 +59,9 @@ target_compile_definitions(main PRIVATE
 target_include_directories(main PRIVATE
     include
     src
-    src/extern
+    external
+    external/imgui
+    external/SDL/include
     src/engine
 )
 
@@ -85,6 +87,7 @@ target_include_directories(editor PRIVATE
     src
     external
     external/imgui
+    external/SDL/include
     src/engine
 )
 
