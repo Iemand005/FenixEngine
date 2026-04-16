@@ -86,10 +86,6 @@ target_include_directories(editor PRIVATE
     include
     src
     external
-    external/imgui
-    external/SDL/include
-    external/glfw/include
-    external/glm
     src/engine
 )
 
