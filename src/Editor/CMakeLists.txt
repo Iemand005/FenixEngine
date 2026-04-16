@@ -3,7 +3,7 @@ project(Editor LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets OpenGL OpenGLWidgets LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets OpenGL OpenGLWidgets LinguistTools Network)
 
 qt_standard_project_setup()
 
@@ -14,6 +14,7 @@ qt_add_executable(Editor
     editorwindow.h
     editorwindow.ui
     enginewidget.h enginewidget.cpp
+    mjpegserver.h mjpegserver.cpp
 )
 
 qt_add_translations(
@@ -34,6 +35,7 @@ target_link_libraries(Editor
         Qt::Widgets
         Qt6::OpenGL
         Qt6::OpenGLWidgets
+        Qt6::Network
 
         Engine
 )
