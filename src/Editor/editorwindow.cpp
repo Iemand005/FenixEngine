@@ -89,6 +89,29 @@ EditorWindow::EditorWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::Ed
   connect(ui->saveButton, &QPushButton::clicked, [&]() {
     game()->SaveLevel();
   });
+
+  connect(ui->sendFrameButton, &QPushButton::clicked, [&]() {
+    QImage frame = ui->engineWidget->grabFramebuffer();
+
+    QByteArray ba;
+    QBuffer buffer(&ba);
+    buffer.open(QIODevice::WriteOnly);
+    frame.save(&buffer, "JPG", 80);
+
+    if (clientSocket && clientSocket->isOpen()) {
+      QTextStream os(clientSocket);
+      os.setCodec("UTF-8");
+
+      os << "--frame\r\n"
+         << "Content-Type: image/jpeg\r\n"
+         << "Content-Length: " << ba.size() << "\r\n\r\n";
+      os.flush(); // Stuur headers eerst
+
+      clientSocket->write(ba); // Stuur de binaire JPEG data
+      clientSocket->write("\r\n");
+      clientSocket->flush();
+    }
+  });
 }
 
 EditorWindow::~EditorWindow() { delete ui; }
