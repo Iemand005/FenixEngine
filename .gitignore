@@ -12,3 +12,4 @@ dist
 out
 CMakeFiles
 .cache
+/lib
