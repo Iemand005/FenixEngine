@@ -36,16 +36,21 @@ target_include_directories(Engine PRIVATE
     ../../include
 )
 
+target_include_directories(Engine PUBLIC
+    ../../external/glm
+)
+
 target_link_libraries(Engine PRIVATE
     gdi32
-    glfw
     opengl32
     shell32
     user32
     gdi32
-    SDL3::SDL3
-    OpenXR::openxr_loader
 )
 
-# Engine is consumed by Editor; expose Jolt so static builds resolve JPH symbols.
-target_link_libraries(Engine PUBLIC Jolt)
+target_link_libraries(Engine PUBLIC
+    glfw
+    SDL3::SDL3
+    OpenXR::openxr_loader
+    Jolt
+)
