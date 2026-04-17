@@ -144,7 +144,22 @@ file(GLOB_RECURSE SHADERSAVERS_SOURCE_FILES
 )
 
 add_executable(ShaderSaver ${SHADERSAVERS_SOURCE_FILES}
-    src/games/ShaderSavers/main.cpp)
+    src/games/ShaderSavers/main.cpp
+    src/games/ShaderSavers/ShaderSaver.hpp
+)
+
+target_include_directories(ShaderSaver PRIVATE
+    include
+    src
+    external
+    external/imgui
+    external/SDL/include
+    src/engine
+)
+
+target_link_libraries(ShaderSaver PRIVATE
+    Engine
+)
 
 if(WIN32)
     # Main game

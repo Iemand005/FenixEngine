@@ -38,6 +38,7 @@ target_include_directories(Engine PRIVATE
 
 target_include_directories(Engine PUBLIC
     ../../external/glm
+    ../../external/imgui
 )
 
 target_link_libraries(Engine PRIVATE

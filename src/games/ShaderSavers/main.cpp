@@ -1,10 +1,10 @@
-#include "Pool.hpp"
+#include "ShaderSaver.hpp"
 
 int main() {
 
   std::cout << "Hiii";
 
-  Pool game;
+  ShaderSaver game;
   game.Run();
   return 0;
 }
