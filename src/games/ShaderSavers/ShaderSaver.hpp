@@ -8,11 +8,6 @@
 #include <map>
 #include <string>
 
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -49,7 +44,9 @@ public:
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
           int w, h;
           SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+          glViewport(0, 0, w, h);
           window->resizeEvent(w, h);
+
           break;
       }
     }
@@ -100,6 +97,9 @@ public:
 
     while (!window->ShouldClose()) {
       ProcessInput();
+
+      SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+      glViewport(0, 0, w, h);
       
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
