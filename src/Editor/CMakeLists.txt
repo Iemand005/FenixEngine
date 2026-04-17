@@ -54,3 +54,14 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+set(RES_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+set(RES_DEST "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+
+add_custom_command(
+    TARGET Editor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${RES_SOURCE}"
+        "${RES_DEST}"
+    COMMENT "Resources kopiëren naar build directory..."
+)

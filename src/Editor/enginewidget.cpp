@@ -15,11 +15,17 @@ EngineWidget::EngineWidget(QWidget* parent) : QOpenGLWidget(parent) {
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, [&]() {
     update();
-    sendFrame();
+    // sendFrame();
     emit fpsUpdate(game->GetFPS());
   });
   timer->start(0);
-}
+
+
+  QTimer *frameTimer = new QTimer(this);
+  connect(frameTimer, &QTimer::timeout, [&]() {
+    sendFrame();
+  });
+  frameTimer->start(32);}
 
 void EngineWidget::sendFrame() {
   mjpegServer->sendFrame(grabFramebuffer());
