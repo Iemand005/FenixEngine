@@ -79,7 +79,7 @@ public:
     void main() {
       float x = gl_FragCoord.x;
       float y = gl_FragCoord.y;
-      FragColor = vec4(1.0, 0.0 + x / 100, 0.0, 1.0);
+      FragColor = vec4(y / 500, x / 500, y / 500 + 500, 1.0);
     }
     )";
 
@@ -95,6 +95,19 @@ public:
     SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
     glViewport(0, 0, w, h);
 
+    GLuint fbos[2], textures[2];
+    glGenFramebuffers(2, fbos);
+    glGenTextures(2, textures);
+
+    for(int i=0; i<2; i++) {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+    }
+
+    int frameCount = 0;
+
     while (!window->ShouldClose()) {
       ProcessInput();
 
@@ -107,9 +120,17 @@ public:
       shader->Use();
       glBindVertexArray(vao);
 
+      int source = frameCount % 2;
+      int dest = (frameCount + 1) % 2;
+
+      glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
+      glBindTexture(GL_TEXTURE_2D, textures[source]);
+
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       window->SwapBuffers();
+
+      frameCount++;
     }
 
     Destroy();
