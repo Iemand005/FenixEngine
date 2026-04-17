@@ -58,9 +58,9 @@ public:
     // this->scene->AddObject(player);
 
     // this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
-    auto mesh = fe::Mesh();
+    // auto mesh = fe::Mesh();
     // mesh.
-    std::shared_ptr testobj = std::make_shared<fe::Object>(mesh);
+    // std::shared_ptr testobj = std::make_shared<fe::Object>(mesh);
     // testobj->
     // this->scene->AddObject()
   }
@@ -100,7 +100,7 @@ public:
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    
+
     while (!window->ShouldClose()) {
       ProcessInput();
       
@@ -108,6 +108,8 @@ public:
 
 
       glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      window->SwapBuffers();
     }
 
     Destroy();
