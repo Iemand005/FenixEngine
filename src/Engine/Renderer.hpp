@@ -29,7 +29,6 @@
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
-#include "saver/Level.hpp"
 
 #include "window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
@@ -173,11 +172,6 @@ class Renderer {
 
   void Update() {
     double dt = scene->Update();
-    UpdatePhysics(dt);
-  }
-
-  void UpdatePhysics(double deltaTime) {
-    if (physicsEngine) physicsEngine->Update(deltaTime);
   }
 
   virtual void InitUI() {}
