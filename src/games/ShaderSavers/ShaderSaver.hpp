@@ -19,7 +19,7 @@
 
 #include "../../engine/EditableGame.hpp"
 
-class ShaderSaver : public fe::Game {
+class ShaderSaver : public fe::Renderer {
 public:
 
   std::vector<std::string> messages;
@@ -32,7 +32,7 @@ public:
 
   ShaderSaver() : ShaderSaver(800, 640) {}
 
-  ShaderSaver(int width, int height) : fe::Game(width, height) {
+  ShaderSaver(int width, int height) : fe::Renderer(width, height) {
     const char *vertexShader = "#version 330 core\nvoid main() {\
         float x = -1.0 + float((gl_VertexID & 1) << 2);\
         float y = -1.0 + float((gl_VertexID & 2) << 1);\
@@ -59,13 +59,13 @@ public:
       }
     }
 
-    if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
-    if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
-    if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
-    if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
 
-    if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
-    if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
+    // if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
     window->StopMouseCapture();
   }

@@ -30,9 +30,7 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 
 
-add_library(Engine STATIC ${SOURCE_FILES}
-  Renderer.hpp
-  Renderer.cpp)
+add_library(Engine STATIC ${SOURCE_FILES})
 
 target_include_directories(Engine PRIVATE
     ../../include

@@ -4,10 +4,6 @@
 
 using namespace fe;
 
-void Renderer::InitGL() {
-  glEnable(GL_MULTISAMPLE);
-}
-
 void Renderer::SetClearColor(float r, float g, float b, float a) {
   glClearColor(r, g, b, a);
 }
@@ -26,11 +22,9 @@ void fe::Renderer::ToggleWireframe(bool enabled) {
 
 Renderer::Renderer(GLADloadproc loadProc) {
   if (!gladLoadGLLoader(loadProc)) {
-      std::cerr << "Failed to load OpenGL functions (GLAD)";
+    std::cerr << "Failed to load OpenGL functions (GLAD)";
   }
-  this->InitGL();
   this->SetClearColor(0.1f, 0.4f, 1.0f);
-  Init();
 }
 
 void Renderer::BindFrameBuffer(int bufferIndex) {

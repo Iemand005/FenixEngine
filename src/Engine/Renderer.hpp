@@ -57,14 +57,6 @@ class Renderer {
 
   bool capturingMouse = true;
 
-  std::shared_ptr<Character> player;
-
-  std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
-
-  std::vector<std::shared_ptr<Object>> maps = std::vector<std::shared_ptr<Object>>();
-
-  std::vector<std::string> messages;
-
   double lastUpdateTime = 0.0f;
 
   bool canJump = true;
@@ -80,10 +72,6 @@ class Renderer {
 
   bool isConnectedToServer = false;
 
-  std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
-
-  std::unique_ptr<fe::Level> level = nullptr;
-
   Renderer() {}
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
@@ -96,13 +84,10 @@ class Renderer {
 #ifndef FE_EXCLUDE_SDL
   Renderer(int width, int height, bool skipInit = false) : Renderer() {
     NewWindow(width, height);
-    // Init();
   }
 
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Renderer", width, height);
-    // Init();
-    // window->StartMouseCapture();
   }
 
   template<typename WindowT = SDLWindow>
@@ -115,31 +100,12 @@ class Renderer {
       this->Redraw();
     };
 
-    window->mouseMoveEvent = [this](int x, int y) {
-      MouseMove(x, y);
-    };
+    // window->mouseMoveEvent = [this](int x, int y) {
+    //   MouseMove(x, y);
+    // };
     return std::move(window);
   }
 #endif
-
-  void InitGL();
-
-  void Init() {
-    SetClearColor(0.0F, 0.0F, 0.0f);
-
-    this->physicsEngine = std::make_unique<PhysicsEngine>();
-    
-    LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
-    
-    this->scene = std::make_unique<fe::Scene>();
-    this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
-    this->level = std::make_unique<fe::Level>();
-    
-    this->scene->SetLight();
-    
-    InitGL();
-    InitUI();
-  }
 
   void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
     this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
@@ -148,88 +114,6 @@ class Renderer {
   bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
     this->shader = std::make_unique<fe::ShaderProgram>();
     return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
-  }
-
-  void MovePlayer(Direction direction) {
-    this->player->Move(direction, camera.get());
-  }
-
-  void MoveCamera(Direction direction, float dt = 1.0f) {
-    this->camera->Move(direction, dt);
-  }
-
-  void MouseMove(int x, int y) {
-    const float sensitivity = 0.1f;
-
-    this->yaw += sensitivity * x;
-    this->pitch += sensitivity * -y;
-
-    if (this->pitch > 89.0f) this->pitch = 89.0f;
-    if (this->pitch < -89.0f) this->pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    direction.y = sin(glm::radians(this->pitch));
-    direction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-    this->camera->setFront(glm::normalize(direction));
-  }
-
-  void SaveLevel(std::string fileName = "level.fes") {
-    this->level->Save(this->scene->GetFilteredObjects(player), fileName);
-  }
-
-  void LoadLevel(std::string fileName = "level.fes") {
-    auto objects = this->level->Load(fileName);
-    this->scene->ClearObjects();
-    this->scene->AddObject(player);
-    for (auto& object : objects) this->scene->AddObject(object);
-  }
-
-#ifndef EXCLUDE_NETWORKING
-  void connectToServer(std::string address, unsigned short port, std::string username) {
-    this->client->Connect(address, port, username);
-  }
-#endif
-
-  void loadMap(int index) {
-    auto map = maps.at(index);
-    scene->GetObjects()[0] = map;
-
-    for (auto& mesh : map->meshes) {
-      auto vertices = std::vector<glm::vec3>();
-      for (auto& vertex : mesh.vertices) vertices.push_back(vertex.position);
-      mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
-    }
-  }
-
-  void nextMap() {
-    loadMap(mapIndex);
-    mapIndex++;
-    if (mapIndex >= maps.size()) mapIndex = 0;
-  }
-
-  void SpawnPlayer(unsigned char playerId) {
-    auto newPlayer = std::static_pointer_cast<fe::Character>(this->player->Clone());
-
-    this->players.insert_or_assign(playerId, newPlayer);
-
-    this->scene->AddObject(newPlayer);
-  }
-
-  std::shared_ptr<fe::Object> LoadObj(std::string path, float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    this->scene->AddObject(model);
-    return model;
-  }
-
-  std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
-    return std::make_shared<fe::Object>(path, scale);
-  }
-
-  std::shared_ptr<fe::Object> LoadStaticOBJ(std::string path, float scale = 1.0f) {
-    std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
-    model->isStatic = true;
-    return model;
   }
 
   double getDeltaTime() { return 1; }

@@ -24,15 +24,6 @@ void fe::Game::ToggleWireframe(bool enabled) {
   else DisableWireframe();
 }
 
-Game::Game(GLADloadproc loadProc) {
-  if (!gladLoadGLLoader(loadProc)) {
-      std::cerr << "Failed to load OpenGL functions (GLAD)";
-  }
-  this->InitGL();
-  this->SetClearColor(0.1f, 0.4f, 1.0f);
-  Init();
-}
-
 void Game::BindFrameBuffer(int bufferIndex) {
   glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
 }

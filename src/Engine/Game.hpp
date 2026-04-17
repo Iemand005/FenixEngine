@@ -41,9 +41,11 @@
 
 #define WAYLAND
 
+#include "Renderer.hpp"
+
 namespace fe {
 
-class Game {
+class Game : public Renderer {
  public:
   std::unique_ptr<IWindow> window = nullptr;
   std::unique_ptr<Scene> scene;
@@ -84,41 +86,26 @@ class Game {
 
   std::unique_ptr<fe::Level> level = nullptr;
 
-  Game() {}
+  Game() : Renderer() {}
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-  Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {
+  Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
     Init();
   }
 
-  Game(GLADloadproc loadProc);
+  Game(GLADloadproc loadProc) : Renderer(loadProc);
 
 #ifndef FE_EXCLUDE_SDL
-  Game(int width, int height, bool skipInit = false) : Game() {
-    NewWindow(width, height);
-    // Init();
+  Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
+    Init();
   }
 
   void NewWindow(int width, int height) {
-    this->window = MakeWindow("Game", width, height);
-    // Init();
-    // window->StartMouseCapture();
-  }
-
-  template<typename WindowT = SDLWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
-    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
-
-    window->resizeEvent = [this](int width, int height) {
-      this->Resize(width, height);
-      this->Redraw();
-    };
-
+    window = MakeWindow("Game", width, height);
     window->mouseMoveEvent = [this](int x, int y) {
       MouseMove(x, y);
     };
-    return std::move(window);
+    window->StartMouseCapture();
   }
 #endif
 
