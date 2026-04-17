@@ -33,14 +33,7 @@ public:
   ShaderSaver() : ShaderSaver(800, 640) {}
 
   ShaderSaver(int width, int height) : fe::Renderer(width, height) {
-    const char *vertexShader = "#version 330 core\nvoid main() {\
-        float x = -1.0 + float((gl_VertexID & 1) << 2);\
-        float y = -1.0 + float((gl_VertexID & 2) << 1);\
-        gl_Position = vec4(x, y, 0.0, 1.0);\
-    }";
-
-    LoadShaderTexts(vertexShader, "#version 330 core\n\
-      out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
+    
   }
 
   void ProcessInput() {
@@ -54,17 +47,13 @@ public:
           break;
         case SDL_EVENT_WINDOW_RESIZED:
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-        // window->resizeEvent()
+          int w, h;
+          SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+          window->resizeEvent(w, h);
           break;
       }
     }
 
-    // if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
-    // if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
-    // if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
-    // if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
-
-    // if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
     // if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
     window->StopMouseCapture();
@@ -91,7 +80,9 @@ public:
     #version 330 core
     out vec4 FragColor;
     void main() {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      float x = gl_FragCoord.x;
+      float y = gl_FragCoord.y;
+      FragColor = vec4(1.0, 0.0+ x, 0.0, 1.0);
     }
     )";
 

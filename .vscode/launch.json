@@ -1,175 +1,175 @@
 {
   "configurations": [
-    {
-      "name": "C/C++: cl.exe build and debug main",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\main.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build main"
-    },
-    {
-      "name": "C/C++: cl.exe debug main",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\main.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
-      "environment": [],
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "C/C++: cl.exe build and debug OpenXR Windows",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\openxr.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build OpenXR Windows"
-    },
-    {
-      "name": "C/C++: cl.exe build and debug Server",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\server.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build server"
-    },
-    {
-      "name": "C/C++: cl.exe build and debug Foxcraft",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\Foxcraft.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}\\src",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build Foxcraft"
-    },
-    {
-      "name": "C/C++: cl.exe build and debug FoxChat",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\FoxChat.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build FoxChat"
-    },
     // {
-    //   "name": "Build Precompiled Header",
-    //   "preLaunchTask": ["Generate Precompiled Header", "C/C++: cl.exe build Chizzle"],
-    //   "dependsOrder": "sequence",
-    //   "group": {
-    //     "kind": "build",
-    //     "isDefault": true
-    //   }
+    //   "name": "C/C++: cl.exe build and debug main",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\main.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build main"
+    // },
+    // {
+    //   "name": "C/C++: cl.exe debug main",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\main.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}\\src",
+    //   "environment": [],
+    //   "console": "integratedTerminal"
+    // },
+    // {
+    //   "name": "C/C++: cl.exe build and debug OpenXR Windows",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\openxr.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}\\src",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build OpenXR Windows"
+    // },
+    // {
+    //   "name": "C/C++: cl.exe build and debug Server",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\server.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}\\src",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build server"
+    // },
+    // {
+    //   "name": "C/C++: cl.exe build and debug Foxcraft",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\Foxcraft.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}\\src",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build Foxcraft"
+    // },
+    // {
+    //   "name": "C/C++: cl.exe build and debug FoxChat",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\FoxChat.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build FoxChat"
+    // },
+    // // {
+    // //   "name": "Build Precompiled Header",
+    // //   "preLaunchTask": ["Generate Precompiled Header", "C/C++: cl.exe build Chizzle"],
+    // //   "dependsOrder": "sequence",
+    // //   "group": {
+    // //     "kind": "build",
+    // //     "isDefault": true
+    // //   }
+    // // }
+    // {
+    //   "name": "C/C++: cl.exe build and debug Chizzle",
+    //   "type": "cppvsdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\editor.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "console": "integratedTerminal",
+    //   "preLaunchTask": "C/C++: cl.exe build Chizzle"
+    // },
+    // {
+    //   "name": "(gdb) Launch",
+    //   "type": "cppdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}/build/annihilation",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "externalConsole": false,
+    //   "MIMode": "gdb",
+    //   "setupCommands": [
+    //     {
+    //       "description": "Enable pretty-printing for gdb",
+    //       "text": "-enable-pretty-printing",
+    //       "ignoreFailures": true
+    //     },
+    //     {
+    //       "description": "Set disassembly flavor to Intel",
+    //       "text": "-gdb-set disassembly-flavor intel",
+    //       "ignoreFailures": true
+    //     }
+    //   ],
+    //   "preLaunchTask": "C/C++: make",
+    //   "miDebuggerPath": "/usr/bin/gdb"
+    // },
+    // {
+    //   "name": "C/C++: g++.exe build and debug active file",
+    //   "type": "cppdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\editor.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "externalConsole": false,
+    //   "MIMode": "gdb",
+    //   "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+    //   "setupCommands": [
+    //     {
+    //       "description": "Enable pretty-printing for gdb",
+    //       "text": "-enable-pretty-printing",
+    //       "ignoreFailures": true
+    //     },
+    //     {
+    //       "description": "Set Disassembly Flavor to Intel",
+    //       "text": "-gdb-set disassembly-flavor intel",
+    //       "ignoreFailures": true
+    //     }
+    //   ],
+    //   "preLaunchTask": "C/C++: g++.exe build active file"
+    // },
+    // {
+    //   "name": "C/C++: g++.exe build and debug Editor",
+    //   "type": "cppdbg",
+    //   "request": "launch",
+    //   "program": "${workspaceFolder}\\build\\debug\\editor.exe",
+    //   "args": [],
+    //   "stopAtEntry": false,
+    //   "cwd": "${workspaceFolder}",
+    //   "environment": [],
+    //   "externalConsole": false,
+    //   "MIMode": "gdb",
+    //   "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+    //   "setupCommands": [
+    //     {
+    //       "description": "Enable pretty-printing for gdb",
+    //       "text": "-enable-pretty-printing",
+    //       "ignoreFailures": true
+    //     },
+    //     {
+    //       "description": "Set Disassembly Flavor to Intel",
+    //       "text": "-gdb-set disassembly-flavor intel",
+    //       "ignoreFailures": true
+    //     }
+    //   ],
+    //   "preLaunchTask": "C/C++: g++ build Chizzle"
     // }
-    {
-      "name": "C/C++: cl.exe build and debug Chizzle",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\editor.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "console": "integratedTerminal",
-      "preLaunchTask": "C/C++: cl.exe build Chizzle"
-    },
-    {
-      "name": "(gdb) Launch",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/build/annihilation",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        },
-        {
-          "description": "Set disassembly flavor to Intel",
-          "text": "-gdb-set disassembly-flavor intel",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "C/C++: make",
-      "miDebuggerPath": "/usr/bin/gdb"
-    },
-    {
-      "name": "C/C++: g++.exe build and debug active file",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\editor.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        },
-        {
-          "description": "Set Disassembly Flavor to Intel",
-          "text": "-gdb-set disassembly-flavor intel",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "C/C++: g++.exe build active file"
-    },
-    {
-      "name": "C/C++: g++.exe build and debug Editor",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\build\\debug\\editor.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        },
-        {
-          "description": "Set Disassembly Flavor to Intel",
-          "text": "-gdb-set disassembly-flavor intel",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "C/C++: g++ build Chizzle"
-    }
   ],
   "version": "2.0.0"
 }
