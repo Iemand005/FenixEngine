@@ -105,6 +105,19 @@ file(GLOB_RECURSE POOL_SOURCE_FILES
     src/games/Pool/*.cpp
 )
 
+file(GLOB_RECURSE IMGUI_SOURCE_FILES
+    external/imgui/imgui.cpp
+    external/imgui/backends/imgui_impl_sdl3.cpp
+    external/imgui/backends/imgui_impl_sdlgpu3.cpp
+    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_opengl3.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/imgui_demo.cpp
+    external/imgui/imgui_draw.cpp
+)
+
 add_executable(pool ${POOL_SOURCE_FILES})
 
 target_include_directories(pool PRIVATE
@@ -114,6 +127,24 @@ target_include_directories(pool PRIVATE
     external/imgui
     src/engine
 )
+
+file(GLOB_RECURSE SHADERSAVERS_SOURCE_FILES
+    external/imgui/imgui.cpp
+    external/imgui/backends/imgui_impl_sdl3.cpp
+    external/imgui/backends/imgui_impl_sdlgpu3.cpp
+    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_opengl3.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/imgui_demo.cpp
+    external/imgui/imgui_draw.cpp
+
+    src/games/ShaderSavers/*.cpp
+)
+
+add_executable(ShaderSaver ${SHADERSAVERS_SOURCE_FILES}
+    src/games/ShaderSavers/main.cpp)
 
 if(WIN32)
     # Main game
