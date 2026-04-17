@@ -43,7 +43,7 @@
 
 namespace fe {
 
-class Game {
+class Renderer {
  public:
   std::unique_ptr<IWindow> window = nullptr;
   std::unique_ptr<Scene> scene;
@@ -84,23 +84,23 @@ class Game {
 
   std::unique_ptr<fe::Level> level = nullptr;
 
-  Game() {}
+  Renderer() {}
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-  Game(F loadProc) : Game(static_cast<GLADloadproc>(loadProc)) {
+  Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
     Init();
   }
 
-  Game(GLADloadproc loadProc);
+  Renderer(GLADloadproc loadProc);
 
 #ifndef FE_EXCLUDE_SDL
-  Game(int width, int height, bool skipInit = false) : Game() {
+  Renderer(int width, int height, bool skipInit = false) : Renderer() {
     NewWindow(width, height);
     // Init();
   }
 
   void NewWindow(int width, int height) {
-    this->window = MakeWindow("Game", width, height);
+    this->window = MakeWindow("Renderer", width, height);
     // Init();
     // window->StartMouseCapture();
   }
