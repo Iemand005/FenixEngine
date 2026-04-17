@@ -35,17 +35,14 @@ public:
   ShaderSaver(int width, int height) : fe::Game(width, height) {
     LoadModels();
 
-    const char *vertexShader = "#version 330 core\n\
-      attribute vec3 position;\
-varying vec2 vUv;\
-\
-void main() {\
-    vUv = position.xy * 0.5 + 0.5;\
-    gl_Position = vec4(position, 1.0);\
-}";
+    const char *vertexShader = "#version 330 core\nvoid main() {\
+        float x = -1.0 + float((gl_VertexID & 1) << 2);\
+        float y = -1.0 + float((gl_VertexID & 2) << 1);\
+        gl_Position = vec4(x, y, 0.0, 1.0);\
+    }";
 
-    // LoadShaderTexts(vertexShader, "#version 330 core\n\
-    //   out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
+    LoadShaderTexts(vertexShader, "#version 330 core\n\
+      out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
   }
 
   void LoadModels() {
@@ -62,7 +59,7 @@ void main() {\
 
     // this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
     auto mesh = fe::Mesh();
-    mesh.
+    // mesh.
     std::shared_ptr testobj = std::make_shared<fe::Object>(mesh);
     testobj->
     this->scene->AddObject()
