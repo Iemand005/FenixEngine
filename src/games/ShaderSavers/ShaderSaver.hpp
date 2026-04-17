@@ -76,10 +76,10 @@ public:
     const char *fragmentShader = R"(
     #version 330 core
     out vec4 FragColor;
+    uniform sampler2D prevFrame;
     void main() {
-      float x = gl_FragCoord.x;
-      float y = gl_FragCoord.y;
-      FragColor = vec4(y / 500, x / 500, y / 500 + 500, 1.0);
+        vec3 lastColor = texture(prevFrame, uv).rgb;
+        FragColor = vec4(1.0 - lastColor, 1.0);
     }
     )";
 
@@ -102,7 +102,7 @@ public:
     for(int i=0; i<2; i++) {
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
     }
 
@@ -127,6 +127,8 @@ public:
       glBindTexture(GL_TEXTURE_2D, textures[source]);
 
       glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
       window->SwapBuffers();
 
