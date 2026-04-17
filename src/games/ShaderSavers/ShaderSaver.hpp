@@ -35,7 +35,8 @@ public:
   ShaderSaver(int width, int height) : fe::Game(width, height) {
     LoadModels();
 
-    const char *a = /* glsl */ "\
+    const char *a = /* glsl */ "#version 330 core\n\
+\
       attribute vec3 position;\
 varying vec2 vUv;\
 \
@@ -44,7 +45,9 @@ void main() {\
     gl_Position = vec4(position, 1.0);\
 }";
 
-    LoadShaderTexts(a, "out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
+    LoadShaderTexts(a, "#version 330 core\n\
+\
+      out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
   }
 
   void LoadModels() {
