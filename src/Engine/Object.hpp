@@ -61,7 +61,7 @@ class Object {
 
   Object() {
     //acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
-    state.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    state.scale = glm::vec3(0, 0, 0); // ok? glm::vec3();
     meshes = std::vector<Mesh>();
   }
 

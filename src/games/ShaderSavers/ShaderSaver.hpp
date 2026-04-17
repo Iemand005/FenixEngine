@@ -35,8 +35,7 @@ public:
   ShaderSaver(int width, int height) : fe::Game(width, height) {
     LoadModels();
 
-    const char *a = /* glsl */ "#version 330 core\n\
-\
+    const char *vertexShader = "#version 330 core\n\
       attribute vec3 position;\
 varying vec2 vUv;\
 \
@@ -45,49 +44,45 @@ void main() {\
     gl_Position = vec4(position, 1.0);\
 }";
 
-    LoadShaderTexts(a, "#version 330 core\n\
-\
-      out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
+    // LoadShaderTexts(vertexShader, "#version 330 core\n\
+    //   out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
   }
 
   void LoadModels() {
-    auto map1 = LoadStaticOBJ("resources/models/collisiontest.obj");
-    this->scene->AddObject(map1);
-    this->maps.push_back(map1);
+    // auto map1 = LoadStaticOBJ("resources/models/collisiontest.obj");
+    // this->scene->AddObject(map1);
+    // this->maps.push_back(map1);
 
-    this->maps.push_back(LoadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
+    // this->maps.push_back(LoadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
 
-    loadMap(0);
+    // loadMap(0);
 
-    this->player = std::make_shared<fe::Character>();
-    this->scene->AddObject(player);
+    // this->player = std::make_shared<fe::Character>();
+    // this->scene->AddObject(player);
 
-    this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+    // this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+    auto mesh = fe::Mesh();
+    mesh.
+    std::shared_ptr testobj = std::make_shared<fe::Object>(mesh);
+    testobj->
+    this->scene->AddObject()
   }
 
   void ProcessInput() {
     SDL_Event event;
     fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
     while (window->PollSDLEvents(&event)) {
-      ImGui_ImplSDL3_ProcessEvent(&event);
-      auto io = ImGui::GetIO();
       switch (event.type) {
-        case SDL_EVENT_QUIT:
-          // window->PrepareClose();
-          break;
+        case SDL_EVENT_QUIT: window->PrepareClose(); break;
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-          if (event.button.button == SDL_BUTTON_LEFT && !io.WantCaptureMouse) {
-            window->StartMouseCapture();
-          }
+
           break;
         case SDL_EVENT_WINDOW_RESIZED:
         case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-          // Get actual pixel dimensions
+        // window->resizeEvent()
           break;
       }
     }
-    // ucll-event
-    // 03-KNdUJNrR
 
     if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
     if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
@@ -97,8 +92,7 @@ void main() {\
     if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
     if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
 
-    if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) window->StopMouseCapture();
-    if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
+    window->StopMouseCapture();
   }
 
 
@@ -111,18 +105,11 @@ void main() {\
     SDL_Event event;
     while (!window->ShouldClose()) {
 
-      if (player->touchedGround) {
-        canJump = true;
-      }
-
       ProcessInput();
-      player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;
       camera->SetPos(pos - camera->front * 6.0f);
       
       camera->setFront(glm::normalize(pos - camera->GetPos()));
-      
-      if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
       
       Update();
       Redraw();
