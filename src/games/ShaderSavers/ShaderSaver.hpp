@@ -61,8 +61,8 @@ public:
     auto mesh = fe::Mesh();
     // mesh.
     std::shared_ptr testobj = std::make_shared<fe::Object>(mesh);
-    testobj->
-    this->scene->AddObject()
+    // testobj->
+    // this->scene->AddObject()
   }
 
   void ProcessInput() {
@@ -101,6 +101,11 @@ public:
       ProcessInput();
       
       // Redraw();
+
+      GLuint vao;
+      glGenVertexArrays(1, &vao);
+      glBindVertexArray(vao);
+
       glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
