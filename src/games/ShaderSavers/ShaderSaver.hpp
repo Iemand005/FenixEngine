@@ -78,10 +78,13 @@ public:
     const char *vertexShader = R"(
     #version 330 core
     void main() {
-        float x = -1.0 + float((gl_VertexID & 1) << 2);
-        float y = -1.0 + float((gl_VertexID & 2) << 1);
-        gl_Position = vec4(x, y, 0.0, 1.0);
-    }
+    vec2 vertices[3] = vec2[3](
+        vec2(-1.0, -1.0),
+        vec2( 3.0, -1.0),
+        vec2(-1.0,  3.0)
+    );
+    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
+}
     )";
 
     const char *fragmentShader = R"(
@@ -100,11 +103,18 @@ public:
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
+    int w, h;
+    SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+    glViewport(0, 0, w, h);
+
     while (!window->ShouldClose()) {
       ProcessInput();
       
-      // Redraw();
+      glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
 
+      shader->Use();
+      glBindVertexArray(vao);
 
       glDrawArrays(GL_TRIANGLES, 0, 3);
 

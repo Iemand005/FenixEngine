@@ -96,13 +96,13 @@ class Game {
 #ifndef FE_EXCLUDE_SDL
   Game(int width, int height, bool bpc10 = true) : Game() {
     NewWindow(width, height);
-    Init();
+    // Init();
   }
 
   void NewWindow(int width, int height) {
     this->window = MakeWindow("Game", width, height);
-    Init();
-    window->StartMouseCapture();
+    // Init();
+    // window->StartMouseCapture();
   }
 
   template<typename WindowT = SDLWindow>
