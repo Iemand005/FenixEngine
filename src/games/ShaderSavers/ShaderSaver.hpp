@@ -97,19 +97,11 @@ public:
     auto window = this->GetWindow<fe::SDLWindow>();
     window->DisableVSync();
   
-    glm::vec3 cameraOffset = glm::vec3(0);
-
-    SDL_Event event;
     while (!window->ShouldClose()) {
-
       ProcessInput();
-      glm::vec3 pos = player->state.position + cameraOffset;
-      camera->SetPos(pos - camera->front * 6.0f);
       
-      camera->setFront(glm::normalize(pos - camera->GetPos()));
-      
-      Update();
-      Redraw();
+      // Redraw();
+      glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
     Destroy();
