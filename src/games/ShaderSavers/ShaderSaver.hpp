@@ -59,7 +59,7 @@ public:
 
   void Run() {
     auto window = this->GetWindow<fe::SDLWindow>();
-    window->DisableVSync();
+    window->EnableVSync();
 
     const char *vertexShader = R"(
     #version 330 core
