@@ -125,9 +125,9 @@ class Game {
   void InitGL();
 
   void Init() {
-    this->InitGL();
+    InitGL();
     // this->SetClearColor(0.1f, 0.4f, 1.0f);
-    this->SetClearColor(0.0F, 0.0F, 0.0f);
+    SetClearColor(0.0F, 0.0F, 0.0f);
 
     this->physicsEngine = std::make_unique<PhysicsEngine>();
 
