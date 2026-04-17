@@ -76,8 +76,12 @@ public:
     const char *fragmentShader = R"(
     #version 330 core
     out vec4 FragColor;
+
     uniform sampler2D prevFrame;
+    uniform vec2 resolution;
+
     void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
         vec3 lastColor = texture(prevFrame, uv).rgb;
         FragColor = vec4(1.0 - lastColor, 1.0);
     }
@@ -94,6 +98,9 @@ public:
     int w, h;
     SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
     glViewport(0, 0, w, h);
+
+    GLint resLoc = glGetUniformLocation(shader->fragmentShader->id, "resolution");
+    glUniform2f(resLoc, (float)w, (float)h);
 
     GLuint fbos[2], textures[2];
     glGenFramebuffers(2, fbos);

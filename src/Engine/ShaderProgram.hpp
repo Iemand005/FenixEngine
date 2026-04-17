@@ -59,6 +59,10 @@ class ShaderProgram {
     fragmentShader.attachToProgram(id);
   }
 
+  Shader *GetFragmentShader() {
+    return &fragmentShader;
+  }
+
   void LinkShaders() {
     glLinkProgram(id);
 
