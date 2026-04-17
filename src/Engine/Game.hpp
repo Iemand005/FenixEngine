@@ -84,7 +84,7 @@ class Game : public Renderer {
 
   std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
 
-  std::unique_ptr<fe::Level> level = nullptr;
+  std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
   Game() : Renderer() {}
 
@@ -93,7 +93,7 @@ class Game : public Renderer {
     Init();
   }
 
-  Game(GLADloadproc loadProc) : Renderer(loadProc);
+  Game(GLADloadproc loadProc) : Renderer(loadProc) {};
 
 #ifndef FE_EXCLUDE_SDL
   Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
@@ -120,7 +120,7 @@ class Game : public Renderer {
     
     this->scene = std::make_unique<fe::Scene>();
     this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
-    this->level = std::make_unique<fe::Level>();
+    // this->level = std::move();
     
     this->scene->SetLight();
     
