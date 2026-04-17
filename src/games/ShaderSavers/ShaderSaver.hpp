@@ -97,14 +97,15 @@ public:
     auto window = this->GetWindow<fe::SDLWindow>();
     window->DisableVSync();
   
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    
     while (!window->ShouldClose()) {
       ProcessInput();
       
       // Redraw();
 
-      GLuint vao;
-      glGenVertexArrays(1, &vao);
-      glBindVertexArray(vao);
 
       glDrawArrays(GL_TRIANGLES, 0, 3);
     }
