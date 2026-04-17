@@ -99,7 +99,7 @@ public:
     SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
     glViewport(0, 0, w, h);
 
-    GLint resLoc = glGetUniformLocation(shader->fragmentShader->id, "resolution");
+    GLint resLoc = glGetUniformLocation(shader->GetFragmentShader()->id, "resolution");
     glUniform2f(resLoc, (float)w, (float)h);
 
     GLuint fbos[2], textures[2];
