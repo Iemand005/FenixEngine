@@ -34,17 +34,17 @@ public:
 
   ShaderSaver(int width, int height) : fe::Game(width, height) {
     LoadModels();
-    LoadShaderTexts(/* GLSL */ "\
+
+    const char *a = /* glsl */ "\
       attribute vec3 position;\
 varying vec2 vUv;\
 \
 void main() {\
     vUv = position.xy * 0.5 + 0.5;\
     gl_Position = vec4(position, 1.0);\
-}\
-      ", "\
-      e\
-      ");
+}";
+
+    LoadShaderTexts(a, "out vec4 FragColor; void main() { FragColor = vec4(1, 0, 0, 1); }");
   }
 
   void LoadModels() {
