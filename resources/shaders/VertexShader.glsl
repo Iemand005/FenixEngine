@@ -21,4 +21,4 @@ void main()
     Normal = normalMat * aNormal;
     FragPos = worldPos.xyz;
     TexCoord = aTexCoord;
-}  
+}

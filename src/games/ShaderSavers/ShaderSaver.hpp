@@ -34,8 +34,14 @@ public:
 
   ShaderSaver(int width, int height) : fe::Game(width, height) {
     LoadModels();
-    LoadShaderTexts("\
-      e\
+    LoadShaderTexts(/* GLSL */ "\
+      attribute vec3 position;\
+varying vec2 vUv;\
+\
+void main() {\
+    vUv = position.xy * 0.5 + 0.5;\
+    gl_Position = vec4(position, 1.0);\
+}\
       ", "\
       e\
       ");
@@ -120,12 +126,5 @@ public:
     }
 
     Destroy();
-  }
-
-  void InitUI() override {
-  }
-
-  void DrawUI() override {
-    DrawDebugUI();
   }
 };
