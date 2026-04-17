@@ -124,6 +124,9 @@ public:
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
       shader->Use();
       glBindVertexArray(vao);
 
@@ -134,6 +137,11 @@ public:
       glBindTexture(GL_TEXTURE_2D, textures[source]);
 
       glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[dest]);
+
+      glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
