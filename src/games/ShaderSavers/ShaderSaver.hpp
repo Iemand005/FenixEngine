@@ -82,7 +82,7 @@ public:
     void main() {
       float x = gl_FragCoord.x;
       float y = gl_FragCoord.y;
-      FragColor = vec4(1.0, 0.0+ x, 0.0, 1.0);
+      FragColor = vec4(1.0, 0.0 + x / 100, 0.0, 1.0);
     }
     )";
 
