@@ -115,7 +115,9 @@ SDL_Time lastWriteTime = 0;
             try {
             LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
             shader->Use();
-            } catch {}
+            } catch (std::exception ex) {
+              std::cout << ex.what() <<std::endl;
+            }
         }
     }
 
