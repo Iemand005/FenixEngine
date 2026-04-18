@@ -90,7 +90,9 @@ public:
     //     // FragColor = vec4(1.0 - lastColor, 1.0);
     //     }
     // prevFrame
-        FragColor = vec4(lastColor + 0.01, 1.0);
+    if (lastColor.r >= 0.5)
+        FragColor = vec4(lastColor.r - 10, 0, 0, 1.0);
+        else FragColor = vec4(lastColor.r + 0.01, 0, 0, 1.0);
 }
 
     )";
