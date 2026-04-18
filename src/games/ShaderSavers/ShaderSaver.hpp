@@ -90,13 +90,15 @@ public:
     //     // FragColor = vec4(1.0 - lastColor, 1.0);
     //     }
     // prevFrame
-    if (lastColor.r >= 1) {
-      FragColor = vec4(lastColor - 10, 1.0);
-      }
-      else FragColor = vec4(lastColor + 0.01, 1.0);
-      if (gl_FragCoord.x % 2) {
+    // if (lastColor.r >= 1) {
+    //   FragColor = vec4(lastColor - 10, 1.0);
+    //   }
+    //   else FragColor = vec4(lastColor + 0.01, 1.0);
+      if (gl_FragCoord.x > 2 ) {
       FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-      }
+      } else {
+        FragColor = vec4(1 - lastColor, 1.0);
+       }
 }
 
     )";
