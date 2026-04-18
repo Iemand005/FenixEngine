@@ -73,9 +73,9 @@ public:
     }
     )";
 
-    fe::Shader vertexShader(vertexShaderText, fe::ShaderType::Vertex);
+    fe::Shader vertexShader(vertexShaderText, fe::ShaderType::VertexShaderType);
     // vertexShader
-    fe::Shader fragmentShader("E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl", fe::ShaderType::Fragment);
+    fe::Shader fragmentShader("E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl", fe::ShaderType::FragmentShaderType);
 
     LoadShaders(vertexShader, fragmentShader);
     // shader->
@@ -107,6 +107,8 @@ public:
 
     while (!window->ShouldClose()) {
       ProcessInput();
+
+      SDL_GetPathInfo
 
       SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
       glViewport(0, 0, w, h);
