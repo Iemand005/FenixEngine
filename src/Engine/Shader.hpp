@@ -15,8 +15,8 @@
 namespace fe {
 
   enum ShaderType : GLenum {
-    VertexShader = GL_VERTEX_SHADER,
-    FragmentShader = GL_FRAGMENT_SHADER
+    VertexShaderType = GL_VERTEX_SHADER,
+    FragmentShaderType = GL_FRAGMENT_SHADER
   };
 
   class Shader {
