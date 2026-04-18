@@ -25,7 +25,7 @@ public:
 
   int mapIndex = 0;
 
-  ShaderSaver() : ShaderSaver(1000, 1000) {}
+  ShaderSaver() : ShaderSaver(500, 500) {}
 
   ShaderSaver(int width, int height) : fe::Renderer(width, height) {
     
@@ -81,7 +81,7 @@ public:
     uniform vec2 resolution;
 
   void main() {
-    vec2 uv = gl_FragCoord.xy/ 1000;
+    vec2 uv = gl_FragCoord.xy/ 500;
     vec3 lastColor = texture(prevFrame, uv).rgb;
     
     // if (gl_FragCoord.y > 100 && gl_FragCoord.x > 100) {
@@ -94,10 +94,10 @@ public:
     //   FragColor = vec4(lastColor - 10, 1.0);
     //   }
     //   else FragColor = vec4(lastColor + 0.01, 1.0);
-      if (gl_FragCoord.x > 2 ) {
-      FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-      } else {
+      if (gl_FragCoord.x < 12 && gl_FragCoord.y < 12 ) {
         FragColor = vec4(1 - lastColor, 1.0);
+        } else {
+          FragColor = vec4(0.0, 1.0, 0.0, 1.0);
        }
 }
 
