@@ -74,11 +74,8 @@ public:
     )";
 
     const char *fragShaderPath = "E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
-    
-    fe::Shader vertexShader(vertexShaderText, fe::ShaderType::VertexShaderType);
-    fe::Shader fragmentShader(fragShaderPath, fe::ShaderType::FragmentShaderType);
 
-    LoadShaders(vertexShader, fragmentShader);
+    LoadShaders(fe::Shader(vertexShaderText, fe::ShaderType::VertexShaderType), fe::Shader(fragShaderPath, fe::ShaderType::FragmentShaderType));
     // shader->
     shader->Use();
   

@@ -38,6 +38,9 @@ namespace fe {
         LoadText(text);
     }
 
+    static Shader Vertex(std::string text) { return Shader(text, ShaderType::VertexShaderType); }
+    static Shader Fragment(std::string text) { return Shader(text, ShaderType::FragmentShaderType); }
+
   bool ErrorCheck() {
     GLint success, length;
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
