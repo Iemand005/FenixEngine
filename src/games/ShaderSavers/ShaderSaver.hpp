@@ -87,7 +87,7 @@ public:
       vec3 lastColor = texture(prevFrame, uv).rgb;
       
       FragColor = vec4(1.0 - lastColor, 1.0);
-      if (y > 300) FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      if (y > 600) FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
     )";
 
