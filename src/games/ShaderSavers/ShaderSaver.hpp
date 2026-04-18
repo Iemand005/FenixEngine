@@ -73,9 +73,10 @@ public:
     }
     )";
 
+    const char *fragShaderPath = "E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+    
     fe::Shader vertexShader(vertexShaderText, fe::ShaderType::VertexShaderType);
-    // vertexShader
-    fe::Shader fragmentShader("E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl", fe::ShaderType::FragmentShaderType);
+    fe::Shader fragmentShader(fragShaderPath, fe::ShaderType::FragmentShaderType);
 
     LoadShaders(vertexShader, fragmentShader);
     // shader->
