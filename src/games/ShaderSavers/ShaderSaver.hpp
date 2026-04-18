@@ -120,9 +120,28 @@ SDL_Time lastWriteTime = 0;
             }
         }
     }
+      int newW, newH;
+      SDL_GetWindowSize(window->GetSDLWindow(), &newW, &newH);
 
-      SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
-      glViewport(0, 0, w, h);
+      if (newW != w || newH != h) {
+          w = newW;
+          h = newH;
+          
+          glViewport(0, 0, w, h);
+
+          for(int i=0; i<2; i++) {
+              glBindTexture(GL_TEXTURE_2D, textures[i]);
+              glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+              
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          }
+          printf("Resized naar: %dx%d\n", w, h);
+      }
+
+      // SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+      // glViewport(0, 0, w, h);
+      shader->Use();
       GLint resLoc = glGetUniformLocation(shader->GetFragmentShader()->id, "resolution");
       glUniform2f(resLoc, (float)w, (float)h);
       
@@ -132,7 +151,6 @@ SDL_Time lastWriteTime = 0;
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-      shader->Use();
       glBindVertexArray(vao);
 
       int source = frameCount % 2;
