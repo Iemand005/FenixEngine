@@ -80,15 +80,23 @@ public:
     uniform sampler2D prevFrame;
     uniform vec2 resolution;
 
-    void main() {
-      float x = gl_FragCoord.x;
-      float y = gl_FragCoord.y;
-      vec2 uv = gl_FragCoord.xy / resolution.xy;
-      vec3 lastColor = texture(prevFrame, uv).rgb;
-      
-      FragColor = vec4(1.0 - lastColor, 1.0);
-      if (y > 600) FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+  void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    vec3 lastColor = texture(prevFrame, uv).rgb;
+    
+    if (gl_FragCoord.y > 600.0) {
+        // BOVENKANT: Altijd groen, geen flikkering.
+        // Omdat dit constant is, zal lastColor hier in de volgende frame 
+        // ook constant zijn.
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0); 
+    } else {
+        // ONDERKANT: Hier doen we de feedback loop.
+        // Deze pixel kijkt naar wat hij de vorige keer was en draait het om.
+        FragColor = vec4(1.0 - lastColor, 1.0);
     }
+}
+
+}
     )";
 
 
