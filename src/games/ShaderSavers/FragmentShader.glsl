@@ -8,7 +8,7 @@ void main() {
   vec2 res = vec2(500, 500);
   vec2 pos = gl_FragCoord.xy;
 
-  vec2 uv = pos/ res;
+  vec2 uv = pos/ resolution;
   vec3 lastColor = texture(prevFrame, uv).rgb;
 
   if (gl_FragCoord.x > 12 && gl_FragCoord.x < 13 && gl_FragCoord.y < 1200 ) {

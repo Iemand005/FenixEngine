@@ -110,11 +110,10 @@ SDL_Time lastWriteTime = 0;
     if (SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
         if (currentInfo.modify_time > lastWriteTime) {
             lastWriteTime = currentInfo.modify_time;
-            printf("Shader gewijzigd! Herladen...\n");
-            // ReloadShader(shaderPath);
+            printf("Reloading shader...\n");
             try {
-            LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
-            shader->Use();
+              LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
+              shader->Use();
             } catch (std::exception ex) {
               std::cout << ex.what() <<std::endl;
             }
