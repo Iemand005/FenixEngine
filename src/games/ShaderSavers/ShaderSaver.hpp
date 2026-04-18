@@ -82,7 +82,7 @@ public:
 
   void main() {
     vec2 uv = gl_FragCoord.xy/ 1000;
-    // vec3 lastColor = texture(prevFrame, uv).rgb;
+    vec3 lastColor = texture(prevFrame, uv).rgb;
     
     // if (gl_FragCoord.y > 100 && gl_FragCoord.x > 100) {
     //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); 
@@ -90,7 +90,7 @@ public:
     //     // FragColor = vec4(1.0 - lastColor, 1.0);
     //     }
     // prevFrame
-        FragColor = vec4(uv, 1.0, 1.0);
+        FragColor = vec4(lastColor + 0.01, 1.0);
 }
 
     )";
