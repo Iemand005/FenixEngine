@@ -112,8 +112,10 @@ SDL_Time lastWriteTime = 0;
             lastWriteTime = currentInfo.modify_time;
             printf("Shader gewijzigd! Herladen...\n");
             // ReloadShader(shaderPath);
+            try {
             LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
             shader->Use();
+            } catch {}
         }
     }
 
