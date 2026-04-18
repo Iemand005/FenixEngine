@@ -14,6 +14,6 @@ void main() {
   if (gl_FragCoord.x > 12 && gl_FragCoord.x < 13 && gl_FragCoord.y < 1200 ) {
     FragColor = vec4(1 - lastColor, 1.0);
   } else {
-    FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+    FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   }
 }
