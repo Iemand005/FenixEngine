@@ -25,7 +25,7 @@ public:
 
   int mapIndex = 0;
 
-  ShaderSaver() : ShaderSaver(800, 640) {}
+  ShaderSaver() : ShaderSaver(1000, 1000) {}
 
   ShaderSaver(int width, int height) : fe::Renderer(width, height) {
     
@@ -84,7 +84,7 @@ public:
     vec2 uv = gl_FragCoord.xy / resolution.xy;
     vec3 lastColor = texture(prevFrame, uv).rgb;
     
-    if (gl_FragCoord.y > 600.0) {
+    if (gl_FragCoord.y > 10000.0) {
         // BOVENKANT: Altijd groen, geen flikkering.
         // Omdat dit constant is, zal lastColor hier in de volgende frame 
         // ook constant zijn.
@@ -96,7 +96,6 @@ public:
     }
 }
 
-}
     )";
 
 
