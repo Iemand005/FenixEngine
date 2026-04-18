@@ -14,7 +14,7 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace fe {
 
-  enum ShaderType : GLuint {
+  enum ShaderType : GLenum {
     Vertex = GL_VERTEX_SHADER,
     Fragment = GL_FRAGMENT_SHADER
   };
@@ -29,16 +29,13 @@ namespace fe {
       id = glCreateShader(shaderType);
     }
 
-    Shader(std::string fileName, GLenum shaderType) : Shader(shaderType) {
-      if (!LoadShaderFile(fileName)) return;
-
+    Shader(std::string text, GLenum shaderType) : Shader(shaderType) {//TODO: gette ridde of dez duplicatke here
+      if (!LoadShaderFile(text)) LoadText(text);;
     }
 
     Shader(std::string text, ShaderType shaderType) : Shader(shaderType) {
-      if (!LoadShaderFile(text)) {
-        if (!LoadText(text)) return;
-      }
-
+      if (!LoadShaderFile(text))
+        LoadText(text);
     }
 
   bool ErrorCheck() {

@@ -61,55 +61,23 @@ public:
     auto window = this->GetWindow<fe::SDLWindow>();
     window->EnableVSync();
 
-    const char *vertexShader = R"(
+    const char *vertexShaderText = R"(
     #version 330 core
     void main() {
-    vec2 vertices[3] = vec2[3](
-        vec2(-1.0, -1.0),
-        vec2( 3.0, -1.0),
-        vec2(-1.0,  3.0)
-    );
-    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
-}
+        vec2 vertices[3] = vec2[3](
+            vec2(-1.0, -1.0),
+            vec2( 3.0, -1.0),
+            vec2(-1.0,  3.0)
+        );
+        gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
+    }
     )";
 
-    const char *fragmentShader = R"(
-    #version 330 core
-    out vec4 FragColor;
+    fe::Shader vertexShader(vertexShaderText, fe::ShaderType::Vertex);
+    // vertexShader
+    fe::Shader fragmentShader("E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl", fe::ShaderType::Fragment);
 
-    uniform sampler2D prevFrame;
-    uniform vec2 resolution;
-
-  void main() {
-    vec2 res = vec2(500, 500);
-  vec2 pos = gl_FragCoord.xy;
-
-    vec2 uv = pos/ res;
-    vec3 lastColor = texture(prevFrame, uv).rgb;
-    
-    // if (gl_FragCoord.y > 100 && gl_FragCoord.x > 100) {
-    //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); 
-    // } else {
-    //     // FragColor = vec4(1.0 - lastColor, 1.0);
-    //     }
-    // prevFrame
-    // if (lastColor.r >= 1) {
-    //   FragColor = vec4(lastColor - 10, 1.0);
-    //   }
-    //   else FragColor = vec4(lastColor + 0.01, 1.0);
-      if (gl_FragCoord.x < 12 && gl_FragCoord.y < 12 ) {
-        FragColor = vec4(1 - lastColor, 1.0);
-        } else {
-          FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-       }
-}
-
-    )";
-
-    fe::Shader vertexShader();
-    vertexShader
-
-    LoadShaderTexts(vertexShader, fragmentShader);
+    LoadShaders(vertexShader, fragmentShader);
     // shader->
     shader->Use();
   
