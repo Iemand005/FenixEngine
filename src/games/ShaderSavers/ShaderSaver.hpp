@@ -74,9 +74,8 @@ public:
     )";
 
     const char *fragShaderPath = "E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
-
+SDL_Time lastWriteTime = 0;
     LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
-    // shader->
     shader->Use();
   
     GLuint vao;
@@ -106,7 +105,17 @@ public:
     while (!window->ShouldClose()) {
       ProcessInput();
 
-      SDL_GetPathInfo
+      // SDL_GetPathInfo(fragShaderPath, 
+      SDL_PathInfo currentInfo;
+    if (SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
+        if (currentInfo.modify_time > lastWriteTime) {
+            lastWriteTime = currentInfo.modify_time;
+            printf("Shader gewijzigd! Herladen...\n");
+            // ReloadShader(shaderPath);
+            LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
+            shader->Use();
+        }
+    }
 
       SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
       glViewport(0, 0, w, h);
