@@ -92,7 +92,7 @@ public:
     // prevFrame
     if (lastColor.r >= 1) {
       FragColor = vec4(lastColor.r - 10, 0, 0, 1.0);
-      if (uv.x > 10) FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+      if (Code lost itself again. I's noyro it's not your wolrl no its mine all I hear is gt racing 32 music and a grafffitti city.7zx > 0.5) FragColor = vec4(0.0, 1.0, 0.0, 1.0);
       }
         else FragColor = vec4(lastColor.r + 0.01, 0, 0, 1.0);
 }
