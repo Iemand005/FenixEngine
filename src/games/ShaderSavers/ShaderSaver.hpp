@@ -81,7 +81,8 @@ public:
     uniform vec2 resolution;
 
   void main() {
-    vec2 uv = gl_FragCoord.xy/ 500;
+  vec2 pos = gl_FragCoord.xy;
+    vec2 uv = pos/ 500;
     vec3 lastColor = texture(prevFrame, uv).rgb;
     
     // if (gl_FragCoord.y > 100 && gl_FragCoord.x > 100) {
