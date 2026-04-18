@@ -141,7 +141,7 @@ SDL_Time lastWriteTime = 0;
       // SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
       // glViewport(0, 0, w, h);
       shader->Use();
-      GLint resLoc = glGetUniformLocation(shader->GetFragmentShader()->id, "resolution");
+      GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
       glUniform2f(resLoc, (float)w, (float)h);
       
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
