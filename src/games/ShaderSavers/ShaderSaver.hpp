@@ -90,10 +90,12 @@ public:
     //     // FragColor = vec4(1.0 - lastColor, 1.0);
     //     }
     // prevFrame
-    if (lastColor.r >= 1)
-        FragColor = vec4(lastColor.r - 10, 0, 0, 1.0);
+    if (lastColor.r >= 1) {
+      FragColor = vec4(lastColor.r - 10, 0, 0, 1.0);
+      if (uv.x > 10) FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+      }
         else FragColor = vec4(lastColor.r + 0.01, 0, 0, 1.0);
-}87
+}
 
     )";
 
