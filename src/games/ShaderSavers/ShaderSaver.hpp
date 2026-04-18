@@ -128,6 +128,8 @@ public:
 
       SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
       glViewport(0, 0, w, h);
+      GLint resLoc = glGetUniformLocation(shader->GetFragmentShader()->id, "resolution");
+      glUniform2f(resLoc, (float)w, (float)h);
       
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
