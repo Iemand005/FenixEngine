@@ -85,19 +85,9 @@ public:
       float y = gl_FragCoord.y;
       vec2 uv = gl_FragCoord.xy / resolution.xy;
       vec3 lastColor = texture(prevFrame, uv).rgb;
-      // if (x <= 100 && y <= 100) {
-      //   FragColor = vec4(1.0 - lastColor, 1.0);
-      // } else {
-      //   FragColor = vec4(lastColor, 1.0);
-      // }
-        FragColor = vec4(1.0 - lastColor, 1.0);
-        if (gl_FragCoord.x < 100.0 && gl_FragCoord.y < 100.0) {
-        // Alleen hier flikkeren (inverteren)
-        FragColor = vec4(1.0 - lastColor, 1.0);
-    } else {
-        // De rest van het scherm blijft de normale kleur (bijv. grijs of de vorige frame)
-        FragColor = vec4(0.2, 0.2, 0.2, 1.0); 
-    }
+      
+      FragColor = vec4(1.0 - lastColor, 1.0);
+      if (y > 300) FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
     )";
 
