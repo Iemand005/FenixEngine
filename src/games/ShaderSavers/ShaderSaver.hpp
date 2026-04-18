@@ -21,9 +21,8 @@ public:
 
   double lastUpdateTime = 0.0f;
 
-  bool canJump = true;
-
-  int mapIndex = 0;
+  bool stepRequested = false;
+  bool spaceWasDown = false;
 
   ShaderSaver() : ShaderSaver(500, 500) {}
 
@@ -51,7 +50,8 @@ public:
       }
     }
 
-    // if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+    if (window->IsKeyDown(SDL_SCANCODE_SPACE) && !spaceWasDown) stepRequested = true, spaceWasDown = true;
+    else if (spaceWasDown) spaceWasDown = false;
 
     window->StopMouseCapture();
   }
@@ -147,29 +147,37 @@ SDL_Time lastWriteTime = 0;
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      if (stepRequested) {
 
-      glBindVertexArray(vao);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-      int source = frameCount % 2;
-      int dest = (frameCount + 1) % 2;
+        glBindVertexArray(vao);
 
-      glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
-      glBindTexture(GL_TEXTURE_2D, textures[source]);
+        int source = frameCount % 2;
+        int dest = (frameCount + 1) % 2;
 
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
+        glBindTexture(GL_TEXTURE_2D, textures[source]);
 
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
-      glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[dest]);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[dest]);
+        
+        frameCount++;
+
+        stepRequested = false;
+      }
+
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[frameCount % 2]);
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
       glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
       window->SwapBuffers();
 
-      frameCount++;
     }
 
     Destroy();
