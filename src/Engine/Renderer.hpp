@@ -106,6 +106,14 @@ class Renderer {
   }
 #endif
 
+  // void SetShaderProgram(ShaderProgram program) {
+  //   this->shader = std::make_unique
+  // }
+
+  void LoadShaders(Shader vertexShader, Shader fragmentShader) {
+    this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
+  }
+
   void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
     this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
   }

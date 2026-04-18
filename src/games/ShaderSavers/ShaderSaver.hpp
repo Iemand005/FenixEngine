@@ -106,8 +106,11 @@ public:
 
     )";
 
+    fe::Shader vertexShader();
+    vertexShader
 
     LoadShaderTexts(vertexShader, fragmentShader);
+    // shader->
     shader->Use();
   
     GLuint vao;
