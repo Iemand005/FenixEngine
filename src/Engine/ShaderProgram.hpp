@@ -16,11 +16,6 @@
 
 namespace fe {
 
-  enum ShaderType : GLuint {
-    Vertex = GL_VERTEX_SHADER,
-    Fragment = GL_FRAGMENT_SHADER
-  };
-
 class ShaderProgram {
   unsigned int id;
 

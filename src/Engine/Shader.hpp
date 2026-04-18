@@ -14,20 +14,32 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace fe {
 
-class Shader {
- public:
-  unsigned int id;
+  enum ShaderType : GLuint {
+    Vertex = GL_VERTEX_SHADER,
+    Fragment = GL_FRAGMENT_SHADER
+  };
 
-  std::string shaderText;
+  class Shader {
+  public:
+    unsigned int id;
 
-  Shader(GLenum shaderType) {
-    id = glCreateShader(shaderType);
-  }
+    std::string shaderText;
 
-  Shader(std::string fileName, GLenum shaderType) : Shader(shaderType) {
-    if (!LoadShaderFile(fileName)) return;
+    Shader(GLenum shaderType) {
+      id = glCreateShader(shaderType);
+    }
 
-  }
+    Shader(std::string fileName, GLenum shaderType) : Shader(shaderType) {
+      if (!LoadShaderFile(fileName)) return;
+
+    }
+
+    Shader(std::string text, ShaderType shaderType) : Shader(shaderType) {
+      if (!LoadShaderFile(text)) {
+        if (!LoadText(text)) return;
+      }
+
+    }
 
   bool ErrorCheck() {
     GLint success, length;
