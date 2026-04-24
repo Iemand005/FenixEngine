@@ -7,26 +7,11 @@
 
 #include <SDL3/SDL.h>
 
-#include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
-
 #include "IWindow.hpp"
 
 namespace fe {
 
-inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-  WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-  LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
 
-  switch (msg) {
-    case WM_MOVING:
-    case WM_TIMER: {
-      DwmFlush();
-    }
-  }
-
-  return res;
-}
 class SDLWindow : public IWindow {
 
   struct Impl;

@@ -75,7 +75,7 @@ class Renderer {
 
   template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
   Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-    Init();
+    //Init();
   }
 
   Renderer(GLADloadproc loadProc);

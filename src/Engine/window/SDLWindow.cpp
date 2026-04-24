@@ -3,6 +3,24 @@
 
 #include "SDLWindow.hpp"
 
+#ifdef WIN32
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+
+inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+  WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+  LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
+
+  switch (msg) {
+    case WM_MOVING:
+    case WM_TIMER: {
+      DwmFlush();
+    }
+  }
+
+  return res;
+}
+#endif
 
 inline void CheckError(bool success = false) {
   if (!success) {
@@ -37,11 +55,13 @@ struct fe::SDLWindow::Impl {
   SDL_GLContext gl_context;
 
   void SDL_FlushOnResizeAndMove(SDL_Window* window) {
+#ifdef WIN32
     HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
     if (hwnd) {
       WNDPROC ogProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
       SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(ogProc));
     }
+#endif
   }
 
     

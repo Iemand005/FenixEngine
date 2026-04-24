@@ -22,6 +22,12 @@ qt_add_translations(
     TS_FILES Editor_en_US.ts
 )
 
+set(JOLT_BUILD_SHADERS OFF CACHE BOOL "" FORCE)
+set(JPH_USE_DXC OFF CACHE BOOL "" FORCE)
+set(JPH_USE_DX12 OFF CACHE BOOL "" FORCE)
+set(JPH_USE_MTL OFF CACHE BOOL "" FORCE)
+set(JPH_USE_VK OFFsste CACHE BOOL "" FORCE)
+
 add_subdirectory(../Engine build/bin)
 
 target_include_directories(Editor PRIVATE

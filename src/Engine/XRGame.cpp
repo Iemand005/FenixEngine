@@ -4,6 +4,15 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 
+#ifdef WIN32
+#define XR_USE_PLATFORM_WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define WIN32_LEAN_AND_MEAN
+
+#include <Windows.h>
+#include <unknwn.h>
+#endif
+
 using namespace fe;
 
 void CheckGLError(const char* location) {
@@ -261,6 +270,8 @@ XRGame::~XRGame() {
   Destroy();
 };
 
+#ifdef XR_USE_PLATFORM_WIN32
+
 void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
     XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
@@ -319,6 +330,8 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 
     impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
   }
+
+#endif
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     XrVector2f joystickInput = {0.0f, 0.0f};

@@ -2,6 +2,7 @@
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
+#ifdef WIN32
 #define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 // #define XR_EXTENSION_PROTOTYPES
@@ -10,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
+#endif
 #endif
 // #include <openxr/openxr.h>
 // #include <openxr/openxr_platform.h>
@@ -56,7 +58,9 @@ namespace fe {
 
     bool IsInstanceValid();
 
+#ifdef WIN32
     void initOpenXR(HDC hDC, HGLRC hGLRC);
+#endif
     
     void EnableXR();
     void DisableVR();
