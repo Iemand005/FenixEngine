@@ -7,32 +7,18 @@ uniform float time;
 
 void main()
 {
-    vec2 fragCoord = gl_FragCoord.xy;
-    vec2 iResolution = resolution;
-    float iTime = time;
+    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
-    vec2 pos = fragCoord / iResolution;
+    float r = length(uv);
+    float a = atan(uv.y, uv.x);
 
-    pos -= 0.5;
-    pos = abs(pos);
+    float tunnel = sin(10.0 * r - time * 3.0 + a * 2.0);
 
-    float lines = 40.0;
-    float speed = 2.1;
-    float shift = iTime * speed;
+    vec3 col = vec3(
+        sin(tunnel + time),
+        sin(tunnel + 2.0),
+        sin(tunnel + 4.0)
+    );
 
-    if (sqrt(pow(fragCoord.x - (iResolution.x * 0.5), 2.0) +
-             pow(fragCoord.y - (iResolution.y * 0.5), 2.0))
-        > iResolution.y * 0.5)
-    {
-        shift *= -1.0;
-    }
-
-    float aspectRatio = iResolution.x / iResolution.y;
-
-    vec2 thingie = pos * lines;
-    thingie.y /= aspectRatio;
-
-    float col = floor(mod(thingie.y + thingie.x + shift, 1.0) * 2.0);
-
-    FragColor = vec4(vec3(col), 1.0);
+    FragColor = vec4(col * 0.5 + 0.5, 1.0);
 }
