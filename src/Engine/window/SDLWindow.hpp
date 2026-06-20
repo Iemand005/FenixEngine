@@ -43,9 +43,10 @@ class SDLWindow : public IWindow {
   void Move(int x, int y);
 
 	void SetBordered(bool enabled);
+	void SetFullscreen(bool enabled);
 
-	void fe::SDLWindow::SetBordered(bool enabled) {
-		SDL_SetWindowBordered(impl->window, enabled);
+	void SetBorderless(bool enabled) {
+		SetBordered(false);
 	}
 
   void Hide();

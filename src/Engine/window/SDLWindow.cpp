@@ -249,8 +249,8 @@ void fe::SDLWindow::Hide() {
 	SDL_HideWindow(impl->window);
 }
 
-void fe::SDLWindow::Move() {
-	SDL_ShowWindow(impl->window);
+void fe::SDLWindow::Move(int x, int y) {
+	SDL_SetWindowPosition(impl->window, x, y);
 }
 
 
@@ -258,6 +258,5 @@ void fe::SDLWindow::SetBordered(bool enabled) {
 	SDL_SetWindowBordered(impl->window, enabled);
 }
 
-void fe::SDLWindow::SetFullscreen(bool enabled) {
-	SDL_ShowWindow(impl->window);
+void fe::SDLWindow::SetFullscreen(bool enabled) {switching to fullscreen causes a flciker SDL_SetWindowFullscreen(window->GetSDLWindow(), enabled);
 }
