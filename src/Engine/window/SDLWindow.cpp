@@ -240,3 +240,11 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
     );
 }
 #endif
+
+void fe::SDLWindow::Show() {
+	SDL_ShowWindow(impl->window);
+}
+
+void fe::SDLWindow::Hide() {
+	SDL_HideWindow(impl->window);
+}

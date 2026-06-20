@@ -170,7 +170,7 @@ class ShaderSaver : public fe::Renderer {
 		bool firstDraw = true;
 		int frameCount = 0;
 
-		
+		window->Show();
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
