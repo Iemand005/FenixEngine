@@ -231,24 +231,26 @@ class ShaderSaver : public fe::Renderer {
 					std::cout << "Failed to reload shader on R press." << std::endl;
 				}
 			}
-			int newW, newH;
-			SDL_GetWindowSize(window->GetSDLWindow(), &newW, &newH);
 
-			if (newW != w || newH != h) {
-				w = newW;
-				h = newH;
 
-				glViewport(0, 0, w, h);
+			// int newW, newH;
+			// SDL_GetWindowSize(window->GetSDLWindow(), &newW, &newH);
 
-				for (int i = 0; i < 2; i++) {
-					glBindTexture(GL_TEXTURE_2D, textures[i]);
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			// if (newW != w || newH != h) {
+			// 	w = newW;
+			// 	h = newH;
 
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				}
-				printf("Resized naar: %dx%d\n", w, h);
-			}
+			// 	glViewport(0, 0, w, h);
+
+			// 	for (int i = 0; i < 2; i++) {
+			// 		glBindTexture(GL_TEXTURE_2D, textures[i]);
+			// 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+			// 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			// 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			// 	}
+			// 	printf("Resized naar: %dx%d\n", w, h);
+			// }
 
 			// SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
 			// glViewport(0, 0, w, h);
