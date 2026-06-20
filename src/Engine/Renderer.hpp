@@ -81,18 +81,18 @@ class Renderer {
   Renderer(GLADloadproc loadProc);
 
 #ifndef FE_EXCLUDE_SDL
-  Renderer(int width, int height, bool skipInit = false) : Renderer() {
-    NewWindow(width, height);
+  Renderer(int width, int height, bool skipInit = false, bool hidden = false) : Renderer() {
+    NewWindow(width, height, hidden);
   }
 
-  void NewWindow(int width, int height) {
-    this->window = MakeWindow("Renderer", width, height);
+  void NewWindow(int width, int height, bool hidden = false) {
+    this->window = MakeWindow("Renderer", width, height, hidden);
   }
 
   template<typename WindowT = SDLWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height) {
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height);
+    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden);
 
     window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);

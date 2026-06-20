@@ -35,7 +35,7 @@ public:
 
 	ShaderSaver() : ShaderSaver(500, 500) {}
 
-	ShaderSaver(int width, int height) : fe::Renderer(width, height) {}
+	ShaderSaver(int width, int height) : fe::Renderer(width, height, false, true) {}
 
 	void ProcessInput() {
 		SDL_Event event;
