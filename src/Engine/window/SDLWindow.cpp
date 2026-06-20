@@ -265,14 +265,24 @@ void fe::SDLWindow::SetFullscreen(bool enabled) {
 void fe::SDLWindow::GoBorderlessFullscreen() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 
-HWND hwnd = (HWND)SDL_GetPointerProperty(
-    props,
-    SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-    NULL
-);
+	HWND hwnd = (HWND)SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+		NULL
+	);
 
-int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+	SetWindowPos(
+    	hwnd,
+		HWND_TOPMOST,
+		x, y, w, h,
+		SWP_NOZORDER |
+		SWP_NOACTIVATE |
+		SWP_FRAMECHANGED |
+		SWP_SHOWWINDOW
+	);
 }
