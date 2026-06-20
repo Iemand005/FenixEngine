@@ -5,68 +5,70 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// Vloeiende rotatiematrix voor de organische golven
+// Razendsnelle rotatiematrix voor extreme beweging
 mat2 rot(float a) {
     float s = sin(a), c = cos(a);
     return mat2(c, -s, s, c);
 }
 
 void main() {
-    // Normaliseer coördinaten met een perfecte aspect-ratio
+    // Normaliseer coördinaten en pas perfecte aspect-ratio toe
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
     
-    // Rustige, constante tijdsfactor voor vloeiende animatie
-    float t = time * 0.4;
+    // Extreem opgevoerde tijdsfactor voor brute snelheid
+    float t = time * 5.5;
     
-    // Bereken afstand tot het centrum voor zachte lens-effecten
+    // Bereken de hoek en afstand tot het centrum voor een hardcore draaikolk-effect
     float r = length(uv);
+    float angle = atan(uv.y, uv.x);
     
-    // Subtiele, vloeibare torsie die meebeweegt met de diepte
-    uv *= rot(sin(r * 1.5 - t) * 0.2);
+    // Non-Euclidische vortex: het centrum tolt met mach-snelheid rond
+    angle += sin(r * 3.0 - t * 0.8) * 1.5;
+    angle -= t * 0.5; // Constante rotatie-versnelling
     
-    // Gelaagde golfberekening (Domain Warping) voor een zijde-achtige textuur
-    // Geen harde deeltjes, pure vloeiende stromen
-    vec2 p1 = uv * 2.0;
-    p1.x += sin(p1.y + t) * 0.7;
-    p1.y += cos(p1.x - t * 0.8) * 0.6;
-    p1 *= rot(t * 0.05);
+    // Re-projecteer de coördinaten in de draaikolk
+    vec2 p = vec2(cos(angle), sin(angle)) * r;
     
-    vec2 p2 = uv * 4.0;
-    p2.x -= cos(p2.y - t * 1.2) * 0.4;
-    p2.y -= sin(p2.x + t * 0.6) * 0.4;
-    p2 *= rot(-t * 0.08);
+    // Transformeer de ruimte via agressieve feedback-lussen (Domain Warping)
+    // Dit perst de kleuren samen in vlijmscherpe, vloeiende banen
+    p *= 3.0;
+    p.x += sin(p.y + t * 1.5) * 0.8;
+    p.y += cos(p.x - t * 2.0) * 0.8;
+    p *= rot(t * 0.2);
     
-    // Creëer zachte, dromerige interferentielijnen (alsof het rook of zijde is)
-    float stroom1 = sin(p1.x + p1.y + t);
-    float stroom2 = cos(p2.x - p2.y - t);
+    p.x -= cos(p.y - t * 1.2) * 0.5;
+    p.y -= sin(p.x + t * 1.8) * 0.5;
     
-    // Gebruik brede smoothsteps voor een fluweelzachte gloed in plaats van scherpe lasers
-    float glow1 = smoothstep(0.6, 0.0, abs(stroom1));
-    float glow2 = smoothstep(0.4, 0.0, abs(stroom2));
+    // Intensiteit van de vloeibare energiestromen
+    float stroom = sin(p.x * 2.0 + p.y * 2.0 + t);
+    float laser = smoothstep(0.4, 0.0, abs(stroom) - 0.02);
     
-    // Een elegant, rustgevend kleurenpalet (Kosmisch diepblauw, violet en zacht cyaan)
-    vec3 diepBlauw  = vec3(0.02, 0.05, 0.15);
-    vec3 pastelCyaan = vec3(0.3, 0.75, 0.9);
-    vec3 zijdePaars  = vec3(0.55, 0.3, 0.85);
+    // --- EXPLOSIEF REGENBOOG PALET (Spectrum Shift) ---
+    // Elke pixel krijgt een unieke, constant verschuivende RGB-waarde op basis van snelheid
+    vec3 col;
+    col.r = sin(length(p) + t * 3.0 + 0.0) * 0.5 + 0.5;
+    col.g = sin(length(p) - t * 3.5 + 2.0) * 0.5 + 0.5;
+    col.b = cos((p.x - p.y) + t * 4.0 + 4.0) * 0.5 + 0.5;
     
-    // Meng de kleuren vloeiend op basis van de bewegende vectorvelden
-    vec3 mixKleur1 = mix(diepBlauw, zijdePaars, sin(length(p1) + t) * 0.5 + 0.5);
-    vec3 mixKleur2 = mix(mixKleur1, pastelCyaan, cos(length(p2) - t) * 0.5 + 0.5);
+    // Voeg een tweede, contrasterende neon-kleurlaag toe voor maximale intensiteit
+    vec3 neonPaars = vec3(0.9, 0.0, 1.0);
+    vec3 neonCyaan  = vec3(0.0, 1.0, 0.8);
+    vec3 mixKleur = mix(neonPaars, neonCyaan, sin(t + r * 5.0) * 0.5 + 0.5);
     
-    // Combineer de zachte gloed-lagen voor een gelaagd Aurora-effect
-    vec3 finalColor = diepBlauw;
-    finalColor += mixKleur2 * glow1 * 0.6;
-    finalColor += pastelCyaan * glow2 * 0.3;
+    // Combineer de overstuurde kleuren met de vloeibare laserstromen
+    vec3 finalColor = col * 0.4;                 // Heldere basisvloeistof
+    finalColor += mixKleur * laser * 2.5;       // Oogverblindende neon-banen
+    finalColor += vec3(1.0) * pow(laser, 8.0);  // Wit-hete kernen in de stromen
     
-    // Voeg een heel subtiele, zachte omgevingsgloed toe vanuit het centrum
-    finalColor += mixKleur1 * 0.12 * (1.0 / (r + 0.4));
+    // Krachtige omgevingsgloed die vanuit de vortex naar buiten spuit
+    finalColor += col * 0.3 * (1.0 / (r + 0.15));
     
-    // High-end, filmische nabewerking (geen harde contrast-pops)
-    finalColor = pow(finalColor, vec3(0.4545)); // Gamma 2.2 voor perfecte kleurovergangen
-    finalColor = smoothstep(-0.05, 1.05, finalColor); // Zachte afronding van zwart- en witwaarden
+    // Brute kleurverzadiging en contrastboost voor die 240Hz pop
+    finalColor = smoothstep(0.05, 0.95, finalColor);
+    finalColor = pow(finalColor, vec3(0.65)); // Maximale helderheid van de middentonen
     
-    // Elegante, vloeiende vignette aan de randen van het scherm
-    float edge = smoothstep(1.3, 0.4, r);
+    // Subtiele vignette om het centrum nóg harder te laten knallen
+    float edge = smoothstep(1.5, 0.5, r);
     finalColor *= edge;
     
     FragColor = vec4(finalColor, 1.0);

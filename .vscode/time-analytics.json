@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 7883822,
-    "totalActiveTime": 544362
+    "totalFocusTime": 7888066,
+    "totalActiveTime": 544881
   },
   "files": {
     "src/games/ShaderSavers/ShaderSaver.hpp": {
@@ -70,8 +70,8 @@
       "focus": 226744
     },
     "src/games/ShaderSavers/FragmentShader.glsl": {
-      "pending": 5664,
-      "focus": 48892
+      "pending": 6183,
+      "focus": 53136
     }
   }
 }
