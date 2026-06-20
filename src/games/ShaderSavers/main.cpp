@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     std::cout << "arg[" << i << "] = " << argv[i] << "\n";
   }
 
-  #ifdef WIN32
+  // #ifdef WIN32
 
   bool isPreview = false;
   HWND previewHwnd = nullptr;
@@ -24,6 +24,6 @@ int main(int argc, char* argv[]) {
   }
 
   ShaderSaver game;
-  game.Run();
+  game.Run(isPreview, previewHwnd);
   return 0;
 }
