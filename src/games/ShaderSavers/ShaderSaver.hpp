@@ -30,12 +30,33 @@ class ShaderSaver : public fe::Renderer {
 	bool rWasDown = false;
 	bool fullscreened = false;
 
-	float startX, startY;
+	int width = 0, height = 0;
+	GLuint textures[2] = {0, 0};
+	bool texturesInitialized = false;
 
+	float startX, startY;
 
 	ShaderSaver() : ShaderSaver(500, 500) {}
 
 	ShaderSaver(int width, int height) : fe::Renderer(width, height, false, true) {}
+
+	void Resize(int w, int h) {
+		if (w <= 0 || h <= 0) return;
+
+		width = w;
+		height = h;
+		glViewport(0, 0, w, h);
+
+		if (!texturesInitialized) return;
+
+		for (int i = 0; i < 2; i++) {
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		printf("Resized naar: %dx%d\n", w, h);
+	}
 
 	void ProcessInput() {
 		SDL_Event event;
@@ -49,13 +70,14 @@ class ShaderSaver : public fe::Renderer {
 					window->PrepareClose();
 					break;
 				case SDL_EVENT_WINDOW_RESIZED:
-				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
 					int w, h;
 					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
-					glViewport(0, 0, w, h);
+					Resize(w, h);
 					window->resizeEvent(w, h);
 
 					break;
+				}
 			}
 		}
 
@@ -169,18 +191,17 @@ class ShaderSaver : public fe::Renderer {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		int w, h;
-		SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
-		printf("SDL window: %d x %d\n", w, h);
-		glViewport(0, 0, w, h);
+		SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+		printf("SDL window: %d x %d\n", width, height);
+		glViewport(0, 0, width, height);
 
 		shader->Use();
 		GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
 		if (prevLoc >= 0) glUniform1i(prevLoc, 0);
 		GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
-		if (resLoc >= 0) glUniform2f(resLoc, (float)w, (float)h);
+		if (resLoc >= 0) glUniform2f(resLoc, (float)width, (float)height);
 
-		GLuint fbos[2], textures[2];
+		GLuint fbos[2];
 		glGenFramebuffers(2, fbos);
 		glGenTextures(2, textures);
 
@@ -191,12 +212,13 @@ class ShaderSaver : public fe::Renderer {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
 			GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
 			glDrawBuffers(1, drawBuffers);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
 		}
+		texturesInitialized = true;
 
 		bool firstDraw = true;
 		int frameCount = 0;
@@ -232,33 +254,13 @@ class ShaderSaver : public fe::Renderer {
 				}
 			}
 
-
-			// int newW, newH;
-			// SDL_GetWindowSize(window->GetSDLWindow(), &newW, &newH);
-
-			// if (newW != w || newH != h) {
-			// 	w = newW;
-			// 	h = newH;
-
-			// 	glViewport(0, 0, w, h);
-
-			// 	for (int i = 0; i < 2; i++) {
-			// 		glBindTexture(GL_TEXTURE_2D, textures[i]);
-			// 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-			// 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			// 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			// 	}
-			// 	printf("Resized naar: %dx%d\n", w, h);
-			// }
-
-			// SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
-			// glViewport(0, 0, w, h);
+			
+			// Resize is handled in the SDL window resize event handler.
 			shader->Use();
 			GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
 			if (prevLoc >= 0) glUniform1i(prevLoc, 0);
 			GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
-			if (resLoc >= 0) glUniform2f(resLoc, (float)w, (float)h);
+			if (resLoc >= 0) glUniform2f(resLoc, (float)width, (float)height);
 			float t = SDL_GetTicks() / 1000.0f;
 			glUniform1f(glGetUniformLocation(shader->getId(), "time"), t);
 
