@@ -73,7 +73,7 @@ class ShaderSaver : public fe::Renderer {
     }
     )";
 
-    const char* fragShaderPath = "E:\\TestEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+    const char* fragShaderPath = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
     SDL_Time lastWriteTime = 0;
     LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
     shader->Use();
