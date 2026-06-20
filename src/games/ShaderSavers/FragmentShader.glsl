@@ -5,90 +5,94 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// 3D Rotatie om assen te vervagen en vloeiende beweging te krijgen
-void rotate(inout vec2 p, float a) {
-    p = cos(a) * p + sin(a) * vec2(p.y, -p.x);
+// Veilige rotatie-functie
+mat2 rot(float a) {
+    float s = sin(a), c = cos(a);
+    return mat2(c, -s, s, c);
 }
 
-// Pseudo-willekeurige ruis voor de organische plasmastructuur
-float noise3D(vec3 p) {
-    vec3 s = vec3(7.0, 157.0, 113.0);
-    vec3 ip = floor(p);
-    vec4 d = vec4(0.0, s.x, s.y, s.x + s.y);
-    p -= ip;
-    p = p * p * (3.0 - 2.0 * p);
-    vec4 h = vec4(dot(ip, s));
-    
-    // Bereken vloeiende overgangen tussen rasterpunten
-    #define noise_mix(h) mix(mix(fract(sin(h) * 43758.5453), fract(sin(h + d.y) * 43758.5453), p.x), mix(fract(sin(h + d.z) * 43758.5453), fract(sin(h + d.w) * 43758.5453), p.x), p.y)
-    
-    return mix(noise_mix(h), noise_mix(h + d.z * 2.0), p.z);
+// Gladde minimum-functie voor het organisch samensmelten van vormen (metaballs effect)
+float smin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+    return mix(b, a, h) - k * h * (1.0 - h);
 }
 
-// Fractal Brownian Motion (gelaagde ruis voor complexe details)
-float fbm(vec3 p) {
-    float v = 0.0;
-    float a = 0.5;
-    vec3 shift = vec3(100.0);
-    for (int i = 0; i < 4; ++i) {
-        v += a * noise3D(p);
-        p = p * 2.0 + shift;
-        a *= 0.5;
-    }
-    return v;
+// De 3D-wereld definitie
+float map(vec3 p) {
+    // Roteer de hele ruimte langzaam voor dynamiek
+    p.xy *= rot(time * 0.1);
+    p.xz *= rot(time * 0.05);
+    
+    // Vorm 1: Een pulserende centrale bol
+    float sphere1 = length(p) - (1.2 + 0.3 * sin(time * 2.0));
+    
+    // Vorm 2: Satelliet-bollen die erdoorheen zweven
+    vec3 p2 = p;
+    p2.x += sin(time * 1.5) * 2.0;
+    p2.z += cos(time * 1.8) * 1.5;
+    float sphere2 = length(p2) - 0.6;
+    
+    // Vorm 3: Een vervormde ring (torus) rondom het centrum
+    vec3 p3 = p;
+    p3.yz *= rot(time * 0.8);
+    vec2 q = vec2(length(p3.xz) - 2.5, p3.y);
+    float torus = length(q) - 0.2;
+    
+    // Smelt de vormen vloeiend samen tot één organische vloeistof
+    float vloeistof = smin(sphere1, sphere2, 0.6);
+    vloeistof = smin(vloeistof, torus, 0.4);
+    
+    // Voeg een subtiele rimpeling toe aan het oppervlak
+    vloeistof += sin(p.x * 4.0 + time) * sin(p.y * 4.0 + time) * sin(p.z * 4.0) * 0.05;
+    
+    return vloeistof;
 }
 
 void main() {
-    // Normaliseer coördinaten en corrigeer de beeldverhouding
+    // Normaliseer coördinaten
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
     
-    // Camera-asrotatie op basis van de tijd voor een zwevend effect
-    vec3 ro = vec3(0.0, 0.0, time * 0.4); 
-    vec3 rd = normalize(vec3(uv, 1.0 - dot(uv, uv) * 0.2)); // Subtiele fisheye-lens
+    // Camera setup
+    vec3 ro = vec3(0.0, 0.0, -5.0); // Camera positie (achteruit geplaatst)
+    vec3 rd = normalize(vec3(uv, 1.0)); // Kijkrichting
     
-    // Roteer de blikrichting langzaam over tijd
-    rotate(rd.xz, time * 0.05);
-    rotate(rd.yz, time * 0.03);
-
-    // Volumetrische raymarching (we 'scannen' de ruimte in lagen)
-    float accum = 0.0;
-    vec3 colorAccum = vec3(0.0);
+    // Raymarching loop (zonder ingewikkelde diepte-berekeningen)
+    float dO = 0.0;
+    int maxSteps = 60;
+    float dS = 0.0;
     
-    for (int i = 0; i < 40; i++) {
-        float depth = float(i) * 0.15;
-        vec3 pos = ro + rd * depth;
-        
-        // Transformeer de ruimte voor een dynamisch plasma-effect
-        float n = fbm(pos * 1.5 + vec3(0.0, 0.0, -time * 0.2));
-        
-        // Creëer scherpe energielijnen (cutting planes) binnen de ruis
-        float density = smoothstep(0.45, 0.55, n) * smoothstep(0.65, 0.55, n);
-        
-        // Geef elke dieptelaag een subtiel verschoven kleurenpalet (Nebula-stijl)
-        vec3 layerColor = vec3(
-            sin(depth * 2.0 + time + 0.0) * 0.5 + 0.5,
-            sin(depth * 1.5 + time + 2.0) * 0.5 + 0.5,
-            sin(depth * 1.0 + time + 4.0) * 0.5 + 0.5
-        );
-        
-        // Voeg de helderheid van deze laag toe aan het totaal
-        accum += density * (1.0 - accum);
-        colorAccum += layerColor * density * (1.0 - accum) * 2.5;
-        
-        if (accum >= 0.95) break; // Stop als het beeld volledig verzadigd is
+    for(int i = 0; i < maxSteps; i++) {
+        vec3 p = ro + rd * dO;
+        dS = map(p);
+        dO += dS;
+        if(dO > 10.0 || abs(dS) < 0.001) break;
     }
-
-    // Achtergrondsterren (hoge frequentie fonkelingen)
-    float stars = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
-    stars = step(0.997, stars) * (sin(time * 5.0 + uv.x * 10.0) * 0.5 + 0.5);
     
-    // Voeg alles samen
-    vec3 finalColor = colorAccum + vec3(stars * 0.8);
+    // Kleurenberekening op basis van hoe dicht de straal bij het object kwam
+    vec3 color = vec3(0.0);
     
-    // Cinema-stijl nabewerking (Vignette & Contrast boost)
-    float vignette = 1.0 - dot(uv, uv) * 0.4;
-    finalColor *= vignette;
-    finalColor = smoothstep(0.0, 1.1, finalColor); 
+    if(dS < 0.001) {
+        // We hebben het object geraakt! Bereken een psychedelische gloed
+        vec3 p = ro + rd * dO;
+        
+        // Kleur op basis van de 3D-coördinaten en tijd
+        color.r = 0.5 + 0.5 * sin(p.x + time);
+        color.g = 0.5 + 0.5 * sin(p.y + time * 1.3 + 2.0);
+        color.b = 0.5 + 0.5 * sin(p.z + time * 1.6 + 4.0);
+        
+        // Voeg schaduw/diepte toe op basis van het aantal stappen (ambient occlusion)
+        color *= 1.2 - (dO * 0.15);
+    } else {
+        // Achtergrond: een diepe kosmische verloopkleur (gradient)
+        color = vec3(0.02, 0.01, 0.05) * (1.0 - length(uv));
+    }
     
-    FragColor = vec4(finalColor, 1.0);
+    // Voeg een dromerige gloed (neon aura) toe rondom de randen
+    color += vec3(0.3, 0.1, 0.5) * (1.0 / (1.0 + dO * dO * 0.2));
+    
+    // Vloeiende overgang en gamma correctie
+    color = clamp(color, 0.0, 1.0);
+    color = pow(color, vec3(0.4545));
+    
+    FragColor = vec4(color, 1.0);
 }
