@@ -2,7 +2,6 @@
 
 out vec4 FragColor;
 
-uniform sampler2D prevFrame;
 uniform vec2 resolution;
 uniform float time;
 
@@ -15,15 +14,23 @@ vec3 hsv2rgb(vec3 c) {
 void main() {
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    vec3 lastColor = texture(prevFrame, uv).rgb;
+    vec2 p = uv * 2.0 - 1.0;
+    p.x *= resolution.x / resolution.y;
 
-    float hue = uv.x + uv.y * 0.5 + time * 0.2;
+    float t = time * 0.6;
 
-    vec3 rainbow = hsv2rgb(vec3(hue, 1.0, 1.0));
+    float v =
+        sin(p.x * 3.0 + t) +
+        sin(p.y * 3.0 + t) +
+        sin((p.x + p.y) * 3.0 + t) +
+        sin(length(p) * 5.0 - t);
 
-    vec3 feedback = vec3(1.0) - lastColor;
+    v = v / 4.0;
+    v = v * 0.5 + 0.5;
 
-    vec3 color = mix(rainbow, feedback, 0.25);
+    float hue = v + time * 0.1;
 
-    FragColor = vec4(color, 1.0);
+    vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
+
+    FragColor = vec4(col, 1.0);
 }
