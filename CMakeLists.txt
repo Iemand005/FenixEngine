@@ -175,6 +175,10 @@ set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_S
 
 set_target_properties(ShaderSaver PROPERTIES SUFFIX ".scr")
 
+set_target_properties(ShaderSaver PROPERTIES
+    WIN32_EXECUTABLE TRUE
+)
+
 if(WIN32)
     # Main game
     target_link_directories(main PRIVATE "${LIB_DIR}")

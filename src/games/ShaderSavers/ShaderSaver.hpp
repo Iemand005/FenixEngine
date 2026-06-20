@@ -117,8 +117,6 @@ public:
 				SDL_SetWindowBordered(window->GetSDLWindow(), false);
 				SDL_SetWindowFullscreen(window->GetSDLWindow(), true);
 				SDL_HideCursor();
-				// later: Win32 dialog or ImGui window
-SDL_ShowCursor(SDL_DISABLE);
 				break;
 			}
 
