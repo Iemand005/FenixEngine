@@ -106,7 +106,7 @@ class ShaderSaver : public fe::Renderer {
 			}
 
 			case ScreenSaverMode::Fullscreen: {
-				window->GoBorderlessFullSCreen();
+				window->GoBorderlessFullscreen();
 
 				SDL_HideCursor();
 				
