@@ -190,7 +190,7 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
     return true;
   }
-
+  
 #ifdef _WIN32
 #include <SDL3/SDL.h>
 #include <windows.h>
@@ -200,8 +200,12 @@ void fe::SDLWindow::AttachToNativeParent(HWND parent)
     if (!parent)
         return;
 
-    HWND hwnd = (HWND)SDL_GetWindowProperty(
-        GetSDLWindow(),
+    SDL_PropertiesID props = SDL_GetWindowProperties(GetSDLWindow());
+    if (!props)
+        return;
+
+    HWND hwnd = (HWND)SDL_GetPointerProperty(
+        props,
         SDL_PROP_WINDOW_WIN32_HWND_POINTER,
         NULL
     );
