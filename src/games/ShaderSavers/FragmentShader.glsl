@@ -5,87 +5,54 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// Ultra-stabiele rotatie matrix
+// Ultra-snelle rotatie om de assen te vervormen
 mat2 rot(float a) {
     float s = sin(a), c = cos(a);
     return mat2(c, -s, s, c);
 }
 
-// De Fractal 'Space-Folding' functie
-float map(vec3 p) {
-    // Oneindige herhaling van de ruimte (modulo-ruimte)
-    p.z = mod(p.z, 8.0) - 4.0;
-    
-    // Voeg een vloeiende rotatie toe over de diepte-as
-    p.xy *= rot(time * 0.1);
-    
-    // Sla de ruimte herhaaldelijk dubbel (Fractal folding)
-    // Dit creëert de complexe geometrische structuren
-    for (int i = 0; i < 4; i++) {
-        p = abs(p) - vec3(0.6, 0.8, 0.5); // Spiegelen rond assen
-        p.xy *= rot(0.5);                 // Draaien
-        p.xz *= rot(0.3);                 // Draaien op een andere as
-    }
-    
-    // Genereer scherpe balken/boxen in de gevouwen ruimte
-    vec3 d = abs(p) - vec3(0.3, 0.3, 1.5);
-    float box = min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
-    
-    // Snijd er een cilinder uit voor een 'gang'-effect
-    float cilinder = length(p.xy) - 0.15;
-    
-    return max(box, -cilinder) * 0.8; // Schaalfactor voor raymarching stabiliteit
-}
-
 void main() {
-    // Normaliseer coördinaten en maak een perfecte aspect ratio aan
+    // Normaliseer coördinaten en introduceer een pulserende lens-vervorming
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
     
-    // Camera setup - Vlieg oneindig vooruit door de herhaalde ruimte
-    vec3 ro = vec3(0.0, 0.0, time * 2.5); 
-    vec3 rd = normalize(vec3(uv, 1.1));
+    // Stap 1: Breng de ruimte aan het tollen
+    uv *= rot(time * 0.05);
     
-    // Subtiele camera-schudbeweging voor een dynamisch effect
-    rd.xy *= rot(sin(time * 0.5) * 0.1);
-    
-    // Raymarching
-    float dO = 0.0;
-    float glow = 0.0;
-    int steps = 50;
-    float dS = 0.0;
-    
-    for(int i = 0; i < steps; i++) {
-        vec3 p = ro + rd * dO;
-        dS = map(p);
-        dO += dS;
-        
-        // Verzamel een intense neon-gloed op basis van hoe dicht de straal langs de fractal scheert
-        glow += exp(-dS * 12.0);
-        
-        if(dO > 30.0 || abs(dS) < 0.001) break;
+    // Stap 2: Vloeibare ruimtelijke vervorming (Space Warping)
+    // We gebruiken sinusgolven die zichzelf telkens overschrijven
+    vec2 p = uv * 3.0;
+    for(int i = 1; i < 5; i++) {
+        float f = float(i);
+        p.x += sin(p.y + time * 0.4 + f) * 0.6 / f;
+        p.y += cos(p.x - time * 0.3 + f) * 0.5 / f;
+        p *= rot(0.4);
     }
     
-    // Basis belichting en diepte-mist
-    float fog = 1.0 / (1.0 + dO * dO * 0.05);
+    // Stap 3: Creëer een psychedelisch interferentiepatroon (Moiré/Hypnose)
+    float trippyPattern = sin(p.x + p.y + time) * 0.5 + 0.5;
     
-    // Genereer een verschuivend cyberpunk kleurenpalet (neon roze/magenta en elektrisch cyaan)
-    vec3 colorA = vec3(0.9, 0.0, 0.4); // Neon Magenta
-    vec3 colorB = vec3(0.0, 0.8, 1.0); // Neon Cyaan
+    // Extra scherpe, hypnotiserende ringen toevoegen die door de chaos heen snijden
+    float ringen = sin(length(uv * 8.0) - time * 4.0);
+    ringen = step(0.0, ringen); // Maakt harde, rauwe zwart-wit overgangen
     
-    // Mix de kleuren op basis van de diepte en de tijd
-    vec3 glowColor = mix(colorA, colorB, sin(dO * 0.2 + time) * 0.5 + 0.5);
+    // Stap 4: Chromatische Aberratie (Kleurverschuiving)
+    // We splitsen R, G en B op basis van verschillende tijdfrequenties voor een 'foute' look
+    vec3 col;
+    col.r = sin(p.x * 2.0 + time * 1.5) * 0.5 + 0.5;
+    col.g = sin(p.y * 2.0 - time * 2.0) * 0.5 + 0.5;
+    col.b = cos((p.x + p.y) * 1.5 + time) * 0.5 + 0.5;
     
-    // Voeg de verzamelde gloed toe voor dat intense lichteffect
-    vec3 finalColor = glowColor * (glow * 0.035);
+    // Meng de harde ringen met de vloeibare kleuren
+    col = mix(col, vec3(1.0 - col), ringen * 0.3);
     
-    // Geef de verre achtergrond een diepe sfeer en voeg mist toe
-    finalColor += colorB * (fog * 0.4);
+    // Stap 5: Aggressieve contrast-versterking (Solarisatie effect)
+    // Dit haalt het "mooie" verloop weg en maakt het rauw en intens
+    col = fract(col * 2.0); // Klapt de kleuren dubbel zodra ze te helder worden
+    col = smoothstep(0.1, 0.9, col);
     
-    // Cinema-look nabewerking (Vignette, contrast en gamma)
-    float vignette = smoothstep(1.2, 0.4, length(uv));
-    finalColor *= vignette;
-    finalColor = pow(finalColor, vec3(0.4545)); // Gamma 2.2
-    finalColor = smoothstep(0.05, 0.95, finalColor); // Contrast boost
+    // Subtiele CRT-monitor scanlijn interferentie voor de textuur
+    float scanline = sin(gl_FragCoord.y * 1.5) * 0.08;
+    col -= scanline;
     
-    FragColor = vec4(finalColor, 1.0);
+    FragColor = vec4(col, 1.0);
 }
