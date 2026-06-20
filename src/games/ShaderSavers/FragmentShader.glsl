@@ -5,30 +5,32 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-float hash(vec2 p)
-{
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-void main()
-{
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+void main() {
+    vec2 uv = gl_FragCoord.xy / resolution;
 
-    float speed = time * 0.5;
-    float depth = 20.0;
+    vec2 p = uv * 2.0 - 1.0;
+    p.x *= resolution.x / resolution.y;
 
-    vec3 col = vec3(0.0);
+    float t = time * 0.6;
 
-    for (float i = 1.0; i < 50.0; i++)
-    {
-        vec2 p = uv * i;
+    float v =
+        sin(p.x * 3.0 + t) +
+        sin(p.y * 3.0 + t) +
+        sin((p.x + p.y) * 3.0 + t) +
+        sin(length(p) * 5.0 - t);
 
-        float h = hash(floor(p * depth + speed));
+    v = v / 1.0;
+    v = v * 0.5 + 0.5;
 
-        float star = smoothstep(0.99, 1.0, h);
+    float hue = v + time * 0.1;
 
-        col += star / i;
-    }
+    vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
 
-    FragColor = vec4(col, col.r, 1.0);
+    FragColor = vec4(col, 1.0);
 }
