@@ -5,20 +5,23 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
+float noise(vec2 p)
+{
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    float r = length(uv);
-    float a = atan(uv.y, uv.x);
-
-    float tunnel = sin(10.0 * r - time * 3.0 + a * 2.0);
+    float n = noise(uv * 10.0 + time * 0.5);
+    float heat = uv.y + n * 0.3 + time * 0.2;
 
     vec3 col = vec3(
-        sin(tunnel + time),
-        sin(tunnel + 2.0),
-        sin(tunnel + 4.0)
+        heat,
+        heat * heat,
+        heat * heat * 0.3
     );
 
-    FragColor = vec4(col * 0.5 + 0.5, 1.0);
+    FragColor = vec4(col, 1.0);
 }
