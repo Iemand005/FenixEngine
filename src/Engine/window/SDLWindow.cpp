@@ -270,6 +270,6 @@ void fe::SDLWindow::GoBorderlessFullscreen() {
 	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 	int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-	// Move(x, y);
+	Move(x, y);
 	Resize(w, h);
 }
