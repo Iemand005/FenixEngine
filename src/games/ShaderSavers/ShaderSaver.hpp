@@ -22,7 +22,7 @@ enum class ScreenSaverMode
 };
 
 class ShaderSaver : public fe::Renderer {
- public:
+public:
 	std::vector<std::string> messages;
 
 	double lastUpdateTime = 0.0f;
@@ -93,7 +93,7 @@ class ShaderSaver : public fe::Renderer {
 		return true;
 	}
 
-	void Run(bool previewMode = false, HWND previewParent = nullptr) {
+	void Run(ScreenSaverMode previewMode = ScreenSaverMode::Fullscreen, HWND previewParent = nullptr) {
 		auto window = this->GetWindow<fe::SDLWindow>();
 		window->EnableVSync();
 
