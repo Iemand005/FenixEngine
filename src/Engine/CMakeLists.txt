@@ -54,3 +54,10 @@ target_link_libraries(Engine PUBLIC
     OpenXR::openxr_loader
     Jolt
 )
+
+
+add_library(Renderer STATIC
+    glad/glad.c
+    renderer/Renderer.cpp
+    renderer/Shader.cpp
+)
