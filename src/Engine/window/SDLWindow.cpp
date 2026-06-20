@@ -254,10 +254,10 @@ void fe::SDLWindow::Move() {
 }
 
 
-void fe::SDLWindow::SetBorderlessb() {
-	SDL_ShowWindow(impl->window);
+void fe::SDLWindow::SetBordered(bool enabled) {
+	SDL_SetWindowBordered(impl->window, enabled);
 }
 
-void fe::SDLWindow::SetFullscreen(boolean enabled) {
+void fe::SDLWindow::SetFullscreen(bool enabled) {
 	SDL_ShowWindow(impl->window);
 }
