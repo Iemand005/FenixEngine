@@ -34,6 +34,11 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+#include <windows.h>
+#include <string>
+
+int main(int argc, char** argv);
+
 int WINAPI WinMain(
     HINSTANCE hInstance,
     HINSTANCE hPrevInstance,
@@ -41,5 +46,33 @@ int WINAPI WinMain(
     int nCmdShow
 )
 {
-    return main();
+    int argc = 1;
+    char* argv[10] = { nullptr };
+
+    argv[0] = (char*)"ShaderSaver.scr";
+
+    // Simple tokenization of lpCmdLine
+    std::string cmd = lpCmdLine ? lpCmdLine : "";
+    std::string current;
+
+    for (char c : cmd)
+    {
+        if (c == ' ')
+        {
+            if (!current.empty())
+            {
+                argv[argc++] = _strdup(current.c_str());
+                current.clear();
+            }
+        }
+        else
+        {
+            current += c;
+        }
+    }
+
+    if (!current.empty())
+        argv[argc++] = _strdup(current.c_str());
+
+    return main(argc, argv);
 }
