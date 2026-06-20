@@ -31,7 +31,7 @@ void main()
 
     vec3 col = vec3(0.0);
 
-    float t = time * 1.5;
+    float t = time * 0.5;
 
     for (int i = 0; i < 200; i++)
     {
