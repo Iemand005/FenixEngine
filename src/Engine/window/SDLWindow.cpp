@@ -73,7 +73,7 @@ fe::SDLWindow::~SDLWindow() {
   Destroy();
 }
 
-fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool show = true) : IWindow(width, height) {
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden) : IWindow(width, height) {
   impl = std::make_unique<Impl>();
     CheckError(SDL_Init(SDL_INIT_VIDEO));
 
@@ -88,6 +88,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool show = t
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
     auto window_props = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    if (hidden) window_props |= SDL_WINDOW_HIDDEN;
 
     impl->window = SDL_CreateWindow(title.c_str(), width, height, window_props);
 

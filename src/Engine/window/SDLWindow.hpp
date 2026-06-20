@@ -24,7 +24,7 @@ class SDLWindow : public IWindow {
  public:
   bool capturingMouse = false;
 
-  SDLWindow(std::string title, int width, int height);
+  SDLWindow(std::string title, int width, int height, bool hidden = false);
   ~SDLWindow();
 
   void SetSwapInterval(int interval) override;
