@@ -131,6 +131,7 @@ class ShaderSaver : public fe::Renderer {
 
 			case ScreenSaverMode::Window: {
 				window->Show();
+				windowed = true;
 				break;
 			}
 
@@ -199,11 +200,14 @@ class ShaderSaver : public fe::Renderer {
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
-			
-			if (!cursorHidden)
-				cursorHidden = SDL_HideCursor();
 
-			while (ShowCursor(FALSE) >= 0) {}
+			if (!windowed) {
+			
+				if (!cursorHidden)
+					cursorHidden = SDL_HideCursor();
+
+				while (ShowCursor(FALSE) >= 0) {}
+			}
 
 			if (firstDraw) {
 				stepRequested = true;
