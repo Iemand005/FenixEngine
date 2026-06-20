@@ -55,6 +55,10 @@ set(IMGUI_SRC
 
 add_executable(main ${SOURCE_FILES} ${IMGUI_SRC})
 
+set_property(TARGET main PROPERTY VS_DEBUGGER_WORKING_DIRECTORY
+    ${CMAKE_SOURCE_DIR}
+)
+
 
 # For VSCode CMake Tools specifically
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

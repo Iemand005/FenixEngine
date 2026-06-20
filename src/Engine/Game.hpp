@@ -306,7 +306,10 @@ class Game : public Renderer {
     if (this->camera) this->camera->SetAspect(width, height);
   }
 
-  bool ShouldClose() { return this->window->ShouldClose(); }
+  bool ShouldClose() {
+    if (!this->window) return fa;se
+    return this->window->ShouldClose();
+  }
 
   void Destroy() {
     if (window) window->Destroy();
