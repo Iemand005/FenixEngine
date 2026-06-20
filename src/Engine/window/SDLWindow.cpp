@@ -261,3 +261,17 @@ void fe::SDLWindow::SetBordered(bool enabled) {
 void fe::SDLWindow::SetFullscreen(bool enabled) {
 	SDL_SetWindowFullscreen(impl->window, enabled);
 }
+
+void fe::SDLWindow::GoBorderlessFullscreen() {
+	 {
+		SetBorderless();
+
+		int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+		int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+		int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+		Move(x, y);
+		Resize(w, h);
+	}
+}
