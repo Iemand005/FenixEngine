@@ -21,6 +21,7 @@ class ShaderSaver : public fe::Renderer {
   double lastUpdateTime = 0.0f;
 
   bool stepRequested = false;
+  bool STEPPED = false;
   bool spaceWasDown = false;
   bool reloadRequested = false;
   bool rWasDown = false;
@@ -190,11 +191,13 @@ class ShaderSaver : public fe::Renderer {
       if (prevLoc >= 0) glUniform1i(prevLoc, 0);
       GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
       if (resLoc >= 0) glUniform2f(resLoc, (float)w, (float)h);
+      float t = SDL_GetTicks() / 1000.0f;
+      glUniform1f(glGetUniformLocation(shader->getId(), "time"), t);
 
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
-      if (stepRequested) {
+      if (stepRequested || !STEPPED) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textures[frameCount % 2]);
 
