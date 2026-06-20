@@ -156,6 +156,12 @@ class ShaderSaver : public fe::Renderer {
 		SDL_Time lastWriteTime = 0;
 		if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
 			std::cerr << "Initial shader load failed." << std::endl;
+
+			fragShaderPath = "FragmentShader.glsl";
+			lastWriteTime = 0;
+			if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+				std::cerr << "Secondary shader load failed." << std::endl;
+			}
 		}
 
 		GLuint vao;
