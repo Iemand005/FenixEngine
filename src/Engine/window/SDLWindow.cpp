@@ -271,7 +271,7 @@ void fe::SDLWindow::GoBorderlessFullscreen() {
 	SetBorderless();
 
 	Move(x, y);
-	Resize(w,  h);
+	Resize(w, h);
 
 	return;
 
