@@ -5,13 +5,12 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// simple hash for pseudo-randomness
 float hash(float n) {
     return fract(sin(n) * 43758.5453123);
 }
 
 vec2 hash2(float n) {
-    return vec2(hash(n), hash(n + 1.0));
+    return vec2(hash(n), hash(n + 17.0)) * 2.0 - 1.0;
 }
 
 void main()
@@ -19,44 +18,44 @@ void main()
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
 
     vec3 col = vec3(0.0);
+    float t = time * 0.6;
 
-    float t = time * 0.8;
-
-    // number of stars (fake instancing)
-    for (int i = 0; i < 120; i++)
+    for (int i = 0; i < 140; i++)
     {
         float fi = float(i);
 
         // random direction from center
-        vec2 dir = normalize(hash2(fi * 13.13) * 2.0 - 1.0);
+        vec2 dir = normalize(hash2(fi * 12.989));
 
-        // random start offset so they don't sync
-        float seed = hash(fi * 91.7);
+        // unique phase per star
+        float seed = hash(fi * 78.233);
 
-        // radial distance (wraps over time)
-        float speed = mix(0.4, 3.5, hash(fi * 7.1));
-        float dist = fract(seed + t * speed);
+        // normalized lifetime (0..1 looping)
+        float p = fract(seed + t * (0.4 + hash(fi * 91.7) * 2.0));
 
-        // make stars move outward from center
-        vec2 pos = dir * dist * 2.5;
+        // IMPORTANT: acceleration outward (slow start -> fast edge)
+        float accel = p * p;
 
-        // perspective feel: faster when farther out
-        float depth = dist;
-        float size = mix(0.012, 0.0015, depth);
+        // outward distance
+        float dist = accel * 2.5;
 
-        float d = length(uv - pos);
+        vec2 pos = dir * dist;
 
-        // sharp star core
-        float star = smoothstep(size, 0.0, d);
+        // sharp pixel star size (constant small square-ish point)
+        float size = 0.008;
 
-        // brightness variation
-        float brightness = mix(0.6, 1.5, hash(fi * 33.3)) * (0.3 + depth);
+        vec2 diff = uv - pos;
+
+        // HARD star (no blur)
+        float star =
+            step(abs(diff.x), size) *
+            step(abs(diff.y), size);
+
+        // optional slight brightness variation
+        float brightness = 0.8 + hash(fi * 9.1) * 0.4;
 
         col += vec3(star * brightness);
     }
-
-    // slight glow / tone shaping
-    col = 1.0 - exp(-col);
 
     FragColor = vec4(col, 1.0);
 }
