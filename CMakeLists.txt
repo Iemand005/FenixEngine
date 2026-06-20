@@ -171,7 +171,7 @@ target_include_directories(ShaderSaver PRIVATE
     src/engine
 )
 
-target_link_libraries(ShaderSaver PRIVATE Engine)
+target_link_libraries(ShaderSaver PRIVATE Renderer)
 
 set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
