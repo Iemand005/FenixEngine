@@ -193,16 +193,10 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
 #ifdef _WIN32
 #include <windows.h>
-#endif
 
-void fe::SDLWindow::SetChildOf(void* nativeParent)
+HWND GetNativeHWND(SDL_Window* window)
 {
-#ifdef _WIN32
-    HWND parent = (HWND)nativeParent;
-
-    SDL_SetWindowParent(this->GetSDLWindow(), parent);
-
-    // Optional: enforce child style behavior
-    SDL_SetWindowBordered(sdlWindow, SDL_FALSE);
-#endif
+  return (HWND)SDL_GetWindowProperty(window, SDL_PROP_WINDOW_WIN32_HWND_POINTER);
 }
+
+#endif
