@@ -155,7 +155,9 @@ file(GLOB_RECURSE SHADERSAVERS_SOURCE_FILES
     src/games/ShaderSavers/*.cpp
 )
 
-add_executable(ShaderSaver ${SHADERSAVERS_SOURCE_FILES}
+add_executable(ShaderSaver
+    WIN32
+    ${SHADERSAVERS_SOURCE_FILES}
     src/games/ShaderSavers/main.cpp
     src/games/ShaderSavers/ShaderSaver.hpp
 )
