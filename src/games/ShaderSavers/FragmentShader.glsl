@@ -15,46 +15,53 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // center + aspect correction
+    // center + aspect
     vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
     float t = time;
 
-    // FAST MOTION BASE LAYERS (all cheap)
-    float wave1 = sin(p.x * 6.0 + t * 2.5);
-    float wave2 = cos(p.y * 6.0 - t * 2.2);
-    float wave3 = sin((p.x + p.y) * 5.0 + t * 3.0);
+    // --- rotating coordinate frame (slow drift, not swirl plasma) ---
+    float a = t * 0.35;
+    mat2 rot = mat2(cos(a), -sin(a), sin(a), cos(a));
+    p = rot * p;
 
-    // diagonal sweep = motion illusion amplifier
-    float sweep = sin((p.x * 2.0 + p.y * 2.0) + t * 4.0);
+    // --- CRYSTAL GRID 1 (horizontal lattice) ---
+    float gx = sin((p.x * 10.0) + t * 1.7);
+    float gy = sin((p.y * 10.0) - t * 1.3);
 
-    // radial pulse (kept simple)
-    float d = length(p);
-    float radial = sin(d * 10.0 - t * 3.5);
+    // --- CRYSTAL GRID 2 (diagonal shifted lattice) ---
+    float gd = sin((p.x + p.y) * 8.0 + t * 2.2);
 
-    // combine (NO LOOPS, NO NOISE)
-    float v = wave1 + wave2 + wave3 + sweep + radial;
+    // --- CRYSTAL GRID 3 (inverse diagonal phase) ---
+    float gi = sin((p.x - p.y) * 9.0 - t * 1.9);
 
-    // normalize safely (5 layers → divide)
-    v *= 0.2;
+    // combine as interference field
+    float v = gx * 0.35 + gy * 0.35 + gd * 0.2 + gi * 0.1;
+
+    // convert to usable range
     v = v * 0.5 + 0.5;
 
-    // sharpen motion contrast
-    v = smoothstep(0.25, 0.75, v);
+    // sharpen into “crystal edges”
+    float edge = smoothstep(0.45, 0.55, v);
 
-    // fast hue cycling
-    float hue = v + t * 0.08;
+    // moving energy bands (gives speed illusion)
+    float bands = sin(v * 20.0 + t * 5.0);
 
-    // color intensity boost for “speed feel”
+    // final intensity
+    float finalV = mix(v, bands * 0.5 + 0.5, 0.35);
+
+    // hue driven by interference (not time directly → more “organic”)
+    float hue = finalV + sin(t * 0.2) * 0.1;
+
     vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
 
-    // directional motion streak illusion (cheap trick)
-    float streak = sin(p.x * 20.0 + t * 6.0) * 0.5 + 0.5;
-    col += streak * 0.15;
+    // energy contrast shaping
+    col *= edge + 0.3;
 
-    // vignette to focus motion center
-    col *= smoothstep(1.3, 0.2, d);
+    // subtle vignette
+    float d = length(p);
+    col *= smoothstep(1.4, 0.2, d);
 
     FragColor = vec4(col, 1.0);
 }
