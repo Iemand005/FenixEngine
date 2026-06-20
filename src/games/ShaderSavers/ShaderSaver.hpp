@@ -127,7 +127,7 @@ class ShaderSaver : public fe::Renderer {
 				break;
 			}
 
-			case ScreenSaverMode::Window {
+			case ScreenSaverMode::Window: {
 				window->Show();
 				break;
 			}
