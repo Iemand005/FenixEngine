@@ -231,5 +231,15 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
         SWP_NOACTIVATE |
         SWP_SHOWWINDOW
     );
+
+    printf("Parent HWND = %p\n", parent);
+printf("Child HWND  = %p\n", hwnd);
+
+RECT r;
+GetClientRect((HWND)parent, &r);
+
+printf("Parent size = %ld x %ld\n",
+       r.right - r.left,
+       r.bottom - r.top);
 }
 #endif
