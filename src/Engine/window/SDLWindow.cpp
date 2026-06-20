@@ -263,6 +263,18 @@ void fe::SDLWindow::SetFullscreen(bool enabled) {
 }
 
 void fe::SDLWindow::GoBorderlessFullscreen() {
+	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+	SetBorderless();
+
+	Move(x, y);
+	Resize(w,  h);
+
+	return;
+
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
