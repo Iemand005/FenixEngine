@@ -192,11 +192,40 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
   }
 
 #ifdef _WIN32
+#include <SDL3/SDL.h>
 #include <windows.h>
 
-HWND GetNativeHWND(SDL_Window* window)
+void fe::SDLWindow::AttachToNativeParent(HWND parent)
 {
-  SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hParentWindow);
-}
+    if (!parent)
+        return;
 
+    HWND hwnd = (HWND)SDL_GetWindowProperty(
+        GetSDLWindow(),
+        SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+        NULL
+    );
+
+    if (!hwnd)
+        return;
+
+    SetParent(hwnd, parent);
+
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+
+    style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_THICKFRAME);
+    style |= WS_CHILD;
+
+    SetWindowLong(hwnd, GWL_STYLE, style);
+
+    SetWindowPos(
+        hwnd,
+        NULL,
+        0, 0, 0, 0,
+        SWP_FRAMECHANGED |
+        SWP_NOZORDER |
+        SWP_NOACTIVATE |
+        SWP_SHOWWINDOW
+    );
+}
 #endif

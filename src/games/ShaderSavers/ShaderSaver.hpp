@@ -90,10 +90,15 @@ class ShaderSaver : public fe::Renderer {
     auto window = this->GetWindow<fe::SDLWindow>();
     window->EnableVSync();
 
-    if (previewMode && previewParent)
-    {
-      window->AttachToNativeParent(previewParent);
-    }
+      if (previewMode && previewParent)
+      {
+        RECT r;
+        GetClientRect(previewParent, &r);
+        int w = r.right - r.left;
+        int h = r.bottom - r.top;
+        window->AttachToNativeParent(previewParent);
+        Resize(w, h);
+      }
 
     const char* vertexShaderText = /** GLSL */ R"(
     #version 330 core
