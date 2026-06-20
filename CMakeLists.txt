@@ -42,6 +42,17 @@ file(GLOB_RECURSE SOURCE_FILES
     src/games/Annihilation/*.cpp
 )
 
+set(IMGUI_DIR ../../external/imgui)
+
+set(IMGUI_SRC
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
 add_executable(main ${SOURCE_FILES} ${IMGUI_SRC})
 
 
@@ -79,19 +90,6 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
 
     src/games/Chizzle/*.cpp
 )
-
-set(IMGUI_DIR ../../external/imgui)
-
-set(IMGUI_SRC
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-)
-
-add_library(main STATIC ${SOURCE_FILES})
 
 add_executable(editor ${EDITOR_SOURCE_FILES})
 
