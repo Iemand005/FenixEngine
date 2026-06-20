@@ -66,7 +66,7 @@ class ShaderSaver : public fe::Renderer {
 		else if (rWasDown)
 			rWasDown = false;
 
-		int x, y;
+		float x, y;
 		SDL_GetMouseState(&x, &y);
 
 		if (abs(x - startX) > 3 || abs(y - startY) > 3)
