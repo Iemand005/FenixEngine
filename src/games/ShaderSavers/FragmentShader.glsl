@@ -5,86 +5,72 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// Ultra-snelle, hardware-vriendelijke rotatie
+// Razendsnelle rotatiematrix voor de vectorvelden
 mat2 rot(float a) {
     float s = sin(a), c = cos(a);
     return mat2(c, -s, s, c);
 }
 
-// Een geavanceerde, stabiele 3D feedback-wave-functie
-// Deze genereert de complexe, vloeibare 'kwantum-patronen'
-vec3 pattern(in vec2 uv) {
-    vec2 p = uv * 2.5;
-    
-    // Versnelde tijd voor brute snelheid
-    float t = time * 2.5;
-    
-    // Feedback-lus 1: Introduceer magnetische stroming
-    vec2 q = vec2(
-        sin(p.x + p.y + t * 0.5),
-        cos(p.x - p.y - t * 0.7)
-    );
-    
-    // Feedback-lus 2: Roteer en vouw de stroming in zichzelf (Warping)
-    vec2 r = vec2(
-        sin(p.x + q.y + t + sin(p.y * 3.0)),
-        cos(p.y + q.x - t + cos(p.x * 3.0))
-    );
-    r *= rot(t * 0.2);
-    
-    // Bereken de uiteindelijke interferentie-waarde
-    float noiseVal = sin(length(p + r) * 4.0 - t);
-    
-    // Geef drie verschillende kleurvectoren terug op basis van de feedback-assen
-    vec3 col;
-    col.r = sin(length(q) * 3.0 + t) * 0.5 + 0.5;
-    col.g = cos(length(r) * 4.0 - t * 1.3) * 0.5 + 0.5;
-    col.b = sin((q.x + r.y) * 2.0 + t * 0.8) * 0.5 + 0.5;
-    
-    // Voeg scherpe, vloeibare energielijnen toe (de 'celwanden')
-    float randen = smoothstep(0.1, 0.0, abs(noiseVal) - 0.05);
-    col += vec3(randen * 0.6);
-    
-    return col;
-}
-
 void main() {
-    // Normaliseer coördinaten met een dynamische lens-vervorming (Hypnose-draaikolk)
+    // Normaliseer coördinaten en pas perfecte aspect-ratio toe
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
     
-    // Laat de hele ruimte pulseren en tollen over de tijd
+    // Snelheidsvariabele - geoptimaliseerd voor extreme framerates
+    float t = time * 3.0;
+    
+    // STAP 1: Kinetische lensvervorming (Hypersnelheid Warp)
     float r = length(uv);
-    float angle = atan(uv.y, uv.x);
+    uv *= rot(sin(r * 2.0 - t * 0.5) * 0.4); // Vloeibare torsie per pixel
     
-    // Non-Euclidische draaiing: het centrum draait sneller dan de buitenkant
-    angle += sin(r * 4.0 - time * 3.0) * 0.8;
-    uv = vec2(cos(angle), sin(angle)) * r;
+    // STAP 2: Genereren van het non-lineaire Vectorveld
+    // We splitsen de ruimte op in sub-grids die onafhankelijk bewegen
+    vec2 p1 = uv * 4.0;
+    p1.x += sin(p1.y + t) * 0.5;
+    p1.y += cos(p1.x - t * 1.5) * 0.5;
+    p1 *= rot(t * 0.1);
     
-    // Zoom continu in en uit via een sinusoïde voor een ademend effect
-    uv *= 1.0 + sin(time * 1.5) * 0.3;
+    vec2 p2 = uv * 8.0; // Fijnere laag voor micro-details op 240Hz
+    p2.x -= cos(p2.y - t * 2.0) * 0.3;
+    p2.y -= sin(p2.x + t * 1.0) * 0.3;
+    p2 *= rot(-t * 0.15);
     
-    // Haal de vloeibare feedback-kleuren op
-    vec3 baseColor = pattern(uv);
+    // STAP 3: Venvlochten Moiré & Laser-lijnen
+    // Dit triggert de sub-pixel scherpte van je high-refresh panel
+    float lijn1 = sin(p1.x + p1.y);
+    float lijn2 = cos(p2.x - p2.y);
     
-    // --- INTENSE EXTRA FANCY EFFECTEN ---
+    // Maak de lijnen vlijmscherp met smoothstep (voorkomt aliasing, behoudt vloeiendheid)
+    float laser1 = smoothstep(0.03, 0.0, abs(lijn1) - 0.01);
+    float laser2 = smoothstep(0.015, 0.0, abs(lijn2) - 0.005);
     
-    // 1. Psychedelische Solarisatie (Kleurinversie bij extreme helderheid)
-    vec3 trippyColor = abs(baseColor - vec3(sin(time), cos(time * 0.5), sin(time * 1.2)));
-    trippyColor = fract(trippyColor * 1.5);
+    // STAP 4: Dynamische Hypersnelheid Tunnel-deeltjes
+    // Dit geeft de illusie dat er oneindig veel micro-deeltjes voorbijrazen
+    float deeltjes = sin(uv.x * 20.0 + t * 4.0) * sin(uv.y * 20.0 - t * 3.0);
+    deeltjes = smoothstep(0.92, 0.99, deeltjes * sin(t + r * 10.0));
     
-    // 2. Chromatische Aberratie-simulatie (RGB-kanalen trekken uit elkaar aan de randen)
-    vec3 finalColor;
-    finalColor.r = pattern(uv * (1.0 + 0.03 * sin(time))).r;
-    finalColor.g = trippyColor.g;
-    finalColor.b = pattern(uv * (1.0 - 0.03 * cos(time))).b;
+    // STAP 5: High-Refresh Kleurenberekening (Chromatische Doppler-shift)
+    // De kleuren verschuiven op basis van de snelheid van de golven
+    vec3 col;
+    col.r = sin(length(p1) + t * 2.0) * 0.5 + 0.5;
+    col.g = sin(length(p2) - t * 3.0 + 2.0) * 0.5 + 0.5;
+    col.b = cos((p1.x + p2.y) + t) * 0.5 + 0.5;
     
-    // 3. Ultra-brute contrast versterking (Neon-glow pop)
-    finalColor = smoothstep(0.05, 0.95, finalColor);
-    finalColor = pow(finalColor, vec3(0.7)); // Maakt kleuren oogverblindend fel
+    // Combineer de laserlijnen en deeltjes met het kleurenveld
+    vec3 finalColor = vec3(0.0);
+    finalColor += col * laser1 * 1.5;             // Dikke vloeiende neon-stromen
+    finalColor += vec3(0.0, 0.8, 1.0) * laser2 * 2.0; // Fijn elektrisch cyaan raster
+    finalColor += vec3(1.0, 1.0, 1.0) * deeltjes * 3.0; // Superwitte high-speed flitsen
     
-    // Vignette die meebeweegt op de kwantum-storm
-    float vignette = smoothstep(1.5, 0.3, length(uv) * (1.0 + 0.2 * sin(time * 4.0)));
-    finalColor *= vignette;
+    // Voeg een diepe, pulserende achtergrondgloed toe
+    finalColor += col * 0.15 * (1.0 / (r + 0.2));
+    
+    // STAP 6: Contrast-optimalisatie voor gaming-monitoren
+    finalColor = smoothstep(0.0, 1.0, finalColor);
+    finalColor = pow(finalColor, vec3(0.8)); // Boost de helderheid van de bewegende delen
+    
+    // Subtiele cinematische vignette
+    float edge = smoothstep(1.4, 0.3, r);
+    finalColor *= edge;
     
     FragColor = vec4(finalColor, 1.0);
 }
