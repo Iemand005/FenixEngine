@@ -255,7 +255,6 @@ class ShaderSaver : public fe::Renderer {
 			}
 
 			
-			// Resize is handled in the SDL window resize event handler.
 			shader->Use();
 			GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
 			if (prevLoc >= 0) glUniform1i(prevLoc, 0);
