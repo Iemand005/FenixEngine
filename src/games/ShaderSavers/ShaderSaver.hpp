@@ -126,13 +126,13 @@ class ShaderSaver : public fe::Renderer {
 				SDL_HideCursor();
 				SDL_SetCursor(nullptr);
 				
+				fullscreened = true;
 
 				break;
 			}
 
 			case ScreenSaverMode::Window: {
 				window->Show();
-				fullscreened = true;
 				break;
 			}
 
