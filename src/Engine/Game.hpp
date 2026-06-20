@@ -307,7 +307,7 @@ class Game : public Renderer {
   }
 
   bool ShouldClose() {
-    if (!this->window) return fa;se
+    if (!this->window) return false;
     return this->window->ShouldClose();
   }
 
