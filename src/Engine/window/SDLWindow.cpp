@@ -258,5 +258,6 @@ void fe::SDLWindow::SetBordered(bool enabled) {
 	SDL_SetWindowBordered(impl->window, enabled);
 }
 
-void fe::SDLWindow::SetFullscreen(bool enabled) {switching to fullscreen causes a flciker SDL_SetWindowFullscreen(window->GetSDLWindow(), enabled);
+void fe::SDLWindow::SetFullscreen(bool enabled) {
+	SDL_SetWindowFullscreen(impl->window, enabled);
 }
