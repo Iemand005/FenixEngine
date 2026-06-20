@@ -31,14 +31,6 @@
 #include "ShaderProgram.hpp"
 #include "saver/Level.hpp"
 
-#include "window/IWindow.hpp"
-#ifndef FE_EXCLUDE_SDL
-#include "window/SDLWindow.hpp"
-#endif
-#ifndef FE_EXCLUDE_GLFW
-#include "window/GLFW3Window.hpp"
-#endif
-
 #define WAYLAND
 
 #include "Renderer.hpp"
