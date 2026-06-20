@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
 	// #ifdef WIN32
 
-	ScreenSaverMode mode = ScreenSaverMode::Fullscreen;
+	ScreenSaverMode mode = ScreenSaverMode::Window;
 	HWND previewHwnd = nullptr;
 
 	for (int i = 1; i < argc; i++)

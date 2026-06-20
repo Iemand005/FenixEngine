@@ -14,7 +14,7 @@
 
 #include "../../engine/Renderer.hpp"
 
-enum class ScreenSaverMode { Preview, Fullscreen, Config };
+enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 class ShaderSaver : public fe::Renderer {
    public:
@@ -97,7 +97,7 @@ class ShaderSaver : public fe::Renderer {
 		return true;
 	}
 
-	void Run(ScreenSaverMode mode = ScreenSaverMode::Fullscreen, HWND previewParent = nullptr) {
+	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND previewParent = nullptr) {
 		auto window = GetWindow<fe::SDLWindow>();
 
 		window->EnableVSync();
