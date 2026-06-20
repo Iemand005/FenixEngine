@@ -60,9 +60,7 @@ class SDLWindow : public IWindow {
 
   void Destroy() override;
 
-#ifdef _WIN32
-  void SetChildOf(HWND parent);
-#endif
+  void SetChildOf(void* parent);
 };
 
 }  // namespace fe
