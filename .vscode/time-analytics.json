@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 5026164,
+    "totalFocusTime": 5468601,
     "totalActiveTime": 441143
   },
   "files": {
@@ -36,6 +36,10 @@
     "src/Engine/Mesh.hpp": {
       "pending": 0,
       "focus": 9607
+    },
+    "CMakeLists.txt": {
+      "pending": 0,
+      "focus": 31402
     }
   }
 }
