@@ -292,7 +292,7 @@ class ShaderSaver : public fe::Renderer {
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[frameCount % 2]);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
