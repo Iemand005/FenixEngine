@@ -27,41 +27,41 @@ float lineDist(vec2 p, vec2 a, vec2 b)
 void main()
 {
     vec2 frag = gl_FragCoord.xy;
-    vec2 uv = frag / resolution;
+    vec2 center = resolution * 0.5;
 
     vec3 col = vec3(0.0);
 
-    float t = time * 2.0;
+    float t = time * 1.5;
 
     for (int i = 0; i < 200; i++)
     {
         float fi = float(i);
 
-        // FULL SCREEN PARTICLES (no center bias)
-        vec2 p = hash2(fi * 12.989);
+        vec2 dir = normalize(hash2(fi * 12.989));
 
-        vec2 pos0 = p;
-        vec2 pos1 = p;
+        float seed = hash(fi * 78.233);
 
-        float speed = mix(0.2, 1.5, hash(fi * 91.7));
+        float speed = mix(80.0, 300.0, hash(fi * 91.7)); // FAST ALL STARS
 
-        // motion in screen space (NO radial system)
-        vec2 dir = normalize(hash2(fi * 78.233));
+        // distance from center (NO fract)
+        float d  = seed + t * speed * 0.01;
+        float d0 = seed + (t - 0.02) * speed * 0.01;
 
-        pos1 += dir * fract(t * speed);
-        pos0 += dir * fract((t - 0.02) * speed);
+        // wrap manually but smoothly (no jumps in segment space)
+        d  = mod(d, 1.5);
+        d0 = mod(d0, 1.5);
 
-        // convert to screen space
-        vec2 a = pos0;
-        vec2 b = pos1;
+        vec2 a = center + dir * d0 * (resolution.y * 0.6);
+        vec2 b = center + dir * d  * (resolution.y * 0.6);
 
-        float d = lineDist(uv, a, b);
+        float dist = lineDist(frag, a, b);
 
-        float line = step(d, 0.002);
+        // TRUE 1px line
+        float star = step(dist, 0.5);
 
-        float brightness = 0.6 + hash(fi * 9.1) * 0.6;
+        float brightness = 0.6 + hash(fi * 9.1) * 0.7;
 
-        col += vec3(line * brightness);
+        col += vec3(star * brightness);
     }
 
     FragColor = vec4(col, 1.0);
