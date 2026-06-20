@@ -127,14 +127,8 @@ class ShaderSaver : public fe::Renderer {
 
         fullscreened = true;
     }
-    else
-    {
-        window->Show();
-    }
+    else window->Show();
 
-    // -------------------------
-    // Shader setup
-    // -------------------------
     const char* vertexShaderText = R"(
     #version 330 core
     void main() {
