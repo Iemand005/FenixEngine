@@ -61,7 +61,7 @@ public:
     auto window = this->GetWindow<fe::SDLWindow>();
     window->EnableVSync();
 
-    const char *vertexShaderText = R"(
+    const char *vertexShaderText = /** GLSL */ R"(
     #version 330 core
     void main() {
         vec2 vertices[3] = vec2[3](
