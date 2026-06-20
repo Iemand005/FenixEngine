@@ -5,11 +5,10 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// simple hash (deterministic pseudo-random)
 float hash(vec2 p)
 {
     p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
+    p += dot(p, p + 34.45);
     return fract(p.x * p.y);
 }
 
@@ -17,43 +16,42 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // center space (optional aesthetic; keeps aspect stable)
-    vec2 p = uv;
+    // center space
+    vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
-    // STARFIELD SPACE SCALE (density control)
-    float scale = 60.0;
-    vec2 sp = p * scale;
-
-    // FAST MOTION: warp flight downward + slight drift
     float t = time;
 
-    sp.y += t * 6.0;
-    sp.x += t * 1.5;
+    // angle + radius from center
+    float r = length(p);
+    float a = atan(p.y, p.x);
 
-    // integer grid cell
-    vec2 cell = floor(sp);
-    vec2 f = fract(sp) - 0.5;
+    // radial "star lanes" (creates streak directions)
+    float lanes = sin(a * 40.0);
 
-    // random per cell
-    float rnd = hash(cell);
+    // fast outward motion (KEY IDEA)
+    float speed = t * 4.5;
 
-    // star existence probability
-    float starMask = step(0.985, rnd); // fewer = more empty space
+    // fake depth layering using repetition
+    float z = fract(r * 6.0 - speed);
 
-    // star shape (tight point)
-    float d = length(f);
+    // each “layer” has a random star presence
+    float id = floor(r * 6.0 - speed);
+    float rnd = hash(vec2(id, lanes * 10.0));
 
-    // crisp star core
-    float star = smoothstep(0.12, 0.0, d);
+    // star mask (sparse)
+    float star = step(0.92, rnd);
 
-    // optional twinkle (cheap temporal variation)
-    float twinkle = 0.6 + 0.4 * sin(t * 10.0 + rnd * 100.0);
+    // center burst falloff (stars originate from center)
+    float burst = smoothstep(1.0, 0.0, r);
 
-    star *= twinkle;
+    // moving radial streak (gives speed feeling)
+    float streak = sin((r * 30.0 - t * 12.0)) * 0.5 + 0.5;
 
-    // combine
-    float intensity = star * starMask;
+    // star shape (tight points)
+    float glow = smoothstep(0.03, 0.0, abs(fract(r * 30.0 - t * 10.0) - 0.5));
+
+    float intensity = star * burst * (0.4 + 0.6 * streak + glow);
 
     vec3 col = vec3(intensity);
 
