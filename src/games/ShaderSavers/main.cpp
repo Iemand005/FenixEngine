@@ -11,23 +11,25 @@ int main(int argc, char* argv[]) {
 
 	// #ifdef WIN32
 
-	bool isPreview = false;
-	bool screenSaverMode = false;
+	ScreenSaverMode mode = ScreenSaverMode::Fullscreen;
 	HWND previewHwnd = nullptr;
 
 	for (int i = 1; i < argc; i++)
 	{
 		if (strcmp(argv[i], "/p") == 0 && i + 1 < argc)
 		{
-			isPreview = true;
+			mode = ScreenSaverMode::Preview;
 			previewHwnd = (HWND)std::stoull(argv[i + 1]);
 		}
 
 		if (_stricmp(argv[i], "/s") == 0)
-			screenSaverMode = true;
+			mode = ScreenSaverMode::Fullscreen;
+
+		if (_stricmp(argv[i], "/c") == 0)
+        	mode = ScreenSaverMode::Config;
 	}
 
 	ShaderSaver game;
-	game.Run(isPreview, previewHwnd);
+	game.Run(mode, previewHwnd);
 	return 0;
 }
