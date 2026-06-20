@@ -66,7 +66,15 @@ class ShaderSaver : public fe::Renderer {
 		else if (rWasDown)
 			rWasDown = false;
 
-		window->StopMouseCapture();
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+
+		if (abs(x - startX) > 3 || abs(y - startY) > 3)
+		{
+			window->PrepareClose();
+		}
+
+		// window->StopMouseCapture();
 	}
 
 	bool ReloadFragmentShader(const char* fragShaderPath, const char* vertexShaderText, SDL_Time* outWriteTime = nullptr) {
