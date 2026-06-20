@@ -96,14 +96,22 @@ class ShaderSaver : public fe::Renderer {
     for (int i = 0; i < 2; i++) {
       glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
       glBindTexture(GL_TEXTURE_2D, textures[i]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
     }
 
+    bool firstDraw = true;
     int frameCount = 0;
 
     while (!window->ShouldClose()) {
       ProcessInput();
+      if (firstDraw) {
+        stepRequested = true;
+      }
 
       // SDL_GetPathInfo(fragShaderPath,
       SDL_PathInfo currentInfo;
