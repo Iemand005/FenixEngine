@@ -47,7 +47,7 @@ int WINAPI WinMain(
 )
 {
     int argc = 1;
-    char* argv[10] = { nullptr };
+    char* argv[32] = { nullptr };
 
     argv[0] = (char*)"ShaderSaver.scr";
 
@@ -56,16 +56,24 @@ int WINAPI WinMain(
 
     for (char c : cmd)
     {
-        if (c == ' ') if (!current.empty())
-		{
-			argv[argc++] = _strdup(current.c_str());
-			current.clear();
-		}
-        else current += c;
+        if (c == ' ')
+        {
+            if (!current.empty())
+            {
+                argv[argc++] = _strdup(current.c_str());
+                current.clear();
+            }
+        }
+        else
+        {
+            current += c;
+        }
     }
 
     if (!current.empty())
+    {
         argv[argc++] = _strdup(current.c_str());
+    }
 
     return main(argc, argv);
 }
