@@ -180,9 +180,7 @@ if(WIN32)
     # Main game
     target_link_directories(main PRIVATE "${LIB_DIR}")
     
-    target_link_libraries(main PRIVATE
-        Engine
-    )
+    target_link_libraries(main PRIVATE Engine)
     
     if(MSVC)
         target_link_options(main PRIVATE
