@@ -41,12 +41,10 @@ class ShaderSaver : public fe::Renderer {
 		while (window->PollSDLEvents(&event)) {
 			switch (event.type) {
 				case SDL_EVENT_QUIT:
+				case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				case SDL_EVENT_KEY_DOWN:
 					window->PrepareClose();
 					break;
-				if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-				{
-					window->PrepareClose();
-				}
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 					int w, h;
