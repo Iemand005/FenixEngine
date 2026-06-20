@@ -190,12 +190,12 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
     return true;
   }
-  
+
 #ifdef _WIN32
 #include <SDL3/SDL.h>
 #include <windows.h>
 
-void fe::SDLWindow::AttachToNativeParent(HWND parent)
+void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
     if (!parent)
         return;
@@ -213,7 +213,7 @@ void fe::SDLWindow::AttachToNativeParent(HWND parent)
     if (!hwnd)
         return;
 
-    SetParent(hwnd, parent);
+    SetParent(hwnd, (HWND)parent);
 
     LONG style = GetWindowLong(hwnd, GWL_STYLE);
 

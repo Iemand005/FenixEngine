@@ -61,8 +61,7 @@ class SDLWindow : public IWindow {
   void Destroy() override;
 
 #ifdef _WIN32
-#include <Windows.h>
-  void AttachToNativeParent(HWND parent);
+  void AttachToNativeParent(void* parent);
 #endif
 };
 
