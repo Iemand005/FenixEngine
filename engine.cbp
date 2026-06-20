@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="butt" />
+		<Option title="FenixEngine" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -33,6 +33,65 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="main.cpp" />
-		<Extensions />
+		<Unit filename="src/Editor/editorwindow.h" />
+		<Unit filename="src/Editor/enginewidget.h" />
+		<Unit filename="src/Editor/mjpegserver.h" />
+		<Unit filename="src/Engine/Camera.hpp" />
+		<Unit filename="src/Engine/Character.hpp" />
+		<Unit filename="src/Engine/EditableGame.hpp" />
+		<Unit filename="src/Engine/EditableGameBase.hpp" />
+		<Unit filename="src/Engine/Game.cpp" />
+		<Unit filename="src/Engine/Game.hpp" />
+		<Unit filename="src/Engine/Mesh.hpp" />
+		<Unit filename="src/Engine/Object.hpp" />
+		<Unit filename="src/Engine/Renderer.cpp" />
+		<Unit filename="src/Engine/Renderer.hpp" />
+		<Unit filename="src/Engine/Scene.hpp" />
+		<Unit filename="src/Engine/Shader.hpp" />
+		<Unit filename="src/Engine/ShaderProgram.hpp" />
+		<Unit filename="src/Engine/Timer.hpp" />
+		<Unit filename="src/Engine/Vertex.hpp" />
+		<Unit filename="src/Engine/XRGame.cpp" />
+		<Unit filename="src/Engine/XRGame.hpp" />
+		<Unit filename="src/Engine/bases.h" />
+		<Unit filename="src/Engine/core.h" />
+		<Unit filename="src/Engine/engine.cpp" />
+		<Unit filename="src/Engine/engine.h" />
+		<Unit filename="src/Engine/glad/glad.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/Engine/networking/networking.hpp" />
+		<Unit filename="src/Engine/networking/packets.hpp" />
+		<Unit filename="src/Engine/networking/udp.hpp" />
+		<Unit filename="src/Engine/physics/BasicDebugRenderer.cpp" />
+		<Unit filename="src/Engine/physics/BasicDebugRenderer.hpp" />
+		<Unit filename="src/Engine/physics/IPhysicsObject.hpp" />
+		<Unit filename="src/Engine/physics/PhysicsEngine.cpp" />
+		<Unit filename="src/Engine/physics/PhysicsEngine.hpp" />
+		<Unit filename="src/Engine/physics/PhysicsObject.cpp" />
+		<Unit filename="src/Engine/physics/PhysicsObject.hpp" />
+		<Unit filename="src/Engine/saver/Level.hpp" />
+		<Unit filename="src/Engine/window/GLFW3Window.hpp" />
+		<Unit filename="src/Engine/window/IWindow.hpp" />
+		<Unit filename="src/Engine/window/SDLWindow.cpp" />
+		<Unit filename="src/Engine/window/SDLWindow.hpp" />
+		<Unit filename="src/games/Annihilation/Annihilation.hpp" />
+		<Unit filename="src/games/Annihilation/main.cpp" />
+		<Unit filename="src/games/Chizzle/Chizzle.hpp" />
+		<Unit filename="src/games/Chizzle/main.cpp" />
+		<Unit filename="src/games/FoxChat/FoxChat.hpp" />
+		<Unit filename="src/games/FoxChat/main.cpp" />
+		<Unit filename="src/games/Foxcraft/Foxcraft.hpp" />
+		<Unit filename="src/games/Foxcraft/main.cpp" />
+		<Unit filename="src/games/Pendulum/main.cpp" />
+		<Unit filename="src/games/Pool/Pool.hpp" />
+		<Unit filename="src/games/Pool/main.cpp" />
+		<Unit filename="src/games/ShaderSavers/ShaderSaver.hpp" />
+		<Unit filename="src/games/ShaderSavers/main.cpp" />
+		<Unit filename="src/server/server.cpp" />
+		<Unit filename="src/stdafx.h" />
+		<Extensions>
+			<editor_config active="1" use_tabs="1" tab_indents="1" tab_width="4" indent="4" eol_mode="0" />
+		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
