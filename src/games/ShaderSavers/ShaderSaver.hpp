@@ -93,19 +93,38 @@ public:
 		return true;
 	}
 
-	void Run(ScreenSaverMode previewMode = ScreenSaverMode::Fullscreen, HWND previewParent = nullptr) {
-		auto window = this->GetWindow<fe::SDLWindow>();
+	void Run(ScreenSaverMode mode = ScreenSaverMode::Fullscreen, HWND previewParent = nullptr) {
+		auto window = GetWindow<fe::SDLWindow>();
 		window->EnableVSync();
 
-		if (previewMode == ScreenSaverMode::Preview && previewParent)
+		switch (mode)
 		{
-			RECT r;
-			GetClientRect(previewParent, &r);
-			int w = r.right - r.left;
-			int h = r.bottom - r.top;
-			window->AttachToNativeParent(previewParent);
-			Resize(w, h);
-			window->Resize(w, h);
+			case ScreenSaverMode::Preview:
+			{
+				RECT r;
+				GetClientRect(previewParent, &r);
+
+				int w = r.right - r.left;
+				int h = r.bottom - r.top;
+
+				window->AttachToNativeParent(previewParent);
+				window->Resize(w, h);
+				break;
+			}
+
+			case ScreenSaverMode::Fullscreen:
+			{
+				SDL_SetWindowBordered(window->GetSDLWindow(), false);
+				SDL_SetWindowFullscreen(window->GetSDLWindow(), true);
+				SDL_HideCursor();
+				break;
+			}
+
+			case ScreenSaverMode::Config:
+			{
+				// later: Win32 dialog or ImGui window
+				break;
+			}
 		}
 
 		const char* vertexShaderText = /** GLSL */ R"(
