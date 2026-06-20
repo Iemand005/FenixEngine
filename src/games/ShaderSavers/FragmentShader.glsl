@@ -31,9 +31,9 @@ void main()
 
     vec3 col = vec3(0.0);
 
-    float t = time * 0.5;
+    float t = time * 0.1;
 
-    for (int i = 0; i < 200; i++)
+    for (int i = 0; i < 180; i++)
     {
         float fi = float(i);
 
@@ -41,27 +41,30 @@ void main()
 
         float seed = hash(fi * 78.233);
 
-        float speed = mix(80.0, 300.0, hash(fi * 91.7)); // FAST ALL STARS
+        float speed = mix(1.5, 4.0, hash(fi * 91.7));
 
-        // distance from center (NO fract)
-        float d  = seed + t * speed * 0.01;
-        float d0 = seed + (t - 0.02) * speed * 0.01;
+        // CLEAN lifetime (0..1), no spatial wrapping
+        float life  = fract(seed + t * speed);
+        float life0 = fract(seed + (t - 0.02) * speed);
 
-        // wrap manually but smoothly (no jumps in segment space)
-        d  = mod(d, 1.5);
-        d0 = mod(d0, 1.5);
+        // IMPORTANT: kill wrap discontinuity
+        float fade  = smoothstep(0.0, 0.1, life) * smoothstep(1.0, 0.9, life);
+        float fade0 = smoothstep(0.0, 0.1, life0) * smoothstep(1.0, 0.9, life0);
+
+        // outward motion (NO mod, NO wrapping in geometry)
+        float d  = life  * life;
+        float d0 = life0 * life0;
 
         vec2 a = center + dir * d0 * (resolution.y * 0.6);
         vec2 b = center + dir * d  * (resolution.y * 0.6);
 
         float dist = lineDist(frag, a, b);
 
-        // TRUE 1px line
         float star = step(dist, 0.5);
 
         float brightness = 0.6 + hash(fi * 9.1) * 0.7;
 
-        col += vec3(star * brightness);
+        col += vec3(star * brightness * fade * fade0);
     }
 
     FragColor = vec4(col, 1.0);
