@@ -89,12 +89,8 @@ class ShaderSaver : public fe::Renderer {
 
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Fullscreen, HWND previewParent = nullptr) {
 		auto window = GetWindow<fe::SDLWindow>();
-		// window->Show();
 
 		window->EnableVSync();
-
-		// window->Show();
-
 
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
@@ -113,6 +109,9 @@ class ShaderSaver : public fe::Renderer {
 				SDL_SetWindowBordered(window->GetSDLWindow(), false);
 				SDL_SetWindowFullscreen(window->GetSDLWindow(), true);
 				SDL_HideCursor();
+				
+				window->Show();
+
 				break;
 			}
 
