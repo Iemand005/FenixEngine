@@ -196,7 +196,7 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
 HWND GetNativeHWND(SDL_Window* window)
 {
-  return (HWND)SDL_GetWindowProperty(window, SDL_PROP_WINDOW_WIN32_HWND_POINTER);
+  SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, hParentWindow);
 }
 
 #endif

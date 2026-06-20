@@ -92,22 +92,7 @@ class ShaderSaver : public fe::Renderer {
 
     if (previewMode && previewParent)
     {
-        SDL_SysWMinfo wmInfo;
-        SDL_VERSION(&wmInfo.version);
-        SDL_GetWindowWMInfo(window->GetSDLWindow(), &wmInfo);
-
-        HWND child = wmInfo.info.win.window;
-
-        SetParent(child, previewParent);
-
-        LONG style = GetWindowLong(child, GWL_STYLE);
-        style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW);
-        style |= WS_CHILD;
-
-        SetWindowLong(child, GWL_STYLE, style);
-
-        SetWindowPos(child, NULL, 0, 0, 0, 0,
-            SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+      window->AttachToNativeParent(previewParent);
     }
 
     const char* vertexShaderText = /** GLSL */ R"(
