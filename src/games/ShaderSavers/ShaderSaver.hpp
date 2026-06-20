@@ -177,6 +177,9 @@ class ShaderSaver : public fe::Renderer {
 
 		bool cursorHidden = false;
 
+		float startX, startY;
+		SDL_GetMouseState(&startX, &startY);
+
 		while (!window->ShouldClose()) {
 			ProcessInput();
 			
