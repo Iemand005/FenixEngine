@@ -28,7 +28,7 @@ class ShaderSaver : public fe::Renderer {
 	bool spaceWasDown = false;
 	bool reloadRequested = false;
 	bool rWasDown = false;
-	bool windowed = false;
+	bool fullscreened = false;
 
 	float startX, startY;
 
@@ -44,7 +44,7 @@ class ShaderSaver : public fe::Renderer {
 			switch (event.type) {
 				case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				case SDL_EVENT_KEY_DOWN:
-					if (windowed) break;
+					if (!fullscreened) break;
 				case SDL_EVENT_QUIT:
 					window->PrepareClose();
 					break;
@@ -69,7 +69,7 @@ class ShaderSaver : public fe::Renderer {
 		else if (rWasDown)
 			rWasDown = false;
 
-		if (!windowed) {
+		if (fullscreened) {
 			float x, y;
 			SDL_GetMouseState(&x, &y);
 
@@ -132,7 +132,7 @@ class ShaderSaver : public fe::Renderer {
 
 			case ScreenSaverMode::Window: {
 				window->Show();
-				windowed = true;
+				fullscreened = true;
 				break;
 			}
 
@@ -208,13 +208,8 @@ class ShaderSaver : public fe::Renderer {
 		while (!window->ShouldClose()) {
 			ProcessInput();
 
-			if (!windowed) {
-			
-				if (!cursorHidden)
-					cursorHidden = SDL_HideCursor();
-
-				// while (ShowCursor(FALSE) >= 0) {}
-			}
+			if (fullscreened && !cursorHidden)
+				cursorHidden = SDL_HideCursor();
 
 			if (firstDraw) {
 				stepRequested = true;
