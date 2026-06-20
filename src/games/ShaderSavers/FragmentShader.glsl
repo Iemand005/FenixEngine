@@ -5,7 +5,6 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-// stable hash
 float hash(float n)
 {
     return fract(sin(n) * 43758.5453123);
@@ -20,57 +19,49 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // centered coords
+    // center coords
     vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
     float t = time;
 
-    vec3 col = vec3(0.0);
+    float intensity = 0.0;
 
-    // number of stars (NOT a grid — just deterministic sampling slices)
-    for (int i = 0; i < 60; i++)
+    // FEWER stars = no white screen
+    for (int i = 0; i < 40; i++)
     {
         float fi = float(i);
 
-        // each star has a stable random direction
+        // stable random angle per star
         float a = hash(fi) * 6.2831853;
-
         vec2 dir = vec2(cos(a), sin(a));
 
         // speed variation
-        float speed = 1.5 + hash(fi + 10.0) * 6.0;
+        float speed = 0.8 + hash(fi + 3.1) * 2.5;
 
-        // star position = moves outward continuously from center
-        float life = fract(t * speed * 0.05 + hash(fi * 2.0));
+        // looping lifetime (keeps stars cycling instead of accumulating)
+        float life = fract(t * speed * 0.15 + hash(fi * 9.2));
 
-        float dist = life * 3.0;
+        // push from center outward
+        float dist = life * 2.5;
 
         vec2 pos = dir * dist;
 
-        // vector from star to pixel
-        vec2 diff = p - pos;
+        // pixel star shape (tight + crisp)
+        float d = length(p - pos);
 
-        float d = length(diff);
+        float star = smoothstep(0.03, 0.0, d);
 
-        // motion streak (projection onto direction)
-        float along = abs(dot(diff, dir));
+        // fade as it moves outward (prevents white buildup)
+        float fade = 1.0 - life;
 
-        float streak = 1.0 / (along * 25.0 + 1.0);
-
-        // core star
-        float core = smoothstep(0.05, 0.0, d);
-
-        float intensity = (core + streak * 0.8);
-
-        // fade with distance from center (burst origin)
-        intensity *= smoothstep(3.0, 0.2, length(pos));
-
-        col += vec3(intensity);
+        intensity += star * fade * 0.5;
     }
 
-    // tone down brightness
-    col *= 0.8;
+    // HARD clamp so it NEVER whites out
+    intensity = clamp(intensity, 0.0, 1.0);
+
+    vec3 col = vec3(intensity);
 
     FragColor = vec4(col, 1.0);
 }
