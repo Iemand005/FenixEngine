@@ -5,6 +5,9 @@
 #define NOMINMAX
 #endif
 
+#define FE_EXCLUDE_GLFW
+
+
 #include <glad/glad.h>
 #include "../stdafx.h"
 
@@ -34,7 +37,6 @@
 #ifndef FE_EXCLUDE_SDL
 #include "window/SDLWindow.hpp"
 #endif
-#define FE_EXCLUDE_GLFW
 #ifndef FE_EXCLUDE_GLFW
 #include "window/GLFW3Window.hpp"
 #endif
