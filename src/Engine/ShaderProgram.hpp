@@ -72,7 +72,17 @@ class ShaderProgram {
     projectionLoc = glGetUniformLocation(id, "projection");
     texLoc = glGetUniformLocation(id, "ourTexture");
 
-    glUniform1i(texLoc, 0);
+    GLint currentProgram = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+    if (texLoc >= 0) {
+      glUseProgram(id);
+      glUniform1i(texLoc, 0);
+    }
+    if (currentProgram != 0) {
+      glUseProgram(currentProgram);
+    } else {
+      glUseProgram(0);
+    }
   }
 
   bool ErrorCheck() {

@@ -86,8 +86,11 @@ class ShaderSaver : public fe::Renderer {
     SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
     glViewport(0, 0, w, h);
 
-    GLint resLoc = glGetUniformLocation(shader->GetFragmentShader()->id, "resolution");
-    glUniform2f(resLoc, (float)w, (float)h);
+    shader->Use();
+    GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
+    if (prevLoc >= 0) glUniform1i(prevLoc, 0);
+    GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
+    if (resLoc >= 0) glUniform2f(resLoc, (float)w, (float)h);
 
     GLuint fbos[2], textures[2];
     glGenFramebuffers(2, fbos);
@@ -102,6 +105,9 @@ class ShaderSaver : public fe::Renderer {
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+      GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+      glDrawBuffers(1, drawBuffers);
+      glReadBuffer(GL_COLOR_ATTACHMENT0);
     }
 
     bool firstDraw = true;
@@ -149,15 +155,17 @@ class ShaderSaver : public fe::Renderer {
       // SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
       // glViewport(0, 0, w, h);
       shader->Use();
+      GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
+      if (prevLoc >= 0) glUniform1i(prevLoc, 0);
       GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
-      glUniform2f(resLoc, (float)w, (float)h);
+      if (resLoc >= 0) glUniform2f(resLoc, (float)w, (float)h);
 
       glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
       if (stepRequested) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textures[frameCount % 2]);
 
         glBindVertexArray(vao);
 
@@ -165,7 +173,8 @@ class ShaderSaver : public fe::Renderer {
         int dest = (frameCount + 1) % 2;
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
-        glBindTexture(GL_TEXTURE_2D, textures[source]);
+        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, drawBuffers);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -173,7 +182,7 @@ class ShaderSaver : public fe::Renderer {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[dest]);
 
         frameCount++;
-
+        firstDraw = false;
         stepRequested = false;
       }
 
