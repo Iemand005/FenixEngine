@@ -40,6 +40,9 @@ class SDLWindow : public IWindow {
   void GetSize(int* w, int* h);
   void Resize(int w, int h);
 
+  void Hide();
+  void Show();
+
   void SwapBuffers() override;
 
 
