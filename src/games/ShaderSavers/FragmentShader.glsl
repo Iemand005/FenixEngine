@@ -5,17 +5,14 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-float hash(float n) {
+float hash(float n)
+{
     return fract(sin(n) * 43758.5453123);
 }
 
-vec3 hash3(float n)
+vec2 hash2(float n)
 {
-    return fract(vec3(
-        sin(n * 12.989),
-        sin(n * 78.233),
-        sin(n * 37.719)
-    ) * 43758.5453);
+    return vec2(hash(n), hash(n + 17.0)) * 2.0 - 1.0;
 }
 
 float lineDist(vec2 p, vec2 a, vec2 b)
@@ -30,50 +27,47 @@ float lineDist(vec2 p, vec2 a, vec2 b)
 void main()
 {
     vec2 frag = gl_FragCoord.xy;
-    vec2 uv = (frag - 0.5 * resolution.xy) / resolution.y;
+    vec2 center = resolution * 0.5;
 
     vec3 col = vec3(0.0);
 
-    float t = time * 3.0; // 🔥 faster global motion
-
-    // camera forward speed (THIS removes the “ring” illusion)
-    float zSpeed = 8.0;
+    float t = time * 2.5;
 
     for (int i = 0; i < 180; i++)
     {
         float fi = float(i);
 
-        vec3 star = hash3(fi * 91.7);
+        // stable random direction
+        vec2 dir = normalize(hash2(fi * 12.989));
 
-        // infinite depth space (no center origin!)
-        float z = fract(star.z + t * zSpeed);
-        z = mix(0.2, 1.0, z); // keep in front of camera
+        float seed = hash(fi * 78.233);
 
-        // full screen spread (NOT radial)
-        vec2 pos = (star.xy * 2.0 - 1.0) * 2.5;
+        // speed (keep bounded)
+        float speed = mix(0.6, 2.5, hash(fi * 91.7));
 
-        // perspective projection
-        vec2 p = pos / z;
+        // continuous motion WITHOUT wrap artifacts
+        float z  = seed + t * speed;
+        float z0 = seed + (t - 0.02) * speed;
 
-        // previous frame position for streak
-        float z2 = fract(star.z + (t - 0.02) * zSpeed);
-        z2 = mix(0.2, 1.0, z2);
+        // NO fract → no popping lines
+        z  = z - floor(z);
+        z0 = z0 - floor(z0);
 
-        vec2 p2 = pos / z2;
+        // acceleration outward
+        float d  = z  * z;
+        float d0 = z0 * z0;
 
-        // convert to screen space
-        vec2 a = p2;
-        vec2 b = p;
+        vec2 p1 = center + dir * d  * (resolution.y * 0.6);
+        vec2 p0 = center + dir * d0 * (resolution.y * 0.6);
 
-        // line thickness in normalized space
-        float d = lineDist(uv, a, b);
+        float dist = lineDist(frag, p0, p1);
 
-        float line = step(d, 0.002);
+        // 1-pixel streak
+        float star = step(dist, 0.6);
 
-        // brightness increases with speed (depth illusion)
-        float brightness = (1.0 - z) * 1.5;
+        float brightness = 0.7 + hash(fi * 9.1) * 0.5;
 
-        col += vec3(line * brightness);
+        col += vec3(star * brightness);
     }
 
     FragColor = vec4(col, 1.0);
