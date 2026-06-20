@@ -3,26 +3,15 @@
 #define NOMINMAX
 #define FE_EXCLUDE_GLFW
 
-#include <imgui/backends/imgui_impl_opengl3.h>
-#include <imgui/backends/imgui_impl_sdl3.h>
-#include <imgui/imgui.h>
-
 #include <cstdio>
-#include <fstream>
 #include <iostream>
-#include <map>
-#include <string>
-#define FE_EXCLUDE_GLFW
+
 #include "../../engine/Renderer.hpp"
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 class ShaderSaver : public fe::Renderer {
    public:
-	std::vector<std::string> messages;
-
-	double lastUpdateTime = 0.0f;
-
 	bool stepRequested = false;
 	bool stepped = false;
 	bool spaceWasDown = false;
@@ -32,7 +21,6 @@ class ShaderSaver : public fe::Renderer {
 
 	int width = 0, height = 0;
 	GLuint textures[2] = {0, 0};
-	bool texturesInitialized = false;
 
 	float startX, startY;
 
@@ -47,13 +35,15 @@ class ShaderSaver : public fe::Renderer {
 		height = h;
 		glViewport(0, 0, w, h);
 
-		if (!texturesInitialized) return;
+		if (!textures[0]) return;
 
 		for (int i = 0; i < 2; i++) {
 			glBindTexture(GL_TEXTURE_2D, textures[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		}
 		printf("Resized naar: %dx%d\n", w, h);
 	}
@@ -204,26 +194,20 @@ class ShaderSaver : public fe::Renderer {
 		GLuint fbos[2];
 		glGenFramebuffers(2, fbos);
 		glGenTextures(2, textures);
+		Resize(width, height);
 
 		for (int i = 0; i < 2; i++) {
 			glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
 			glBindTexture(GL_TEXTURE_2D, textures[i]);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
 			GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
 			glDrawBuffers(1, drawBuffers);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
 		}
-		texturesInitialized = true;
-
-		bool firstDraw = true;
-		int frameCount = 0;
 
 		bool cursorHidden = false;
+		bool firstDraw = true;
+		int frameCount = 0;
 
 		SDL_GetMouseState(&startX, &startY);
 
@@ -237,7 +221,6 @@ class ShaderSaver : public fe::Renderer {
 				stepRequested = true;
 			}
 
-			// SDL_GetPathInfo(fragShaderPath,
 			SDL_PathInfo currentInfo;
 			if (SDL_GetPathInfo(fragShaderPath, &currentInfo) && currentInfo.modify_time > lastWriteTime) {
 				printf("Reloading shader because file changed...\n");
@@ -272,7 +255,6 @@ class ShaderSaver : public fe::Renderer {
 
 				glBindVertexArray(vao);
 
-				int source = frameCount % 2;
 				int dest = (frameCount + 1) % 2;
 
 				glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
