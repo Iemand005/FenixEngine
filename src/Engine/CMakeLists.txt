@@ -25,9 +25,6 @@ endif()
 
 file(GLOB_RECURSE SOURCE_FILES
     glad/*.c
-    ../extern/imgui/*.cpp
-    ../extern/imgui/backends/*.cpp
-    ../../external/imgui/backends/*.cpp
     *.cpp
 )
 
