@@ -15,6 +15,7 @@ vec2 hash2(float n)
     return vec2(hash(n), hash(n + 17.0)) * 2.0 - 1.0;
 }
 
+// distance from point to segment
 float lineDist(vec2 p, vec2 a, vec2 b)
 {
     vec2 pa = p - a;
@@ -31,9 +32,9 @@ void main()
 
     vec3 col = vec3(0.0);
 
-    float t = time * 0.1;
+    float t = time * 3.0; // FAST
 
-    for (int i = 0; i < 180; i++)
+    for (int i = 0; i < 200; i++)
     {
         float fi = float(i);
 
@@ -41,30 +42,31 @@ void main()
 
         float seed = hash(fi * 78.233);
 
-        float speed = mix(1.5, 4.0, hash(fi * 91.7));
+        float speed = mix(0.5, 2.5, hash(fi * 91.7));
 
-        // CLEAN lifetime (0..1), no spatial wrapping
-        float life  = fract(seed + t * speed);
-        float life0 = fract(seed + (t - 0.02) * speed);
+        // continuous outward motion (NO fract, NO mod, NO wrap geometry)
+        float d  = seed + t * speed;
+        float d0 = seed + (t - 0.03) * speed;
 
-        // IMPORTANT: kill wrap discontinuity
-        float fade  = smoothstep(0.0, 0.1, life) * smoothstep(1.0, 0.9, life);
-        float fade0 = smoothstep(0.0, 0.1, life0) * smoothstep(1.0, 0.9, life0);
+        // normalize into visible range smoothly (NO discontinuities)
+        d  = d - floor(d);
+        d0 = d0 - floor(d0);
 
-        // outward motion (NO mod, NO wrapping in geometry)
-        float d  = life  * life;
-        float d0 = life0 * life0;
+        // IMPORTANT: keep motion linear in screen space
+        float r  = d  * (resolution.y * 0.6);
+        float r0 = d0 * (resolution.y * 0.6);
 
-        vec2 a = center + dir * d0 * (resolution.y * 0.6);
-        vec2 b = center + dir * d  * (resolution.y * 0.6);
+        vec2 a = center + dir * r0;
+        vec2 b = center + dir * r;
 
         float dist = lineDist(frag, a, b);
 
+        // TRUE 1px line
         float star = step(dist, 0.5);
 
         float brightness = 0.6 + hash(fi * 9.1) * 0.7;
 
-        col += vec3(star * brightness * fade * fade0);
+        col += vec3(star * brightness);
     }
 
     FragColor = vec4(col, 1.0);
