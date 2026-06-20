@@ -28,6 +28,9 @@ class ShaderSaver : public fe::Renderer {
 	bool reloadRequested = false;
 	bool rWasDown = false;
 
+	float startX, startY;
+
+
 	ShaderSaver() : ShaderSaver(500, 500) {}
 
 	ShaderSaver(int width, int height) : fe::Renderer(width, height, false, true) {}
@@ -40,9 +43,10 @@ class ShaderSaver : public fe::Renderer {
 				case SDL_EVENT_QUIT:
 					window->PrepareClose();
 					break;
-				case SDL_EVENT_MOUSE_BUTTON_DOWN:
-
-					break;
+				if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+				{
+					window->PrepareClose();
+				}
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 					int w, h;
@@ -177,7 +181,6 @@ class ShaderSaver : public fe::Renderer {
 
 		bool cursorHidden = false;
 
-		float startX, startY;
 		SDL_GetMouseState(&startX, &startY);
 
 		while (!window->ShouldClose()) {
