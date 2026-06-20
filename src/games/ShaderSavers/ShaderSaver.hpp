@@ -22,6 +22,8 @@ class ShaderSaver : public fe::Renderer {
 
   bool stepRequested = false;
   bool spaceWasDown = false;
+  bool reloadRequested = false;
+  bool rWasDown = false;
 
   ShaderSaver() : ShaderSaver(500, 500) {}
 
@@ -53,6 +55,11 @@ class ShaderSaver : public fe::Renderer {
       stepRequested = true, spaceWasDown = true;
     else if (spaceWasDown)
       spaceWasDown = false;
+
+    if (window->IsKeyDown(SDL_SCANCODE_R) && !rWasDown)
+      reloadRequested = true, rWasDown = true;
+    else if (rWasDown)
+      rWasDown = false;
 
     window->StopMouseCapture();
   }
@@ -131,6 +138,20 @@ class ShaderSaver : public fe::Renderer {
           } catch (std::exception ex) {
             std::cout << ex.what() << std::endl;
           }
+        }
+      }
+
+      if (reloadRequested) {
+        reloadRequested = false;
+        printf("Reloading shader on R press...\n");
+        try {
+          LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
+          shader->Use();
+          if (SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
+            lastWriteTime = currentInfo.modify_time;
+          }
+        } catch (std::exception ex) {
+          std::cout << ex.what() << std::endl;
         }
       }
       int newW, newH;
