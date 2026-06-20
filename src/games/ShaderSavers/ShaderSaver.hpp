@@ -141,7 +141,7 @@ public:
 		const char* fragShaderPath = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
 		SDL_Time lastWriteTime = 0;
 		if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
-		std::cerr << "Initial shader load failed." << std::endl;
+			std::cerr << "Initial shader load failed." << std::endl;
 		}
 
 		GLuint vao;
@@ -164,17 +164,17 @@ public:
 		glGenTextures(2, textures);
 
 		for (int i = 0; i < 2; i++) {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
-		glBindTexture(GL_TEXTURE_2D, textures[i]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
-		GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-		glDrawBuffers(1, drawBuffers);
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+			GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+			glDrawBuffers(1, drawBuffers);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
 		}
 
 		bool firstDraw = true;
