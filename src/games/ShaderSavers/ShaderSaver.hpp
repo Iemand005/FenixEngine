@@ -23,10 +23,11 @@ class ShaderSaver : public fe::Renderer {
 	double lastUpdateTime = 0.0f;
 
 	bool stepRequested = false;
-	bool STEPPED = false;
+	bool stepped = false;
 	bool spaceWasDown = false;
 	bool reloadRequested = false;
 	bool rWasDown = false;
+	bool windowed = false;
 
 	float startX, startY;
 
@@ -40,9 +41,10 @@ class ShaderSaver : public fe::Renderer {
 		fe::SDLWindow* window = (fe::SDLWindow*)this->window.get();
 		while (window->PollSDLEvents(&event)) {
 			switch (event.type) {
-				case SDL_EVENT_QUIT:
 				case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				case SDL_EVENT_KEY_DOWN:
+					if (windowed) break;
+				case SDL_EVENT_QUIT:
 					window->PrepareClose();
 					break;
 				case SDL_EVENT_WINDOW_RESIZED:
@@ -255,7 +257,7 @@ class ShaderSaver : public fe::Renderer {
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			if (stepRequested || !STEPPED) {
+			if (stepRequested || !stepped) {
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textures[frameCount % 2]);
 
