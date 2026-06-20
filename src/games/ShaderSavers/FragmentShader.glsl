@@ -15,43 +15,46 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // centered coords
+    // center + aspect correction
     vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
-    float t = time * 0.8;
+    float t = time;
 
-    // simple rotation (cheap + stable)
-    float c = cos(t * 0.6);
-    float s = sin(t * 0.6);
-    p = mat2(c, -s, s, c) * p;
+    // FAST MOTION BASE LAYERS (all cheap)
+    float wave1 = sin(p.x * 6.0 + t * 2.5);
+    float wave2 = cos(p.y * 6.0 - t * 2.2);
+    float wave3 = sin((p.x + p.y) * 5.0 + t * 3.0);
 
-    // radial distance
+    // diagonal sweep = motion illusion amplifier
+    float sweep = sin((p.x * 2.0 + p.y * 2.0) + t * 4.0);
+
+    // radial pulse (kept simple)
     float d = length(p);
+    float radial = sin(d * 10.0 - t * 3.5);
 
-    // SAFE plasma (no loops, no fbm)
-    float v =
-        sin(p.x * 4.0 + t) +
-        cos(p.y * 4.0 - t) +
-        sin((p.x + p.y) * 3.0 + t * 0.7) +
-        cos(d * 8.0 - t * 1.3);
+    // combine (NO LOOPS, NO NOISE)
+    float v = wave1 + wave2 + wave3 + sweep + radial;
 
-    // normalize safely (4 terms)
-    v *= 0.25;
+    // normalize safely (5 layers → divide)
+    v *= 0.2;
     v = v * 0.5 + 0.5;
 
-    // smooth banding for motion clarity
-    v = smoothstep(0.2, 0.8, v);
+    // sharpen motion contrast
+    v = smoothstep(0.25, 0.75, v);
 
-    // hue drift
-    float hue = v + t * 0.05;
+    // fast hue cycling
+    float hue = v + t * 0.08;
 
-    // slight vignette (very cheap)
-    float vignette = smoothstep(1.2, 0.2, d);
-
+    // color intensity boost for “speed feel”
     vec3 col = hsv2rgb(vec3(hue, 1.0, 1.0));
 
-    col *= vignette;
+    // directional motion streak illusion (cheap trick)
+    float streak = sin(p.x * 20.0 + t * 6.0) * 0.5 + 0.5;
+    col += streak * 0.15;
+
+    // vignette to focus motion center
+    col *= smoothstep(1.3, 0.2, d);
 
     FragColor = vec4(col, 1.0);
 }
