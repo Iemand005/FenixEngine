@@ -19,49 +19,48 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // center coords
+    // center space
     vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
     float t = time;
 
-    float intensity = 0.0;
+    float col = 0.0;
 
-    // FEWER stars = no white screen
-    for (int i = 0; i < 40; i++)
+    // sparse star population
+    for (int i = 0; i < 50; i++)
     {
         float fi = float(i);
 
-        // stable random angle per star
+        // random direction per star
         float a = hash(fi) * 6.2831853;
         vec2 dir = vec2(cos(a), sin(a));
 
-        // speed variation
-        float speed = 0.8 + hash(fi + 3.1) * 2.5;
+        // radial acceleration factor (KEY PART YOU ASKED FOR)
+        float baseSpeed = 0.4 + hash(fi + 2.0) * 0.8;
 
-        // looping lifetime (keeps stars cycling instead of accumulating)
-        float life = fract(t * speed * 0.15 + hash(fi * 9.2));
+        float accel = 1.0 + length(p) * 2.5; // faster further out
 
-        // push from center outward
-        float dist = life * 2.5;
+        float speed = baseSpeed * accel;
+
+        // position expands from center
+        float dist = fract(t * speed + hash(fi * 10.0)) * 3.0;
 
         vec2 pos = dir * dist;
 
-        // pixel star shape (tight + crisp)
-        float d = length(p - pos);
+        // vector to pixel
+        vec2 d = p - pos;
 
-        float star = smoothstep(0.03, 0.0, d);
+        // NO BLUR, just hard pixel star
+        float star = step(length(d), 0.02);
 
-        // fade as it moves outward (prevents white buildup)
-        float fade = 1.0 - life;
+        // fade slightly with distance so edge isn't white wall
+        float fade = 1.0 - dist * 0.25;
 
-        intensity += star * fade * 0.5;
+        col += star * fade;
     }
 
-    // HARD clamp so it NEVER whites out
-    intensity = clamp(intensity, 0.0, 1.0);
+    col = clamp(col, 0.0, 1.0);
 
-    vec3 col = vec3(intensity);
-
-    FragColor = vec4(col, 1.0);
+    FragColor = vec4(vec3(col), 1.0);
 }
