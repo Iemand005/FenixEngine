@@ -5,6 +5,7 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
+// stable hash
 float hash(float n)
 {
     return fract(sin(n) * 43758.5453123);
@@ -19,7 +20,7 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    // center space
+    // centered coords
     vec2 p = uv * 2.0 - 1.0;
     p.x *= resolution.x / resolution.y;
 
@@ -27,52 +28,49 @@ void main()
 
     vec3 col = vec3(0.0);
 
-    // number of "star lanes" (cheap fake particles)
-    // we don't loop; we tile space instead
-    vec2 grid = p * 25.0;
+    // number of stars (NOT a grid — just deterministic sampling slices)
+    for (int i = 0; i < 60; i++)
+    {
+        float fi = float(i);
 
-    vec2 id = floor(grid);
-    vec2 f = fract(grid) - 0.5;
+        // each star has a stable random direction
+        float a = hash(fi) * 6.2831853;
 
-    // per-cell random star existence
-    float rnd = hash2(id);
+        vec2 dir = vec2(cos(a), sin(a));
 
-    // only some cells spawn stars
-    float starMask = step(0.92, rnd);
+        // speed variation
+        float speed = 1.5 + hash(fi + 10.0) * 6.0;
 
-    // spawn direction from center (IMPORTANT PART)
-    vec2 dir = normalize(id + vec2(hash(id.x), hash(id.y)) - 0.5);
+        // star position = moves outward continuously from center
+        float life = fract(t * speed * 0.05 + hash(fi * 2.0));
 
-    // velocity (FAST outward motion)
-    float speed = 8.0 + hash2(id) * 6.0;
+        float dist = life * 3.0;
 
-    // position along trajectory
-    float dist = t * speed;
+        vec2 pos = dir * dist;
 
-    // star moving outward from center
-    vec2 starPos = dir * dist * 0.08;
+        // vector from star to pixel
+        vec2 diff = p - pos;
 
-    // relative position to star
-    vec2 diff = p - starPos;
+        float d = length(diff);
 
-    float d = length(diff);
+        // motion streak (projection onto direction)
+        float along = abs(dot(diff, dir));
 
-    // stretch trail along motion direction (fake motion blur)
-    float trail = 1.0 / (abs(diff.x * dir.x + diff.y * dir.y) * 30.0 + 1.0);
+        float streak = 1.0 / (along * 25.0 + 1.0);
 
-    // star core
-    float core = smoothstep(0.08, 0.0, d);
+        // core star
+        float core = smoothstep(0.05, 0.0, d);
 
-    // combine core + trail
-    float intensity = core + trail * 0.6;
+        float intensity = (core + streak * 0.8);
 
-    // fade out when too far
-    intensity *= smoothstep(3.0, 0.2, length(starPos));
+        // fade with distance from center (burst origin)
+        intensity *= smoothstep(3.0, 0.2, length(pos));
 
-    // apply spawn mask
-    intensity *= starMask;
+        col += vec3(intensity);
+    }
 
-    col += vec3(intensity);
+    // tone down brightness
+    col *= 0.8;
 
     FragColor = vec4(col, 1.0);
 }
