@@ -5,69 +5,70 @@ out vec4 FragColor;
 uniform vec2 resolution;
 uniform float time;
 
-float hash(float n)
-{
-    return fract(sin(n) * 43758.5453123);
+// Rotatiematrix voor dynamische beweging
+mat2 rot(float a) {
+    float s = sin(a), c = cos(a);
+    return mat2(c, -s, s, c);
 }
 
-vec2 hash2(float n)
-{
-    return vec2(hash(n), hash(n + 17.0)) * 2.0 - 1.0;
+// Gyroid-patroon voor organische, complexe structuren
+float gyroid(vec3 p) {
+    p.xy *= rot(time * 0.1);
+    p.xz *= rot(time * 0.07);
+    return dot(sin(p), cos(p.zxy));
 }
 
-// distance from point to segment
-float lineDist(vec2 p, vec2 a, vec2 b)
-{
-    vec2 pa = p - a;
-    vec2 ba = b - a;
-
-    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba * h);
+// Map-functie voor raymarching (bepaalt de vorm van de tunnel)
+float map(vec3 p) {
+    vec3 q = p;
+    q.xy *= rot(p.z * 0.15 + time * 0.05); // Torsie in de tunnel
+    
+    // Oneindige herhaling in de ruimte voor een tunneleffect
+    float tunnel = length(q.xy) - 2.0; 
+    
+    // Voeg detail toe met de gyroid-ruis
+    float noise = gyroid(p * 2.0) * 0.35;
+    
+    return max(-tunnel, noise);
 }
 
-void main()
-{
-    vec2 frag = gl_FragCoord.xy;
-    vec2 center = resolution * 0.5;
-
-    vec3 col = vec3(0.0);
-
-    float t = time * 3.0; // FAST
-
-    for (int i = 0; i < 200; i++)
-    {
-        float fi = float(i);
-
-        vec2 dir = normalize(hash2(fi * 12.989));
-
-        float seed = hash(fi * 78.233);
-
-        float speed = mix(0.5, 2.5, hash(fi * 91.7));
-
-        // continuous outward motion (NO fract, NO mod, NO wrap geometry)
-        float d  = seed + t * speed;
-        float d0 = seed + (t - 0.03) * speed;
-
-        // normalize into visible range smoothly (NO discontinuities)
-        d  = d - floor(d);
-        d0 = d0 - floor(d0);
-
-        // IMPORTANT: keep motion linear in screen space
-        float r  = d  * (resolution.y * 0.6);
-        float r0 = d0 * (resolution.y * 0.6);
-
-        vec2 a = center + dir * r0;
-        vec2 b = center + dir * r;
-
-        float dist = lineDist(frag, a, b);
-
-        // TRUE 1px line
-        float star = step(dist, 0.5);
-
-        float brightness = 0.6 + hash(fi * 9.1) * 0.7;
-
-        col += vec3(star * brightness);
+void main() {
+    // Normaliseer coördinaten (aspect ratio correctie)
+    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    
+    // Camera-instellingen
+    vec3 ro = vec3(0.0, 0.0, time * 0.8); // Camera beweegt vooruit
+    vec3 rd = normalize(vec3(uv, 1.2));   // Ray direction
+    
+    // Raymarching loop
+    float dO = 0.0;
+    float glow = 0.0;
+    for(int i = 0; i < 80; i++) {
+        vec3 p = ro + rd * dO;
+        float dS = map(p);
+        dO += dS * 0.5; // Kleinere stappen voor vloeiendere details
+        
+        // Verzamel 'glow' op basis van hoe dicht de straal bij objecten komt
+        glow += exp(-dS * 8.0); 
+        
+        if(dO > 20.0 || dS < 0.001) break;
     }
-
-    FragColor = vec4(col, 1.0);
+    
+    // Mist en diepteberekening
+    float fog = 1.0 / (1.0 + dO * dO * 0.1);
+    
+    // Dynamische kleurengeneratie (kosmisch paars, neonblauw en goud)
+    vec3 baseCol = vec3(0.1, 0.02, 0.2);
+    vec3 glowCol = vec3(0.5 + 0.5 * sin(time + dO), 0.2, 0.8 + 0.2 * cos(time));
+    vec3 finalCol = baseCol * glow;
+    
+    // Voeg de intense gloed en chromatische aberratie-achtige verschuiving toe
+    finalCol += glowCol * (glow * 0.04);
+    finalCol += vec3(0.2, 0.6, 1.0) * fog * 2.0;
+    
+    // Contrast en gamma-correctie
+    finalCol = pow(finalCol, vec3(0.4545)); // Gamma 2.2
+    finalCol = smoothstep(0.0, 1.0, finalCol);
+    
+    FragColor = vec4(finalCol, 1.0);
 }
