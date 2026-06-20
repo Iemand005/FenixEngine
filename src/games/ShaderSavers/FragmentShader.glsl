@@ -15,44 +15,41 @@ vec2 hash2(float n) {
 
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    vec2 center = vec2(0.5);
 
     vec3 col = vec3(0.0);
     float t = time * 0.6;
 
-    for (int i = 0; i < 140; i++)
+    for (int i = 0; i < 180; i++)
     {
         float fi = float(i);
 
-        // random direction from center
         vec2 dir = normalize(hash2(fi * 12.989));
 
-        // unique phase per star
         float seed = hash(fi * 78.233);
 
-        // normalized lifetime (0..1 looping)
-        float p = fract(seed + t * (0.4 + hash(fi * 91.7) * 2.0));
+        float speed = 0.3 + hash(fi * 91.7) * 1.5;
 
-        // IMPORTANT: acceleration outward (slow start -> fast edge)
-        float accel = p * p;
+        float p = fract(seed + t * speed);
 
-        // outward distance
-        float dist = accel * 2.5;
+        // acceleration outward
+        float dist = p * p * 1.8;
 
-        vec2 pos = dir * dist;
+        vec2 pos = center + dir * dist * 0.8;
 
-        // sharp pixel star size (constant small square-ish point)
-        float size = 0.008;
+        // convert to screen pixels
+        vec2 pixelPos = pos * resolution;
+        vec2 fragPos  = gl_FragCoord.xy;
 
-        vec2 diff = uv - pos;
+        // distance in pixel space
+        vec2 d = abs(fragPos - pixelPos);
 
-        // HARD star (no blur)
+        // SINGLE PIXEL HIT TEST (important part)
         float star =
-            step(abs(diff.x), size) *
-            step(abs(diff.y), size);
+            1.0 - step(0.5, max(d.x, d.y));
 
-        // optional slight brightness variation
-        float brightness = 0.8 + hash(fi * 9.1) * 0.4;
+        float brightness = 0.7 + hash(fi * 9.1) * 0.6;
 
         col += vec3(star * brightness);
     }
