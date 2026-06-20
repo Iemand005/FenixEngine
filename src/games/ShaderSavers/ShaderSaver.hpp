@@ -175,11 +175,14 @@ class ShaderSaver : public fe::Renderer {
 		bool firstDraw = true;
 		int frameCount = 0;
 
+		bool cursorHidden = false;
+
 		while (!window->ShouldClose()) {
 			ProcessInput();
 			
-			while (SDL_HideCursor() >= 0) {}
-			
+			if (!cursorHidden)
+				cursorHidden = SDL_HideCursor();
+
 			if (firstDraw) {
 				stepRequested = true;
 			}
