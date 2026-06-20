@@ -7,11 +7,11 @@
   "files": {
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 280980,
-      "focus": 3164239
+      "focus": 3173691
     },
     "src/games/ShaderSavers/FragmentShader.glsl": {
-      "pending": 34979,
-      "focus": 1730719
+      "pending": 0,
+      "focus": 1539
     },
     "src/games/ShaderSavers/main.cpp": {
       "pending": 0,
