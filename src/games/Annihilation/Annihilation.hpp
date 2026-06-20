@@ -19,10 +19,10 @@
 #include <imgui/backends/imgui_impl_glfw.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 // #include "engext/ine/networking/udp.cpp"
-#include <Game.hpp>
+#include <EditableGame.hpp>
 #include <engine.h>
 
-class Annihilation : public fe::Game {
+class Annihilation : public fe::EditableGame {
  public:
 
   std::vector<std::string> messages;
@@ -35,7 +35,7 @@ class Annihilation : public fe::Game {
 
   ImGuiIO io;
 
-  Annihilation(int width, int height) : Game(width, height) {
+  Annihilation(int width, int height) : EditableGame(width, height) {
 
     LoadModels();
 
