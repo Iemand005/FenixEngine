@@ -248,3 +248,16 @@ void fe::SDLWindow::Show() {
 void fe::SDLWindow::Hide() {
 	SDL_HideWindow(impl->window);
 }
+
+void fe::SDLWindow::Move() {
+	SDL_ShowWindow(impl->window);
+}
+
+
+void fe::SDLWindow::SetBorderlessb() {
+	SDL_ShowWindow(impl->window);
+}
+
+void fe::SDLWindow::SetFullscreen(boolean enabled) {
+	SDL_ShowWindow(impl->window);
+}
