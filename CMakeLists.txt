@@ -42,7 +42,7 @@ file(GLOB_RECURSE SOURCE_FILES
     src/games/Annihilation/*.cpp
 )
 
-set(IMGUI_DIR ../../external/imgui)
+set(IMGUI_DIR external/imgui)
 
 set(IMGUI_SRC
     ${IMGUI_DIR}/imgui.cpp
