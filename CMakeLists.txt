@@ -173,6 +173,7 @@ target_link_libraries(ShaderSaver PRIVATE Engine)
 
 set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set_target_properties(ShaderSaver PROPERTIES SUFFIX ".scr")
 
 if(WIN32)
     # Main game
