@@ -108,6 +108,17 @@ class ShaderSaver : public fe::Renderer {
 			case ScreenSaverMode::Fullscreen: {
 				SDL_SetWindowBordered(window->GetSDLWindow(), false);
 				// SDL_SetWindowFullscreen(window->GetSDLWindow(), true);
+
+				int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+				int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+				int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+				int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+				SDL_SetWindowPosition(window->GetSDLWindow(), x, y);
+				window->Move(x, y);
+				window->Resize(w, h);
+				// SDL_SetWindowSize(window->GetSDLWindow(), w, h);
+
 				SDL_HideCursor();
 				
 				window->Show();
