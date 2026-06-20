@@ -68,7 +68,6 @@ target_include_directories(Renderer PRIVATE
 
 target_include_directories(Renderer PUBLIC
     ../../external/glm
-    ../../external/imgui
 )
 
 target_link_libraries(Renderer PRIVATE
@@ -80,6 +79,5 @@ target_link_libraries(Renderer PRIVATE
 )
 
 target_link_libraries(Renderer PUBLIC
-    glfw
     SDL3::SDL3
 )
