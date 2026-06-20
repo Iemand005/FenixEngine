@@ -64,6 +64,27 @@ class ShaderSaver : public fe::Renderer {
     window->StopMouseCapture();
   }
 
+  bool ReloadFragmentShader(const char* fragShaderPath, const char* vertexShaderText, SDL_Time* outWriteTime = nullptr) {
+    SDL_PathInfo currentInfo;
+    if (!SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
+      std::cerr << "Failed to query shader file info: " << fragShaderPath << std::endl;
+      return false;
+    }
+
+    try {
+      LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
+      shader->Use();
+    } catch (const std::exception& ex) {
+      std::cout << ex.what() << std::endl;
+      return false;
+    }
+
+    if (outWriteTime)
+      *outWriteTime = currentInfo.modify_time;
+
+    return true;
+  }
+
   void Run() {
     auto window = this->GetWindow<fe::SDLWindow>();
     window->EnableVSync();
@@ -82,8 +103,9 @@ class ShaderSaver : public fe::Renderer {
 
     const char* fragShaderPath = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
     SDL_Time lastWriteTime = 0;
-    LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
-    shader->Use();
+    if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+      std::cerr << "Initial shader load failed." << std::endl;
+    }
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -128,30 +150,18 @@ class ShaderSaver : public fe::Renderer {
 
       // SDL_GetPathInfo(fragShaderPath,
       SDL_PathInfo currentInfo;
-      if (SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
-        if (currentInfo.modify_time > lastWriteTime) {
-          lastWriteTime = currentInfo.modify_time;
-          printf("Reloading shader...\n");
-          try {
-            LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
-            shader->Use();
-          } catch (std::exception ex) {
-            std::cout << ex.what() << std::endl;
-          }
+      if (SDL_GetPathInfo(fragShaderPath, &currentInfo) && currentInfo.modify_time > lastWriteTime) {
+        printf("Reloading shader because file changed...\n");
+        if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+          std::cout << "Failed to reload shader after file change." << std::endl;
         }
       }
 
       if (reloadRequested) {
         reloadRequested = false;
         printf("Reloading shader on R press...\n");
-        try {
-          LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
-          shader->Use();
-          if (SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
-            lastWriteTime = currentInfo.modify_time;
-          }
-        } catch (std::exception ex) {
-          std::cout << ex.what() << std::endl;
+        if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+          std::cout << "Failed to reload shader on R press." << std::endl;
         }
       }
       int newW, newH;
