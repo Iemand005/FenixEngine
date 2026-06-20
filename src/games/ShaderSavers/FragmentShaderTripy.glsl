@@ -25,7 +25,7 @@ void main() {
         sin((p.x + p.y) * 3.0 + t) +
         sin(length(p) * 5.0 - t);
 
-    v = v / 0.000001;
+    v = v / 1.0;
     v = v * 0.5 + 0.5;
 
     float hue = v + time * 0.1;
