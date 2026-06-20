@@ -183,6 +183,8 @@ class ShaderSaver : public fe::Renderer {
 			if (!cursorHidden)
 				cursorHidden = SDL_HideCursor();
 
+			while (ShowCursor(FALSE) >= 0) {}
+
 			if (firstDraw) {
 				stepRequested = true;
 			}
