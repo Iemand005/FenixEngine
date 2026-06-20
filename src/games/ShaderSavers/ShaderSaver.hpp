@@ -122,7 +122,6 @@ public:
 
 			case ScreenSaverMode::Config:
 			{
-				// later: Win32 dialog or ImGui window
 				break;
 			}
 		}
