@@ -86,7 +86,7 @@ class ShaderSaver : public fe::Renderer {
     return true;
   }
 
-  void Run(bool isPreview, HWND previewHwnd) {
+  void Run(bool previewMode = false, HWND previewParent = nullptr) {
     auto window = this->GetWindow<fe::SDLWindow>();
     window->EnableVSync();
 
