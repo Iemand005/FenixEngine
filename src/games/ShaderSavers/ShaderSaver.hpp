@@ -97,7 +97,7 @@ public:
 		auto window = this->GetWindow<fe::SDLWindow>();
 		window->EnableVSync();
 
-		if (previewMode && previewParent)
+		if (previewMode == ScreenSaverMode::Preview && previewParent)
 		{
 			RECT r;
 			GetClientRect(previewParent, &r);
