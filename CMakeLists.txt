@@ -56,8 +56,6 @@ set(IMGUI_SRC
 add_executable(main ${SOURCE_FILES} ${IMGUI_SRC})
 
 set_property(TARGET main PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
 
 # For VSCode CMake Tools specifically
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -171,9 +169,10 @@ target_include_directories(ShaderSaver PRIVATE
     src/engine
 )
 
-target_link_libraries(ShaderSaver PRIVATE
-    Engine
-)
+target_link_libraries(ShaderSaver PRIVATE Engine)
+
+set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 
 if(WIN32)
     # Main game
