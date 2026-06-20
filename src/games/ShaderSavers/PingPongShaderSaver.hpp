@@ -1,0 +1,285 @@
+#pragma once
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define FE_EXCLUDE_GLFW
+
+#include <cstdio>
+#include <iostream>
+
+#include "../../engine/Renderer.hpp"
+
+enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
+
+class ShaderSaver : public fe::Renderer {
+   public:
+	bool stepRequested = false;
+	bool stepped = false;
+	bool spaceWasDown = false;
+	bool reloadRequested = false;
+	bool rWasDown = false;
+	bool fullscreened = false;
+
+	int width = 0, height = 0;
+	GLuint textures[2] = {0, 0};
+
+	float startX, startY;
+
+	ShaderSaver() : ShaderSaver(500, 500) {}
+
+	ShaderSaver(int width, int height) : fe::Renderer(width, height, false, true) {}
+
+	void Resize(int w, int h) {
+		if (w <= 0 || h <= 0) return;
+
+		width = w;
+		height = h;
+		glViewport(0, 0, w, h);
+
+		if (!textures[0]) return;
+
+		for (int i = 0; i < 2; i++) {
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		}
+		printf("Resized naar: %dx%d\n", w, h);
+	}
+
+	void ProcessInput() {
+		SDL_Event event;
+		fe::SDLWindow* window = (fe::SDLWindow*)this->window.get();
+		while (window->PollSDLEvents(&event)) {
+			switch (event.type) {
+				case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				case SDL_EVENT_KEY_DOWN:
+					if (!fullscreened) break;
+				case SDL_EVENT_QUIT:
+					window->PrepareClose();
+					break;
+				case SDL_EVENT_WINDOW_RESIZED:
+				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+					int w, h;
+					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+					Resize(w, h);
+					window->resizeEvent(w, h);
+
+					break;
+				}
+			}
+		}
+
+		if (window->IsKeyDown(SDL_SCANCODE_SPACE) && !spaceWasDown)
+			stepRequested = true, spaceWasDown = true;
+		else if (spaceWasDown)
+			spaceWasDown = false;
+
+		if (window->IsKeyDown(SDL_SCANCODE_R) && !rWasDown)
+			reloadRequested = true, rWasDown = true;
+		else if (rWasDown)
+			rWasDown = false;
+
+		if (fullscreened) {
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+
+			if (abs(x - startX) > 3 || abs(y - startY) > 3)
+			{
+				window->PrepareClose();
+			}
+		}
+	}
+
+	bool ReloadFragmentShader(const char* fragShaderPath, const char* vertexShaderText, SDL_Time* outWriteTime = nullptr) {
+		SDL_PathInfo currentInfo;
+		if (!SDL_GetPathInfo(fragShaderPath, &currentInfo)) {
+			std::cerr << "Failed to query shader file info: " << fragShaderPath << std::endl;
+			return false;
+		}
+
+		try {
+			LoadShaders(fe::Shader::Vertex(vertexShaderText), fe::Shader::Fragment(fragShaderPath));
+			shader->Use();
+		} catch (const std::exception& ex) {
+			std::cout << ex.what() << std::endl;
+			return false;
+		}
+
+		if (outWriteTime) *outWriteTime = currentInfo.modify_time;
+
+		return true;
+	}
+
+	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND previewParent = nullptr) {
+		auto window = GetWindow<fe::SDLWindow>();
+
+		window->EnableVSync();
+
+		switch (mode) {
+			case ScreenSaverMode::Preview: {
+				RECT r;
+				GetClientRect(previewParent, &r);
+
+				int w = r.right - r.left;
+				int h = r.bottom - r.top;
+
+				window->AttachToNativeParent(previewParent);
+				window->Resize(w, h);
+				break;
+			}
+
+			case ScreenSaverMode::Fullscreen: {
+				window->GoBorderlessFullscreen();
+				// window->SetFullscreen();
+				window->Show();
+
+				SDL_HideCursor();
+				SDL_SetCursor(nullptr);
+				
+				fullscreened = true;
+
+				break;
+			}
+
+			case ScreenSaverMode::Window: {
+				window->Show();
+				break;
+			}
+
+			case ScreenSaverMode::Config: {
+				break;
+			}
+		}
+
+		const char* vertexShaderText = /** GLSL */ R"(
+		#version 330 core
+		void main() {
+			vec2 vertices[3] = vec2[3](
+				vec2(-1.0, -1.0),
+				vec2( 3.0, -1.0),
+				vec2(-1.0,  3.0)
+			);
+			gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
+		}
+		)";
+
+		const char* fragShaderPath = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+		SDL_Time lastWriteTime = 0;
+		if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+			std::cerr << "Initial shader load failed." << std::endl;
+
+			fragShaderPath = "FragmentShader.glsl";
+			lastWriteTime = 0;
+			if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+				std::cerr << "Secondary shader load failed." << std::endl;
+			}
+		}
+
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+		printf("SDL window: %d x %d\n", width, height);
+		glViewport(0, 0, width, height);
+
+		shader->Use();
+		GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
+		if (prevLoc >= 0) glUniform1i(prevLoc, 0);
+		GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
+		if (resLoc >= 0) glUniform2f(resLoc, (float)width, (float)height);
+
+		GLuint fbos[2];
+		glGenFramebuffers(2, fbos);
+		glGenTextures(2, textures);
+		Resize(width, height);
+
+		for (int i = 0; i < 2; i++) {
+			glBindFramebuffer(GL_FRAMEBUFFER, fbos[i]);
+			glBindTexture(GL_TEXTURE_2D, textures[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+			GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+			glDrawBuffers(1, drawBuffers);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+		}
+
+		bool cursorHidden = false;
+		bool firstDraw = true;
+		int frameCount = 0;
+
+		SDL_GetMouseState(&startX, &startY);
+
+		while (!window->ShouldClose()) {
+			ProcessInput();
+
+			if (fullscreened && !cursorHidden)
+				cursorHidden = SDL_HideCursor();
+
+			if (firstDraw) {
+				stepRequested = true;
+			}
+
+			SDL_PathInfo currentInfo;
+			if (SDL_GetPathInfo(fragShaderPath, &currentInfo) && currentInfo.modify_time > lastWriteTime) {
+				printf("Reloading shader because file changed...\n");
+				if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+					std::cout << "Failed to reload shader after file change." << std::endl;
+				}
+			}
+
+			if (reloadRequested) {
+				reloadRequested = false;
+				printf("Reloading shader on R press...\n");
+				if (!ReloadFragmentShader(fragShaderPath, vertexShaderText, &lastWriteTime)) {
+					std::cout << "Failed to reload shader on R press." << std::endl;
+				}
+			}
+
+			
+			shader->Use();
+			GLint prevLoc = glGetUniformLocation(shader->getId(), "prevFrame");
+			if (prevLoc >= 0) glUniform1i(prevLoc, 0);
+			GLint resLoc = glGetUniformLocation(shader->getId(), "resolution");
+			if (resLoc >= 0) glUniform2f(resLoc, (float)width, (float)height);
+			float t = SDL_GetTicks() / 1000.0f;
+			glUniform1f(glGetUniformLocation(shader->getId(), "time"), t);
+
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			if (stepRequested || !stepped) {
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textures[frameCount % 2]);
+
+				glBindVertexArray(vao);
+
+				int dest = (frameCount + 1) % 2;
+
+				glBindFramebuffer(GL_FRAMEBUFFER, fbos[dest]);
+				GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+				glDrawBuffers(1, drawBuffers);
+
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[dest]);
+
+				frameCount++;
+				firstDraw = false;
+				stepRequested = false;
+			}
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[frameCount % 2]);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			window->SwapBuffers();
+		}
+
+		Destroy();
+	}
+};
