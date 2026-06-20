@@ -12,7 +12,7 @@
 #include <map>
 #include <string>
 
-#include "../../engine/EditableGame.hpp"
+#include "../../engine/Renderer.hpp"
 
 class ShaderSaver : public fe::Renderer {
  public:

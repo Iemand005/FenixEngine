@@ -9,6 +9,8 @@ int main(int argc, char* argv[]) {
     std::cout << "arg[" << i << "] = " << argv[i] << "\n";
   }
 
+  #ifdef WIN32
+
   bool isPreview = false;
   HWND previewHwnd = nullptr;
 
