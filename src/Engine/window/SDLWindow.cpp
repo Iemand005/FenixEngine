@@ -87,10 +87,10 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden) 
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
-    auto window_props = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    if (hidden) window_props |= SDL_WINDOW_HIDDEN;
+    auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
-    impl->window = SDL_CreateWindow(title.c_str(), width, height, window_props);
+    impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
     if (!impl->window) {
       CheckError();
