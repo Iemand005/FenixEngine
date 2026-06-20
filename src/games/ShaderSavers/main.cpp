@@ -51,24 +51,17 @@ int WINAPI WinMain(
 
     argv[0] = (char*)"ShaderSaver.scr";
 
-    // Simple tokenization of lpCmdLine
     std::string cmd = lpCmdLine ? lpCmdLine : "";
     std::string current;
 
     for (char c : cmd)
     {
-        if (c == ' ')
-        {
-            if (!current.empty())
-            {
-                argv[argc++] = _strdup(current.c_str());
-                current.clear();
-            }
-        }
-        else
-        {
-            current += c;
-        }
+        if (c == ' ') if (!current.empty())
+		{
+			argv[argc++] = _strdup(current.c_str());
+			current.clear();
+		}
+        else current += c;
     }
 
     if (!current.empty())
