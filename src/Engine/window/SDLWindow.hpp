@@ -59,6 +59,8 @@ class SDLWindow : public IWindow {
   SDL_GLContext GetSDLGLContext();
 
   void Destroy() override;
+
+  void AttachToNativeParent(void* handle);
 };
 
 }  // namespace fe
