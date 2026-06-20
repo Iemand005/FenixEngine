@@ -61,16 +61,16 @@ add_library(Renderer STATIC
     Renderer.cpp
 )
 
-target_include_directories(Engine PRIVATE
+target_include_directories(Renderer PRIVATE
     ../../include
 )
 
-target_include_directories(Engine PUBLIC
+target_include_directories(Renderer PUBLIC
     ../../external/glm
     ../../external/imgui
 )
 
-target_link_libraries(Engine PRIVATE
+target_link_libraries(Renderer PRIVATE
     gdi32
     opengl32
     shell32
@@ -78,9 +78,7 @@ target_link_libraries(Engine PRIVATE
     gdi32
 )
 
-target_link_libraries(Engine PUBLIC
+target_link_libraries(Renderer PUBLIC
     glfw
     SDL3::SDL3
-    OpenXR::openxr_loader
-    Jolt
 )
