@@ -13,3 +13,4 @@ out
 CMakeFiles
 .cache
 /lib
+obj
