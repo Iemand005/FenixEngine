@@ -1,3 +1,4 @@
+#define FE_EXCLUDE_GLFW
 #include "ShaderSaver.hpp"
 
 int main(int argc, char* argv[]) {

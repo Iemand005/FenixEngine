@@ -12,7 +12,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-
+#define FE_EXCLUDE_GLFW
 #include "../../engine/Renderer.hpp"
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
