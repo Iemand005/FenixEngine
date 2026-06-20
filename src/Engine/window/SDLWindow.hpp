@@ -45,8 +45,20 @@ class SDLWindow : public IWindow {
 	void SetBordered(bool enabled);
 	void SetFullscreen(bool enabled);
 
-	void SetBorderless(bool enabled) {
+	void SetBorderless() {
 		SetBordered(false);
+	}
+
+	void GoBorderlessFullSCreen() {
+		SetBorderless();
+
+		int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+		int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+		int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+		Move(x, y);
+		Resize(w, h);
 	}
 
   void Hide();
