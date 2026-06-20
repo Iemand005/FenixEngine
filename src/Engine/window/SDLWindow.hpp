@@ -38,6 +38,7 @@ class SDLWindow : public IWindow {
   // void SetMouseCapture(bool captureMouse = true);
 
   void GetSize(int* w, int* h);
+  void Resize(int w, int h);
 
   void SwapBuffers() override;
 

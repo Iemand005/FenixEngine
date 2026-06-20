@@ -191,6 +191,10 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
     return true;
   }
 
+void fe::SDLWindow::Resize(int w, int h) {
+  SDL_SetWindowSize(this->impl->window, w, h);
+}
+
 #ifdef _WIN32
 #include <SDL3/SDL.h>
 #include <windows.h>
@@ -231,15 +235,5 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
         SWP_NOACTIVATE |
         SWP_SHOWWINDOW
     );
-
-    printf("Parent HWND = %p\n", parent);
-printf("Child HWND  = %p\n", hwnd);
-
-RECT r;
-GetClientRect((HWND)parent, &r);
-
-printf("Parent size = %ld x %ld\n",
-       r.right - r.left,
-       r.bottom - r.top);
 }
 #endif

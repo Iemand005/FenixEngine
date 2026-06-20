@@ -100,8 +100,8 @@ class ShaderSaver : public fe::Renderer {
         Resize(w, h);
         SDL_SetWindowSize(
           window->GetSDLWindow(),
-          previewW,
-          previewH
+          w,
+          h
         );
       }
 
