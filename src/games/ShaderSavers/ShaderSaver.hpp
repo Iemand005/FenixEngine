@@ -98,11 +98,7 @@ class ShaderSaver : public fe::Renderer {
         int h = r.bottom - r.top;
         window->AttachToNativeParent(previewParent);
         Resize(w, h);
-        SDL_SetWindowSize(
-          window->GetSDLWindow(),
-          w,
-          h
-        );
+        window->Resize(w, h);
       }
 
     const char* vertexShaderText = /** GLSL */ R"(
