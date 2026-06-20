@@ -59,6 +59,7 @@ target_link_libraries(Engine PUBLIC
 add_library(Renderer STATIC
     glad/glad.c
     Renderer.cpp
+    window/SDLWindow.cpp
 )
 
 target_include_directories(Renderer PRIVATE
