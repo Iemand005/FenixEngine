@@ -271,6 +271,20 @@ void fe::SDLWindow::GoBorderlessFullscreen() {
 		NULL
 	);
 
+	LONG style = GetWindowLong(hwnd, GWL_STYLE);
+
+style &= ~(WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+
+style |= WS_POPUP;
+
+SetWindowLong(hwnd, GWL_STYLE, style);
+
+LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+exStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+
+SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
+
 	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
 	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
 	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);

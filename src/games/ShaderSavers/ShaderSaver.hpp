@@ -107,10 +107,11 @@ class ShaderSaver : public fe::Renderer {
 
 			case ScreenSaverMode::Fullscreen: {
 				window->GoBorderlessFullscreen();
+				window->Show();
 
 				SDL_HideCursor();
+				SDL_SetCursor(nullptr);
 				
-				window->Show();
 
 				break;
 			}
@@ -176,6 +177,8 @@ class ShaderSaver : public fe::Renderer {
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
+			SDL_HideCursor();
+				SDL_SetCursor(nullptr);
 			if (firstDraw) {
 				stepRequested = true;
 			}
