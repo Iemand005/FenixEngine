@@ -190,3 +190,31 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
     return true;
   }
+
+#ifdef _WIN32
+
+#include <SDL3/SDL_syswm.h>
+#include <windows.h>
+
+void SDLWindow::SetChildOf(HWND parent)
+{
+    SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+
+    SDL_GetWindowWMInfo(this->GetSDLWindow(), &wmInfo);
+
+    HWND hwnd = wmInfo.info.win.window;
+
+    SetParent(hwnd, parent);
+
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW);
+    style |= WS_CHILD;
+
+    SetWindowLong(hwnd, GWL_STYLE, style);
+
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+}
+
+#endif
