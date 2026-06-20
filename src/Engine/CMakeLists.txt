@@ -58,6 +58,29 @@ target_link_libraries(Engine PUBLIC
 
 add_library(Renderer STATIC
     glad/glad.c
-    renderer/Renderer.cpp
-    renderer/Shader.cpp
+    Renderer.cpp
+)
+
+target_include_directories(Engine PRIVATE
+    ../../include
+)
+
+target_include_directories(Engine PUBLIC
+    ../../external/glm
+    ../../external/imgui
+)
+
+target_link_libraries(Engine PRIVATE
+    gdi32
+    opengl32
+    shell32
+    user32
+    gdi32
+)
+
+target_link_libraries(Engine PUBLIC
+    glfw
+    SDL3::SDL3
+    OpenXR::openxr_loader
+    Jolt
 )
