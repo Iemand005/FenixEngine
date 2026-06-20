@@ -297,10 +297,10 @@ exStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 
 SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
-	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	// int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	// int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	// int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	// int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
 	SetWindowPos(
     	hwnd,
