@@ -1,20 +1,29 @@
 #version 330 core
+
 out vec4 FragColor;
 
 uniform sampler2D prevFrame;
 uniform vec2 resolution;
+uniform float time;
+
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
 
 void main() {
-  vec2 res = vec2(500, 500);
-  res = resolution;
-  vec2 pos = gl_FragCoord.xy;
+    vec2 uv = gl_FragCoord.xy / resolution;
 
-  vec2 uv = pos/ res;
-  vec3 lastColor = texture(prevFrame, uv).rgb;
+    vec3 lastColor = texture(prevFrame, uv).rgb;
 
-  if (gl_FragCoord.x > 0 && gl_FragCoord.x < 13 && gl_FragCoord.y < 1200 ) {
-    FragColor = vec4(1 - lastColor, 1.0);
-  } else {
-    FragColor = vec4(0.59, 0.06, 0.06, 1.0);
-  }
+    float hue = uv.x + uv.y * 0.5 + time * 0.2;
+
+    vec3 rainbow = hsv2rgb(vec3(hue, 1.0, 1.0));
+
+    vec3 feedback = vec3(1.0) - lastColor;
+
+    vec3 color = mix(rainbow, feedback, 0.25);
+
+    FragColor = vec4(color, 1.0);
 }
