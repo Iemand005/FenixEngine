@@ -189,3 +189,7 @@ void fe::GLFW3Window::Show() {
 void fe::GLFW3Window::Hide() {
 	
 }
+
+void fe::GLFW3Window::PrepareClose() {
+    glfwSetWindowShouldClose(impl->window, true);
+}

@@ -30,6 +30,7 @@ public:
 	void GetMousePosition(double *x, double *y);
 
 	bool ShouldClose();
+	void PrepareClose();
 
 	double GetTime();
 
