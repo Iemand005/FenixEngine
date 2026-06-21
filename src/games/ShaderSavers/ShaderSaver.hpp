@@ -35,8 +35,8 @@ public:
 
 	std::filesystem::file_time_type lastWrite;
 
-	ShaderSaver(bool fullscreen = false) : ShaderSaver(2560, 1600, false, true, fullscreen) {}
-	ShaderSaver(int w, int h) : fe::Renderer(w, h, false, true) {}
+	ShaderSaver(bool fullscreen = false) : ShaderSaver(2560, 1600 fullscreen) {}
+	ShaderSaver(int w, int h, bool fullscreen = false) : fe::Renderer(w, h, false, true, fullscreen) {}
 
 	void Resize(int w, int h) {
 		if (w <= 0 || h <= 0) return;
