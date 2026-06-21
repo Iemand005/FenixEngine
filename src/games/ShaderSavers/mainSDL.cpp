@@ -1,4 +1,5 @@
-#include "ShaderSaverSDL.hpp"
+#define FE_USE_SDL
+#include "ShaderSaver.hpp"
 
 #include <windows.h>
 #include <string>
