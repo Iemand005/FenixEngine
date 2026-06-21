@@ -72,7 +72,7 @@ public:
 		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &wavSpec, &data, &len))
 		{
 			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
-			return;
+			return;a
 		}
 
 		SDL_AudioSpec targetSpec;
