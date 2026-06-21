@@ -101,6 +101,11 @@ target_include_directories(editor PRIVATE
     src/engine
 )
 
+
+file(GLOB_RECURSE POOL_SOURCE_FILES
+    src/games/Pool/*.cpp
+)
+
 file(GLOB_RECURSE IMGUI_SOURCE_FILES
     external/imgui/imgui.cpp
     external/imgui/backends/imgui_impl_sdl3.cpp
@@ -114,7 +119,7 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
     external/imgui/imgui_draw.cpp
 )
 
-add_executable(pool ${IMGUI_SOURCE_FILES} src/games/Pool/*.cpp)
+add_executable(pool ${IMGUI_SOURCE_FILES} ${POOL_SOURCE_FILES})
 
 target_include_directories(pool PRIVATE
     include
