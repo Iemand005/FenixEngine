@@ -107,7 +107,7 @@ private:
     projectionMatrix = glm::frustum(fov.x, fov.y, fov.z, fov.w, nearDist, farDist);
   }
 
-	void updateDirection()
+	void UpdateDirection()
 	{
 		glm::vec3 dir;
 		dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
