@@ -61,7 +61,7 @@ class SDLWindow : public IWindow {
 // enum SDL_Scancode;
   bool IsKeyDown(SDL_Scancode key);
 
-  	GetMousePosition(double *x, double *y)
+  	void GetMousePosition(double *x, double *y);
 
   // union SDL_Event;
 

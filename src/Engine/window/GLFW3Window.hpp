@@ -27,6 +27,8 @@ public:
 
 	void* GetWindow();
 
+	void GetMousePosition(double *x, double *y);
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
