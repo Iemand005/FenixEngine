@@ -81,7 +81,7 @@ public:
 
 		if (fullscreened) {
 			double x, y;
-			glfwGetCursorPos(glfwWindow, &x, &y);
+			glfwGetCursorPos(window->GetWindow(), &x, &y);
 
 			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
 				window->PrepareClose();
