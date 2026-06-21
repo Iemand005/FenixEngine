@@ -150,22 +150,23 @@ class ShaderSaver : public fe::Renderer {
 		window->GetFramebufferSize(&width, &height);
 		glViewport(0, 0, width, height);
 
+		if (uRes >= 0) glUniform2f(uRes, width, height);
+
 		while (!window->ShouldClose()) {
 			ProcessInput();
 
-			auto now = GetFileTime(fs);
-			if (now != lastWrite) {
-				lastWrite = now;
-				Reload(fs, vs);
+			if (mode != ScreenSaverMode::Fullscreen) {
+				auto now = GetFileTime(fs);
+				if (now != lastWrite) {
+					lastWrite = now;
+					Reload(fs, vs);
+				}
 			}
-
-			shader->Use();
 
 			float t = (float)window->GetTime();
 
 			if (uTime >= 0) glUniform1f(uTime, t);
 
-			if (uRes >= 0) glUniform2f(uRes, width, height);
 
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
