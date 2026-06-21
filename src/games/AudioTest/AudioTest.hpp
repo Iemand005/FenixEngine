@@ -52,10 +52,19 @@ public:
 			SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
 			&spec
 		);
-		// SDL_PlayAu
-		// SDL_AUdio
-		SDL_QueueAudio(device, audio_data, audio_len);
-		SDL_PauseAudioDevice(device, 0); // start playback
+		
+		SDL_AudioSpec spec;
+		spec.freq = 48000;
+		spec.format = SDL_AUDIO_S16;
+		spec.channels = 2;
+
+		SDL_AudioStream* stream =
+			SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+									&spec,
+									nullptr,
+									nullptr);
+
+		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 	}
 
 	void LoadModels() {
