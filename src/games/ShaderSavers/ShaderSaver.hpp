@@ -80,7 +80,7 @@ class ShaderSaver : public fe::Renderer {
 		glfwPollEvents();
 
 		if (window->ShouldClose()) {
-			window->PrepareClose();
+  			window->PrepareClose();
 			return;
 		}
 
