@@ -198,10 +198,6 @@ class ShaderSaver : public fe::Renderer {
 			glUseProgram(shader->getId());
 
 			if (system.pingPong) {
-
-				// =========================
-				// PASS 1: SIMULATION (FBO)
-				// =========================
 				glBindFramebuffer(GL_FRAMEBUFFER, system.getWriteFBO());
 				glViewport(0, 0, system.width, system.height);
 
@@ -214,22 +210,15 @@ class ShaderSaver : public fe::Renderer {
 
 				system.swap();
 
-				// =========================
-				// PASS 2: PRESENT TO SCREEN
-				// =========================
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glViewport(0, 0, width, height);
 
-				// IMPORTANT: optional debug display of result
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, system.getReadTex());
 
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
 			else {
-				// =========================
-				// SINGLE PASS MODE
-				// =========================
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glViewport(0, 0, width, height);
 
