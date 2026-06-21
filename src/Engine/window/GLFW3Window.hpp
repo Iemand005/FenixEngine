@@ -56,7 +56,7 @@ private:
 	std::unique_ptr<Impl> impl;
 	std::string title;
 
-	std::function<void()> onAnyKey;
+	std::function<void()> onAnyKey = NULL;
 };
 
 } // namespace fe
