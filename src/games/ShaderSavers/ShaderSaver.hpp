@@ -1,17 +1,23 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#define FE_EXCLUDE_GLFW
+#define FE_EXCLUDE_SDL
 
 #include "../../engine/Renderer.hpp"
+#include <GLFW/glfw3.h>
+#include <windows.h>
+#include <chrono>
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 class ShaderSaver : public fe::Renderer {
-   public:
+public:
 	int width = 0, height = 0;
-	float startX, startY;
+	float startX = 0, startY = 0;
 	bool fullscreened = false;
+
+	GLFWwindow* glfwWindow = nullptr;
+	HWND hwnd = nullptr;
 
 	ShaderSaver() : ShaderSaver(500, 500) {}
 	ShaderSaver(int w, int h) : fe::Renderer(w, h, false, true) {}
@@ -23,81 +29,116 @@ class ShaderSaver : public fe::Renderer {
 		glViewport(0, 0, w, h);
 	}
 
+	// ---------------- INPUT ----------------
 	void ProcessInput() {
-		SDL_Event event;
-		fe::SDLWindow* window = (fe::SDLWindow*)this->window.get();
-		while (window->PollSDLEvents(&event)) {
-			switch (event.type) {
-				case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				case SDL_EVENT_KEY_DOWN:
-					if (!fullscreened) break;
-				case SDL_EVENT_QUIT:
-					window->PrepareClose();
-					break;
-				case SDL_EVENT_WINDOW_RESIZED:
-				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
-					int w, h;
-					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
-					Resize(w, h);
-					window->resizeEvent(w, h);
-					break;
-				}
-			}
+		glfwPollEvents();
+
+		if (glfwWindowShouldClose(glfwWindow)) {
+			auto window = GetWindow<fe::SDLWindow>();
+			window->PrepareClose();
+			return;
 		}
 
+		// fullscreen mouse exit logic
 		if (fullscreened) {
-			float x, y;
-			SDL_GetMouseState(&x, &y);
+			double x, y;
+			glfwGetCursorPos(glfwWindow, &x, &y);
 
-			if (abs(x - startX) > 3 || abs(y - startY) > 3)
+			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
+				auto window = GetWindow<fe::SDLWindow>();
 				window->PrepareClose();
+			}
 		}
 	}
 
+	// ---------------- FILE RELOAD ----------------
 	bool Reload(const char* path, const char* vs, SDL_Time* out = nullptr) {
-		SDL_PathInfo i;
-		if (!SDL_GetPathInfo(path, &i)) return false;
+		FILETIME ft;
+		WIN32_FILE_ATTRIBUTE_DATA data;
+
+		if (!GetFileAttributesExA(path, GetFileExInfoStandard, &data))
+			return false;
 
 		try {
 			LoadShaders(fe::Shader::Vertex(vs), fe::Shader::Fragment(path));
 			shader->Use();
-		} catch (...) {
+		}
+		catch (...) {
 			return false;
 		}
 
-		if (out) *out = i.modify_time;
+		if (out) {
+			ULARGE_INTEGER ull;
+			ull.LowPart = data.ftLastWriteTime.dwLowDateTime;
+			ull.HighPart = data.ftLastWriteTime.dwHighDateTime;
+			*out = ull.QuadPart;
+		}
+
 		return true;
 	}
 
+	// ---------------- RUN ----------------
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
-		auto window = GetWindow<fe::SDLWindow>();
-		window->EnableVSync();
+		glfwInit();
 
-		if (mode == ScreenSaverMode::Preview) {
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+		auto window = GetWindow<fe::SDLWindow>();
+
+		if (mode == ScreenSaverMode::Fullscreen) {
+			const GLFWvidmode* modeVid = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+			glfwWindow = glfwCreateWindow(
+				modeVid->width,
+				modeVid->height,
+				"ShaderSaver",
+				glfwGetPrimaryMonitor(),
+				nullptr
+			);
+
+			fullscreened = true;
+		}
+		else if (mode == ScreenSaverMode::Preview) {
 			RECT r;
 			GetClientRect(parent, &r);
-			window->AttachToNativeParent(parent);
-			window->Resize(r.right - r.left, r.bottom - r.top);
-		} else if (mode == ScreenSaverMode::Fullscreen) {
-			window->GoBorderlessFullscreen();
-			window->Show();
-			SDL_HideCursor();
-			fullscreened = true;
-			SDL_GetMouseState(&startX, &startY);
-		} else
-			window->Show();
+
+			glfwWindow = glfwCreateWindow(
+				r.right - r.left,
+				r.bottom - r.top,
+				"ShaderSaver",
+				nullptr,
+				nullptr
+			);
+
+			glfwSetWindowPos(glfwWindow, r.left, r.top);
+			hwnd = parent;
+		}
+		else {
+			glfwWindow = glfwCreateWindow(500, 500, "ShaderSaver", nullptr, nullptr);
+		}
+
+		glfwMakeContextCurrent(glfwWindow);
+		glfwSwapInterval(1);
+
+		if (mode == ScreenSaverMode::Fullscreen) {
+			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+			glfwGetCursorPos(glfwWindow, &startX, &startY);
+		}
 
 		const char* vs = R"(
-        #version 330 core
-        void main(){
-            vec2 v[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));
-            gl_Position=vec4(v[gl_VertexID],0,1);
-        })";
+		#version 330 core
+		void main(){
+			vec2 v[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));
+			gl_Position=vec4(v[gl_VertexID],0,1);
+		})";
 
 		const char* fs = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
 
-		SDL_Time last = 0;
-		Reload(fs, vs, &last);
+		auto last = std::filesystem::last_write_time(fs);
+
+		Reload(fs, vs, nullptr);
 
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
@@ -106,22 +147,25 @@ class ShaderSaver : public fe::Renderer {
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
 		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
 
-		SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+		glfwGetFramebufferSize(glfwWindow, &width, &height);
 		glViewport(0, 0, width, height);
-		SDL_GetMouseState(&startX, &startY);
 
-		while (!window->ShouldClose()) {
+		while (!glfwWindowShouldClose(glfwWindow)) {
 			ProcessInput();
 
-			SDL_PathInfo i;
-			if (SDL_GetPathInfo(fs, &i) && i.modify_time > last) Reload(fs, vs, &last);
+			// hot reload
+			auto now = std::filesystem::last_write_time(fs);
+			if (now != last) {
+				last = now;
+				Reload(fs, vs, nullptr);
+			}
 
-			SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+			glfwGetFramebufferSize(glfwWindow, &width, &height);
 			glViewport(0, 0, width, height);
 
 			shader->Use();
 
-			float t = SDL_GetTicks() * 0.001f;
+			float t = (float)glfwGetTime();
 
 			if (uTime >= 0) glUniform1f(uTime, t);
 			if (uRes >= 0) glUniform2f(uRes, width, height);
@@ -129,8 +173,12 @@ class ShaderSaver : public fe::Renderer {
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			window->SwapBuffers();
+			glfwSwapBuffers(glfwWindow);
 		}
+
+		glDeleteVertexArrays(1, &vao);
+		glfwDestroyWindow(glfwWindow);
+		glfwTerminate();
 
 		Destroy();
 	}
