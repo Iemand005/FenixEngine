@@ -24,8 +24,8 @@ struct FrameBufferSystem {
     bool pingPong = false;
 
     GLuint buffers[2];
-    int readIndex = 0;
-    int writeIndex = 1;
+    int readIndex = 0, writeIndex = 1;
+	int width = 500, height = 500;
 
     GLuint getRead()  const { return buffers[readIndex]; }
     GLuint getWrite() const { return buffers[writeIndex]; }
@@ -197,24 +197,21 @@ class ShaderSaver : public fe::Renderer {
 				glBindTexture(GL_TEXTURE_2D, system.getRead());
 
 				glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
-				glViewport(0, 0, system.ok wwidth, system.height);
+				glViewport(0, 0, system.width, system.height);
 
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 
 				system.swap();
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glViewport(0, 0, width, heihgt);
+				glViewport(0, 0, width, height);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 
-				window->SwapBuffers();
-			}
-			else {
-				// single buffer mode: draw directly to screen
+			} else {
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glDrawArrays(GL_TRIANGLES, 0, 3);
-				window->SwapBuffers();
 			}
+			window->SwapBuffers();
 		}
 
 		glDeleteVertexArrays(1, &vao);
