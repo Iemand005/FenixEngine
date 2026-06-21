@@ -1,7 +1,7 @@
 
-#include "GLFW3Window.hpp"
-
 #include <glad/glad.h>
+
+#include "GLFW3Window.hpp"
 
 namespace fe {
 
