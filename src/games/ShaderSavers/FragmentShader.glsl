@@ -6,9 +6,9 @@ uniform vec2 resolution;
 
 void main()
 {
-    float y = gl_FragCoord.y / resolution.y;
+    float x = gl_FragCoord.x / resolution.x;
 
-    float gradient = 1.0 - y;
+    float gradient = 1.0 - x;
 
     vec3 color = vec3(gradient);
 
