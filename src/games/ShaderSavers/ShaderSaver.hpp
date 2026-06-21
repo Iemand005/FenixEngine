@@ -89,9 +89,11 @@ public:
 			double x, y;
 			window->GetMousePosition(&x, &y);
 
-			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
-				window->PrepareClose();
-			}
+			double dx = x - startX;
+			double dy = y - startY;
+
+			if (std::abs(dx) > 3.0 || std::abs(dy) > 3.0)
+    			window->PrepareClose();
 		}
 #endif
 	}
