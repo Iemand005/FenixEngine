@@ -4,78 +4,55 @@ out vec4 FragColor;
 
 uniform vec2 resolution;
 uniform float time;
+uniform sampler2D prevFrame;
 
-// --- hash / noise helpers ---
-float hash(vec2 p) {
-    p = fract(p * vec2(123.34, 345.45));
-    p += dot(p, p + 34.345);
-    return fract(p.x * p.y);
+vec2 hash2(vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)),
+             dot(p, vec2(269.5, 183.3)));
+    return fract(sin(p) * 43758.5453);
 }
 
-float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
+vec2 flow(vec2 p) {
+    float t = time * 0.15;
 
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
+    vec2 n = hash2(floor(p * 2.0));
 
-    vec2 u = f * f * (3.0 - 2.0 * f);
-
-    return mix(a, b, u.x) +
-           (c - a) * u.y * (1.0 - u.x) +
-           (d - b) * u.x * u.y;
-}
-
-// smooth vector field (key to "flurry" motion)
-vec2 field(vec2 p) {
-    float n1 = noise(p * 1.5 + time * 0.15);
-    float n2 = noise(p * 1.5 - time * 0.12 + 10.0);
-
-    float a = n1 * 6.28318;
-    float b = n2 * 6.28318;
-
-    return vec2(cos(a), sin(b));
-}
-
-// iterative flow advection (cheap "particle tracing")
-vec3 flurry(vec2 uv) {
-    vec2 p = uv;
-    vec3 col = vec3(0.0);
-
-    float t = time * 0.35;
-
-    for (int i = 0; i < 18; i++) {
-        vec2 f = field(p + float(i) * 0.03);
-
-        // curl-ish motion
-        p += f * 0.015;
-
-        float d = length(uv - p);
-
-        // glowing streaks
-        float intensity = 0.015 / (d + 0.02);
-
-        vec3 c = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + t + float(i) * 0.3);
-
-        col += c * intensity;
-    }
-
-    return col;
+    float a = n.x * 6.28318 + sin(t + n.y * 6.0);
+    return vec2(cos(a), sin(a));
 }
 
 void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    vec2 uv = gl_FragCoord.xy / resolution;
 
-    vec3 col = flurry(uv);
+    // --- feedback decay (this is Flurry's "memory") ---
+    vec3 prev = texture(prevFrame, uv).rgb;
+    prev *= 0.985;
 
-    // slight vignette like macOS screensaver
-    float vignette = smoothstep(1.2, 0.2, length(uv));
-    col *= vignette;
+    // --- advect UV through flow field ---
+    vec2 p = uv * 2.0 - 1.0;
 
-    // tone mapping
-    col = 1.0 - exp(-col * 1.8);
+    vec3 col = vec3(0.0);
+
+    // layered "strand" accumulation
+    for (int i = 0; i < 6; i++) {
+        vec2 f = flow(p * (1.2 + float(i) * 0.15));
+
+        p += f * 0.03;
+
+        float d = length(gl_FragCoord.xy / resolution - (p * 0.5 + 0.5));
+
+        float glow = 0.02 / (d + 0.01);
+
+        vec3 c = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + time * 0.6 + float(i));
+
+        col += c * glow;
+    }
+
+    // combine with history (this is what makes it "Flurry-like")
+    col += prev;
+
+    // slight tone shaping
+    col = 1.0 - exp(-col * 1.2);
 
     FragColor = vec4(col, 1.0);
 }

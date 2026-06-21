@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 18780258,
-    "totalActiveTime": 1704722
+    "totalFocusTime": 18811109,
+    "totalActiveTime": 1708098
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -63,7 +63,7 @@
     },
     "src/games/ShaderSavers/FragmentShaderBlob.glsl": {
       "pending": 26049,
-      "focus": 226744
+      "focus": 227266
     },
     "src/games/ShaderSavers/FragmentShaderColourSwirl.glsl": {
       "pending": 0,
@@ -150,8 +150,8 @@
       "focus": 183998
     },
     "src/games/ShaderSavers/FragmentShader.glsl": {
-      "pending": 1016,
-      "focus": 35345
+      "pending": 2865,
+      "focus": 48525
     },
     "src/Engine/XRGame.cpp": {
       "pending": 0,
@@ -174,8 +174,8 @@
       "focus": 13117
     },
     "src/games/ShaderSavers/FragmentShaderTest.glsl": {
-      "pending": 2039,
-      "focus": 30156
+      "pending": 3566,
+      "focus": 47243
     }
   },
   "deleted": {
