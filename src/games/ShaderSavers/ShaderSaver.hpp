@@ -78,6 +78,7 @@ class ShaderSaver : public fe::Renderer {
 			window->Show();
 			SDL_HideCursor();
 			fullscreened = true;
+			SDL_GetMouseState(&startX, &startY);
 		} else
 			window->Show();
 
@@ -106,6 +107,15 @@ class ShaderSaver : public fe::Renderer {
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
+
+			if (fullscreened)
+			{
+				float x, y;
+				SDL_GetMouseState(&x, &y);
+
+				if (abs(x - startX) > 3 || abs(y - startY) > 3)
+					window->PrepareClose();
+			}
 
 			SDL_PathInfo i;
 			if (SDL_GetPathInfo(fs, &i) && i.modify_time > last) Reload(fs, vs, &last);
