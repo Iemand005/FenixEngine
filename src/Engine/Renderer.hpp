@@ -37,8 +37,8 @@
 #include "window/SDLWindow.hpp"
 #endif
 #ifndef FE_EXCLUDE_GLFW
-#endif
 #include "window/GLFW3Window.hpp"
+#endif
 
 #define WAYLAND
 

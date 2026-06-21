@@ -148,7 +148,6 @@ add_executable(ShaderSaver
     WIN32
     ${SHADERSAVERS_SOURCE_FILES}
     src/games/ShaderSavers/main.cpp
-    src/games/ShaderSavers/ShaderSaver.hpp
 )
 
 target_include_directories(ShaderSaver PRIVATE
@@ -167,8 +166,7 @@ set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_S
 add_executable(ShaderSaverSDL
     WIN32
     ${SHADERSAVERS_SOURCE_FILES}
-    src/games/ShaderSavers/main.cpp
-    src/games/ShaderSavers/ShaderSaver.hpp
+    src/games/ShaderSavers/mainSDL.cpp
 )
 
 target_include_directories(ShaderSaverSDL PRIVATE
