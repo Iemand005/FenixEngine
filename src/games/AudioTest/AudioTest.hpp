@@ -261,8 +261,10 @@ public:
 	}
 
 	void DrawUI() override {
+		BeginFrame();
 		DrawDebugUI();
 
 		DrawAudioVisualizer();
+		EndFrame();
 	}
 };
