@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 16430602,
-    "totalActiveTime": 1452724
+    "totalFocusTime": 16458254,
+    "totalActiveTime": 1463645
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -43,7 +43,7 @@
     },
     "src/Engine/window/GLFW3Window.hpp": {
       "pending": 65984,
-      "focus": 370922
+      "focus": 380012
     },
     "src/games/ShaderSavers/FragmentShaderTripy.glsl": {
       "pending": 22732,
@@ -98,8 +98,8 @@
       "focus": 15299
     },
     "src/Engine/window/GLFW3Window.cpp": {
-      "pending": 161211,
-      "focus": 911140
+      "pending": 172132,
+      "focus": 932088
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 9089,

@@ -193,3 +193,38 @@ void fe::GLFW3Window::Hide() {
 void fe::GLFW3Window::PrepareClose() {
     glfwSetWindowShouldClose(impl->window, true);
 }
+
+void fe::GLFW3Window::AttachToNativeParent(void *parent) {
+#ifdef _WIN32
+#include <Windows.h>
+    HWND parentHwnd = (HWND)parent;
+
+    // Get GLFW internal Win32 HWND
+    HWND childHwnd = glfwGetWin32Window(m_nativeWindow);
+
+    // Change window style to child window
+    LONG style = GetWindowLong(childHwnd, GWL_STYLE);
+    style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW);
+    style |= WS_CHILD;
+
+    SetWindowLong(childHwnd, GWL_STYLE, style);
+
+    // Set parent
+    SetParent(childHwnd, parentHwnd);
+
+    // Resize to fit parent
+    RECT rect;
+    GetClientRect(parentHwnd, &rect);
+
+    SetWindowPos(
+        childHwnd,
+        NULL,
+        0, 0,
+        rect.right - rect.left,
+        rect.bottom - rect.top,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
+    );
+
+    ShowWindow(childHwnd, SW_SHOW);
+#endif
+}
