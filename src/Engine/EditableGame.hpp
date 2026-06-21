@@ -42,7 +42,9 @@ namespace fe
     ImGuiIO io;
 
     void InitImGUI() {
-      fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
+      // rENDE
+      auto renderer = (Renderer*)this;
+      fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
       const char* glsl_version = "#version 330 core";
       IMGUI_CHECKVERSION();
       ImGui::CreateContext();
