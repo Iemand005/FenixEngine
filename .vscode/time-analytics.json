@@ -2,12 +2,12 @@
   "version": "1.0",
   "project": {
     "totalFocusTime": 17625507,
-    "totalActiveTime": 1602281
+    "totalActiveTime": 1618181
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
       "pending": 13781,
-      "focus": 311948
+      "focus": 312647
     },
     "src/Engine/Renderer.hpp": {
       "pending": 123611,
@@ -42,8 +42,8 @@
       "focus": 120830
     },
     "src/Engine/window/GLFW3Window.hpp": {
-      "pending": 95180,
-      "focus": 544485
+      "pending": 111080,
+      "focus": 573857
     },
     "src/games/ShaderSavers/FragmentShaderTripy.glsl": {
       "pending": 22732,
@@ -91,7 +91,7 @@
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 491099,
-      "focus": 6529562
+      "focus": 6533128
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -99,11 +99,11 @@
     },
     "src/Engine/window/GLFW3Window.cpp": {
       "pending": 202745,
-      "focus": 1177497
+      "focus": 1193025
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 9089,
-      "focus": 150143
+      "focus": 150651
     },
     "src/games/ShaderSavers/FragmentShaderColourTunnel.glsl": {
       "pending": 0,

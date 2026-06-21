@@ -51,10 +51,8 @@ public:
 	void AttachToNativeParent(void* parent);
 #endif
 
-	void SetAnyKeyCallback(std::function<void()> cb)
-	{
-		onAnyKey = std::move(cb);
-	}
+	void SetAnyKeyCallback(std::function<void()> cb) { onAnyKey = std::move(cb); }
+	void SetFramebufferResizeCallback(std::function<void(int width, int height)> cb) { onFramebufferResize = std::move(cb); }
 
 private:
 	struct Impl;
