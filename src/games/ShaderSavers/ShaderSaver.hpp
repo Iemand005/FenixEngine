@@ -12,10 +12,10 @@
 #include <windows.h>
 #include <filesystem>
 
-#if defined(FE_USE_GLFW)
-    using NativeWindow = GLFWwindow;
-#elif defined(FE_USE_SDL)
-    using NativeWindow = SDL_Window;
+#if defined(FE_USE_SDL)
+using NativeWindow = SDL_Window;
+#else
+using NativeWindow = GLFWwindow;
 #endif
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
@@ -26,7 +26,7 @@ public:
 	double startX = 0, startY = 0;
 	bool fullscreened = false;
 
-	GLFWwindow* glfwWindow = nullptr;
+	NativeWindow* nativeWindow = nullptr;
 
 	std::filesystem::file_time_type lastWrite;
 
@@ -41,9 +41,40 @@ public:
 	}
 
 	void ProcessInput() {
+
+#ifdef FE_USE_SDL
+		SDL_Event event;
+		fe::SDLWindow* window = (fe::SDLWindow*)this->window.get();
+		while (window->PollSDLEvents(&event)) {
+			switch (event.type) {
+				case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				case SDL_EVENT_KEY_DOWN:
+					if (!fullscreened) break;
+				case SDL_EVENT_QUIT:
+					window->PrepareClose();
+					break;
+				case SDL_EVENT_WINDOW_RESIZED:
+				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+					int w, h;
+					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+					Resize(w, h);
+					window->resizeEvent(w, h);
+					break;
+				}
+			}
+		}
+
+		if (fullscreened) {
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+
+			if (abs(x - startX) > 3 || abs(y - startY) > 3)
+				window->PrepareClose();
+		}
+#else
 		glfwPollEvents();
 
-		if (glfwWindowShouldClose(glfwWindow)) {
+		if (glfwWindowShouldClose(nativeWindow)) {
 			window->PrepareClose();
 			return;
 		}
@@ -56,6 +87,7 @@ public:
 				window->PrepareClose();
 			}
 		}
+#endif
 	}
 
 	bool Reload(const char* path, const char* vs) {
