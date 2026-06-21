@@ -60,6 +60,7 @@ add_library(Renderer STATIC
     glad/glad.c
     Renderer.cpp
     window/SDLWindow.cpp
+    window/GLFW3Window.cpp
 )
 
 target_include_directories(Renderer PRIVATE
