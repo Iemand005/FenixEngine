@@ -25,8 +25,14 @@ set(JPH_USE_DX12 OFF CACHE BOOL "Use DirectX" FORCE)
 set(JPH_USE_DXC OFF CACHE BOOL "Use DXC shader compiler" FORCE)
 set(JPH_USE_VK OFF CACHE BOOL "Use Vulkan" FORCE)
 set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
+
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use Static MSVC++" FORCE)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
+set(KISSFFT_TESTS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
+set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tools" FORCE)
+
+add_subdirectory(external/kissfft)
 
 add_subdirectory(src/Engine)
 

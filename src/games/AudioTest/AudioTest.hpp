@@ -19,6 +19,8 @@
 
 #include "../../engine/EditableGame.hpp"
 
+#include "kiss_fftr.h"
+
 class AudioTest : public fe::EditableGame {
 public:
 
