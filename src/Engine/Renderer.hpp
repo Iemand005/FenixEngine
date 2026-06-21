@@ -7,6 +7,8 @@
 #define NOMINMAX
 #endif
 
+#define FE_EXCLUDE_SDL
+
 #include <glad/glad.h>
 #include "../stdafx.h"
 
