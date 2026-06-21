@@ -1,6 +1,8 @@
 
 #include "GLFW3Window.hpp"
 
+#include <glad/glad.h>
+
 namespace fe {
 
 struct GLFW3Window::Impl {
@@ -45,10 +47,10 @@ bool fe::GLFW3Window::InitGlfw(bool tenBit) {
 	// glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
 	EnableVSync();
 
-	// if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-	//   std::cout << "Failed to initialize GLAD" << std::endl;
-	//   return false;
-	// }
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	  std::cout << "Failed to initialize GLAD" << std::endl;
+	  return false;
+	}
 
 	glfwSetWindowUserPointer(impl->window, this);
 
