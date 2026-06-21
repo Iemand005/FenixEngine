@@ -115,3 +115,20 @@ bool fe::GLFW3Window::InitGlfw(bool tenBit) {
 }
 
 void *fe::GLFW3Window::GetGLFWWindow() { return impl->window; }
+
+void fe::GLFW3Window::StartMouseCapture() {
+	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// io.WantCaptureMouse = false;
+}
+
+void fe::GLFW3Window::StopMouseCapture() {
+	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	// io.WantCaptureMouse = true;
+}
+
+void fe::GLFW3Window::SwapBuffers() { glfwSwapBuffers(impl->window); }
+
+void fe::GLFW3Window::Destroy() {
+	glfwDestroyWindow(impl->window);
+	glfwTerminate();
+}

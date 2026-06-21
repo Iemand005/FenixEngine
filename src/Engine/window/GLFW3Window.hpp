@@ -19,26 +19,17 @@ class GLFW3Window : public IWindow {
 
 	bool InitGlfw(bool tenBit = false);
 
-	void StartMouseCapture() override {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		// io.WantCaptureMouse = false;
-	}
+	void StartMouseCapture() override;
 
-	void StopMouseCapture() override {
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		// io.WantCaptureMouse = true;
-	}
+	void StopMouseCapture() override;
 
 	void PollGLFWEvents() { glfwPollEvents(); }
 
 	void SetSwapInterval(int interval) override { glfwSwapInterval(interval); }
 
-	void SwapBuffers() override { glfwSwapBuffers(this->window); }
+	void SwapBuffers() override;
 
-	void Destroy() override {
-		glfwDestroyWindow(this->window);
-		glfwTerminate();
-	}
+	void Destroy() override;
 
 	void* GetGLFWWindow();
 };
