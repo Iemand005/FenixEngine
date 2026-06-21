@@ -324,3 +324,7 @@ double fe::SDLWindow::GetTime() {
 void fe::SDLWindow::GetFramebufferSize(int *width, int* height) {
 	SDL_GetWindowSize(impl->window, width, height);
 }
+
+bool fe::SDLWindow::HideMouse() {
+	return SDL_HideCursor();
+}

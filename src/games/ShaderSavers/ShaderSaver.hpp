@@ -117,7 +117,7 @@ public:
 		if (mode == ScreenSaverMode::Fullscreen) {
 			fullscreened = true;
 			
-			glfwSetInputMode(window->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
 
