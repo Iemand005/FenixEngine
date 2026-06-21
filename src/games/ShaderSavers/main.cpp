@@ -12,7 +12,7 @@ int WINAPI WinMain(
     int
 )
 {
-    ScreenSaverMode mode = ScreenSaverMode::Fullscreen;
+    ScreenSaverMode mode = ScreenSaverMode::Window;
     HWND previewHwnd = nullptr;
 
     std::string cmd = lpCmdLine ? lpCmdLine : "";
