@@ -127,24 +127,12 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
     });
 
 	glfwSetFramebufferSizeCallback(impl->window, [](GLFWwindow* window, int width, int height) {
-		// auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-		// // game->width = width;
-		// // game->height = height;
-		// // game->scene->resize(width, height);
-
-		// // game->updateAspect();
-		// game->Resize(width, height);
-
-		// game->Redraw();
 		auto self = static_cast<GLFW3Window*>(glfwGetWindowUserPointer(window));
 
         if (self->onFramebufferResize)
             self->onFramebufferResize(width, height);
 	});
 	glfwSetWindowSizeCallback(impl->window, [](GLFWwindow* window, int width, int height) {
-		// auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-		// game->Resize(width, height);
-		// game->Redraw();
 		auto self = static_cast<GLFW3Window*>(glfwGetWindowUserPointer(window));
 
         if (self->onFramebufferResize)
