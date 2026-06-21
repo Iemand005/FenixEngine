@@ -190,7 +190,6 @@ class ShaderSaver : public fe::Renderer {
 				glUniform1f(uTime, t);
 
 			if (system.pingPong) {
-				// --- PASS 1: render simulation into FBO ---
 				glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
 				glViewport(0, 0, system.width, system.height);
 
@@ -201,20 +200,16 @@ class ShaderSaver : public fe::Renderer {
 
 				system.swap();
 
-				// --- PASS 2: present to screen ---
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glViewport(0, 0, width, height);
 
 				glBindTexture(GL_TEXTURE_2D, system.getRead());
-				glDrawArrays(GL_TRIANGLES, 0, 3);
-			}
-			else {
-				// --- SINGLE PASS: direct to screen ---
+			} else {
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glViewport(0, 0, width, height);
-
-				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
+			
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			window->SwapBuffers();
 		}
