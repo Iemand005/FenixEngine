@@ -8,17 +8,20 @@
 
 namespace fe {
 class Camera {
- private:
-  glm::vec3 position;
-  glm::mat4 viewMatrix;
-  unsigned int frustumVAO = 0, frustumVBO = 0;
-  std::vector<glm::vec3> frustumVertices;
-  
-  public:
-  glm::vec3 up;
-  glm::vec3 front;
-  float fov, aspect, nearDist, farDist;
-  glm::mat4 projectionMatrix;
+private:
+	glm::vec3 position;
+	glm::mat4 viewMatrix;
+	unsigned int frustumVAO = 0, frustumVBO = 0;
+	std::vector<glm::vec3> frustumVertices;
+	
+	public:
+	glm::vec3 up;
+	glm::vec3 front;
+	float fov, aspect, nearDist, farDist;
+	glm::mat4 projectionMatrix;
+
+	float yaw = -90.0f;
+	float pitch = 0.0f;
 
   Camera() {}
 
