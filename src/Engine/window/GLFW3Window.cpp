@@ -60,7 +60,6 @@ bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) 
 	}
 	glfwMakeContextCurrent(impl->window);
 
-	// glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
 	EnableVSync();
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
