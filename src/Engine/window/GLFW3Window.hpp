@@ -8,6 +8,7 @@
 #include <GLFW/glfw3native.h>
 #include <iostream>
 #include <memory>
+#include <functional>
 #include "IWindow.hpp"
 
 namespace fe {
@@ -54,6 +55,8 @@ private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 	std::string title;
+
+	std::function<void()> onAnyKey;
 };
 
 } // namespace fe
