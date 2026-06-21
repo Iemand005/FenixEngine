@@ -5,7 +5,7 @@ struct fe::GLFW3Window::Impl {
 	GLFWwindow* window;
 };	// Impl
 
-bool fe::GLFW3Window::InitGlfw() {
+bool fe::GLFW3Window::InitGlfw(bool tenBit) {
 #ifdef WAYLAND
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -93,7 +93,7 @@ bool fe::GLFW3Window::InitGlfw() {
 		// game->camera->front = glm::normalize(direction);
 	});
 
-	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+	glfwSetFramebufferSizeCallback(impl->window, [](GLFWwindow* window, int width, int height) {
 		// auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
 		// // game->width = width;
 		// // game->height = height;
@@ -104,7 +104,7 @@ bool fe::GLFW3Window::InitGlfw() {
 
 		// game->Redraw();
 	});
-	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+	glfwSetWindowSizeCallback(impl->window, [](GLFWwindow* window, int width, int height) {
 		// auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
 		// game->Resize(width, height);
 		// game->Redraw();
@@ -114,4 +114,4 @@ bool fe::GLFW3Window::InitGlfw() {
 	return true;
 }
 
-vodi *fe::GLFW3Window::GetGLFWWindow() { return impl->window; }
+void *fe::GLFW3Window::GetGLFWWindow() { return impl->window; }
