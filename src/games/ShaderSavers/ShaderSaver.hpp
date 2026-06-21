@@ -138,7 +138,7 @@ public:
 
 		auto last = std::filesystem::last_write_time(fs);
 
-		Reload(fs, vs, nullptr);
+		Reload(fs, vs);
 
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
@@ -157,7 +157,7 @@ public:
 			auto now = std::filesystem::last_write_time(fs);
 			if (now != last) {
 				last = now;
-				Reload(fs, vs, nullptr);
+				Reload(fs, vs);
 			}
 
 			glfwGetFramebufferSize(glfwWindow, &width, &height);
