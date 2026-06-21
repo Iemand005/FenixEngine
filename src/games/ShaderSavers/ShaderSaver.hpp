@@ -20,6 +20,21 @@
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
+struct FrameBufferSystem {
+    bool pingPong = false;
+
+    GLuint buffers[2];
+    int readIndex = 0;
+    int writeIndex = 1;
+
+    GLuint getRead()  const { return buffers[readIndex]; }
+    GLuint getWrite() const { return buffers[writeIndex]; }
+
+    void swap() {
+        std::swap(readIndex, writeIndex);
+    }
+};
+
 class ShaderSaver : public fe::Renderer {
    public:
 	int width = 0, height = 0;
@@ -154,7 +169,11 @@ class ShaderSaver : public fe::Renderer {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		
+		FrameBufferSystem system;
+
+		if (!system.pingPong) {
+			glBindTexture(GL_TEXTURE_2D, system.buffers[0]);
+		}
 
 		window->GetFramebufferSize(&width, &height);
 		Resize(width, height);
