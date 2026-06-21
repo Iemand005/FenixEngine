@@ -131,7 +131,10 @@ public:
 		}
 		if (mode != ScreenSaverMode::Preview)
 			window->Show();
-		else window->AttachToNativeParent(parent);
+		else {
+			window->AttachToNativeParent(parent);
+		}
+		MessageBox(parent, "KAKA", "NOTOK", 0 );
 
 		const char* vs = R"(
 			#version 330 core
