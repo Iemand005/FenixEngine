@@ -35,6 +35,8 @@ public:
 
 	void GetFramebufferSize(int *width, int *height);
 
+	bool HideMouse();
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

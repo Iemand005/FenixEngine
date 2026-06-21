@@ -117,8 +117,8 @@ public:
 		if (mode == ScreenSaverMode::Fullscreen) {
 			fullscreened = true;
 			
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-			glfwGetCursorPos(window, &startX, &startY);
+			glfwSetInputMode(window->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+			window->GetMousePosition(&startX, &startY);
 		}
 
 		const char* vs = R"(

@@ -166,3 +166,8 @@ double fe::GLFW3Window::GetTime() {
 void fe::GLFW3Window::GetFramebufferSize(int *width, int* height) {
 	glfwGetFramebufferSize(impl->window, width, height);
 }
+
+bool fe::GLFW3Window::HideMouse() {
+	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	return true;
+}
