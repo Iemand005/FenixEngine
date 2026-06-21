@@ -91,24 +91,24 @@ class Game : public Renderer {
 		Init();
 	}
 
-  void InitGL();
+	void InitGL();
 
-  void Init() {
-    SetClearColor(0.0F, 0.0F, 0.0f);
+	void Init() {
+		SetClearColor(0.0F, 0.0F, 0.0f);
 
-    this->physicsEngine = std::make_unique<PhysicsEngine>();
-    
-    LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
-    
-    this->scene = std::make_unique<fe::Scene>();
-    this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
-    // this->level = std::move();
-    
-    this->scene->SetLight();
-    
-    InitGL();
-    InitUI();
-  }
+		this->physicsEngine = std::make_unique<PhysicsEngine>();
+		
+		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+		
+		this->scene = std::make_unique<fe::Scene>();
+		this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
+		// this->level = std::move();
+		
+		this->scene->SetLight();
+		
+		InitGL();
+		InitUI();
+	}
 
   void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
     this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
