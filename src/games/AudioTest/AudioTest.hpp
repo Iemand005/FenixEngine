@@ -183,6 +183,25 @@ public:
 		Destroy();
 	}
 
+	const int NUM_BARS = 32;
+	float bandMagnitudes[NUM_BARS] = {0};       
+	float bandMagnitudesSmoothed[NUM_BARS] = {0};
+
+	void ComputeBands(const float* magnitudes, int bins, float* bandsOut, int numBars) {
+		float maxBin = (float)(bins - 1);
+		for (int b = 0; b < numBars; ++b) {
+			float t0 = (float)b / numBars;
+			float t1 = (float)(b + 1) / numBars;
+			int bin0 = std::max(1, (int)std::pow(maxBin, t0));   
+			int bin1 = std::min(bins - 1, std::max(bin0 + 1, (int)std::pow(maxBin, t1)));
+
+			float maxVal = 0.0f;
+			for (int i = bin0; i <= bin1; ++i)
+				maxVal = std::max(maxVal, magnitudes[i]);
+			bandsOut[b] = maxVal;
+		}
+	}
+
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE) return;
 
@@ -204,46 +223,46 @@ public:
 
 	void InitUI() override {}
 
-  void DrawUI() override {
-    DrawDebugUI();
+	void DrawUI() override {
+		DrawDebugUI();
 
-	ImGui::Begin("Audio");
-    {
-      ImGui::Text("Hello, World!");
-      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
-      size_t totalVertices = 0;
-      for (auto& obj : this->scene->GetObjects())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
-      ImGui::Text("Vertices: %zu", totalVertices);
+		ImGui::Begin("Audio");
+		{
+		ImGui::Text("Hello, World!");
+		ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
+		size_t totalVertices = 0;
+		for (auto& obj : this->scene->GetObjects())
+			for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
+		ImGui::Text("Vertices: %zu", totalVertices);
 
-      if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
-        this->EnableXR ();
-      }
+		if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
+			this->EnableXR ();
+		}
 
-      if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
-        this->DestroyXR();
-      }
+		if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
+			this->DestroyXR();
+		}
 
-      if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
-        std::cout << "Button clicked!" << std::endl;
-      }
+		if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
+			std::cout << "Button clicked!" << std::endl;
+		}
 
-      static bool wireframe = false;
-      if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
-        if (wireframe) this->EnableWireframe();
-        else this->DisableWireframe();
-      }
+		static bool wireframe = false;
+		if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
+			if (wireframe) this->EnableWireframe();
+			else this->DisableWireframe();
+		}
 
-      fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
-      for (size_t i = 0; i < this->npcs.size(); ++i) {
-        ImGui::Text("NPC %zu", i);
-        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
-        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
-      }
-    }
-    ImGui::End();
-  }
+		fe::Object* model = this->player.get();
+		ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+		for (size_t i = 0; i < this->npcs.size(); ++i) {
+			ImGui::Text("NPC %zu", i);
+			ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
+			ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
+		}
+		}
+		ImGui::End();
+	}
 };
