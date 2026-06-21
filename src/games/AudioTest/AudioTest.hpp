@@ -114,7 +114,7 @@ camera->
 			}
 
 			ProcessInput();
-			player->state.rotation.y = -yaw + 90.0f;
+			// player->state.rotation.y = -yaw + 90.0f;
 			glm::vec3 pos = player->state.position + cameraOffset;
 			camera->SetPos(pos - camera->front * 6.0f);
 			// camera->yaw = yaw;
