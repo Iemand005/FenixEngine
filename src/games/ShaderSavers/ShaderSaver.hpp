@@ -106,6 +106,14 @@ class ShaderSaver : public fe::Renderer {
 		return std::filesystem::last_write_time(path, ec);
 	}
 
+	void HotReload(const char* fs, const char* vs) {
+		auto now = GetFileTime(fs);
+		if (now != lastWrite) {
+			lastWrite = now;
+			Reload(fs, vs);
+		}
+	}
+
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
 #if defined(FE_USE_SDL)
 		auto window = GetWindow<fe::SDLWindow>();
@@ -157,20 +165,12 @@ class ShaderSaver : public fe::Renderer {
 		while (!window->ShouldClose()) {
 			ProcessInput();
 
-			if (mode != ScreenSaverMode::Fullscreen) {
-				auto now = GetFileTime(fs);
-				if (now != lastWrite) {
-					lastWrite = now;
-					Reload(fs, vs);
-				}
-			}
+			if (mode != ScreenSaverMode::Fullscreen) HotReload(fs, vs);
 
 			float t = (float)window->GetTime();
 
 			if (uTime >= 0) glUniform1f(uTime, t);
 
-
-			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			window->SwapBuffers();
