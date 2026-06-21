@@ -195,27 +195,46 @@ class ShaderSaver : public fe::Renderer {
 			if (uTime >= 0)
 				glUniform1f(uTime, t);
 
+			glUseProgram(shader->getId());
+
 			if (system.pingPong) {
-				glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
+
+				// =========================
+				// PASS 1: SIMULATION (FBO)
+				// =========================
+				glBindFramebuffer(GL_FRAMEBUFFER, system.getWriteFBO());
 				glViewport(0, 0, system.width, system.height);
 
 				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, system.getRead());
+				glBindTexture(GL_TEXTURE_2D, system.getReadTex());
+
+				glUniform1i(glGetUniformLocation(shader->getId(), "prevFrame"), 0);
 
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 
 				system.swap();
 
+				// =========================
+				// PASS 2: PRESENT TO SCREEN
+				// =========================
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				// glViewport(0, 0, width, height);
+				glViewport(0, 0, width, height);
 
-				glBindTexture(GL_TEXTURE_2D, system.getRead());
-			} else {
-				// glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				// glViewport(0, 0, width, height);
+				// IMPORTANT: optional debug display of result
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, system.getReadTex());
+
+				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
+			else {
+				// =========================
+				// SINGLE PASS MODE
+				// =========================
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glViewport(0, 0, width, height);
 
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+			}
 
 			window->SwapBuffers();
 		}
