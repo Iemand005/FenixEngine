@@ -29,14 +29,16 @@ kiss_fftr_cfg      fftConfig;
 float              fftInput[FFT_SIZE];  
 kiss_fft_cpx       fftOutput[BINS];      
 
-void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, float* buffer, int num_floats) {
-    if (!buffer || num_floats <= 0) return;
+void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, float* buffer, int buflen) {
+    if (!buffer || buflen <= 0) return;
 
+    int num_floats = buflen / (int)sizeof(float);
     int frames = num_floats / spec->channels;
+
     for (int i = 0; i < frames; ++i) {
         float monoSample = 0.0f;
         for (int c = 0; c < spec->channels; ++c) {
-            monoSample += ((float*)buffer)[i * spec->channels + c];
+            monoSample += buffer[i * spec->channels + c];
         }
         audioSamples.push_back(monoSample / spec->channels);
     }
