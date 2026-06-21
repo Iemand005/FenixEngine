@@ -40,6 +40,12 @@
 #include "window/GLFW3Window.hpp"
 #endif
 
+#if defined(FE_USE_SDL)
+using DefaultWindow = fe::SDLWindow;
+#else
+using DefaultWindow = fe::GLFW3Window;
+#endif
+
 #define WAYLAND
 
 namespace fe {
@@ -90,11 +96,6 @@ class Renderer {
 		this->window = MakeWindow("Renderer", width, height, hidden, fullscreen);
 	}
 
-	#if defined(FE_USE_SDL)
-using DefaultWindow = fe::SDLWindow;
-#else
-using DefaultWindow = fe::GLFW3Window;
-#endif
 template<typename WindowT = DefaultWindow>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
