@@ -185,10 +185,6 @@ set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAK
 
 add_executable(AudioTest
     ${POOL_SOURCE_FILES}
-    src/engine/XRGame.cpp
-    src/engine/physics/BasicDebugRenderer.cpp
-    src/engine/physics/PhysicsEngine.cpp
-    src/engine/physics/PhysicsObject.cpp
     src/games/AudioTest/main.cpp
 )
 
