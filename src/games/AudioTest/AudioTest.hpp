@@ -98,38 +98,37 @@ public:
 	}
 
 
-  void Run() {
-    auto window = this->GetWindow<fe::SDLWindow>();
-    window->DisableVSync();
-  
-    glm::vec3 cameraOffset = glm::vec3(0);
+	void Run() {
+		auto window = this->GetWindow<fe::SDLWindow>();
+		window->DisableVSync();
+	
+		glm::vec3 cameraOffset = glm::vec3(0);
 
-    SDL_Event event;
-    while (!window->ShouldClose()) {
+		SDL_Event event;
+		while (!window->ShouldClose()) {
 
-		if (player->touchedGround) {
-			canJump = true;
+			if (player->touchedGround) {
+				canJump = true;
+			}
+
+			ProcessInput();
+			player->state.rotation.y = -yaw + 90.0f;
+			glm::vec3 pos = player->state.position + cameraOffset;
+			camera->SetPos(pos - camera->front * 6.0f);
+			camera->UpdateDirection();
+			
+			camera->setFront(glm::normalize(pos - camera->GetPos()));
+			
+			if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
+			
+			Update();
+			Redraw();
 		}
 
-		ProcessInput();
-		player->state.rotation.y = -yaw + 90.0f;
-		glm::vec3 pos = player->state.position + cameraOffset;
-		camera->SetPos(pos - camera->front * 6.0f);
-		camera->UpdateDirection();
-		
-		camera->setFront(glm::normalize(pos - camera->GetPos()));
-		
-		if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
-		
-		Update();
-		Redraw();
-    }
+		Destroy();
+	}
 
-    Destroy();
-  }
-
-  void InitUI() override {
-  }
+	void InitUI() override {}
 
   void DrawUI() override {
     DrawDebugUI();
