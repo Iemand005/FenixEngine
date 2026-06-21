@@ -14,7 +14,7 @@ namespace fe {
 
     public:
 
-    GLFW3Window(std::string title, int width, int height) : IWindow(width, height), title(title) {
+    GLFW3Window(std::string title, int width, int height, bool hidden = false) : IWindow(width, height), title(title) {
       InitGlfw();
     }
 
