@@ -34,12 +34,10 @@ public:
 
   virtual void StartMouseCapture() {
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // io.WantCaptureMouse = false;
   }
 
   virtual void StopMouseCapture() {
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    // io.WantCaptureMouse = true;
 
   }
 
