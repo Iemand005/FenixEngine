@@ -91,3 +91,11 @@ target_link_libraries(Renderer PUBLIC
     glfw
     SDL3::SDL3
 )
+
+target_compile_options(Renderer PRIVATE
+    $<$<CONFIG:Debug>:/Zi>
+)
+
+target_link_options(Renderer PRIVATE
+    $<$<CONFIG:Debug>:/DEBUG>
+)
