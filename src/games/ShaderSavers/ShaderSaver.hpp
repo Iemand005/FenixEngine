@@ -21,7 +21,7 @@
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 struct FrameBufferSystem {
-    bool pingPong = true;
+    bool pingPong = false;
 
     GLuint buffers[2];
     int readIndex = 0, writeIndex = 1;
@@ -110,6 +110,7 @@ class ShaderSaver : public fe::Renderer {
 
 			uTime = glGetUniformLocation(shader->getId(), "time");
 			uRes = glGetUniformLocation(shader->getId(), "resolution");
+			glUniform1i(glGetUniformLocation(shader->getId(), "prevFrame"), 0);
 			return true;
 		} catch (...) {
 			return false;
@@ -171,9 +172,8 @@ class ShaderSaver : public fe::Renderer {
 
 		FrameBufferSystem system;
 
-		if (!system.pingPong) {
-			glBindTexture(GL_TEXTURE_2D, system.buffers[0]);
-		}
+		// if (!system.pingPong)
+		// 	glBindTexture(GL_TEXTURE_2D, 0);
 
 		window->GetFramebufferSize(&width, &height);
 		Resize(width, height);
