@@ -116,7 +116,7 @@ public:
 		return std::filesystem::last_write_time(path, ec);
 	}
 
-	void Run(	, HWND parent = nullptr) {
+	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
 #if defined(FE_USE_SDL)
 		auto window = GetWindow<fe::SDLWindow>();
 #else
@@ -135,8 +135,7 @@ public:
 			window->AttachToNativeParent(parent);
 		}
 		MessageBox(parent, "KAKA", "NOTOK", 0 );
-
-		std::string modeStr;
+std::string modeStr;
 
 switch (mode) {
     case ScreenSaverMode::Window:     modeStr = "Window"; break;
@@ -144,7 +143,6 @@ switch (mode) {
     case ScreenSaverMode::Fullscreen: modeStr = "Fullscreen"; break;
     case ScreenSaverMode::Config:     modeStr = "Config"; break;
 }
-
 		const char* vs = R"(
 			#version 330 core
 			void main() {
