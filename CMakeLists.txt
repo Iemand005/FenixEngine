@@ -183,12 +183,12 @@ set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAK
 # set_target_properties(ShaderSaver PROPERTIES SUFFIX ".scr")
 
 
-add_executable(ShaderSaver
+add_executable(AudioTest
     WIN32
     src/games/AudioTest/main.cpp
 )
 
-target_include_directories(ShaderSaver PRIVATE
+target_include_directories(AudioTest PRIVATE
     include
     src
     external
@@ -197,9 +197,9 @@ target_include_directories(ShaderSaver PRIVATE
     src/engine
 )
 
-target_link_libraries(ShaderSaver PRIVATE Renderer)
+target_link_libraries(AudioTest PRIVATE Renderer)
 
-set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 if(WIN32)
     # Main game
