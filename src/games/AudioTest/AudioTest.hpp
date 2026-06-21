@@ -75,11 +75,9 @@ public:
 				case SDL_EVENT_MOUSE_MOTION:
 				{
 					float sensitivity = 0.1f;
-camera->
-					yaw   += event.motion.xrel * sensitivity;
-					// camera.
-					camera->
-					pitch -= event.motion.yrel * sensitivity;
+
+					camera->yaw   += event.motion.xrel * sensitivity;
+					camera->pitch -= event.motion.yrel * sensitivity;
 
 					pitch = std::clamp(pitch, -89.0f, 89.0f);
 					break;
