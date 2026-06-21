@@ -53,10 +53,10 @@ public:
 			&spec
 		);
 		
-		SDL_AudioSpec spec;
-		spec.freq = 48000;
-		spec.format = SDL_AUDIO_S16;
-		spec.channels = 2;
+		// SDL_AudioSpec spec;
+		// spec.freq = 48000;
+		// spec.format = SDL_AUDIO_S16;
+		// spec.channels = 2;
 
 		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
 
