@@ -173,6 +173,13 @@ class ShaderSaver : public fe::Renderer {
 
 		if (!system.pingPong) {
 			glBindTexture(GL_TEXTURE_2D, system.buffers[0]);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, system.getRead());
+
+			// render into write buffer
+			glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
+
+			system.swap();
 		}
 
 		window->GetFramebufferSize(&width, &height);
