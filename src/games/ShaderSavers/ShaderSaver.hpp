@@ -120,12 +120,12 @@ public:
 #endif
 
 		if (mode == ScreenSaverMode::Fullscreen) {
-			window->Show();
 			fullscreened = true;
 			
 			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
+		window->Show();
 
 		const char* vs = R"(
 			#version 330 core
