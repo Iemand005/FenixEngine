@@ -93,7 +93,7 @@ class Renderer {
 	}
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		this->window = MakeWindow("FenixEngine", width, height, hidden, fullscreen);
+		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
 	}
 
 template<typename WindowT = DefaultWindow>
