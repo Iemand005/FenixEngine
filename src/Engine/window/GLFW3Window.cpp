@@ -38,6 +38,12 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 
 	GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL;
 
+	if (fullscreen) {
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+		width = mode->width;
+		height = mode->height;
+	}
+
 	impl->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
 	if (impl->window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -126,10 +132,11 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 	return true;
 }
 
-void fe::GLFW3Window::GetDisplaySize(int *width, int *height) {
-	*width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	*height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-}
+// void fe::GLFW3Window::GetDisplaySize(int *width, int *height) {
+// 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+// 	*width = mode->width;
+// 	*height = mode->height;
+// }
 
 void *fe::GLFW3Window::GetWindow() { return impl->window; }
 
