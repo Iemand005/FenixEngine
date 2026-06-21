@@ -108,7 +108,7 @@ class ShaderSaver : public fe::Renderer {
 
 		SDL_GetWindowSize(window->GetWindow(), &width, &height);
 		glViewport(0, 0, width, height);
-		SDL_GetMouseState(&startX, &startY);
+		window->GetMousePosition(&startX, &startY);
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
