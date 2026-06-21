@@ -51,6 +51,11 @@ public:
 	void AttachToNativeParent(void* parent);
 #endif
 
+	void SetAnyKeyCallback(std::function<void()> cb)
+	{
+		onAnyKey = std::move(cb);
+	}
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
