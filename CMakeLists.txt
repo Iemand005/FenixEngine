@@ -193,7 +193,7 @@ target_include_directories(AudioTest PRIVATE
     src
     external
     external/imgui
-    external/sdl/include
+    external/SDL/include
     src/engine
 )
 
