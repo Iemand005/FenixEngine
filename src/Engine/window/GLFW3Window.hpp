@@ -62,6 +62,7 @@ private:
 	std::string title;
 
 	std::function<void()> onAnyKey = NULL;
+	std::function<void(int width, int height)> onFramebufferResize = NULL;
 };
 
 } // namespace fe
