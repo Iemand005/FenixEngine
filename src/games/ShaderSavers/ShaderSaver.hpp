@@ -151,7 +151,7 @@ class ShaderSaver : public fe::Renderer {
 		
 
 		window->GetFramebufferSize(&width, &height);
-		Resize(width, height)
+		Resize(width, height);
 
 
 		while (!window->ShouldClose()) {
