@@ -177,6 +177,9 @@ set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAK
 
 target_compile_options(ShaderSaverSDL PRIVATE /Zi)
 target_link_options(ShaderSaverSDL PRIVATE /DEBUG)
+
+target_compile_options(ShaderSaver PRIVATE /Zi)
+target_link_options(ShaderSaver PRIVATE /DEBUG)
 # set_target_properties(ShaderSaver PROPERTIES SUFFIX ".scr")
 
 if(WIN32)
