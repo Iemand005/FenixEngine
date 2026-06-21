@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 10194150,
-    "totalActiveTime": 677584
+    "totalFocusTime": 10287305,
+    "totalActiveTime": 678586
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -31,7 +31,7 @@
     },
     "CMakeLists.txt": {
       "pending": 12301,
-      "focus": 290286
+      "focus": 300592
     },
     "src/Engine/CMakeLists.txt": {
       "pending": 8886,
@@ -98,8 +98,8 @@
       "focus": 4174655
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
-      "pending": 9609,
-      "focus": 150065
+      "pending": 10611,
+      "focus": 169264
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
