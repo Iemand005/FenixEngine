@@ -79,11 +79,6 @@ class ShaderSaver : public fe::Renderer {
 		auto window = GetWindow<fe::GLFW3Window>();
 		glfwPollEvents();
 
-		if (window->ShouldClose()) {
-  			window->PrepareClose();
-			return;
-		}
-
 		if (fullscreened) {
 			double x, y;
 			window->GetMousePosition(&x, &y);
