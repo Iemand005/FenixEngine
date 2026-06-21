@@ -20,7 +20,7 @@ public:
 
 	std::filesystem::file_time_type lastWrite;
 
-	ShaderSaver() : ShaderSaver(500, 500) {}
+	ShaderSaver() : ShaderSaver(0, 0) {}
 	ShaderSaver(int w, int h) : fe::Renderer(w, h, false, true) {}
 
 	// ---------------- RESIZE ----------------
