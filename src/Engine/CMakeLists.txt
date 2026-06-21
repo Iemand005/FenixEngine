@@ -55,6 +55,14 @@ target_link_libraries(Engine PUBLIC
     Jolt
 )
 
+target_compile_options(Engine PRIVATE
+    $<$<CONFIG:Debug>:/Zi>
+)
+
+target_link_options(Engine PRIVATE
+    $<$<CONFIG:Debug>:/DEBUG>
+)
+
 
 add_library(Renderer STATIC
     glad/glad.c
