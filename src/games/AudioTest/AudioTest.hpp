@@ -22,7 +22,10 @@
 #include "kiss_fftr.h"
 
 const int FFT_SIZE = 1024;               
-const int BINS = (FFT_SIZE / 2) + 1;     
+const int BINS = (FFT_SIZE / 2) + 1;  
+
+const int NUM_BARS = 32;
+
 
 std::vector<float> audioSamples;         
 kiss_fftr_cfg      fftConfig;            
@@ -181,7 +184,6 @@ public:
 		Destroy();
 	}
 
-	const int NUM_BARS = 32;
 	float bandMagnitudes[NUM_BARS] = {0};       
 	float bandMagnitudesSmoothed[NUM_BARS] = {0};
 
