@@ -61,7 +61,7 @@ public:
 
 	int mapIndex = 0;
 
-	ImGuiIO io;
+	float magnitudes[BINS];
 
 	AudioTest() : AudioTest(800, 640) {}
 
@@ -192,7 +192,6 @@ public:
 
 		kiss_fftr(fftConfig, fftInput, fftOutput);
 
-		float magnitudes[BINS];
 		for (int i = 0; i < BINS; ++i) {
 			float real = fftOutput[i].r;
 			float imag = fftOutput[i].i;
@@ -207,5 +206,44 @@ public:
 
   void DrawUI() override {
     DrawDebugUI();
+
+	ImGui::Begin("Audio");
+    {
+      ImGui::Text("Hello, World!");
+      ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+      ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
+      size_t totalVertices = 0;
+      for (auto& obj : this->scene->GetObjects())
+        for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
+      ImGui::Text("Vertices: %zu", totalVertices);
+
+      if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
+        this->EnableXR ();
+      }
+
+      if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
+        this->DestroyXR();
+      }
+
+      if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
+        std::cout << "Button clicked!" << std::endl;
+      }
+
+      static bool wireframe = false;
+      if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
+        if (wireframe) this->EnableWireframe();
+        else this->DisableWireframe();
+      }
+
+      fe::Object* model = this->player.get();
+      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+      for (size_t i = 0; i < this->npcs.size(); ++i) {
+        ImGui::Text("NPC %zu", i);
+        ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
+        ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
+      }
+    }
+    ImGui::End();
   }
 };
