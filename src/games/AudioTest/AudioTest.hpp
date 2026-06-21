@@ -38,8 +38,11 @@ public:
 		LoadModels();
 
 		// SDL_Init(SDL_INIT_AUDIO);
-
-		SDL_LoadWAV
+//"E:\FenixEngine\build\bin\resources\audio\file_example_WAV_5MG.wav"
+		if (!SDL_LoadWAV("test.wav", &spec, &audio_data, &audio_len))
+		{
+			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
+		}
 	}
 
 	void LoadModels() {
