@@ -7,30 +7,29 @@
 #include "IWindow.hpp"
 
 namespace fe {
+	class GLFW3Window : public IWindow {
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> impl;
+		std::string title;
 
-class GLFW3Window : public IWindow {
-   private:
-	struct Impl;
-	std::unique_ptr<Impl> impl;
-	std::string title;
+	public:
+		GLFW3Window(std::string title, int width, int height, bool hidden = false);
 
-   public:
-	GLFW3Window(std::string title, int width, int height, bool hidden = false);
+		bool InitGlfw(bool tenBit = false);
 
-	bool InitGlfw(bool tenBit = false);
+		void StartMouseCapture() override;
 
-	void StartMouseCapture() override;
+		void StopMouseCapture() override;
 
-	void StopMouseCapture() override;
+		void PollGLFWEvents() { glfwPollEvents(); }
 
-	void PollGLFWEvents() { glfwPollEvents(); }
+		void SetSwapInterval(int interval) override { glfwSwapInterval(interval); }
 
-	void SetSwapInterval(int interval) override { glfwSwapInterval(interval); }
+		void SwapBuffers() override;
 
-	void SwapBuffers() override;
+		void Destroy() override;
 
-	void Destroy() override;
-
-	void* GetGLFWWindow();
-};
+		void* GetGLFWWindow();
+	};
 }  // namespace fe
