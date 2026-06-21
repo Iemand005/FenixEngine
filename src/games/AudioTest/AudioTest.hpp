@@ -21,6 +21,32 @@
 
 #include "kiss_fftr.h"
 
+const int FFT_SIZE = 1024;               
+const int BINS = (FFT_SIZE / 2) + 1;     
+
+std::vector<float> audioSamples;         
+kiss_fftr_cfg      fftConfig;            
+float              fftInput[FFT_SIZE];  
+kiss_fft_cpx       fftOutput[BINS];      
+
+void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, float* buffer, int num_floats) {
+    if (!buffer || num_floats <= 0) return;
+
+    int frames = num_floats / spec->channels;
+    for (int i = 0; i < frames; ++i) {
+        float monoSample = 0.0f;
+        for (int c = 0; c < spec->channels; ++c) {
+            monoSample += buffer[i * spec->channels + c];
+        }
+        audioSamples.push_back(monoSample / spec->channels);
+    }
+
+    // Keep only what we need for the next visualization update
+    if (audioSamples.size() > FFT_SIZE) {
+        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
+    }
+}
+
 class AudioTest : public fe::EditableGame {
 public:
 
