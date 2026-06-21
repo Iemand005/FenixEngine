@@ -106,6 +106,18 @@ private:
     fov = glm::tan(fov) * nearDist;
     projectionMatrix = glm::frustum(fov.x, fov.y, fov.z, fov.w, nearDist, farDist);
   }
+
+	void updateDirection()
+	{
+		glm::vec3 dir;
+		dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		dir.y = sin(glm::radians(pitch));
+		dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+		front = glm::normalize(dir);
+		updateView(position, front, up);
+	}
+
   glm::mat4 GetViewMatrix() const { return viewMatrix; }
   glm::mat4 GetProjectionMatrix() const { return projectionMatrix; }
 
