@@ -101,7 +101,7 @@ PhysicsEngine::PhysicsEngine() {
 
   RegisterDefaultAllocator();
 
-  Trace = TraceImpl;
+  JPH_IF_ENABLE_ASSERTS(Trace = TraceImpl);
   JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
   Factory::sInstance = new Factory();
   RegisterTypes();
