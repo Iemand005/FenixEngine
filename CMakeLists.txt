@@ -29,10 +29,9 @@ set(JPH_USE_MTL OFF CACHE BOOL "Use Metal" FORCE)
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use Static MSVC++" FORCE)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
-set(KISSFFT_TESTS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
-set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tools" FORCE)
-set(KISSFFT_TESTS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
-set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tools" FORCE)
+set(KISSFFT_TEST OFF CACHE BOOL "Disable KissFFT tests" FORCE)
+
+set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
 add_subdirectory(external/kissfft)
 
