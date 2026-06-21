@@ -15,6 +15,7 @@
 #include <GLFW/glfw3.h>
 #endif
 #include <windows.h>
+
 #include <filesystem>
 
 #if defined(FE_USE_SDL)
@@ -26,7 +27,7 @@ using NativeWindow = GLFWwindow;
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 class ShaderSaver : public fe::Renderer {
-public:
+   public:
 	int width = 0, height = 0;
 	double startX = 0, startY = 0;
 	bool fullscreened = false;
@@ -36,9 +37,7 @@ public:
 	std::filesystem::file_time_type lastWrite;
 
 	ShaderSaver(bool fullscreen = false) : ShaderSaver(500, 500, fullscreen) {}
-	ShaderSaver(int w, int h, bool fullscreen = false) : fe::Renderer(w, h, false, true, fullscreen) {
-		fullscreened = fullscreen;
-	}
+	ShaderSaver(int w, int h, bool fullscreen = false) : fe::Renderer(w, h, false, true, fullscreen) { fullscreened = fullscreen; }
 
 	void Resize(int w, int h) {
 		if (w <= 0 || h <= 0) return;
@@ -48,7 +47,6 @@ public:
 	}
 
 	void ProcessInput() {
-
 #ifdef FE_USE_SDL
 		SDL_Event event;
 		fe::SDLWindow* window = (fe::SDLWindow*)this->window.get();
@@ -75,8 +73,7 @@ public:
 			float x, y;
 			SDL_GetMouseState(&x, &y);
 
-			if (abs(x - startX) > 3 || abs(y - startY) > 3)
-				window->PrepareClose();
+			if (abs(x - startX) > 3 || abs(y - startY) > 3) window->PrepareClose();
 		}
 #else
 		auto window = GetWindow<fe::GLFW3Window>();
@@ -87,26 +84,24 @@ public:
 			return;
 		}
 
-		if (fullscreened) { 
+		if (fullscreened) {
 			double x, y;
 			window->GetMousePosition(&x, &y);
 
 			double dx = x - startX;
 			double dy = y - startY;
 
-			if (std::abs(dx) > 3.0 || std::abs(dy) > 3.0)
-    			window->PrepareClose();
+			if (std::abs(dx) > 3.0 || std::abs(dy) > 3.0) window->PrepareClose();
 		}
 #endif
 	}
 
 	bool Reload(const char* path, const char* vs) {
 		try {
-			LoadShaders(fe::Shader::Vertex(vs),fe::Shader::Fragment(path));
+			LoadShaders(fe::Shader::Vertex(vs), fe::Shader::Fragment(path));
 			shader->Use();
 			return true;
-		}
-		catch (...) {
+		} catch (...) {
 			return false;
 		}
 	}
@@ -125,23 +120,23 @@ public:
 
 		if (mode == ScreenSaverMode::Fullscreen) {
 			fullscreened = true;
-			
+
 			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
 		if (mode = ScreenSaverMode::Preview)
-		 window->AttachToNativeParent(parent);
-		else	window->Show();
+			window->AttachToNativeParent(parent);
+		else
+			window->Show();
 
-			const char* vs = R"(
+		const char* vs = R"(
 			#version 330 core
 			void main() {
 				vec2 v[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1,3));
 				gl_Position=vec4(v[gl_VertexID],0,1);
 			})";
 
-		const char* fs =
-			"E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+		const char* fs = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
 
 		lastWrite = GetFileTime(fs);
 		Reload(fs, vs);
@@ -169,11 +164,9 @@ public:
 
 			float t = (float)window->GetTime();
 
-			if (uTime >= 0)
-				glUniform1f(uTime, t);
+			if (uTime >= 0) glUniform1f(uTime, t);
 
-			if (uRes >= 0)
-				glUniform2f(uRes, width, height);
+			if (uRes >= 0) glUniform2f(uRes, width, height);
 
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
