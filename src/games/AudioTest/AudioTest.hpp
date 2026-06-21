@@ -72,6 +72,16 @@ public:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 				// Get actual pixel dimensions
 				break;
+				case SDL_EVENT_MOUSE_MOTION:
+				{
+					float sensitivity = 0.1f;
+
+					yaw   += event.motion.xrel * sensitivity;
+					pitch -= event.motion.yrel * sensitivity;
+
+					pitch = std::clamp(pitch, -89.0f, 89.0f);
+					break;
+				}
 			}
 		}
 
