@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 20136757,
-    "totalActiveTime": 1790279
+    "totalFocusTime": 20289239,
+    "totalActiveTime": 1792328
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -91,7 +91,7 @@
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 624715,
-      "focus": 7629721
+      "focus": 7643627
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -166,8 +166,8 @@
       "focus": 4862
     },
     "build/bin/FragmentShader.glsl": {
-      "pending": 4828,
-      "focus": 327285
+      "pending": 6877,
+      "focus": 355012
     },
     ".gitignore": {
       "pending": 1018,
