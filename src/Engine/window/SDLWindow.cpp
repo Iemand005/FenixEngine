@@ -99,17 +99,17 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
     // SDL_FlushOnResizeAndMove(window);
 
-    impl->gl_context = SDL_GL_CreateContext(impl->window);
-    if (!impl->gl_context) {
-      CheckError();
-      SDL_DestroyWindow(impl->window);
-      SDL_Quit();
-    }
+	impl->gl_context = SDL_GL_CreateContext(impl->window);
+	if (!impl->gl_context) {
+		CheckError();
+		SDL_DestroyWindow(impl->window);
+		SDL_Quit();
+	}
 
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return;
-    }
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return;
+	}
 
     keyboardState = SDL_GetKeyboardState(NULL);
 
