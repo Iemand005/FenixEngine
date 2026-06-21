@@ -37,6 +37,9 @@ public:
 
 	bool HideMouse();
 
+	void Hide();
+  	void Show();
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

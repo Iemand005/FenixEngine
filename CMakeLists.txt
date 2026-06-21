@@ -168,7 +168,6 @@ target_include_directories(ShaderSaverSDL PRIVATE
     src
     external
     external/imgui
-    external/glfw/include
     src/engine
 )
 
