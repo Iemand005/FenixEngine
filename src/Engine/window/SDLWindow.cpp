@@ -117,32 +117,30 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
   }
 
 void fe::SDLWindow::SwapBuffers() {
-  SDL_GL_SwapWindow(impl->window);
+	SDL_GL_SwapWindow(impl->window);
 }
 
-  void fe::SDLWindow::SetSwapInterval(int interval) {
-    SDL_GL_SetSwapInterval(interval);
-  }
+void fe::SDLWindow::SetSwapInterval(int interval) {
+	SDL_GL_SetSwapInterval(interval);
+}
 
-  void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
-    SDL_SetWindowMouseGrab(impl->window, captureMouse);
-    SDL_SetWindowRelativeMouseMode(impl->window, captureMouse);
-    capturingMouse = captureMouse;
-  }
+void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
+	SDL_SetWindowMouseGrab(impl->window, captureMouse);
+	SDL_SetWindowRelativeMouseMode(impl->window, captureMouse);
+	capturingMouse = captureMouse;
+}
 
-  void fe::SDLWindow::StartMouseCapture() {
-    SetMouseCapture(true);
-    SDL_HideCursor();
-  }
+void fe::SDLWindow::StartMouseCapture() {
+	SetMouseCapture(true);
+	SDL_HideCursor();
+	}
 
-  void fe::SDLWindow::StopMouseCapture() {
-    SetMouseCapture(false);
-    SDL_ShowCursor();
+void fe::SDLWindow::StopMouseCapture() {
+	SetMouseCapture(false);
+	SDL_ShowCursor();
+}
 
-    // io.WantCaptureMouse = true;
-  }
-
-  void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
+void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 
 
   void fe::SDLWindow::Destroy() {
