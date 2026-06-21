@@ -65,11 +65,11 @@ public:
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 		LoadModels();
 
-		SDL_AudioSpec spec;
+		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
 		Uint32 len = 0;
 
-		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &spec, &data, &len))
+		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &wavSpec, &data, &len))
 		{
 			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
 			return;
@@ -78,9 +78,11 @@ public:
 		SDL_AudioSpec targetSpec;
 		targetSpec.format = SDL_AUDIO_F32;
 		targetSpec.channels = 2;
-		targetSpec.freq = spec.freq;
+		targetSpec.freq = wavSpec.freq;
 
 		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &targetSpec, nullptr, nullptr);
+
+		SDL_SetAudioStreamFormat(stream, &wavSpec, &targetSpec);
 
 		SDL_PutAudioStreamData(stream, data, len);
 
