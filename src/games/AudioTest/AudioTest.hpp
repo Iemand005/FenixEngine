@@ -38,6 +38,8 @@ public:
 		LoadModels();
 
 		// SDL_Init(SDL_INIT_AUDIO);
+
+		SDL_LoadWAV
 	}
 
 	void LoadModels() {
