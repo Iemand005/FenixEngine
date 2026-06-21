@@ -21,7 +21,7 @@
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 struct FrameBufferSystem {
-    bool pingPong = false;
+    bool pingPong = true;
 
     GLuint buffers[2];
     int readIndex = 0, writeIndex = 1;
