@@ -36,6 +36,8 @@ public:
 
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 		LoadModels();
+
+		// SDL_Init(SDL_INIT_AUDIO);
 	}
 
 	void LoadModels() {

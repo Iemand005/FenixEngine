@@ -75,7 +75,7 @@ fe::SDLWindow::~SDLWindow() {
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height) {
 	impl = std::make_unique<Impl>();
-	CheckError(SDL_Init(SDL_INIT_VIDEO));
+	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO));
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
