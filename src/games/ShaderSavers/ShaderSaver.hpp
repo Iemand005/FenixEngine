@@ -23,12 +23,18 @@ enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 struct FrameBufferSystem {
     bool pingPong = true;
 
-    GLuint buffers[2];
-    int readIndex = 0, writeIndex = 1;
-	int width = 500, height = 500;
+    GLuint buffers[2] = {0, 0};
+    GLuint fbo[2] = {0, 0};
 
-    GLuint getRead()  const { return buffers[readIndex]; }
-    GLuint getWrite() const { return buffers[writeIndex]; }
+    int readIndex = 0;
+    int writeIndex = 1;
+
+    int width = 500, height = 500;
+
+    GLuint getReadTex()  const { return buffers[readIndex]; }
+    GLuint getWriteTex() const { return buffers[writeIndex]; }
+
+    GLuint getWriteFBO() const { return fbo[writeIndex]; }
 
     void swap() {
         std::swap(readIndex, writeIndex);
