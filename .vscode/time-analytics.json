@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 9732179,
+    "totalFocusTime": 9943373,
     "totalActiveTime": 649737
   },
   "files": {
@@ -11,7 +11,7 @@
     },
     "src/Engine/Renderer.hpp": {
       "pending": 55301,
-      "focus": 341200
+      "focus": 347326
     },
     "src/Engine/ShaderProgram.hpp": {
       "pending": 35836,
