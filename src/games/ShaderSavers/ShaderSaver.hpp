@@ -4,9 +4,19 @@
 #define FE_EXCLUDE_SDL
 
 #include "../../engine/Renderer.hpp"
-#include <GLFW/glfw3.h>
+#if defined(FE_USE_GLFW)
+    #include <GLFW/glfw3.h>
+#elif defined(FE_USE_SDL)
+    #include <SDL.h>
+#endif
 #include <windows.h>
 #include <filesystem>
+
+#if defined(FE_USE_GLFW)
+    using NativeWindow = GLFWwindow;
+#elif defined(FE_USE_SDL)
+    using NativeWindow = SDL_Window;
+#endif
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
@@ -23,7 +33,6 @@ public:
 	ShaderSaver() : ShaderSaver(2560, 1600) {}
 	ShaderSaver(int w, int h) : fe::Renderer(w, h, false, true) {}
 
-	// ---------------- RESIZE ----------------
 	void Resize(int w, int h) {
 		if (w <= 0 || h <= 0) return;
 		width = w;
@@ -31,7 +40,6 @@ public:
 		glViewport(0, 0, w, h);
 	}
 
-	// ---------------- INPUT ----------------
 	void ProcessInput() {
 		glfwPollEvents();
 
@@ -50,7 +58,6 @@ public:
 		}
 	}
 
-	// ---------------- FILE RELOAD ----------------
 	bool Reload(const char* path, const char* vs) {
 		try {
 			LoadShaders(
