@@ -37,8 +37,8 @@
 #include "window/SDLWindow.hpp"
 #endif
 #ifndef FE_EXCLUDE_GLFW
-#include "window/GLFW3Window.hpp"
 #endif
+#include "window/GLFW3Window.hpp"
 
 #define WAYLAND
 
@@ -111,7 +111,7 @@ class Renderer {
     this->window = MakeWindow("Renderer", width, height, hidden);
   }
   
-  template<typename WindowT = GLFW3Window>
+  template<typename WindowT = fe::GLFW3Window>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
     std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden);
