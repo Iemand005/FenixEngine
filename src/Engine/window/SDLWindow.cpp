@@ -73,7 +73,7 @@ fe::SDLWindow::~SDLWindow() {
   Destroy();
 }
 
-fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden) : IWindow(width, height) {
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height) {
   impl = std::make_unique<Impl>();
     CheckError(SDL_Init(SDL_INIT_VIDEO));
 
