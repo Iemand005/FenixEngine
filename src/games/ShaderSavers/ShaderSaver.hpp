@@ -124,7 +124,7 @@ class ShaderSaver : public fe::Renderer {
 			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
-		if (mode = ScreenSaverMode::Preview)
+		if (mode == ScreenSaverMode::Preview)
 			window->AttachToNativeParent(parent);
 		else
 			window->Show();
