@@ -140,13 +140,8 @@ target_include_directories(pool PRIVATE
     src/engine
 )
 
-file(GLOB_RECURSE SHADERSAVERS_SOURCE_FILES
-    src/games/ShaderSavers/*.cpp
-)
-
 add_executable(ShaderSaver
     WIN32
-    ${SHADERSAVERS_SOURCE_FILES}
     src/games/ShaderSavers/main.cpp
 )
 
@@ -165,7 +160,6 @@ set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_S
 
 add_executable(ShaderSaverSDL
     WIN32
-    ${SHADERSAVERS_SOURCE_FILES}
     src/games/ShaderSavers/mainSDL.cpp
 )
 
