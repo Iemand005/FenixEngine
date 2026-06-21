@@ -47,6 +47,7 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
 }
 
 
+
 class AudioTest : public fe::EditableGame {
 public:
 
@@ -72,7 +73,7 @@ public:
 		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &wavSpec, &data, &len))
 		{
 			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
-			return;a
+			return;
 		}
 
 		SDL_AudioSpec targetSpec;
@@ -189,12 +190,14 @@ public:
 
 		Destroy();
 	}
+	#define M_PI 3.141592
 
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE) return;
 
 		for (int i = 0; i < FFT_SIZE; ++i) {
-			fftInput[i] = audioSamples[i];
+			float multiplier = 0.5f * (1.0f - std::cos(2.0f * M_PI * i / (FFT_SIZE - 1)));
+			fftInput[i] = audioSamples[i] * multiplier;
 		}
 
 		kiss_fftr(fftConfig, fftInput, fftOutput);
@@ -204,7 +207,7 @@ public:
 			float real = fftOutput[i].r;
 			float imag = fftOutput[i].i;
 			
-			magnitudes[i] = std::sqrt(real * real + imag * imag);
+			magnitudes[i] = std::sqrt(real * real + imag * imag) / FFT_SIZE;
 		}
 
 		std::cout << "Bass: " << magnitudes[4] << " | Mids: " << magnitudes[20] << "\n";
