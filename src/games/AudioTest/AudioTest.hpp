@@ -242,7 +242,8 @@ public:
 		float scale    = 8.0f;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
-			float normalized = std::clamp(bandMagnitudesSmoothed[i] * scale, 0.0f, 1.0f);
+			float ah = bandMagnitudesSmoothed[i] * scale;
+			float normalized = std::clamp(ah, 0.0f, 1.0f);
 			float barHeight  = normalized * canvasSize.y;
 
 			float x0 = canvasPos.x + i * (barWidth + barGap);
