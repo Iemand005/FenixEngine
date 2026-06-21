@@ -37,7 +37,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 	}
 
 	// GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL;
-	GLFWmonitor *monitor = nullptr;
+	GLFWmonitor *monitor = NULL;
 
 	impl->window = glfwCreateWindow(width, height, "FoxEngine", monitor, NULL);
 	if (impl->window == NULL) {
