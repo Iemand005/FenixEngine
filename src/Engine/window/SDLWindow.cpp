@@ -74,28 +74,28 @@ fe::SDLWindow::~SDLWindow() {
 }
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height) {
-  impl = std::make_unique<Impl>();
-    CheckError(SDL_Init(SDL_INIT_VIDEO));
+	impl = std::make_unique<Impl>();
+	CheckError(SDL_Init(SDL_INIT_VIDEO));
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
-    auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
+	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
-    impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
+	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
-    if (!impl->window) {
-      CheckError();
-      SDL_Quit();
-    }
+	if (!impl->window) {
+		CheckError();
+		SDL_Quit();
+	}
 
     // SDL_FlushOnResizeAndMove(window);
 
@@ -114,7 +114,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
     keyboardState = SDL_GetKeyboardState(NULL);
 
     // SDL_AddEventWatch(EventWatch, this);
-  }
+}
 
 void fe::SDLWindow::SwapBuffers() {
 	SDL_GL_SwapWindow(impl->window);
