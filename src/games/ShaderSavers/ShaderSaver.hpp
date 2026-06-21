@@ -125,7 +125,8 @@ public:
 			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
-		window->Show();
+		if (mode != ScreenSaverMode::Preview)
+			window->Show();
 
 		const char* vs = R"(
 			#version 330 core
