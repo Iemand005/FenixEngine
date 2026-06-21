@@ -157,9 +157,6 @@ public:
 				Reload(fs, vs);
 			}
 
-			// glfwGetFramebufferSize(glfwWindow, &width, &height);
-			// glViewport(0, 0, width, height);
-
 			shader->Use();
 
 			float t = (float)window->GetTime();
@@ -173,7 +170,8 @@ public:
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			glfwSwapBuffers(glfwWindow);
+			// glfwSwapBuffers(window);
+			window->SwapBuffers();
 		}
 
 		glDeleteVertexArrays(1, &vao);
