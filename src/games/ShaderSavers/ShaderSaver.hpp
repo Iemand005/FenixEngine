@@ -87,7 +87,7 @@ public:
 			return;
 		}
 
-		if (fullscreened) {
+		if (fullscreened) { 
 			double x, y;
 			window->GetMousePosition(&x, &y);
 
