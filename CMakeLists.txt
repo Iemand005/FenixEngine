@@ -141,16 +141,6 @@ target_include_directories(pool PRIVATE
 )
 
 file(GLOB_RECURSE SHADERSAVERS_SOURCE_FILES
-    external/imgui/imgui.cpp
-    external/imgui/backends/imgui_impl_sdl3.cpp
-    external/imgui/backends/imgui_impl_sdlgpu3.cpp
-    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_opengl3.cpp
-    external/imgui/imgui_tables.cpp
-    external/imgui/imgui_widgets.cpp
-    external/imgui/imgui_demo.cpp
-    external/imgui/imgui_draw.cpp
-
     src/games/ShaderSavers/*.cpp
 )
 
@@ -166,7 +156,7 @@ target_include_directories(ShaderSaver PRIVATE
     src
     external
     external/imgui
-    external/SDL/include
+    external/glfw/include
     src/engine
 )
 

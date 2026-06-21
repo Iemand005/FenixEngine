@@ -34,7 +34,7 @@ public:
 		glfwPollEvents();
 
 		if (glfwWindowShouldClose(glfwWindow)) {
-			auto window = GetWindow<fe::SDLWindow>();
+			auto window = GetWindow<fe::GLFW3Window>();
 			window->PrepareClose();
 			return;
 		}

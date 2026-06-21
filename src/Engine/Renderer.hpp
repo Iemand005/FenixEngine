@@ -5,9 +5,6 @@
 #define NOMINMAX
 #endif
 
-#define FE_EXCLUDE_GLFW
-
-
 #include <glad/glad.h>
 #include "../stdafx.h"
 
