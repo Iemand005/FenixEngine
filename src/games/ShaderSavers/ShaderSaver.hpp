@@ -3,9 +3,6 @@
 #define NOMINMAX
 #define FE_EXCLUDE_GLFW
 
-#include <cstdio>
-#include <iostream>
-
 #include "../../engine/Renderer.hpp"
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
