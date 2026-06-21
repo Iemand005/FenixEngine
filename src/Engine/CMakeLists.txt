@@ -23,9 +23,9 @@ if(MSVC AND TARGET Jolt)
   set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
-file(GLOB_RECURSE SOURCE_FILES
-    glad/*.c
-    *.cpp
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.c
 )
 
 
