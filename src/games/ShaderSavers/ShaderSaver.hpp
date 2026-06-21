@@ -118,8 +118,9 @@ class ShaderSaver : public fe::Renderer {
 		auto window = GetWindow<fe::GLFW3Window>();
 #endif
 
-		// qindo
-		window->SetAnyKeyCallback(()[]«)
+		window->SetAnyKeyCallback([&]() {
+			window->PrepareClose();
+		});
 
 		if (mode == ScreenSaverMode::Fullscreen) {
 			fullscreened = true;
