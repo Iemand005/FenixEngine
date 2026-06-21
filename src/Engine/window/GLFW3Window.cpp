@@ -36,9 +36,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 		glfwWindowHint(GLFW_ALPHA_BITS, 2);
 	}
 
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-
-	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+	GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : nullptr;
 
 	impl->window = glfwCreateWindow(width, height, "FoxEngine", monitor, NULL);
 	if (impl->window == NULL) {

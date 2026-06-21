@@ -91,11 +91,10 @@ class Renderer {
 	}
 
 #ifndef FE_EXCLUDE_SDL
-template<typename WindowT = fe::GLFW3Window>
 #else
-template<typename WindowT = SDLWindow>
+// template<typename WindowT = SDLWindow>
 #endif
-  
+template<typename WindowT = fe::GLFW3Window>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
     std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);

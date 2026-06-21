@@ -1,17 +1,17 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 14928421,
-    "totalActiveTime": 1355640
+    "totalFocusTime": 15270415,
+    "totalActiveTime": 1364762
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
       "pending": 10820,
-      "focus": 240189
+      "focus": 243097
     },
     "src/Engine/Renderer.hpp": {
-      "pending": 109444,
-      "focus": 788036
+      "pending": 113727,
+      "focus": 924105
     },
     "src/Engine/ShaderProgram.hpp": {
       "pending": 35836,
@@ -43,7 +43,7 @@
     },
     "src/Engine/window/GLFW3Window.hpp": {
       "pending": 61007,
-      "focus": 317380
+      "focus": 331404
     },
     "src/games/ShaderSavers/FragmentShaderTripy.glsl": {
       "pending": 22732,
@@ -91,15 +91,15 @@
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 411300,
-      "focus": 5634502
+      "focus": 5638526
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
       "focus": 15299
     },
     "src/Engine/window/GLFW3Window.cpp": {
-      "pending": 95093,
-      "focus": 422921
+      "pending": 99932,
+      "focus": 444269
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 9089,
@@ -152,6 +152,10 @@
     "src/games/ShaderSavers/FragmentShader.glsl": {
       "pending": 0,
       "focus": 20447
+    },
+    "src/Engine/XRGame.cpp": {
+      "pending": 0,
+      "focus": 2475
     }
   },
   "deleted": {
