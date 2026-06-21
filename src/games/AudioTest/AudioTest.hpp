@@ -39,26 +39,22 @@ public:
 
 		// SDL_Init(SDL_INIT_AUDIO);
 
-		SDL_AudioSpec spec;
-		Uint8* audio_data = nullptr;
-		Uint32 audio_len = 0;
+		SDL_AudioSpec spec{};
+		spec.freq = 48000;
+		spec.format = SDL_AUDIO_F32;
+		spec.channels = 2;
 
-		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &spec, &audio_data, &audio_len))
+		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+
+		Uint8* data;
+		Uint32 len;
+
+		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &spec, &data, &len))
 		{
 			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
 		}
 
-		SDL_AudioDeviceID device = SDL_OpenAudioDevice(
-			SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-			&spec
-		);
-		
-		// SDL_AudioSpec spec;
-		// spec.freq = 48000;
-		// spec.format = SDL_AUDIO_S16;
-		// spec.channels = 2;
-
-		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+		SDL_PutAudioStreamData(stream, data, len);
 
 		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
 	}
