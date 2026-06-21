@@ -9,7 +9,7 @@ namespace fe {
 
 class GLFW3Window : public IWindow {
 public:
-	GLFW3Window(std::string title, int width, int height, bool hidden = false);
+	GLFW3Window(std::string title, int width, int height, bool hidden = false, bool fullscreen = false);
 	~GLFW3Window();
 
 	bool InitGlfw(bool fullscreen = true, bool tenBit = true);

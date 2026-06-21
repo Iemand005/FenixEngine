@@ -10,9 +10,9 @@ struct GLFW3Window::Impl {
 };
 
 }
-fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden) : IWindow(width, height), title(title) {
+fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height), title(title) {
 	impl = std::make_unique<Impl>();
-	InitGlfw();
+	InitGlfw(fullscreen);
 }
 
 bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
