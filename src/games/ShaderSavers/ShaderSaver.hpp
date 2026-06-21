@@ -120,10 +120,11 @@ class ShaderSaver : public fe::Renderer {
 #else
 		auto window = GetWindow<fe::GLFW3Window>();
 #endif
-
-		window->SetAnyKeyCallback([&]() {
-			window->PrepareClose();
-		});
+		if (fullscreened) {
+			window->SetAnyKeyCallback([&]() {
+				window->PrepareClose();
+			});
+		} else 
 
 		window->SetFramebufferResizeCallback([&](int width, int height) {
 			Resize(width, height);
