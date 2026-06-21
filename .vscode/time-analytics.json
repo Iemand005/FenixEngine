@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 11423944,
-    "totalActiveTime": 828959
+    "totalFocusTime": 11501544,
+    "totalActiveTime": 829460
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -95,7 +95,7 @@
     },
     "src/games/ShaderSavers/ShaderSaverSDL.hpp": {
       "pending": 350602,
-      "focus": 4248185
+      "focus": 4295652
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 74548,
@@ -146,8 +146,8 @@
       "focus": 3872
     },
     "external/SDL/src/video/uikit/SDL_uikitpen.m": {
-      "pending": 3870,
-      "focus": 3870
+      "pending": 4371,
+      "focus": 4371
     }
   },
   "deleted": {
