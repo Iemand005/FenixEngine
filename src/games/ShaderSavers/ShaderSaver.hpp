@@ -18,12 +18,6 @@
 
 #include <filesystem>
 
-#if defined(FE_USE_SDL)
-using NativeWindow = SDL_Window;
-#else
-using NativeWindow = GLFWwindow;
-#endif
-
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
 class ShaderSaver : public fe::Renderer {
@@ -32,7 +26,8 @@ class ShaderSaver : public fe::Renderer {
 	double startX = 0, startY = 0;
 	bool fullscreened = false;
 
-	NativeWindow* nativeWindow = nullptr;
+	GLint uTime;
+	GLint uRes;
 
 	std::filesystem::file_time_type lastWrite;
 
@@ -95,6 +90,9 @@ class ShaderSaver : public fe::Renderer {
 		try {
 			LoadShaders(fe::Shader::Vertex(vs), fe::Shader::Fragment(path));
 			shader->Use();
+
+			uTime = glGetUniformLocation(shader->getId(), "time");
+			uRes = glGetUniformLocation(shader->getId(), "resolution");
 			return true;
 		} catch (...) {
 			return false;
@@ -148,8 +146,7 @@ class ShaderSaver : public fe::Renderer {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		GLint uTime = glGetUniformLocation(shader->getId(), "time");
-		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
+		
 
 		window->GetFramebufferSize(&width, &height);
 		glViewport(0, 0, width, height);
