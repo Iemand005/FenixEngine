@@ -1,10 +1,13 @@
 
 #include "GLFW3Window.hpp"
 
-struct fe::GLFW3Window::Impl {
-	GLFWwindow* window;
-};	// Impl
+namespace fe {
 
+struct GLFW3Window::Impl {
+    GLFWwindow* window = nullptr;
+};
+
+}
 fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden) : IWindow(width, height), title(title) {
 	impl = std::make_unique<Impl>();
 	InitGlfw();
