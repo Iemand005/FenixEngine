@@ -75,7 +75,7 @@ public:
 		auto window = GetWindow<fe::GLFW3Window>();
 		glfwPollEvents();
 
-		if (glfwWindowShouldClose(nativeWindow)) {
+		if (window->ShouldClose()) {
 			window->PrepareClose();
 			return;
 		}
