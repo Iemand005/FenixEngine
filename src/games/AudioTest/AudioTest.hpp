@@ -107,22 +107,22 @@ public:
     SDL_Event event;
     while (!window->ShouldClose()) {
 
-      if (player->touchedGround) {
-        canJump = true;
-      }
+		if (player->touchedGround) {
+			canJump = true;
+		}
 
-      ProcessInput();
-      player->state.rotation.y = -yaw + 90.0f;
-      glm::vec3 pos = player->state.position + cameraOffset;
-      camera->SetPos(pos - camera->front * 6.0f);
-	  camera->UpdateDirection();
-      
-      camera->setFront(glm::normalize(pos - camera->GetPos()));
-      
-      if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
-      
-      Update();
-      Redraw();
+		ProcessInput();
+		player->state.rotation.y = -yaw + 90.0f;
+		glm::vec3 pos = player->state.position + cameraOffset;
+		camera->SetPos(pos - camera->front * 6.0f);
+		camera->UpdateDirection();
+		
+		camera->setFront(glm::normalize(pos - camera->GetPos()));
+		
+		if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
+		
+		Update();
+		Redraw();
     }
 
     Destroy();
