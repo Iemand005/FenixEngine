@@ -205,7 +205,7 @@ public:
 			float real = fftOutput[i].r;
 			float imag = fftOutput[i].i;
 			
-			magnitudes[i] = std::sqrt(real * real + imag * imag);
+			magnitudes[i] = std::sqrt(real * real + imag * imag) / FFT_SIZE;
 		}
 
 		std::cout << "Bass: " << magnitudes[4] << " | Mids: " << magnitudes[20] << "\n";
