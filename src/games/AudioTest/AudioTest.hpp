@@ -119,7 +119,7 @@ public:
 			// camera->p
 			camera->UpdateDirection();
 			
-			camera->setFront(glm::normalize(pos - camera->GetPos()));
+			// camera->setFront(glm::normalize(pos - camera->GetPos()));
 			
 			if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
 			
