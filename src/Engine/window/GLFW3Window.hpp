@@ -15,7 +15,7 @@ class GLFW3Window : public IWindow {
 	std::string title;
 
    public:
-	GLFW3Window(std::string title, int width, int height, bool hidden = false) : IWindow(width, height), title(title) { InitGlfw(); }
+	GLFW3Window(std::string title, int width, int height, bool hidden = false);
 
 	bool InitGlfw(bool tenBit = false);
 

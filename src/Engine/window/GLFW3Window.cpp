@@ -5,6 +5,11 @@ struct fe::GLFW3Window::Impl {
 	GLFWwindow* window;
 };	// Impl
 
+fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden)  : IWindow(width, height), title(title) {
+		impl = std::make_unique<Impl>();
+		InitGlfw();
+	}
+
 bool fe::GLFW3Window::InitGlfw(bool tenBit) {
 #ifdef WAYLAND
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
