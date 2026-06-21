@@ -42,11 +42,19 @@ public:
 		SDL_AudioSpec spec;
 		Uint8* audio_data = nullptr;
 		Uint32 audio_len = 0;
-		
+
 		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &spec, &audio_data, &audio_len))
 		{
 			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
 		}
+
+		SDL_AudioDeviceID device = SDL_OpenAudioDevice(
+			SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+			&spec
+		);
+
+		SDL_QueueAudio(device, audio_data, audio_len);
+		SDL_PauseAudioDevice(device, 0); // start playback
 	}
 
 	void LoadModels() {
