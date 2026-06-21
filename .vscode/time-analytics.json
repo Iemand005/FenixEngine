@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 19358509,
-    "totalActiveTime": 1764329
+    "totalFocusTime": 19388522,
+    "totalActiveTime": 1765045
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -151,7 +151,7 @@
     },
     "src/games/ShaderSavers/FragmentShader.glsl": {
       "pending": 4549,
-      "focus": 71880
+      "focus": 84282
     },
     "src/Engine/XRGame.cpp": {
       "pending": 0,
@@ -166,8 +166,8 @@
       "focus": 4862
     },
     "build/bin/FragmentShader.glsl": {
-      "pending": 1027,
-      "focus": 13098
+      "pending": 1743,
+      "focus": 23905
     },
     ".gitignore": {
       "pending": 1018,
