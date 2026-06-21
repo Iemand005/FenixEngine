@@ -20,10 +20,10 @@ struct GLFW3Window::Impl {
 }
 fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height), title(title) {
 	impl = std::make_unique<Impl>();
-	InitGlfw(fullscreen);
+	InitGlfw(title, fullscreen);
 }
 
-bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
+bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) {
 #ifdef WAYLAND
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
