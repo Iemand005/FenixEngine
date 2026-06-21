@@ -33,7 +33,7 @@ public:
 
 	double GetTime();
 
-	void GetFramebufferSize(int *width, int*height);
+	void GetFramebufferSize(int *width, int *height);
 
 private:
 	struct Impl;

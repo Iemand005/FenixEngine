@@ -79,6 +79,8 @@ class SDLWindow : public IWindow {
 
   double GetTime();
 
+  void GetFramebufferSize(int *width, int *height);
+
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
 #endif

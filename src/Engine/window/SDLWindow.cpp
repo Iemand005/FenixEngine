@@ -320,3 +320,7 @@ void fe::SDLWindow::GetMousePosition(double *x, double *y) {
 double fe::SDLWindow::GetTime() {
 	return SDL_GetTicks() * 0.001f;
 }
+
+void fe::SDLWindow::GetFramebufferSize(int *width, int* height) {
+	SDL_GetWindowSize(impl->window, width, height);
+}

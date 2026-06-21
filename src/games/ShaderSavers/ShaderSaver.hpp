@@ -145,8 +145,8 @@ public:
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
 		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
 
-		// glfwGetFramebufferSize(window, &width, &height);
-		// glViewport(0, 0, width, height);
+		window->GetFramebufferSize(&width, &height);
+		glViewport(0, 0, width, height);
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
