@@ -1,5 +1,7 @@
 #pragma once
+#ifdef FE_EXCLUDE_GLFW
 #define GLFW_INCLUDE_NONE
+#endif
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
 #define NOMINMAX
