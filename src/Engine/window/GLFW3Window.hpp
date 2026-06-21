@@ -10,6 +10,9 @@ namespace fe {
     private:
       GLFWwindow* window;
 
+    
+	struct Impl;
+	std::unique_ptr<Impl> impl;
       std::string title;
 
     public:
@@ -154,6 +157,10 @@ bool InitGlfw(bool tenBit = false) {
   void Destroy() override {
     glfwDestroyWindow(this->window);
     glfwTerminate();
+  }
+
+  void *GetGLFWWindow() {
+    return window;
   }
 };
 }
