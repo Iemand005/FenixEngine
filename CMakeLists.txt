@@ -31,6 +31,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
 set(KISSFFT_TESTS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tools" FORCE)
+set(KISSFFT_TESTS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
+set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tools" FORCE)
 
 add_subdirectory(external/kissfft)
 
