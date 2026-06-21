@@ -36,8 +36,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 		glfwWindowHint(GLFW_ALPHA_BITS, 2);
 	}
 
-	// GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL;
-	GLFWmonitor *monitor = NULL;
+	GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL;
 
 	impl->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
 	if (impl->window == NULL) {
@@ -125,6 +124,11 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 
 	// glfwGetWindowAttrib(window, GLFW_TOUCH);
 	return true;
+}
+
+void fe::GLFW3Window::GetDisplaySize(int *width, int *height) {
+	*width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	*height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 }
 
 void *fe::GLFW3Window::GetWindow() { return impl->window; }
