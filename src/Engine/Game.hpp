@@ -69,23 +69,23 @@ class Game : public Renderer {
   std::unique_ptr<Networker> client = nullptr;
 #endif
 
-  std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
-      std::unordered_map<unsigned char, std::shared_ptr<Character>>();
+	std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
+	std::unordered_map<unsigned char, std::shared_ptr<Character>>();
 
-  bool isConnectedToServer = false;
+	bool isConnectedToServer = false;
 
-  std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
+	std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
 
-  std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
+	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
-  Game() : Renderer() {}
+	Game() : Renderer() {}
 
-  template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-  Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-    Init();
-  }
+	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
+	Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
+		Init();
+	}
 
-  Game(GLADloadproc loadProc) : Renderer(loadProc) {};
+	Game(GLADloadproc loadProc) : Renderer(loadProc) {};
 
 	Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
 		Init();
