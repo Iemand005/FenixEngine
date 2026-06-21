@@ -91,9 +91,9 @@ class Renderer {
 	}
 
 #ifndef FE_EXCLUDE_SDL
-template<typename WindowT = SDLWindow>
-#else
 template<typename WindowT = fe::GLFW3Window>
+#else
+template<typename WindowT = SDLWindow>
 #endif
   
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
