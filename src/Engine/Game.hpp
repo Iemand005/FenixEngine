@@ -40,10 +40,10 @@ namespace fe {
 class Game : public Renderer {
  public:
   // std::unique_ptr<IWindow> window = nullptr;
-  std::unique_ptr<Scene> scene;
-  std::unique_ptr<Camera> camera;
-  std::unique_ptr<ShaderProgram> shader;
-  fe::Timer fpsCounter;
+  // std::unique_ptr<Scene> scene;
+  // std::unique_ptr<Camera> camera;
+  // std::unique_ptr<ShaderProgram> shader;
+  // fe::Timer fpsCounter;
 
   float yaw = -90.0f, pitch = 0.0f;
 
