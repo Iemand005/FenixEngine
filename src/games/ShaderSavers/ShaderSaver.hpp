@@ -6,7 +6,7 @@
 #include "../../engine/Renderer.hpp"
 #include <GLFW/glfw3.h>
 #include <windows.h>
-#include <chrono>
+#include <filesystem>
 
 enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 
@@ -17,11 +17,13 @@ public:
 	bool fullscreened = false;
 
 	GLFWwindow* glfwWindow = nullptr;
-	HWND hwnd = nullptr;
+
+	std::filesystem::file_time_type lastWrite;
 
 	ShaderSaver() : ShaderSaver(500, 500) {}
 	ShaderSaver(int w, int h) : fe::Renderer(w, h, false, true) {}
 
+	// ---------------- RESIZE ----------------
 	void Resize(int w, int h) {
 		if (w <= 0 || h <= 0) return;
 		width = w;
@@ -34,47 +36,39 @@ public:
 		glfwPollEvents();
 
 		if (glfwWindowShouldClose(glfwWindow)) {
-			auto window = GetWindow<fe::GLFW3Window>();
-			window->PrepareClose();
+			// assuming your engine still controls lifetime here
+			PrepareClose();
 			return;
 		}
 
-		// fullscreen mouse exit logic
 		if (fullscreened) {
 			double x, y;
 			glfwGetCursorPos(glfwWindow, &x, &y);
 
 			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
-				auto window = GetWindow<fe::SDLWindow>();
-				window->PrepareClose();
+				PrepareClose();
 			}
 		}
 	}
 
 	// ---------------- FILE RELOAD ----------------
-	bool Reload(const char* path, const char* vs, SDL_Time* out = nullptr) {
-		FILETIME ft;
-		WIN32_FILE_ATTRIBUTE_DATA data;
-
-		if (!GetFileAttributesExA(path, GetFileExInfoStandard, &data))
-			return false;
-
+	bool Reload(const char* path, const char* vs) {
 		try {
-			LoadShaders(fe::Shader::Vertex(vs), fe::Shader::Fragment(path));
+			LoadShaders(
+				fe::Shader::Vertex(vs),
+				fe::Shader::Fragment(path)
+			);
 			shader->Use();
+			return true;
 		}
 		catch (...) {
 			return false;
 		}
+	}
 
-		if (out) {
-			ULARGE_INTEGER ull;
-			ull.LowPart = data.ftLastWriteTime.dwLowDateTime;
-			ull.HighPart = data.ftLastWriteTime.dwHighDateTime;
-			*out = ull.QuadPart;
-		}
-
-		return true;
+	static std::filesystem::file_time_type GetFileTime(const char* path) {
+		std::error_code ec;
+		return std::filesystem::last_write_time(path, ec);
 	}
 
 	// ---------------- RUN ----------------
@@ -85,14 +79,12 @@ public:
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		auto window = GetWindow<fe::SDLWindow>();
-
 		if (mode == ScreenSaverMode::Fullscreen) {
-			const GLFWvidmode* modeVid = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			const GLFWvidmode* vm = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 			glfwWindow = glfwCreateWindow(
-				modeVid->width,
-				modeVid->height,
+				vm->width,
+				vm->height,
 				"ShaderSaver",
 				glfwGetPrimaryMonitor(),
 				nullptr
@@ -113,7 +105,6 @@ public:
 			);
 
 			glfwSetWindowPos(glfwWindow, r.left, r.top);
-			hwnd = parent;
 		}
 		else {
 			glfwWindow = glfwCreateWindow(500, 500, "ShaderSaver", nullptr, nullptr);
@@ -130,14 +121,18 @@ public:
 		const char* vs = R"(
 		#version 330 core
 		void main(){
-			vec2 v[3]=vec2[3](vec2(-1,-1),vec2(3,-1),vec2(-1,3));
+			vec2 v[3]=vec2[3](
+				vec2(-1,-1),
+				vec2(3,-1),
+				vec2(-1,3)
+			);
 			gl_Position=vec4(v[gl_VertexID],0,1);
 		})";
 
-		const char* fs = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+		const char* fs =
+			"E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
 
-		auto last = std::filesystem::last_write_time(fs);
-
+		lastWrite = GetFileTime(fs);
 		Reload(fs, vs);
 
 		GLuint vao;
@@ -145,7 +140,7 @@ public:
 		glBindVertexArray(vao);
 
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
-		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
+		GLint uRes  = glGetUniformLocation(shader->getId(), "resolution");
 
 		glfwGetFramebufferSize(glfwWindow, &width, &height);
 		glViewport(0, 0, width, height);
@@ -153,10 +148,9 @@ public:
 		while (!glfwWindowShouldClose(glfwWindow)) {
 			ProcessInput();
 
-			// hot reload
-			auto now = std::filesystem::last_write_time(fs);
-			if (now != last) {
-				last = now;
+			auto now = GetFileTime(fs);
+			if (now != lastWrite) {
+				lastWrite = now;
 				Reload(fs, vs);
 			}
 
@@ -168,7 +162,7 @@ public:
 			float t = (float)glfwGetTime();
 
 			if (uTime >= 0) glUniform1f(uTime, t);
-			if (uRes >= 0) glUniform2f(uRes, width, height);
+			if (uRes  >= 0) glUniform2f(uRes, width, height);
 
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
