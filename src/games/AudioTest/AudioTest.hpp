@@ -175,6 +175,31 @@ public:
 		Destroy();
 	}
 
+	void UpdateVisualizerData() {
+		if (audioSamples.size() < FFT_SIZE) return; // Wait until buffer fills up
+
+		// 1. Copy fresh samples from our audio record into the FFT array
+		for (int i = 0; i < FFT_SIZE; ++i) {
+			fftInput[i] = audioSamples[i];
+		}
+
+		// 2. Execute Real FFT
+		kiss_fftr(fftConfig, fftInput, fftOutput);
+
+		// 3. Extract the magnitudes (this is your visual bar heights!)
+		float magnitudes[BINS];
+		for (int i = 0; i < BINS; ++i) {
+			float real = fftOutput[i].r;
+			float imag = fftOutput[i].i;
+			
+			// Pythagorean theorem gets the volume/amplitude of this bin
+			magnitudes[i] = std::sqrt(real * real + imag * imag);
+		}
+
+		// TEST PRINT: Print out the low-bass magnitude (Bin 4) and mid-range magnitude (Bin 20)
+		std::cout << "Bass: " << magnitudes[4] << " | Mids: " << magnitudes[20] << "\n";
+	}
+
 	void InitUI() override {}
 
   void DrawUI() override {
