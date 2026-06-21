@@ -72,7 +72,7 @@ public:
 
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
 		auto glfwWindowWrapper = GetWindow<fe::GLFW3Window>();
-		glfwWindow = glfwWindowWrapper->GetGLFWWindow();
+		glfwWindow = glfwWindowWrapper->window;
 
 		if (mode == ScreenSaverMode::Fullscreen) {
 			glfwSetWindowMonitor(
