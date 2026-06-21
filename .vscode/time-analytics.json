@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 13262236,
-    "totalActiveTime": 1233808
+    "totalFocusTime": 13440152,
+    "totalActiveTime": 1237738
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -87,11 +87,11 @@
     },
     "src/games/ShaderSavers/PingPongShaderSaver.hpp": {
       "pending": 3881,
-      "focus": 12948
+      "focus": 13697
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
-      "pending": 366039,
-      "focus": 4738559
+      "pending": 369969,
+      "focus": 4895603
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -103,7 +103,7 @@
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 8076,
-      "focus": 104157
+      "focus": 123286
     },
     "src/games/ShaderSavers/FragmentShaderColourTunnel.glsl": {
       "pending": 0,
@@ -151,7 +151,7 @@
     },
     "src/games/ShaderSavers/FragmentShader.glsl": {
       "pending": 0,
-      "focus": 4695
+      "focus": 20447
     }
   },
   "deleted": {
