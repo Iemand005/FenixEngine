@@ -151,6 +151,6 @@ fe::GLFW3Window::~GLFW3Window() {
   Destroy();
 }
 
-fe::GLFW3Window::GetMousePosition(double &x, double &y) {
+void fe::GLFW3Window::GetMousePosition(double *x, double *y) {
 	glfwGetCursorPos(impl->window, x, y);
 }

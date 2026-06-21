@@ -45,7 +45,7 @@ public:
 
   bool CapturingMouse() {return false;};
 
-  void GetMousePosition(&int x, &int y);
+  	void GetMousePosition(double *x, double *y);
   
   virtual void SwapBuffers() = 0;
 
