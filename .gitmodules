@@ -19,3 +19,6 @@
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "external/kissfft"]
+	path = external/kissfft
+	url = https://github.com/Iemand005/kissfft.git
