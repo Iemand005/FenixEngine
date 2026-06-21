@@ -79,5 +79,6 @@ target_link_libraries(Renderer PRIVATE
 )
 
 target_link_libraries(Renderer PUBLIC
+    glfw
     SDL3::SDL3
 )

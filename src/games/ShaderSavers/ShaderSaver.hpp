@@ -13,7 +13,7 @@ enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 class ShaderSaver : public fe::Renderer {
 public:
 	int width = 0, height = 0;
-	float startX = 0, startY = 0;
+	double startX = 0, startY = 0;
 	bool fullscreened = false;
 
 	GLFWwindow* glfwWindow = nullptr;
