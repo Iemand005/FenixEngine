@@ -193,11 +193,27 @@ class ShaderSaver : public fe::Renderer {
 			window->SwapBuffers();
 
 			if (system.pingPong) {
+				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, system.getRead());
 
 				glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
+				glViewport(0, 0, system.ok wwidth, system.height);
+
+				glDrawArrays(GL_TRIANGLES, 0, 3);
 
 				system.swap();
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glViewport(0, 0, width, heihgt);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+
+				window->SwapBuffers();
+			}
+			else {
+				// single buffer mode: draw directly to screen
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+				window->SwapBuffers();
 			}
 		}
 
