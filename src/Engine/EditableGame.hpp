@@ -66,10 +66,15 @@ namespace fe
 
 
     public:
+
+    void BeginFrame() {
+          ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplSDL3_NewFrame();
+      ImGui::NewFrame();
+    }
+
     void DrawDebugUI() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
-    ImGui::NewFrame();
+
 
     ImGui::Begin("Debug");
     {
