@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 19768746,
-    "totalActiveTime": 1788761
+    "totalFocusTime": 19934373,
+    "totalActiveTime": 1789778
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -91,7 +91,7 @@
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 624715,
-      "focus": 7576723
+      "focus": 7598759
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -111,7 +111,7 @@
     },
     "src/Engine/physics/PhysicsObject.cpp": {
       "pending": 0,
-      "focus": 1507
+      "focus": 4557
     },
     "external/SDL/src/video/uikit/SDL_uikitview.h": {
       "pending": 27034,
@@ -166,8 +166,8 @@
       "focus": 4862
     },
     "build/bin/FragmentShader.glsl": {
-      "pending": 3310,
-      "focus": 59857
+      "pending": 4327,
+      "focus": 66585
     },
     ".gitignore": {
       "pending": 1018,
