@@ -52,7 +52,8 @@ public:
 			SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
 			&spec
 		);
-
+		// SDL_PlayAu
+		// SDL_AUdio
 		SDL_QueueAudio(device, audio_data, audio_len);
 		SDL_PauseAudioDevice(device, 0); // start playback
 	}
