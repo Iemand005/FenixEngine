@@ -75,7 +75,12 @@ public:
 			return;
 		}
 
-		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+		SDL_AudioSpec targetSpec;
+		targetSpec.format = SDL_AUDIO_F32;
+		targetSpec.channels = 2;
+		targetSpec.freq = spec.freq;
+
+		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &targetSpec, nullptr, nullptr);
 
 		SDL_PutAudioStreamData(stream, data, len);
 
