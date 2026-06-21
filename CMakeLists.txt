@@ -164,6 +164,26 @@ target_link_libraries(ShaderSaver PRIVATE Renderer)
 
 set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_executable(ShaderSaverSDL
+    WIN32
+    ${SHADERSAVERS_SOURCE_FILES}
+    src/games/ShaderSavers/main.cpp
+    src/games/ShaderSavers/ShaderSaver.hpp
+)
+
+target_include_directories(ShaderSaverSDL PRIVATE
+    include
+    src
+    external
+    external/imgui
+    external/glfw/include
+    src/engine
+)
+
+target_link_libraries(ShaderSaverSDL PRIVATE Renderer)
+
+set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 # set_target_properties(ShaderSaver PROPERTIES SUFFIX ".scr")
 
 if(WIN32)
