@@ -131,6 +131,7 @@ public:
 		}
 		if (mode != ScreenSaverMode::Preview)
 			window->Show();
+		else window->AttachToNativeParent(parent);
 
 		const char* vs = R"(
 			#version 330 core
