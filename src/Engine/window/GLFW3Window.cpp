@@ -137,3 +137,7 @@ void fe::GLFW3Window::Destroy() {
 	glfwDestroyWindow(impl->window);
 	glfwTerminate();
 }
+
+fe::GLFW3Window::~GLFW3Window() {
+  Destroy();
+}
