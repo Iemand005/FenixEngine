@@ -8,8 +8,7 @@
 
 namespace fe {
 	class GLFW3Window : public IWindow {
-		
-		public:
+	public:
 		GLFW3Window(std::string title, int width, int height, bool hidden = false);
 		~GLFW3Window();
 		
@@ -28,6 +27,7 @@ namespace fe {
 		void Destroy() override;
 		
 		void* GetGLFWWindow();
+		
 	private:
 		struct Impl;
 		std::unique_ptr<Impl> impl;
