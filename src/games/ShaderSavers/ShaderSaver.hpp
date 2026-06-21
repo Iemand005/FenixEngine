@@ -47,6 +47,14 @@ class ShaderSaver : public fe::Renderer {
 				}
 			}
 		}
+
+		if (fullscreened) {
+			float x, y;
+			SDL_GetMouseState(&x, &y);
+
+			if (abs(x - startX) > 3 || abs(y - startY) > 3)
+				window->PrepareClose();
+		}
 	}
 
 	bool Reload(const char* path, const char* vs, SDL_Time* out = nullptr) {
@@ -107,15 +115,6 @@ class ShaderSaver : public fe::Renderer {
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
-
-			if (fullscreened)
-			{
-				float x, y;
-				SDL_GetMouseState(&x, &y);
-
-				if (abs(x - startX) > 3 || abs(y - startY) > 3)
-					window->PrepareClose();
-			}
 
 			SDL_PathInfo i;
 			if (SDL_GetPathInfo(fs, &i) && i.modify_time > last) Reload(fs, vs, &last);
