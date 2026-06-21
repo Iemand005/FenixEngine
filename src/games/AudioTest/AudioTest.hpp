@@ -61,8 +61,6 @@ public:
 
 	int mapIndex = 0;
 
-	float magnitudes[BINS];
-
 	AudioTest() : AudioTest(800, 640) {}
 
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
