@@ -6,14 +6,12 @@
 
 namespace fe {
 
-  class GLFW3Window : public IWindow {
-    private:
-      GLFWwindow* window;
-
-    
-	struct Impl;
-	std::unique_ptr<Impl> impl;
-      std::string title;
+	class GLFW3Window : public IWindow {
+		private:
+		
+		struct Impl;
+		std::unique_ptr<Impl> impl;
+		std::string title;
 
     public:
 
@@ -42,13 +40,13 @@ bool InitGlfw(bool tenBit = false) {
       glfwWindowHint(GLFW_ALPHA_BITS, 2);
     }
 
-    this->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
-    if (window == NULL) {
+    impl->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
+    if (impl->window == NULL) {
       std::cout << "Failed to create GLFW window" << std::endl;
       glfwTerminate();
       return false;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(impl->window);
 
     // glfwSwapInterval(vsync ? 1 : 0);  // Enable vsync
     EnableVSync();
@@ -58,7 +56,7 @@ bool InitGlfw(bool tenBit = false) {
     //   return false;
     // }
 
-    glfwSetWindowUserPointer(window, this);
+    glfwSetWindowUserPointer(impl->window, this);
 
     // glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
     //   auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
@@ -73,7 +71,7 @@ bool InitGlfw(bool tenBit = false) {
     //   if (io.WantCaptureMouse) return;
     // });
 
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
+    glfwSetCursorPosCallback(impl->window, [](GLFWwindow* window, double xPos, double yPos) {
       if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
         // ImGui::SetNextFrameWantCaptureMouse(false);
         return;
