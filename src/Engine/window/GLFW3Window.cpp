@@ -38,7 +38,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 
 	GLFWmonitor* monitor = fullscreen ? glfwGetPrimaryMonitor() : NULL;
 
-	if (fullscreen && fullscreen) {
+	if (fullscreen && monitor) {
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 		width = mode->width;
 		height = mode->height;
