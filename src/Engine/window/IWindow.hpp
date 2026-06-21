@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 namespace fe {
   using ResizeDelegate = std::function<void(int, int)>;
   using MouseMoveDelegate = std::function<void(int, int)>;
