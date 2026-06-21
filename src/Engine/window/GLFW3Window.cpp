@@ -208,7 +208,7 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
     HWND parentHwnd = (HWND)parent;
 
     // Get GLFW internal Win32 HWND
-    HWND childHwnd = glfwGetWin32Window(m_nativeWindow);
+    HWND childHwnd = glfwGetWin32Window(impl->window);
 
     // Change window style to child window
     LONG style = GetWindowLong(childHwnd, GWL_STYLE);
