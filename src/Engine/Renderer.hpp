@@ -82,17 +82,17 @@ class Renderer {
 
   Renderer(GLADloadproc loadProc);
 
-  Renderer(int width, int height, bool skipInit = false, bool hidden = false) : Renderer() {
-    NewWindow(width, height, hidden);
+  Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
+    NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
   }
   
 #ifndef FE_EXCLUDE_SDL
-  void NewWindow(int width, int height, bool hidden = false) {
+  void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
     this->window = MakeWindow("Renderer", width, height, hidden);
   }
   
   template<typename WindowT = SDLWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false) {
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
     std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden);
 
@@ -107,14 +107,15 @@ class Renderer {
     return std::move(window);
   }
 #else
-  void NewWindow(int width, int height, bool hidden = false) {
-    this->window = MakeWindow("Renderer", width, height, hidden);
+  void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
+    this->window = MakeWindow("Renderer", width, height, hidden, fullscreen);
   }
+#endif
   
   template<typename WindowT = fe::GLFW3Window>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false) {
+  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden);
+    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
 
     window->resizeEvent = [this](int width, int height) {
       this->Resize(width, height);
@@ -127,7 +128,6 @@ class Renderer {
     return std::move(window);
   }
 
-#endif
 
   // void SetShaderProgram(ShaderProgram program) {
   //   this->shader = std::make_unique
