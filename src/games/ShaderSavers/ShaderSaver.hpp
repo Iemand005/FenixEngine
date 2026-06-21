@@ -72,6 +72,7 @@ public:
 				window->PrepareClose();
 		}
 #else
+		auto window = GetWindow<fe::GLFW3Window>();
 		glfwPollEvents();
 
 		if (glfwWindowShouldClose(nativeWindow)) {
@@ -81,7 +82,7 @@ public:
 
 		if (fullscreened) {
 			double x, y;
-			glfwGetCursorPos(window->GetWindow(), &x, &y);
+			glfwGetCursorPos((GLFWwindow*)window->GetWindow(), &x, &y);
 
 			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
 				window->PrepareClose();

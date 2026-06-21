@@ -2,7 +2,7 @@
   "version": "1.0",
   "project": {
     "totalFocusTime": 11501544,
-    "totalActiveTime": 829460
+    "totalActiveTime": 968681
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -51,7 +51,7 @@
     },
     "src/Engine/window/SDLWindow.hpp": {
       "pending": 3888,
-      "focus": 29096
+      "focus": 41712
     },
     "src/games/ShaderSavers/FragmentShaderIllusion.glsl": {
       "pending": 26596,
@@ -75,7 +75,7 @@
     },
     "src/Engine/window/SDLWindow.cpp": {
       "pending": 3878,
-      "focus": 8084
+      "focus": 12961
     },
     "src/Engine/Renderer.cpp": {
       "pending": 0,
@@ -95,11 +95,11 @@
     },
     "src/games/ShaderSavers/ShaderSaverSDL.hpp": {
       "pending": 350602,
-      "focus": 4295652
+      "focus": 4344493
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
-      "pending": 74548,
-      "focus": 626434
+      "pending": 82040,
+      "focus": 685884
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -122,32 +122,32 @@
       "focus": 1507
     },
     "external/SDL/src/video/uikit/SDL_uikitview.h": {
-      "pending": 694,
-      "focus": 3871
+      "pending": 27034,
+      "focus": 30211
     },
     "src/Engine/EditableGame.hpp": {
       "pending": 3879,
       "focus": 3879
     },
     "external/SDL/src/core/haiku/SDL_BeApp.cc": {
-      "pending": 3877,
-      "focus": 3877
+      "pending": 30232,
+      "focus": 30232
     },
     "external/SDL/src/core/haiku/SDL_BApp.h": {
-      "pending": 3875,
-      "focus": 3875
+      "pending": 30229,
+      "focus": 30229
     },
     "external/SDL/src/video/uikit/SDL_uikitview.m": {
-      "pending": 3874,
-      "focus": 3874
+      "pending": 30215,
+      "focus": 30215
     },
     "external/SDL/src/video/uikit/SDL_uikitmetalview.m": {
-      "pending": 3872,
-      "focus": 3872
+      "pending": 30211,
+      "focus": 30211
     },
     "external/SDL/src/video/uikit/SDL_uikitpen.m": {
       "pending": 4371,
-      "focus": 4371
+      "focus": 30208
     }
   },
   "deleted": {
