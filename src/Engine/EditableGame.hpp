@@ -30,10 +30,10 @@ namespace fe
     EditableGame(int width, int height, bool vr = false) : EditableGameBase(width, height, vr) {
       this->physicsEngine->DisableGravity();
       
-      SDL_Init(SDL_INIT_VIDEO);
+      // SDL_Init(SDL_INIT_VIDEO);
 
-      InitImGUI();
-      InitUI();
+      // InitImGUI();
+      // InitUI();
     }
 
     // virtual void DrawUI();
