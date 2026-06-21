@@ -39,6 +39,8 @@ class ShaderSaver : public fe::Renderer {
 		width = w;
 		height = h;
 		glViewport(0, 0, w, h);
+
+		if (uRes >= 0) glUniform2f(uRes, width, height);
 	}
 
 	void ProcessInput() {
@@ -149,9 +151,8 @@ class ShaderSaver : public fe::Renderer {
 		
 
 		window->GetFramebufferSize(&width, &height);
-		glViewport(0, 0, width, height);
+		Resize(width, height)
 
-		if (uRes >= 0) glUniform2f(uRes, width, height);
 
 		while (!window->ShouldClose()) {
 			ProcessInput();
