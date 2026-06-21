@@ -118,7 +118,7 @@ class ShaderSaver : public fe::Renderer {
 		});
 
 		window->SetFramebufferResizeCallback([&](int width, int height) {
-
+			Resize(width, height);
 		});
 
 		if (mode == ScreenSaverMode::Fullscreen) {
