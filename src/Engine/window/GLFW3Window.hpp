@@ -29,6 +29,8 @@ public:
 
 	void GetMousePosition(double *x, double *y);
 
+	bool ShouldClose();
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

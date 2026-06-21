@@ -154,3 +154,7 @@ fe::GLFW3Window::~GLFW3Window() {
 void fe::GLFW3Window::GetMousePosition(double *x, double *y) {
 	glfwGetCursorPos(impl->window, x, y);
 }
+
+bool fe::GLFW3Window::ShouldClose() {
+	return glfwWindowShouldClose(impl->window);
+}
