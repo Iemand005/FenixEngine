@@ -119,15 +119,11 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 		// game->camera->front = glm::normalize(direction);
 	});
 
-	glfwSetKeyCallback(impl->window,
-    [](GLFWwindow* window, int key, int scancode, int action, int mods)
-    {
+	glfwSetKeyCallback(impl->window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
         auto self = static_cast<GLFW3Window*>(glfwGetWindowUserPointer(window));
 
         if (action == GLFW_PRESS && self->onAnyKey)
-        {
             self->onAnyKey();
-        }
     });
 
 	glfwSetFramebufferSizeCallback(impl->window, [](GLFWwindow* window, int width, int height) {

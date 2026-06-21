@@ -2,7 +2,7 @@
   "version": "1.0",
   "project": {
     "totalFocusTime": 17041852,
-    "totalActiveTime": 1532710
+    "totalActiveTime": 1537150
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -98,8 +98,8 @@
       "focus": 15299
     },
     "src/Engine/window/GLFW3Window.cpp": {
-      "pending": 189499,
-      "focus": 1060027
+      "pending": 193939,
+      "focus": 1092797
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 9089,
@@ -156,6 +156,14 @@
     "src/Engine/XRGame.cpp": {
       "pending": 0,
       "focus": 2475
+    },
+    "external/glfw/src/input.c": {
+      "pending": 0,
+      "focus": 6344
+    },
+    "external/glfw/include/GLFW/glfw3.h": {
+      "pending": 0,
+      "focus": 4862
     }
   },
   "deleted": {
