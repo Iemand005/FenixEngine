@@ -77,6 +77,8 @@ class SDLWindow : public IWindow {
 
   void Destroy() override;
 
+  double GetTime();
+
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
 #endif

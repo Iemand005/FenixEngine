@@ -316,3 +316,7 @@ SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 void fe::SDLWindow::GetMousePosition(double *x, double *y) {
 	SDL_GetMouseState((float*)x, (float*)y);
 }
+
+double fe::SDLWindow::GetTime() {
+	return SDL_GetTicks() * 0.001f;
+}

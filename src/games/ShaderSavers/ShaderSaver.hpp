@@ -4,10 +4,10 @@
 #define FE_EXCLUDE_SDL
 
 #include "../../engine/Renderer.hpp"
-#if defined(FE_USE_GLFW)
-    #include <GLFW/glfw3.h>
-#elif defined(FE_USE_SDL)
-    #include <SDL.h>
+#if defined(FE_USE_SDL)
+#include <SDL.h>
+#else
+#include <GLFW/glfw3.h>
 #endif
 #include <windows.h>
 #include <filesystem>
@@ -108,6 +108,7 @@ public:
 	}
 
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
+		#ifdef
 		auto glfwWindowWrapper = GetWindow<fe::GLFW3Window>();
 		glfwWindow = (GLFWwindow*)glfwWindowWrapper->GetWindow();
 
@@ -171,7 +172,7 @@ public:
 
 			shader->Use();
 
-			float t = (float)glfwGetTime();
+			float t = (float)window->GetTime();
 
 			if (uTime >= 0)
 				glUniform1f(uTime, t);
