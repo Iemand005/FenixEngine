@@ -204,40 +204,40 @@ void fe::SDLWindow::Resize(int w, int h) {
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
-    if (!parent)
-        return;
+	if (!parent)
+		return;
 
-    SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
-    if (!props)
-        return;
+	SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
+	if (!props)
+		return;
 
-    HWND hwnd = (HWND)SDL_GetPointerProperty(
-        props,
-        SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-        NULL
-    );
+	HWND hwnd = (HWND)SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+		NULL
+	);
 
-    if (!hwnd)
-        return;
+	if (!hwnd)
+		return;
 
-    SetParent(hwnd, (HWND)parent);
+	SetParent(hwnd, (HWND)parent);
 
-    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+	LONG style = GetWindowLong(hwnd, GWL_STYLE);
 
-    style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_THICKFRAME);
-    style |= WS_CHILD;
+	style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_THICKFRAME);
+	style |= WS_CHILD;
 
-    SetWindowLong(hwnd, GWL_STYLE, style);
+	SetWindowLong(hwnd, GWL_STYLE, style);
 
-    SetWindowPos(
-        hwnd,
-        NULL,
-        0, 0, 0, 0,
-        SWP_FRAMECHANGED |
-        SWP_NOZORDER |
-        SWP_NOACTIVATE |
-        SWP_SHOWWINDOW
-    );
+	SetWindowPos(
+		hwnd,
+		NULL,
+		0, 0, 0, 0,
+		SWP_FRAMECHANGED |
+		SWP_NOZORDER |
+		SWP_NOACTIVATE |
+		SWP_SHOWWINDOW
+	);
 }
 #endif
 
