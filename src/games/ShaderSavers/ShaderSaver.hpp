@@ -201,14 +201,14 @@ class ShaderSaver : public fe::Renderer {
 				system.swap();
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glViewport(0, 0, width, height);
+				// glViewport(0, 0, width, height);
 
 				glBindTexture(GL_TEXTURE_2D, system.getRead());
 			} else {
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glViewport(0, 0, width, height);
+				// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				// glViewport(0, 0, width, height);
 			}
-			
+
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
 			window->SwapBuffers();
