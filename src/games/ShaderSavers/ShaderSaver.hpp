@@ -182,35 +182,40 @@ class ShaderSaver : public fe::Renderer {
 		while (!window->ShouldClose()) {
 			ProcessInput();
 
-			if (mode != ScreenSaverMode::Fullscreen) HotReload(fs, vs);
+			if (mode != ScreenSaverMode::Fullscreen)
+				HotReload(fs, vs);
 
 			float t = (float)window->GetTime();
-
-			if (uTime >= 0) glUniform1f(uTime, t);
-
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-
-			window->SwapBuffers();
+			if (uTime >= 0)
+				glUniform1f(uTime, t);
 
 			if (system.pingPong) {
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, system.getRead());
-
+				// --- PASS 1: render simulation into FBO ---
 				glBindFramebuffer(GL_FRAMEBUFFER, system.getWrite());
 				glViewport(0, 0, system.width, system.height);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, system.getRead());
 
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 
 				system.swap();
 
+				// --- PASS 2: present to screen ---
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				glViewport(0, 0, width, height);
-				glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			} else {
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glBindTexture(GL_TEXTURE_2D, system.getRead());
 				glDrawArrays(GL_TRIANGLES, 0, 3);
 			}
+			else {
+				// --- SINGLE PASS: direct to screen ---
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glViewport(0, 0, width, height);
+
+				glDrawArrays(GL_TRIANGLES, 0, 3);
+			}
+
 			window->SwapBuffers();
 		}
 
