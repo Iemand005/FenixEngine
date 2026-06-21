@@ -90,11 +90,12 @@ class Renderer {
 		this->window = MakeWindow("Renderer", width, height, hidden, fullscreen);
 	}
 
-#ifndef FE_EXCLUDE_SDL
+	#if defined(FE_USE_SDL)
+using DefaultWindow = fe::SDLWindow;
 #else
-// template<typename WindowT = SDLWindow>
+using DefaultWindow = fe::GLFW3Window;
 #endif
-template<typename WindowT = fe::GLFW3Window>
+template<typename WindowT = DefaultWindow>
   std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
     static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
     std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
