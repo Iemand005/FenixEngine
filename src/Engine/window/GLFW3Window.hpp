@@ -41,6 +41,10 @@ public:
 	void Hide();
   	void Show();
 
+#ifdef _WIN32
+	void AttachToNativeParent(void* parent);
+#endif
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;
