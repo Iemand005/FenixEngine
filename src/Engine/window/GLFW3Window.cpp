@@ -52,7 +52,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 		height = mode->height;
 	}
 
-	impl->window = glfwCreateWindow(width, height, "FoxEngine", monitor, NULL);
+	impl->window = glfwCreateWindow(width, height, "FenixEngine", monitor, NULL);
 	if (impl->window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
