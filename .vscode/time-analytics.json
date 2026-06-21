@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 23297347,
+    "totalFocusTime": 23300841,
     "totalActiveTime": 1792328
   },
   "files": {
@@ -167,7 +167,7 @@
     },
     "build/bin/FragmentShader.glsl": {
       "pending": 6877,
-      "focus": 389060
+      "focus": 393653
     },
     ".gitignore": {
       "pending": 1018,
