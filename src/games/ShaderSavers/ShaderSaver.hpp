@@ -170,7 +170,6 @@ public:
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 
-			// glfwSwapBuffers(window);
 			window->SwapBuffers();
 		}
 
