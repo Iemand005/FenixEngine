@@ -2,7 +2,7 @@
   "version": "1.0",
   "project": {
     "totalFocusTime": 12977919,
-    "totalActiveTime": 1228919
+    "totalActiveTime": 1233808
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -11,7 +11,7 @@
     },
     "src/Engine/Renderer.hpp": {
       "pending": 70116,
-      "focus": 515588
+      "focus": 545184
     },
     "src/Engine/ShaderProgram.hpp": {
       "pending": 35836,
@@ -91,11 +91,11 @@
     },
     "src/games/ShaderSavers/PingPongShaderSaver.hpp": {
       "pending": 3881,
-      "focus": 12467
+      "focus": 12948
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
-      "pending": 361150,
-      "focus": 4586226
+      "pending": 366039,
+      "focus": 4634078
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
