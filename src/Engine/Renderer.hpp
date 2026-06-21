@@ -40,10 +40,10 @@
 #include "window/GLFW3Window.hpp"
 #endif
 
-#if defined(FE_USE_SDL)
-using DefaultWindow = fe::SDLWindow;
-#else
+#if defined(FE_USE_GLFW)
 using DefaultWindow = fe::GLFW3Window;
+#else
+using DefaultWindow = fe::SDLWindow;
 #endif
 
 #define WAYLAND
