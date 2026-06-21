@@ -70,47 +70,22 @@ public:
 		return std::filesystem::last_write_time(path, ec);
 	}
 
-	// ---------------- RUN ----------------
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
-		glfwInit();
-
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		auto glfwWindowWrapper = GetWindow<fe::GLFW3Window>();
+		glfwWindow = glfwWindowWrapper->GetGLFWWindow();
 
 		if (mode == ScreenSaverMode::Fullscreen) {
-			const GLFWvidmode* vm = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-			glfwWindow = glfwCreateWindow(
-				vm->width,
-				vm->height,
-				"ShaderSaver",
+			glfwSetWindowMonitor(
+				glfwWindow,
 				glfwGetPrimaryMonitor(),
-				nullptr
-			);
+				0,
+				0,
+				width,
+				height,
+				GLFW_DONT_CARE);
 
 			fullscreened = true;
 		}
-		else if (mode == ScreenSaverMode::Preview) {
-			RECT r;
-			GetClientRect(parent, &r);
-
-			glfwWindow = glfwCreateWindow(
-				r.right - r.left,
-				r.bottom - r.top,
-				"ShaderSaver",
-				nullptr,
-				nullptr
-			);
-
-			glfwSetWindowPos(glfwWindow, r.left, r.top);
-		}
-		else {
-			glfwWindow = glfwCreateWindow(500, 500, "ShaderSaver", nullptr, nullptr);
-		}
-
-		glfwMakeContextCurrent(glfwWindow);
-		glfwSwapInterval(1);
 
 		if (mode == ScreenSaverMode::Fullscreen) {
 			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -118,15 +93,15 @@ public:
 		}
 
 		const char* vs = R"(
-		#version 330 core
-		void main(){
-			vec2 v[3]=vec2[3](
-				vec2(-1,-1),
-				vec2(3,-1),
-				vec2(-1,3)
-			);
-			gl_Position=vec4(v[gl_VertexID],0,1);
-		})";
+			#version 330 core
+			void main() {
+				vec2 v[3]=vec2[3](
+					vec2(-1,-1),
+					vec2(3,-1),
+					vec2(-1,3)
+				);
+				gl_Position=vec4(v[gl_VertexID],0,1);
+			})";
 
 		const char* fs =
 			"E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
@@ -139,12 +114,12 @@ public:
 		glBindVertexArray(vao);
 
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
-		GLint uRes  = glGetUniformLocation(shader->getId(), "resolution");
+		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
 
 		glfwGetFramebufferSize(glfwWindow, &width, &height);
 		glViewport(0, 0, width, height);
 
-		while (!glfwWindowShouldClose(glfwWindow)) {
+		while (!window->ShouldClose()) {
 			ProcessInput();
 
 			auto now = GetFileTime(fs);
@@ -160,8 +135,11 @@ public:
 
 			float t = (float)glfwGetTime();
 
-			if (uTime >= 0) glUniform1f(uTime, t);
-			if (uRes  >= 0) glUniform2f(uRes, width, height);
+			if (uTime >= 0)
+				glUniform1f(uTime, t);
+
+			if (uRes >= 0)
+				glUniform2f(uRes, width, height);
 
 			glBindVertexArray(vao);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -170,8 +148,6 @@ public:
 		}
 
 		glDeleteVertexArrays(1, &vao);
-		glfwDestroyWindow(glfwWindow);
-		glfwTerminate();
 
 		Destroy();
 	}
