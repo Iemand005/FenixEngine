@@ -161,6 +161,9 @@ public:
 				canJump = true;
 			}
 
+			// UpdayeVi
+			UpdateVisualizerData();
+
 			ProcessInput();
 			// player->state.rotation.y = -yaw + 90.0f;
 			glm::vec3 pos = player->state.position + cameraOffset;
