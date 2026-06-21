@@ -5,7 +5,7 @@
 
 #include "../../engine/Renderer.hpp"
 #if defined(FE_USE_SDL)
-#include <SDL.h>
+#include <SDL/SDL.h>
 #else
 #include <GLFW/glfw3.h>
 #endif
