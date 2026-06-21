@@ -135,7 +135,7 @@ class ShaderSaver : public fe::Renderer {
 				gl_Position=vec4(v[gl_VertexID],0,1);
 			})";
 
-		const char* fs = "E:\\FenixEngine\\src\\games\\ShaderSavers\\FragmentShader.glsl";
+		const char* fs = "FragmentShader.glsl";
 
 		lastWrite = GetFileTime(fs);
 		Reload(fs, vs);
