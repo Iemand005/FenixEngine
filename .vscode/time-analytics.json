@@ -2,7 +2,7 @@
   "version": "1.0",
   "project": {
     "totalFocusTime": 15270415,
-    "totalActiveTime": 1364762
+    "totalActiveTime": 1366712
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -98,8 +98,8 @@
       "focus": 15299
     },
     "src/Engine/window/GLFW3Window.cpp": {
-      "pending": 99932,
-      "focus": 444269
+      "pending": 101882,
+      "focus": 452905
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 9089,
