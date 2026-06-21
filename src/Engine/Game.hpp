@@ -87,19 +87,9 @@ class Game : public Renderer {
 
   Game(GLADloadproc loadProc) : Renderer(loadProc) {};
 
-#ifndef FE_EXCLUDE_SDL
-  Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
-    Init();
-  }
-
-  void NewWindow(int width, int height) {
-    window = MakeWindow("Game", width, height);
-    window->mouseMoveEvent = [this](int x, int y) {
-      MouseMove(x, y);
-    };
-    window->StartMouseCapture();
-  }
-#endif
+	Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
+		Init();
+	}
 
   void InitGL();
 

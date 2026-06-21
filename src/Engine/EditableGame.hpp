@@ -32,8 +32,8 @@ namespace fe
       
       // SDL_Init(SDL_INIT_VIDEO);
 
-      // InitImGUI();
-      // InitUI();
+      InitImGUI();
+      InitUI();
     }
 
     // virtual void DrawUI();
