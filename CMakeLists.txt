@@ -201,7 +201,7 @@ target_include_directories(AudioTest PRIVATE
     src/engine
 )
 
-target_link_libraries(AudioTest PRIVATE Renderer)
+target_link_libraries(AudioTest PRIVATE Engine)
 
 set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
