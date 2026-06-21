@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 13209106,
+    "totalFocusTime": 13262236,
     "totalActiveTime": 1233808
   },
   "files": {
@@ -65,10 +65,6 @@
       "pending": 26049,
       "focus": 226744
     },
-    "src/games/ShaderSavers/FragmentShader.glsl": {
-      "pending": 18858,
-      "focus": 174149
-    },
     "src/games/ShaderSavers/FragmentShaderColourSwirl.glsl": {
       "pending": 0,
       "focus": 6849
@@ -95,7 +91,7 @@
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
       "pending": 366039,
-      "focus": 4681835
+      "focus": 4738559
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
@@ -111,7 +107,7 @@
     },
     "src/games/ShaderSavers/FragmentShaderColourTunnel.glsl": {
       "pending": 0,
-      "focus": 5954
+      "focus": 6900
     },
     "src/Engine/physics/PhysicsObject.cpp": {
       "pending": 0,
@@ -148,6 +144,14 @@
     "external/SDL/test_malloc_alloca.c": {
       "pending": 0,
       "focus": 5528
+    },
+    "src/games/ShaderSavers/FragmentShaderGradient.glsl": {
+      "pending": 18858,
+      "focus": 183998
+    },
+    "src/games/ShaderSavers/FragmentShader.glsl": {
+      "pending": 0,
+      "focus": 4695
     }
   },
   "deleted": {
