@@ -2,12 +2,16 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
-#include "../../engine/Renderer.hpp"
 #if defined(FE_USE_SDL)
 #define FE_EXCLUDE_GLFW
-#include <SDL3/SDL.h>
 #else
 #define FE_EXCLUDE_SDL
+#endif
+
+#include "../../engine/Renderer.hpp"
+#if defined(FE_USE_SDL)
+#include <SDL3/SDL.h>
+#else
 #include <GLFW/glfw3.h>
 #endif
 #include <windows.h>
