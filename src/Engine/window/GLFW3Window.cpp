@@ -171,3 +171,11 @@ bool fe::GLFW3Window::HideMouse() {
 	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	return true;
 }
+
+void fe::GLFW3Window::Show() {
+	// TODO: impl
+}
+
+void fe::GLFW3Window::Hide() {
+	
+}
