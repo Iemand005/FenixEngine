@@ -200,6 +200,14 @@ if(WIN32)
         target_link_options(main PRIVATE
             $<$<CONFIG:Debug>:/DEBUG>
         )
+
+        target_compile_options(AudioTest PRIVATE
+            $<$<CONFIG:Debug>:/Zi>
+        )
+
+        target_link_options(AudioTest PRIVATE
+            $<$<CONFIG:Debug>:/DEBUG>
+        )
     endif()
 
     # Base editor
