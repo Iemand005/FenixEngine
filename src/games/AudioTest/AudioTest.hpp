@@ -36,7 +36,7 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
     for (int i = 0; i < frames; ++i) {
         float monoSample = 0.0f;
         for (int c = 0; c < spec->channels; ++c) {
-            monoSample += buffer[i * spec->channels + c];
+            monoSample += ((float*)buffer)[i * spec->channels + c];
         }
         audioSamples.push_back(monoSample / spec->channels);
     }
@@ -190,14 +190,12 @@ public:
 
 		Destroy();
 	}
-	#define M_PI 3.141592
 
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE) return;
 
 		for (int i = 0; i < FFT_SIZE; ++i) {
-			float multiplier = 0.5f * (1.0f - std::cos(2.0f * M_PI * i / (FFT_SIZE - 1)));
-			fftInput[i] = audioSamples[i] * multiplier;
+			fftInput[i] = audioSamples[i];
 		}
 
 		kiss_fftr(fftConfig, fftInput, fftOutput);
@@ -207,7 +205,7 @@ public:
 			float real = fftOutput[i].r;
 			float imag = fftOutput[i].i;
 			
-			magnitudes[i] = std::sqrt(real * real + imag * imag) / FFT_SIZE;
+			magnitudes[i] = std::sqrt(real * real + imag * imag);
 		}
 
 		std::cout << "Bass: " << magnitudes[4] << " | Mids: " << magnitudes[20] << "\n";
