@@ -5,7 +5,7 @@ struct fe::GLFW3Window::Impl {
 	GLFWwindow* window;
 };	// Impl
 
-fe::GLFW3Window::InitGlfw() {
+bool fe::GLFW3Window::InitGlfw() {
 #ifdef WAYLAND
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -113,3 +113,5 @@ fe::GLFW3Window::InitGlfw() {
 	// glfwGetWindowAttrib(window, GLFW_TOUCH);
 	return true;
 }
+
+vodi *fe::GLFW3Window::GetGLFWWindow() { return impl->window; }

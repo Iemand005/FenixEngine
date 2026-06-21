@@ -40,6 +40,6 @@ class GLFW3Window : public IWindow {
 		glfwTerminate();
 	}
 
-	void* GetGLFWWindow() { return window; }
+	void* GetGLFWWindow();
 };
 }  // namespace fe
