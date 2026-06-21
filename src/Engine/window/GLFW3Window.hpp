@@ -33,6 +33,8 @@ public:
 
 	double GetTime();
 
+	void GetFramebufferSize(int *width, int*height);
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

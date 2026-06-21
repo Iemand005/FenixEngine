@@ -108,27 +108,17 @@ public:
 	}
 
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
-		#ifdef
-		auto glfwWindowWrapper = GetWindow<fe::GLFW3Window>();
-		glfwWindow = (GLFWwindow*)glfwWindowWrapper->GetWindow();
+#if defined(FE_USE_SDL)
+		auto window = GetWindow<fe::SDLWindow>();
+#else
+		auto window = GetWindow<fe::GLFW3Window>();
+#endif
 
 		if (mode == ScreenSaverMode::Fullscreen) {
-			glfwSetWindowMonitor(
-				glfwWindow,
-				glfwGetPrimaryMonitor(),
-				0,
-				0,
-				width,
-				height,
-				GLFW_DONT_CARE);
-
-			// window->GoBorderlessFullscreen();
-			// window->Show();
-
 			fullscreened = true;
 			
-			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-			glfwGetCursorPos(glfwWindow, &startX, &startY);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+			glfwGetCursorPos(window, &startX, &startY);
 		}
 
 		const char* vs = R"(
@@ -155,8 +145,8 @@ public:
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
 		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
 
-		glfwGetFramebufferSize(glfwWindow, &width, &height);
-		glViewport(0, 0, width, height);
+		// glfwGetFramebufferSize(window, &width, &height);
+		// glViewport(0, 0, width, height);
 
 		while (!window->ShouldClose()) {
 			ProcessInput();

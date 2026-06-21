@@ -162,3 +162,7 @@ bool fe::GLFW3Window::ShouldClose() {
 double fe::GLFW3Window::GetTime() {
 	return glfwGetTime();
 }
+
+void fe::GLFW3Window::GetFramebufferSize(int *width, int* height) {
+	glfwGetFramebufferSize(impl->window, width, height);
+}
