@@ -116,6 +116,7 @@ public:
 #endif
 
 		if (mode == ScreenSaverMode::Fullscreen) {
+			window->Show();
 			fullscreened = true;
 			
 			window->HideMouse();
