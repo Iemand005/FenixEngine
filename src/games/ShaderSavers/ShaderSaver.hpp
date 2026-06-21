@@ -134,7 +134,6 @@ public:
 		else {
 			window->AttachToNativeParent(parent);
 		}
-		MessageBox(parent, "KAKA", "NOTOK", 0 );
 std::string modeStr;
 
 switch (mode) {
@@ -143,6 +142,7 @@ switch (mode) {
     case ScreenSaverMode::Fullscreen: modeStr = "Fullscreen"; break;
     case ScreenSaverMode::Config:     modeStr = "Config"; break;
 }
+MessageBoxA(parent, modeStr.c_str(), "NOTOK", 0);
 		const char* vs = R"(
 			#version 330 core
 			void main() {
