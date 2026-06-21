@@ -82,19 +82,13 @@ class Renderer {
 
   Renderer(GLADloadproc loadProc);
 
-  Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
-    NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
-  }
-  
-#ifndef FE_EXCLUDE_SDL
-  void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-    this->window = MakeWindow("Renderer", width, height, hidden);
-  }
-#else
-  void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-    this->window = MakeWindow("Renderer", width, height, hidden, fullscreen);
-  }
-#endif
+	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
+		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
+	}
+	
+	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
+		this->window = MakeWindow("Renderer", width, height, hidden, fullscreen);
+	}
 
 #ifndef FE_EXCLUDE_SDL
 template<typename WindowT = SDLWindow>
