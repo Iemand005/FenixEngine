@@ -84,10 +84,11 @@ public:
 				height,
 				GLFW_DONT_CARE);
 
-			fullscreened = true;
-		}
+			// window->GoBorderlessFullscreen();
+			// window->Show();
 
-		if (mode == ScreenSaverMode::Fullscreen) {
+			fullscreened = true;
+			
 			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 			glfwGetCursorPos(glfwWindow, &startX, &startY);
 		}

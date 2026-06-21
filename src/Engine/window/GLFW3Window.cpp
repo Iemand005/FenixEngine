@@ -15,7 +15,7 @@ fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidd
 	InitGlfw();
 }
 
-bool fe::GLFW3Window::InitGlfw(bool tenBit) {
+bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 #ifdef WAYLAND
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -36,7 +36,11 @@ bool fe::GLFW3Window::InitGlfw(bool tenBit) {
 		glfwWindowHint(GLFW_ALPHA_BITS, 2);
 	}
 
-	impl->window = glfwCreateWindow(width, height, "FoxEngine", NULL, NULL);
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+	impl->window = glfwCreateWindow(width, height, "FoxEngine", monitor, NULL);
 	if (impl->window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();

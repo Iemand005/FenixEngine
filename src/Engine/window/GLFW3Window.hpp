@@ -12,7 +12,7 @@ public:
 	GLFW3Window(std::string title, int width, int height, bool hidden = false);
 	~GLFW3Window();
 
-	bool InitGlfw(bool tenBit = false);
+	bool InitGlfw(bool fullscreen = true, bool tenBit = false);
 
 	void StartMouseCapture() override;
 	void StopMouseCapture() override;
