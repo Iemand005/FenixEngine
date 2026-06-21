@@ -129,21 +129,11 @@ public:
 			window->HideMouse();
 			window->GetMousePosition(&startX, &startY);
 		}
-		if (mode != ScreenSaverMode::Preview)
-			window->Show();
-		else {
-			window->AttachToNativeParent(parent);
-		}
-std::string modeStr;
+		if (mode = ScreenSaverMode::Preview)
+		 window->AttachToNativeParent(parent);
+		else	window->Show();
 
-switch (mode) {
-    case ScreenSaverMode::Window:     modeStr = "Window"; break;
-    case ScreenSaverMode::Preview:    modeStr = "Preview"; break;
-    case ScreenSaverMode::Fullscreen: modeStr = "Fullscreen"; break;
-    case ScreenSaverMode::Config:     modeStr = "Config"; break;
-}
-MessageBoxA(parent, modeStr.c_str(), "NOTOK", 0);
-		const char* vs = R"(
+			const char* vs = R"(
 			#version 330 core
 			void main() {
 				vec2 v[3]=vec2[3](vec2(-1,-1), vec2(3,-1), vec2(-1,3));
