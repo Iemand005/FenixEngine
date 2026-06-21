@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 16396318,
+    "totalFocusTime": 16410031,
     "totalActiveTime": 1449481
   },
   "files": {
@@ -71,7 +71,7 @@
     },
     "src/Engine/window/SDLWindow.cpp": {
       "pending": 50099,
-      "focus": 190071
+      "focus": 203784
     },
     "src/Engine/Renderer.cpp": {
       "pending": 0,
