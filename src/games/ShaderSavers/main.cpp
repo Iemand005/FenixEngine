@@ -1,80 +1,58 @@
 #define FE_EXCLUDE_GLFW
 #include "ShaderSaver.hpp"
 
-int main(int argc, char* argv[]) {
-
-	std::cout << "Hiii";
-
-	for (int i = 0; i < argc; i++)
-	{
-		std::cout << "arg[" << i << "] = " << argv[i] << "\n";
-	}
-
-	// #ifdef WIN32
-
-	ScreenSaverMode mode = ScreenSaverMode::Window;
-	HWND previewHwnd = nullptr;
-
-	for (int i = 1; i < argc; i++)
-	{
-		if (strcmp(argv[i], "/p") == 0 && i + 1 < argc)
-		{
-			mode = ScreenSaverMode::Preview;
-			previewHwnd = (HWND)std::stoull(argv[i + 1]);
-		}
-
-		if (_stricmp(argv[i], "/s") == 0)
-			mode = ScreenSaverMode::Fullscreen;
-
-		if (_stricmp(argv[i], "/c") == 0)
-        	mode = ScreenSaverMode::Config;
-	}
-
-	ShaderSaver game;
-	game.Run(mode, previewHwnd);
-	return 0;
-}
-
 #include <windows.h>
 #include <string>
+#include <cstring>
 
-int main(int argc, char** argv);
+ScreenSaverMode mode = ScreenSaverMode::Window;
+HWND previewHwnd = nullptr;
 
-int WINAPI WinMain(
-    HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine,
-    int nCmdShow
-)
+static void ParseArgs(char* lpCmdLine)
 {
-    int argc = 1;
-    char* argv[32] = { nullptr };
-
-    argv[0] = (char*)"ShaderSaver.scr";
-
     std::string cmd = lpCmdLine ? lpCmdLine : "";
-    std::string current;
+    std::string cur;
+
+    auto flush = [&]() {
+        if (cur.empty()) return;
+
+        if (_stricmp(cur.c_str(), "/s") == 0)
+            mode = ScreenSaverMode::Fullscreen;
+
+        else if (_stricmp(cur.c_str(), "/c") == 0)
+            mode = ScreenSaverMode::Config;
+
+        else if (_stricmp(cur.c_str(), "/p") == 0)
+            mode = ScreenSaverMode::Preview;
+
+        else if (mode == ScreenSaverMode::Preview && previewHwnd == nullptr)
+            previewHwnd = (HWND)std::stoull(cur);
+
+        cur.clear();
+    };
 
     for (char c : cmd)
     {
         if (c == ' ')
-        {
-            if (!current.empty())
-            {
-                argv[argc++] = _strdup(current.c_str());
-                current.clear();
-            }
-        }
+            flush();
         else
-        {
-            current += c;
-        }
+            cur += c;
     }
 
-    if (!current.empty())
-    {
-        argv[argc++] = _strdup(current.c_str());
-    }
+    flush();
+}
 
-    return main(argc, argv);
+int WINAPI WinMain(
+    HINSTANCE,
+    HINSTANCE,
+    LPSTR lpCmdLine,
+    int
+)
+{
+    ParseArgs(lpCmdLine);
+
+    ShaderSaver game;
+    game.Run(mode, previewHwnd);
+
+    return 0;
 }
