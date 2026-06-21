@@ -41,11 +41,11 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
         audioSamples.push_back(monoSample / spec->channels);
     }
 
-    // Keep only what we need for the next visualization update
     if (audioSamples.size() > FFT_SIZE) {
         audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
     }
 }
+
 
 class AudioTest : public fe::EditableGame {
 public:
@@ -82,7 +82,7 @@ public:
 		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
 		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
-		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+		SDL_ResumeAudioDevice(dev);
 
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 	}
