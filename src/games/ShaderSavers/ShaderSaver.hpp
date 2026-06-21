@@ -56,7 +56,7 @@ public:
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
 					int w, h;
-					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+					SDL_GetWindowSize(window->GetWindow(), &w, &h);
 					Resize(w, h);
 					window->resizeEvent(w, h);
 					break;
@@ -111,7 +111,7 @@ public:
 
 	void Run(ScreenSaverMode mode = ScreenSaverMode::Window, HWND parent = nullptr) {
 		auto glfwWindowWrapper = GetWindow<fe::GLFW3Window>();
-		glfwWindow = (GLFWwindow*)glfwWindowWrapper->GetGLFWWindow();
+		glfwWindow = (GLFWwindow*)glfwWindowWrapper->GetWindow();
 
 		if (mode == ScreenSaverMode::Fullscreen) {
 			glfwSetWindowMonitor(

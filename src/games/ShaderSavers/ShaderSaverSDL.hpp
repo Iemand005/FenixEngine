@@ -37,7 +37,7 @@ class ShaderSaver : public fe::Renderer {
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
 					int w, h;
-					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+					SDL_GetWindowSize(window->GetWindow(), &w, &h);
 					Resize(w, h);
 					window->resizeEvent(w, h);
 					break;
@@ -106,7 +106,7 @@ class ShaderSaver : public fe::Renderer {
 		GLint uTime = glGetUniformLocation(shader->getId(), "time");
 		GLint uRes = glGetUniformLocation(shader->getId(), "resolution");
 
-		SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+		SDL_GetWindowSize(window->GetWindow(), &width, &height);
 		glViewport(0, 0, width, height);
 		SDL_GetMouseState(&startX, &startY);
 
@@ -116,7 +116,7 @@ class ShaderSaver : public fe::Renderer {
 			SDL_PathInfo i;
 			if (SDL_GetPathInfo(fs, &i) && i.modify_time > last) Reload(fs, vs, &last);
 
-			SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+			SDL_GetWindowSize(window->GetWindow(), &width, &height);
 			glViewport(0, 0, width, height);
 
 			shader->Use();

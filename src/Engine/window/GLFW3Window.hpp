@@ -25,7 +25,7 @@ public:
 
 	void Destroy() override;
 
-	void* GetGLFWWindow();
+	void* GetWindow();
 
 private:
 	struct Impl;

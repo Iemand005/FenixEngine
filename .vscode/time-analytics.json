@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project": {
-    "totalFocusTime": 11231691,
-    "totalActiveTime": 752104
+    "totalFocusTime": 11423944,
+    "totalActiveTime": 800422
   },
   "files": {
     "src/games/ShaderSavers/main.cpp": {
@@ -43,15 +43,15 @@
     },
     "src/Engine/window/GLFW3Window.hpp": {
       "pending": 11352,
-      "focus": 162024
+      "focus": 170464
     },
     "src/games/ShaderSavers/FragmentShaderTripy.glsl": {
       "pending": 22732,
       "focus": 100176
     },
     "src/Engine/window/SDLWindow.hpp": {
-      "pending": 0,
-      "focus": 4086
+      "pending": 3888,
+      "focus": 29096
     },
     "src/games/ShaderSavers/FragmentShaderIllusion.glsl": {
       "pending": 26596,
@@ -74,8 +74,8 @@
       "focus": 6849
     },
     "src/Engine/window/SDLWindow.cpp": {
-      "pending": 0,
-      "focus": 4206
+      "pending": 3878,
+      "focus": 8084
     },
     "src/Engine/Renderer.cpp": {
       "pending": 0,
@@ -90,24 +90,24 @@
       "focus": 3521
     },
     "src/games/ShaderSavers/PingPongShaderSaver.hpp": {
-      "pending": 0,
-      "focus": 8586
+      "pending": 3881,
+      "focus": 12467
     },
     "src/games/ShaderSavers/ShaderSaverSDL.hpp": {
-      "pending": 346711,
-      "focus": 4204891
+      "pending": 350602,
+      "focus": 4245301
     },
     "src/games/ShaderSavers/ShaderSaver.hpp": {
-      "pending": 49744,
-      "focus": 557893
+      "pending": 57991,
+      "focus": 599340
     },
     "src/games/ShaderSavers/debug.pp": {
       "pending": 0,
       "focus": 15299
     },
     "src/Engine/window/GLFW3Window.cpp": {
-      "pending": 7610,
-      "focus": 119984
+      "pending": 8202,
+      "focus": 122222
     },
     "src/games/ShaderSavers/mainSDL.cpp": {
       "pending": 0,
@@ -116,6 +116,38 @@
     "src/games/ShaderSavers/FragmentShaderColourTunnel.glsl": {
       "pending": 0,
       "focus": 5954
+    },
+    "src/Engine/physics/PhysicsObject.cpp": {
+      "pending": 0,
+      "focus": 1507
+    },
+    "external/SDL/src/video/uikit/SDL_uikitview.h": {
+      "pending": 694,
+      "focus": 3871
+    },
+    "src/Engine/EditableGame.hpp": {
+      "pending": 3879,
+      "focus": 3879
+    },
+    "external/SDL/src/core/haiku/SDL_BeApp.cc": {
+      "pending": 3877,
+      "focus": 3877
+    },
+    "external/SDL/src/core/haiku/SDL_BApp.h": {
+      "pending": 3875,
+      "focus": 3875
+    },
+    "external/SDL/src/video/uikit/SDL_uikitview.m": {
+      "pending": 3874,
+      "focus": 3874
+    },
+    "external/SDL/src/video/uikit/SDL_uikitmetalview.m": {
+      "pending": 3872,
+      "focus": 3872
+    },
+    "external/SDL/src/video/uikit/SDL_uikitpen.m": {
+      "pending": 3870,
+      "focus": 3870
     }
   },
   "deleted": {

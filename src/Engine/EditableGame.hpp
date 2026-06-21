@@ -52,7 +52,7 @@ namespace fe
       ImGui::StyleColorsDark();
 
       // ImGui_ImplGlfw_InitForOpenGL(window, true);
-      ImGui_ImplSDL3_InitForOpenGL(window->GetSDLWindow(), window->GetSDLGLContext());
+      ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
       ImGui_ImplOpenGL3_Init(glsl_version);
     }
 

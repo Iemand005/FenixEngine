@@ -69,7 +69,7 @@ class SDLWindow : public IWindow {
   // struct SDL_Window;
   // struct SDL_GLContext;
 
-  SDL_Window* GetSDLWindow();
+  SDL_Window* GetWindow();
 
   SDL_GLContext GetSDLGLContext();
 

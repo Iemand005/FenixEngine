@@ -161,7 +161,7 @@ void fe::SDLWindow::SwapBuffers() {
     SDL_Quit();
   }
 
-SDL_Window* fe::SDLWindow::GetSDLWindow() { return impl->window; }
+SDL_Window* fe::SDLWindow::GetWindow() { return impl->window; }
 
 SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
@@ -207,7 +207,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
     if (!parent)
         return;
 
-    SDL_PropertiesID props = SDL_GetWindowProperties(GetSDLWindow());
+    SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
     if (!props)
         return;
 

@@ -62,7 +62,7 @@ class ShaderSaver : public fe::Renderer {
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
 					int w, h;
-					SDL_GetWindowSize(window->GetSDLWindow(), &w, &h);
+					SDL_GetWindowSize(window->GetWindow(), &w, &h);
 					Resize(w, h);
 					window->resizeEvent(w, h);
 
@@ -181,7 +181,7 @@ class ShaderSaver : public fe::Renderer {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+		SDL_GetWindowSize(window->GetWindow(), &width, &height);
 		printf("SDL window: %d x %d\n", width, height);
 		glViewport(0, 0, width, height);
 

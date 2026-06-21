@@ -128,7 +128,7 @@ bool fe::GLFW3Window::InitGlfw(bool fullscreen, bool tenBit) {
 	return true;
 }
 
-void *fe::GLFW3Window::GetGLFWWindow() { return impl->window; }
+void *fe::GLFW3Window::GetWindow() { return impl->window; }
 
 void fe::GLFW3Window::StartMouseCapture() {
 	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
