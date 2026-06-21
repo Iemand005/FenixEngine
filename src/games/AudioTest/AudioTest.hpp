@@ -74,6 +74,7 @@ public:
 				break;
 				case SDL_EVENT_MOUSE_MOTION:
 				{
+					if (!window->capturingMouse) break;
 					float sensitivity = 0.1f;
 
 					camera->yaw   += event.motion.xrel * sensitivity;
