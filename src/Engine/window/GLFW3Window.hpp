@@ -31,6 +31,8 @@ public:
 
 	bool ShouldClose();
 
+	double GetTime();
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

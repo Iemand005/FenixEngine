@@ -10,7 +10,7 @@ enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
 class ShaderSaver : public fe::Renderer {
    public:
 	int width = 0, height = 0;
-	float startX, startY;
+	double startX, startY;
 	bool fullscreened = false;
 
 	ShaderSaver() : ShaderSaver(500, 500) {}

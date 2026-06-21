@@ -93,10 +93,7 @@ public:
 
 	bool Reload(const char* path, const char* vs) {
 		try {
-			LoadShaders(
-				fe::Shader::Vertex(vs),
-				fe::Shader::Fragment(path)
-			);
+			LoadShaders(fe::Shader::Vertex(vs),fe::Shader::Fragment(path));
 			shader->Use();
 			return true;
 		}
@@ -169,8 +166,8 @@ public:
 				Reload(fs, vs);
 			}
 
-			glfwGetFramebufferSize(glfwWindow, &width, &height);
-			glViewport(0, 0, width, height);
+			// glfwGetFramebufferSize(glfwWindow, &width, &height);
+			// glViewport(0, 0, width, height);
 
 			shader->Use();
 
