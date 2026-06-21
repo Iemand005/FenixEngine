@@ -36,8 +36,7 @@ public:
 		glfwPollEvents();
 
 		if (glfwWindowShouldClose(glfwWindow)) {
-			// assuming your engine still controls lifetime here
-			PrepareClose();
+			window->PrepareClose();
 			return;
 		}
 
@@ -46,7 +45,7 @@ public:
 			glfwGetCursorPos(glfwWindow, &x, &y);
 
 			if (std::abs(x - startX) > 3 || std::abs(y - startY) > 3) {
-				PrepareClose();
+				window->PrepareClose();
 			}
 		}
 	}
