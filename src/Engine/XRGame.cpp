@@ -270,6 +270,20 @@ XRGame::~XRGame() {
   Destroy();
 };
 
+void XRGame::initOpenXR() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(window);
+
+		HWND hwnd = (HWND)SDL_GetPointerProperty(
+			props,
+			SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+			nullptr
+		);
+
+		HDC hDC = GetDC(hwnd);
+
+		HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
+}
+
 #ifdef XR_USE_PLATFORM_WIN32
 
 void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
@@ -300,18 +314,6 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
     impl->Log("OpenXR Session Created");
 
     impl->Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
-
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
-
-    HWND hwnd = (HWND)SDL_GetPointerProperty(
-        props,
-        SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-        nullptr
-    );
-
-    HDC hDC = GetDC(hwnd);
-
-    HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
 
     XrGraphicsBindingOpenGLWin32KHR gfx{};
     gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
