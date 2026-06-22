@@ -240,11 +240,7 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
 }
 
 void fe::GLFW3Window::GetNativeWindow() {
-	HWND hwnd = (HWND)SDL_GetPointerProperty(
-	props,
-	SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-	nullptr
-);
+	SDL_PropertiesID props = SDL_GetWindowProperties(window->GetWindow());
 }
 
 void fe::GLFW3Window::GetDrawingContext() {
