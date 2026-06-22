@@ -339,7 +339,7 @@ HWND fe::SDLWindow::GetNativeWindow() {
 }
 
 HDC fe::SDLWindow::GetDrawingContext() {
-	HDC hDC = GetDC(GetNativeWindow());
+	return GetDC(GetNativeWindow());
 }
 
 HGLRC fe::SDLWindow::GetOpenGLRenderingContext() {
