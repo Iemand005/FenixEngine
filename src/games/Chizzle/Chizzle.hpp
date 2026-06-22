@@ -87,7 +87,7 @@ public:
   void ProcessInput() {
     SDL_Event event;
     fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
-    while (window->PollSDLEvents(&event)) {
+    while (window->PollSDLEvent(&event)) {
       ImGui_ImplSDL3_ProcessEvent(&event);
       auto io = ImGui::GetIO();
       switch (event.type) {
@@ -133,7 +133,7 @@ public:
       if (player->touchedGround) {
         canJump = true;
       }
-      // while (window->PollSDLEvents(&event))
+      // while (window->PollSDLEvent(&event))
       ProcessInput();
       player->state.rotation.y = -yaw + 90.0f;
       glm::vec3 pos = player->state.position + cameraOffset;

@@ -65,7 +65,7 @@ class SDLWindow : public IWindow {
 
   // union SDL_Event;
 
-  bool PollSDLEvents(SDL_Event* event, bool getKeyboardState = true);;
+  bool PollSDLEvent(SDL_Event* event, bool getKeyboardState = true);;
   
 
   // struct SDL_Window;

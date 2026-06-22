@@ -165,11 +165,14 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
  bool fe::SDLWindow::IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
 
-  bool fe::SDLWindow::PollSDLEvents(SDL_Event* event, bool getKeyboardState) {
+  bool fe::SDLWindow::PollSDLEvent(SDL_Event* event, bool getKeyboardState) {
     if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
     if (!SDL_PollEvent(event)) return false;
 
     switch (event->type) {
+		case SDL_EVENT_QUIT:
+			PrepareClose();
+			break;
       case SDL_EVENT_WINDOW_EXPOSED:
         if (resizeEvent) resizeEvent(width, height);
         break;

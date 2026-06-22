@@ -120,12 +120,12 @@ public:
 	void ProcessInput() {
 		SDL_Event event;
 		fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
-		while (window->PollSDLEvents(&event)) {
+		while (window->PollSDLEvent(&event)) {
 			ImGui_ImplSDL3_ProcessEvent(&event);
 			auto io = ImGui::GetIO();
 			switch (event.type) {
 				case SDL_EVENT_QUIT:
-				// window->PrepareClose();
+				window->PrepareClose();
 				break;
 				case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				if (event.button.button == SDL_BUTTON_LEFT && !io.WantCaptureMouse) {

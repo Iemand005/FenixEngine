@@ -56,7 +56,7 @@ public:
   void ProcessInput() {
     SDL_Event event;
     fe::SDLWindow *window = (fe::SDLWindow*)this->window.get();
-    while (window->PollSDLEvents(&event)) {
+    while (window->PollSDLEvent(&event)) {
       ImGui_ImplSDL3_ProcessEvent(&event);
       auto io = ImGui::GetIO();
       switch (event.type) {

@@ -40,7 +40,6 @@ public:
         return true;
     }
 
-    // Call once per frame. Appends mono-mixed samples to out.
     void Poll(std::vector<float>& out) {
         if (!captureClient) return;
 
