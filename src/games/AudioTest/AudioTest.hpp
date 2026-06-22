@@ -93,11 +93,13 @@ public:
 		SDL_PutAudioStreamData(stream, data, len);
 
 		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
-		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
+		// SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
 		SDL_ResumeAudioDevice(dev);
 
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
+
+		g_loopback.Init();
 	}
 
 	void LoadModels() {
@@ -169,6 +171,11 @@ public:
 
 		SDL_Event event;
 		while (!window->ShouldClose()) {
+
+			g_loopback.Poll(audioSamples);
+			if (audioSamples.size() > FFT_SIZE) {
+				audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
+			}
 
 			UpdateVisualizerData();
 
