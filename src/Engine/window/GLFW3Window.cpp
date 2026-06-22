@@ -239,14 +239,18 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
 #endif
 }
 
-void fe::GLFW3Window::GetHWND() {
-	
+void fe::GLFW3Window::GetNativeWindow() {
+	HWND hwnd = (HWND)SDL_GetPointerProperty(
+	props,
+	SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+	nullptr
+);
 }
 
-void fe::GLFW3Window::GetDC() {
-	
+void fe::GLFW3Window::GetDrawingContext() {
+	HDC hDC = GetDC(hwnd);
 }
 
-void fe::GLFW3Window::GetGLDC() {
-	
+void fe::GLFW3Window::GetOpenGLRenderingContext() {
+	return (HGLRC)SDL_GL_GetCurrentContext();
 }
