@@ -121,6 +121,10 @@ public:
 		this->scene->AddObject(player);
 
 		this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+
+		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+
+		this->scene->AddObject(cube);
 	}
 
 	void ProcessInput() {
