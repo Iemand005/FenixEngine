@@ -284,7 +284,7 @@ void XRGame::initOpenXR() {
 
 	HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
 
-	initOpenXR(hDC, hGLRC)
+	initOpenXR(window->GetDrawingContext(), window->GetOpenGLRenderingContext())
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
