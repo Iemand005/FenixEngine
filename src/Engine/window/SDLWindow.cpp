@@ -173,23 +173,21 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 		case SDL_EVENT_QUIT:
 			PrepareClose();
 			break;
-      case SDL_EVENT_WINDOW_EXPOSED:
-        if (resizeEvent) resizeEvent(width, height);
-        break;
-      case SDL_EVENT_WINDOW_RESIZED:
-      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-        width = event->window.data1;
-        height = event->window.data2;
-        if (resizeEvent) resizeEvent(width, height);
-        break;
-      case SDL_EVENT_MOUSE_MOTION:
-        if (mouseMoveEvent && capturingMouse) {
-          mouseMoveEvent(event->motion.xrel, event->motion.yrel);
-          SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
-        }
-        break;
-      default:
-        break;
+		case SDL_EVENT_WINDOW_EXPOSED:
+			if (resizeEvent) resizeEvent(width, height);
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			width = event->window.data1;
+			height = event->window.data2;
+			if (resizeEvent) resizeEvent(width, height);
+			break;
+		case SDL_EVENT_MOUSE_MOTION:
+			if (mouseMoveEvent && capturingMouse) {
+			mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+			SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
+			}
+			break;
     }
 
     return true;
