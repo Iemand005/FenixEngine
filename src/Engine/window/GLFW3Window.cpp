@@ -238,3 +238,15 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
     ShowWindow(childHwnd, SW_SHOW);
 #endif
 }
+
+void fe::GLFW3Window::GetHWND() {
+	
+}
+
+void fe::GLFW3Window::GetDC() {
+	
+}
+
+void fe::GLFW3Window::GetGLDC() {
+	
+}

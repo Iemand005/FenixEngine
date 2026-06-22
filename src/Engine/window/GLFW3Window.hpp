@@ -49,6 +49,8 @@ public:
 
 #ifdef _WIN32
 	void AttachToNativeParent(void* parent);
+
+	HWND GetHWND();
 #endif
 
 	void SetAnyKeyCallback(std::function<void()> cb) { onAnyKey = std::move(cb); }
