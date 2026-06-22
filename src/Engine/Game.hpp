@@ -110,6 +110,8 @@ class Game : public Renderer {
 		InitUI();
 	}
 
+  void Log(const std::string& message) { std::cout << message << std::endl; }
+
   void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
     this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
   }
