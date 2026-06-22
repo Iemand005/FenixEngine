@@ -19,7 +19,8 @@
 
 #include "kiss_fftr.h"
 
-#include "../../engine/EditableGame.hpp"
+#include <EditableGame.hpp>
+#include <Primitives.hpp>
 #include "WasapiLoopbackCapture.hpp"
 
 
@@ -69,6 +70,9 @@ public:
 	AudioTest() : AudioTest(800, 640) {}
 
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
+
+		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+
 		LoadModels();
 
 		SDL_AudioSpec wavSpec;
