@@ -283,6 +283,8 @@ void XRGame::initOpenXR() {
 	HDC hDC = GetDC(hwnd);
 
 	HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
+
+	initOpenXR(hDC, hGLRC)
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
