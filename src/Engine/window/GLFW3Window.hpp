@@ -50,9 +50,9 @@ public:
 #ifdef _WIN32
 	void AttachToNativeParent(void* parent);
 
-	HWND GetHWND();
-	HDC GetDC();
-	HGLRC GetGLRC();
+	HWND GetNativeWindow();
+	HDC GetDrawingContext();
+	HGLRC GetOpenGLRenderingContext();
 #endif
 
 	void SetAnyKeyCallback(std::function<void()> cb) { onAnyKey = std::move(cb); }
