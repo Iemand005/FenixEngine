@@ -73,6 +73,8 @@ public:
 
 		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
 
+		this->scene->AddObject(cube);
+
 		LoadModels();
 
 		SDL_AudioSpec wavSpec;
