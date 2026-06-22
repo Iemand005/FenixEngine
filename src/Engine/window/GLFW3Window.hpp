@@ -51,8 +51,8 @@ public:
 	void AttachToNativeParent(void* parent);
 
 	HWND GetHWND();
-	void GetDC();
-	HGLRC GetHGLRC();
+	HDC GetDC();
+	HGLRC GetGLRC();
 #endif
 
 	void SetAnyKeyCallback(std::function<void()> cb) { onAnyKey = std::move(cb); }
