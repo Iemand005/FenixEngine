@@ -194,7 +194,7 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
   }
 
 void fe::SDLWindow::Resize(int w, int h) {
-  SDL_SetWindowSize(this->impl->window, w, h);
+	SDL_SetWindowSize(this->impl->window, w, h);
 }
 
 #ifdef _WIN32
