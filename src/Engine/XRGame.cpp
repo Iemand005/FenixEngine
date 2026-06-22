@@ -303,7 +303,6 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 	Log("System Name: " + std::string(systemProps.systemName));
 	Log("Vendor ID: " + std::to_string(systemProps.vendorId));
 
-	Log("OpenXR Session Created");
 
 	Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 
@@ -326,6 +325,9 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 	impl->outputError(xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLGraphicsRequirementsKHR)));
 	impl->outputError(pfnGetOpenGLGraphicsRequirementsKHR(impl->instance, impl->systemId, &glReqs));
 	impl->outputError(xrCreateSession(impl->instance, &sessionInfo, &impl->session));
+
+	Log("OpenXR Session Created");
+
 
 	impl->BeginSession();
 
