@@ -271,17 +271,18 @@ XRGame::~XRGame() {
 };
 
 void XRGame::initOpenXR() {
-	SDL_PropertiesID props = SDL_GetWindowProperties(window);
+	auto window = GetWindow<fe::SDLWindow>();
+	SDL_PropertiesID props = SDL_GetWindowProperties(window->GetWindow());
 
-		HWND hwnd = (HWND)SDL_GetPointerProperty(
-			props,
-			SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-			nullptr
-		);
+	HWND hwnd = (HWND)SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+		nullptr
+	);
 
-		HDC hDC = GetDC(hwnd);
+	HDC hDC = GetDC(hwnd);
 
-		HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
+	HGLRC hGLRC = (HGLRC)SDL_GL_GetCurrentContext();
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
