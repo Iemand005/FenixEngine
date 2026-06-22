@@ -18,7 +18,7 @@ bool Mesh::loadObj(std::string objFilePath) {
 
   for (int i = 0; i < this->vertices.size(); i++) {
     objl::Vertex v = objectLoader.LoadedVertices[i];
-    this->vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+    this->vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.uv.X, v.uv.Y);
   }
 
   this->indices = std::vector<unsigned int>(objectLoader.LoadedIndices.size());
@@ -47,7 +47,7 @@ bool Object::LoadObj(std::string path, float scale) {
 
     for (int i = 0; i < loadedMesh.Vertices.size(); i++) {
       objl::Vertex v = loadedMesh.Vertices[i];
-      vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.TextureCoordinate.X, v.TextureCoordinate.Y);
+      vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.uv.X, v.uv.Y);
     }
 
     for (size_t i = 0; i < indices.size(); i++) indices[i] = loadedMesh.Indices[i];
