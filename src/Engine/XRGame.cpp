@@ -300,12 +300,12 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 
 	XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
 	impl->outputError(xrGetSystemProperties(impl->instance, impl->systemId, &systemProps));
-	impl->Log("System Name: " + std::string(systemProps.systemName));
-	impl->Log("Vendor ID: " + std::to_string(systemProps.vendorId));
+	Log("System Name: " + std::string(systemProps.systemName));
+	Log("Vendor ID: " + std::to_string(systemProps.vendorId));
 
-	impl->Log("OpenXR Session Created");
+	Log("OpenXR Session Created");
 
-	impl->Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
+	Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 
 	XrGraphicsBindingOpenGLWin32KHR gfx{};
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
