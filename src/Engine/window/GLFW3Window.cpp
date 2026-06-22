@@ -244,7 +244,7 @@ HWND fe::GLFW3Window::GetNativeWindow() {
 }
 
 HDC fe::GLFW3Window::GetDrawingContext() {
-	HDC hDC = GetDC(hwnd);
+	HDC hDC = GetDC(GetNativeWindow());
 
 }
 
