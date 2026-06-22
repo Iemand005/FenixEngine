@@ -11,8 +11,7 @@ public:
         CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
         IMMDeviceEnumerator* enumerator = nullptr;
-        CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
-                          __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
+        CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&enumerator);
 
         IMMDevice* device = nullptr;
         enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device); // render device, in loopback mode
@@ -23,8 +22,7 @@ public:
         audioClient->GetMixFormat(&mixFormat);
         channels = mixFormat->nChannels;
 
-        HRESULT hr = audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK,
-                                              10000000, 0, mixFormat, nullptr);
+        HRESULT hr = audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 10000000, 0, mixFormat, nullptr);
 
         CoTaskMemFree(mixFormat);
         device->Release();
