@@ -1,5 +1,6 @@
 // #inclde 
 #include <iostream>
+#include <vector>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
 #pragma comment(lib, "ole32.lib")
