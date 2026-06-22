@@ -54,7 +54,13 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
     }
 }
 
-
+static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
+    AudioTest* game = (AudioTest*)userdata;
+    if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
+        game->Redraw();
+    }
+    return true;
+}
 
 class AudioTest : public fe::EditableGame {
 public:
@@ -106,6 +112,8 @@ public:
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
 		g_loopback.Init();
+
+		SDL_AddEventWatch(LiveRedrawWatcher, this);
 	}
 
 	void LoadModels() {
