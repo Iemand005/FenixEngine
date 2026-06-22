@@ -405,7 +405,7 @@ void XRGame::DestroyXR() {
 }
 
 void XRGame::LaunchVR() {
-  impl->initOpenXR();
+  initOpenXR();
   impl->initSwapchain();
   CheckGLError("after framebuffer setup");
   impl->CreateActions();
