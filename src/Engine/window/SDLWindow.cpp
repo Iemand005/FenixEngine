@@ -327,3 +327,20 @@ void fe::SDLWindow::GetFramebufferSize(int *width, int* height) {
 bool fe::SDLWindow::HideMouse() {
 	return SDL_HideCursor();
 }
+
+
+void fe::GLFW3Window::GetNativeWindow() {
+	HWND hwnd = (HWND)SDL_GetPointerProperty(
+	props,
+	SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+	nullptr
+);
+}
+
+void fe::GLFW3Window::GetDrawingContext() {
+	HDC hDC = GetDC(hwnd);
+}
+
+void fe::GLFW3Window::GetOpenGLRenderingContext() {
+	return (HGLRC)SDL_GL_GetCurrentContext();
+}

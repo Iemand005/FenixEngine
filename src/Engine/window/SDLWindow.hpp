@@ -85,6 +85,10 @@ class SDLWindow : public IWindow {
 
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
+
+	HWND GetNativeWindow();
+	HDC GetDrawingContext();
+	HGLRC GetOpenGLRenderingContext();
 #endif
 };
 
