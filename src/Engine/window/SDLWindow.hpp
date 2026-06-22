@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
+#include <windows.h>
+#endif
 
 #include <functional>
 #include <iostream>
@@ -85,9 +91,6 @@ class SDLWindow : public IWindow {
 
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
-
-	#include <Windows.h>
-
 	HWND GetNativeWindow();
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();

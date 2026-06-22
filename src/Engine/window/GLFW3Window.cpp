@@ -244,8 +244,7 @@ HWND fe::GLFW3Window::GetNativeWindow() {
 }
 
 HDC fe::GLFW3Window::GetDrawingContext() {
-	HDC hDC = GetDC(GetNativeWindow());
-
+	return GetDC(GetNativeWindow());
 }
 
 HGLRC fe::GLFW3Window::GetOpenGLRenderingContext() {
