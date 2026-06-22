@@ -17,9 +17,11 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "../../engine/EditableGame.hpp"
-
 #include "kiss_fftr.h"
+
+#include "../../engine/EditableGame.hpp"
+#include "WasapiLoopbackCapture.hpp"
+
 
 const int FFT_SIZE = 1024;               
 const int BINS = (FFT_SIZE / 2) + 1;  
