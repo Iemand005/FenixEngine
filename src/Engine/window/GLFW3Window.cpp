@@ -240,13 +240,14 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
 }
 
 void fe::GLFW3Window::GetNativeWindow() {
-	SDL_PropertiesID props = SDL_GetWindowProperties(window->GetWindow());
+	return glfwGetWin32Window(impl->window);
 }
 
 void fe::GLFW3Window::GetDrawingContext() {
 	HDC hDC = GetDC(hwnd);
+
 }
 
 void fe::GLFW3Window::GetOpenGLRenderingContext() {
-	return (HGLRC)SDL_GL_GetCurrentContext();
+	return glfwGetWGLContext(impl->window);
 }
