@@ -330,7 +330,7 @@ bool fe::SDLWindow::HideMouse() {
 
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
-	SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 	return (HWND)SDL_GetPointerProperty(
 	props,
 	SDL_PROP_WINDOW_WIN32_HWND_POINTER,
