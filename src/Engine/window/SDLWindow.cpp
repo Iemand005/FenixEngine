@@ -329,7 +329,7 @@ bool fe::SDLWindow::HideMouse() {
 }
 
 
-void fe::SDLWindow::GetNativeWindow() {
+HWND fe::SDLWindow::GetNativeWindow() {
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
 	props,
 	SDL_PROP_WINDOW_WIN32_HWND_POINTER,
@@ -337,10 +337,10 @@ void fe::SDLWindow::GetNativeWindow() {
 );
 }
 
-void fe::SDLWindow::GetDrawingContext() {
+HDC fe::SDLWindow::GetDrawingContext() {
 	HDC hDC = GetDC(hwnd);
 }
 
-void fe::SDLWindow::GetOpenGLRenderingContext() {
+HGLRC fe::SDLWindow::GetOpenGLRenderingContext() {
 	return (HGLRC)SDL_GL_GetCurrentContext();
 }
