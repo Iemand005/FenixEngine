@@ -80,6 +80,13 @@ public:
 		this->scene->AddObject(cube);
 
 		LoadModels();
+		
+		#ifdef _WIN32
+		g_loopback.Init();
+#else
+    g_pwLoopback.Init();
+	#endif
+	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
@@ -108,12 +115,7 @@ public:
 		
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 		
-#ifdef _WIN32
-		g_loopback.Init();
-#else
-    g_pwLoopback.Init();
-	#endif
-	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
+
 
 		SDL_AddEventWatch(LiveRedrawWatcher, this);
 	}
