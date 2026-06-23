@@ -286,7 +286,7 @@ void XRGame::initOpenXR() {
 	// window->GetWindow()
 	SDL_GetPrimaryDisplay();
 	gfx.display = (wl_display *)window->GetWaylandSurface();
-	initOpenXR();
+	initOpenXR(&gfx);
 #endif
 }
 
