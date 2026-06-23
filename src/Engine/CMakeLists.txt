@@ -36,7 +36,7 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 add_library(Engine STATIC ${SOURCE_FILES})
 
 if(FE_EXCLUDE_GLFW)
-    target_compile_definitions(editor PRIVATE FE_EXCLUDE_GLFW)
+    target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
 endif()
 
 target_include_directories(Engine PRIVATE
