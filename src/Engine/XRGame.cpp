@@ -275,6 +275,10 @@ void XRGame::initOpenXR() {
 
 #ifdef XR_USE_PLATFORM_WIN32
 	initOpenXR(window->GetDrawingContext(), window->GetOpenGLRenderingContext());
+#else // If wayalnd oh wait
+
+	XrGraphicsBindingOpenGLWaylandKHR
+	initOpenXR();
 #endif
 }
 
@@ -300,8 +304,8 @@ void XRGame::initOpenXR(void *next) {
 	createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
 	createInfo.applicationInfo.applicationVersion = 1;
 	createInfo.applicationInfo.engineVersion = 1;
-	strcpy(createInfo.applicationInfo.engineName, "FoxEngine");
-	strcpy(createInfo.applicationInfo.applicationName, "FoxEngineTest");
+	strcpy(createInfo.applicationInfo.engineName, "FenixEngine");
+	strcpy(createInfo.applicationInfo.applicationName, "Fenix Engine");
 
 	impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
 

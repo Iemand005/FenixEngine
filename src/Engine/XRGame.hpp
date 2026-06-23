@@ -59,6 +59,7 @@ namespace fe {
     bool IsInstanceValid();
 
     void initOpenXR();
+    void initOpenXR(void *next);
 #ifdef WIN32
     void initOpenXR(HDC hDC, HGLRC hGLRC);
 #endif
