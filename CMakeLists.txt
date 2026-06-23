@@ -224,9 +224,7 @@ if(WIN32)
 
     target_link_directories(editor PRIVATE "${LIB_DIR}")
     
-    target_link_libraries(editor PRIVATE
-        Engine
-    )
+    target_link_libraries(editor PRIVATE Engine)
 
 
     # Pool test game
