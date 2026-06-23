@@ -17,6 +17,8 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
+#define FE_EXCLUDE_GLFW
+
 #include <EditableGame.hpp>
 
 class Chizzle : public fe::EditableGame {
