@@ -79,6 +79,8 @@ public:
 
 		this->scene->AddObject(cube);
 
+		LoadShaders("resources/shaders/debug.vert", "resources/shaders/debug.frag");
+
 		LoadModels();
 
 		#ifdef _WIN32
