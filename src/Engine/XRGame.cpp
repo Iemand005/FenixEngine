@@ -13,6 +13,10 @@
 
 #endif
 
+#ifdef XR_USE_PLATFORM_WAYLAND
+#include <wayland-client.h>
+#endif
+
 using namespace fe;
 
 void CheckGLError(const char* location) {
