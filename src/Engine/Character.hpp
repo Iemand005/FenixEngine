@@ -21,7 +21,9 @@ public:
       case Down: velocity -= camera->up; break;
     }
 
-    this->physicsObject->AddPosition(velocity * cameraSpeed);
+	if (!this->physicsObject)
+      	this->state.position += velocity * cameraSpeed;
+    else this->physicsObject->AddPosition(velocity * cameraSpeed);
   }
 };
 
