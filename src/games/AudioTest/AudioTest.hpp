@@ -21,7 +21,9 @@
 
 #include <EditableGame.hpp>
 #include <Primitives.hpp>
+#ifdef _WIN32
 #include "WasapiLoopbackCapture.hpp"
+#endif
 
 
 const int FFT_SIZE = 1024;               
@@ -105,7 +107,9 @@ public:
 
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
+#ifdef _WIN32
 		g_loopback.Init();
+#endif
 
 		SDL_AddEventWatch(LiveRedrawWatcher, this);
 	}
@@ -193,10 +197,14 @@ public:
 		SDL_Event event;
 		while (!window->ShouldClose()) {
 
+#ifdef _WIN32
+
 			g_loopback.Poll(audioSamples);
 			if (audioSamples.size() > FFT_SIZE) {
 				audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
 			}
+#endif
+
 
 			UpdateVisualizerData();
 
