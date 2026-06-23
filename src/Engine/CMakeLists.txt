@@ -67,11 +67,15 @@ endif()
 
 
 target_link_libraries(Engine PUBLIC
-    glfw
     SDL3::SDL3
     OpenXR::openxr_loader
     Jolt
 )
+
+if(NOT FE_EXCLUDE_GLFW)
+    arget_link_libraries(Engine PUBLIC glfw)
+endif()
+
 
 if(MSVC)
     target_compile_options(Engine PRIVATE $<$<CONFIG:Debug>:/Zi>)

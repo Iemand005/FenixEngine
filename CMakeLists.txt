@@ -101,6 +101,8 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
 
 add_executable(editor ${EDITOR_SOURCE_FILES})
 
+set(FE_EXCLUDE_GLFW ON CACHE BOOL "Exclude GLFW from the build" FORCE)
+
 target_include_directories(editor PRIVATE
     include
     src
