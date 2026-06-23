@@ -75,13 +75,15 @@ public:
 
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
-		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-
-		this->scene->AddObject(cube);
+		
 
 		LoadShaders("/home/lasse/Documents/Projects/FenixEngine/resources/shaders/debug.vert", "/home/lasse/Documents/Projects/FenixEngine/resources/shaders/debug.frag");
 
 		LoadModels();
+
+		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+
+		this->scene->AddObject(cube);
 
 		#ifdef _WIN32
 		g_loopback.Init();
