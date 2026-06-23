@@ -283,7 +283,7 @@ void XRGame::initOpenXR() {
 #elif defined(XR_USE_PLATFORM_WAYLAND)
 	XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
-	gfx.display = (wl_display *)window->GetWaylandSurface();
+	gfx.display = (wl_display *)window->GetWaylandDisplay();
 	initOpenXR(&gfx);
 #endif
 }
