@@ -120,7 +120,7 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
     external/imgui/backends/imgui_impl_sdl3.cpp
     external/imgui/backends/imgui_impl_sdlgpu3.cpp
     external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_glfw.cpp
+    # external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_opengl3.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
