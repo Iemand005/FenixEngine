@@ -262,6 +262,7 @@ void fe::SDLWindow::SetFullscreen(bool enabled) {
 }
 
 void fe::SDLWindow::GoBorderlessFullscreen() {
+#ifdef _WIN32
 	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
 	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
 	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -310,6 +311,7 @@ SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 		SWP_FRAMECHANGED |
 		SWP_SHOWWINDOW
 	);
+	#endif
 }
 
 void fe::SDLWindow::GetMousePosition(double *x, double *y) {
