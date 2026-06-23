@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 project(Engine LANGUAGES CXX C)
 
+option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
+
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -13,7 +15,9 @@ set(EXTERNAL_DIR "../../external/")
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 
-add_subdirectory(../../external/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
+if(NOT FE_EXCLUDE_GLFW)
+    add_subdirectory(../../external/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
+endif()
 add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
