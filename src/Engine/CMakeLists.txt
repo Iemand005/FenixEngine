@@ -73,7 +73,7 @@ target_link_libraries(Engine PUBLIC
 )
 
 if(NOT FE_EXCLUDE_GLFW)
-    arget_link_libraries(Engine PUBLIC glfw)
+    target_link_libraries(Engine PUBLIC glfw)
 endif()
 
 
