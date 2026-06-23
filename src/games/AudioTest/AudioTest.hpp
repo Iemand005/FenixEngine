@@ -143,22 +143,9 @@ public:
 	}
 
 	void LoadModels() {
-		auto map1 = LoadStaticOBJ("resources/models/collisiontest.obj");
-		this->scene->AddObject(map1);
-		this->maps.push_back(map1);
-
-		this->maps.push_back(LoadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
-
-		loadMap(0);
 
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
-
-		// this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
-
-		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-
-		this->scene->AddObject(cube);
 	}
 
 	void ProcessInput() {
