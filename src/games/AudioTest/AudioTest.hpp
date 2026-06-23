@@ -79,7 +79,7 @@ public:
 
 		this->scene->AddObject(cube);
 
-		LoadModels();
+		// LoadModels();
 
 		#ifdef _WIN32
 		g_loopback.Init();
@@ -88,7 +88,7 @@ public:
 	#endif
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
-		
+
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
 		Uint32 len = 0;
