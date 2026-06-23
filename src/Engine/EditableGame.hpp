@@ -112,6 +112,7 @@ namespace fe
 		}
 
 		fe::Object* model = this->player.get();
+    if (model) {
 		ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 		for (size_t i = 0; i < this->npcs.size(); ++i) {
 			ImGui::Text("NPC %zu", i);
@@ -120,7 +121,7 @@ namespace fe
 		}
 		}
 		ImGui::End();
-
+  }
 		ImGui::Begin("Objects");
 		{
 		static char filenameBuffer[512] = "\0";
