@@ -11,6 +11,8 @@
 
 #include <Windows.h>
 #include <unknwn.h>
+#else
+#define XR_USE_PLATFORM_WAYLAND
 #endif
 
 using namespace fe;
