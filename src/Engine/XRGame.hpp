@@ -11,6 +11,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
+#else
+#define XR_USE_PLATFORM_WAYLAND
 #endif
 #endif
 // #include <openxr/openxr.h>

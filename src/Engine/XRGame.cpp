@@ -5,14 +5,12 @@
 #include <openxr/openxr_platform.h>
 
 #ifdef WIN32
-#define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 #include <unknwn.h>
-#else
-#define XR_USE_PLATFORM_WAYLAND
+
 #endif
 
 using namespace fe;
