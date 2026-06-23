@@ -201,10 +201,7 @@ target_link_libraries(AudioTest PRIVATE
 set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 if(WIN32)
-    # Main game
-    target_link_directories(main PRIVATE "${LIB_DIR}")
     
-    target_link_libraries(main PRIVATE Engine)
     
     if(MSVC)
         target_link_options(main PRIVATE
@@ -219,23 +216,24 @@ if(WIN32)
             $<$<CONFIG:Debug>:/DEBUG>
         )
     endif()
-
-    # Base editor
-
-    target_link_directories(editor PRIVATE "${LIB_DIR}")
-    
-    target_link_libraries(editor PRIVATE Engine)
-
-
-    # Pool test game
-    target_link_directories(pool PRIVATE "${LIB_DIR}")
-    
-    target_link_libraries(pool PRIVATE
-        Engine
-    )
     
 endif()
+    
+# Main game
+target_link_directories(main PRIVATE "${LIB_DIR}")
 
+target_link_libraries(main PRIVATE Engine)
+# Base editor
+
+target_link_directories(editor PRIVATE "${LIB_DIR}")
+
+target_link_libraries(editor PRIVATE Engine)
+
+
+# Pool test game
+target_link_directories(pool PRIVATE "${LIB_DIR}")
+
+target_link_libraries(pool PRIVATE Engine)
 
 
 
