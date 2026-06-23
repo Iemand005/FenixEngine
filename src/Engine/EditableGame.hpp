@@ -2,6 +2,7 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#define FE_EXCLUDE_GLFW
 
 #include <cstdio>
 #include <fstream>
