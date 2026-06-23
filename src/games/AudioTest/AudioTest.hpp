@@ -86,7 +86,9 @@ public:
 #else
     g_pwLoopback.Init();
 	#endif
+		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
+		
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
 		Uint32 len = 0;
@@ -115,7 +117,6 @@ public:
 		
 		SDL_ResumeAudioDevice(dev);
 		
-		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 		
 
 
