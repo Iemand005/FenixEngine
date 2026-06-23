@@ -63,13 +63,13 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
 class AudioTest : public fe::EditableGame {
 public:
 
-	std::vector<std::string> messages;
-
 	double lastUpdateTime = 0.0f;
 
 	bool canJump = true;
 
 	int mapIndex = 0;
+
+	std::vector<std::shared_ptr<fe::Object>> rectangles;
 
 	AudioTest() : AudioTest(800, 640) {}
 
@@ -81,15 +81,20 @@ public:
 
 		LoadModels();
 
-		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+		for (int i = 0; i < NUM_BARS; ++i) {
+			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
 
-		this->scene->AddObject(cube);
 
-		#ifdef _WIN32
+	
+			this->scene->AddObject(cube);
+		}
+
+
+#ifdef _WIN32
 		g_loopback.Init();
 #else
-    g_pwLoopback.Init();
-	#endif
+    	g_pwLoopback.Init();
+#endif
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
 
