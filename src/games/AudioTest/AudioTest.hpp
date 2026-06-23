@@ -101,14 +101,15 @@ public:
 		SDL_PutAudioStreamData(stream, data, len);
 
 		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
-		// SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
-
+		
 		SDL_ResumeAudioDevice(dev);
-
+		
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
-
+		
 #ifdef _WIN32
 		g_loopback.Init();
+#else
+		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 #endif
 
 		SDL_AddEventWatch(LiveRedrawWatcher, this);
