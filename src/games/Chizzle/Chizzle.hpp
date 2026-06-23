@@ -17,7 +17,7 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "../../engine/EditableGame.hpp"
+#include <EditableGame.hpp>
 
 class Chizzle : public fe::EditableGame {
 public:
