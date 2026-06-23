@@ -143,7 +143,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+		// this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
 
 		auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
 
@@ -221,7 +221,7 @@ public:
 
 			glm::vec3 pos = player->state.position + cameraOffset;
 
-			camera->SetPos(pos - camera->front * 6.0f);
+			camera->SetPos(pos);
 			camera->UpdateDirection();
 			
 			Update();
