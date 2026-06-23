@@ -55,13 +55,13 @@ target_link_libraries(Engine PUBLIC
     Jolt
 )
 
-target_compile_options(Engine PRIVATE
-    $<$<CONFIG:Debug>:/Zi>
-)
+if(MSVC)
+    target_compile_options(Engine PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-target_link_options(Engine PRIVATE
-    $<$<CONFIG:Debug>:/DEBUG>
-)
+    target_link_options(Engine PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+else()
+    target_compile_options(Engine PRIVATE -g)
+endif()
 
 
 add_library(Renderer STATIC
@@ -92,10 +92,10 @@ target_link_libraries(Renderer PUBLIC
     SDL3::SDL3
 )
 
-target_compile_options(Renderer PRIVATE
-    $<$<CONFIG:Debug>:/Zi>
-)
+if(MSVC)
+    target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-target_link_options(Renderer PRIVATE
-    $<$<CONFIG:Debug>:/DEBUG>
-)
+    target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+else()
+    target_compile_options(Renderer PRIVATE -g)
+endif()
