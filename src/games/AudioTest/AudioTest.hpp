@@ -71,6 +71,8 @@ public:
 
 	int mapIndex = 0;
 
+	glm::vec3 pos;
+
 	AudioTest() : AudioTest(800, 640) {}
 
 	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
@@ -218,11 +220,9 @@ public:
 			UpdateVisualizerData();
 
 			ProcessInput();
-			glm::vec3 pos = player->state.position + cameraOffset;
-			camera->SetPos(pos - camera->front * 6.0f);
+
+			camera->SetPos(pos + cameraOffset);
 			camera->UpdateDirection();
-			
-			if (isConnectedToServer) client->sendPosition(player->state.position, player->state.rotation);
 			
 			Update();
 			Redraw();
