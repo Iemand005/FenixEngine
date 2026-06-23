@@ -23,6 +23,8 @@
 #include <Primitives.hpp>
 #ifdef _WIN32
 #include "WasapiLoopbackCapture.hpp"
+#else
+#include "PipeWireLoopbackCapture.hpp"
 #endif
 
 
@@ -109,8 +111,9 @@ public:
 #ifdef _WIN32
 		g_loopback.Init();
 #else
-		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
-#endif
+    g_pwLoopback.Init();
+	#endif
+	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
 		SDL_AddEventWatch(LiveRedrawWatcher, this);
 	}
@@ -199,13 +202,13 @@ public:
 		while (!window->ShouldClose()) {
 
 #ifdef _WIN32
-
-			g_loopback.Poll(audioSamples);
-			if (audioSamples.size() > FFT_SIZE) {
-				audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
-			}
+    g_loopback.Poll(audioSamples);
+#else
+    g_pwLoopback.Poll(audioSamples);
 #endif
-
+    if (audioSamples.size() > FFT_SIZE) {
+        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
+    }
 
 			UpdateVisualizerData();
 
