@@ -80,13 +80,12 @@ public:
 		this->scene->AddObject(cube);
 
 		LoadModels();
-		
+
 		#ifdef _WIN32
 		g_loopback.Init();
 #else
     g_pwLoopback.Init();
 	#endif
-	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
@@ -110,6 +109,9 @@ public:
 		SDL_PutAudioStreamData(stream, data, len);
 
 		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
+
+	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
+
 		
 		SDL_ResumeAudioDevice(dev);
 		
