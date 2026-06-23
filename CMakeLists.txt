@@ -45,7 +45,7 @@ endif()
 file(GLOB_RECURSE SOURCE_FILES
     # src/extern/*.c
     # src/extern/imgui/*.cpp
-    # src/engine/*.cpp
+    # src/Engine/*.cpp
     src/games/Annihilation/*.cpp
 )
 
@@ -81,7 +81,7 @@ target_include_directories(main PRIVATE
     external
     external/imgui
     external/SDL/include
-    src/engine
+    src/Engine
 )
 
 file(GLOB_RECURSE EDITOR_SOURCE_FILES
@@ -105,7 +105,7 @@ target_include_directories(editor PRIVATE
     include
     src
     external
-    src/engine
+    src/Engine
 )
 
 
@@ -133,7 +133,7 @@ target_include_directories(pool PRIVATE
     src
     external
     external/imgui
-    src/engine
+    src/Engine
 )
 
 add_executable(ShaderSaver
@@ -147,7 +147,7 @@ target_include_directories(ShaderSaver PRIVATE
     external
     external/imgui
     external/glfw/include
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(ShaderSaver PRIVATE Renderer)
@@ -164,7 +164,7 @@ target_include_directories(ShaderSaverSDL PRIVATE
     src
     external
     external/imgui
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(ShaderSaverSDL PRIVATE Renderer)
@@ -190,7 +190,7 @@ target_include_directories(AudioTest PRIVATE
     external
     external/imgui
     external/SDL/include
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(AudioTest PRIVATE
