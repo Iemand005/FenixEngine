@@ -312,6 +312,8 @@ public:
 
 			ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
 			draw->AddRectFilled(barMin, barMax, color);
+
+			rectangles[i]->state.scale = glm::vec3(1.0f, barHeight / 10.0f, 1.0f);
 		}
 
 		ImGui::Dummy(canvasSize);
