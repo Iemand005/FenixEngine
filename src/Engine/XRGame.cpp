@@ -273,7 +273,9 @@ XRGame::~XRGame() {
 void XRGame::initOpenXR() {
 	auto window = GetWindow<fe::SDLWindow>();
 
+#ifdef XR_USE_PLATFORM_WIN32
 	initOpenXR(window->GetDrawingContext(), window->GetOpenGLRenderingContext());
+#endif
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
