@@ -79,7 +79,7 @@ public:
 
 		this->scene->AddObject(cube);
 
-		// LoadModels();
+		LoadModels();
 
 		#ifdef _WIN32
 		g_loopback.Init();
