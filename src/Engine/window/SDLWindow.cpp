@@ -360,7 +360,7 @@ void* fe::SDLWindow::GetWaylandSurface() {
 void *fe::SDLWindow::GetWaylandDisplay() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 	return SDL_GetPointerProperty(
-		SDL_GetVideoDevice(),
+		props,
 		SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER,
 		nullptr
 	);
