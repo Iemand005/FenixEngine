@@ -155,6 +155,8 @@ public:
   }
 
   void DrawUI() override {
+    BeginFrame();
     DrawDebugUI();
+    EndFrame();
   }
 };
