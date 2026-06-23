@@ -95,6 +95,7 @@ class SDLWindow : public IWindow {
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();
 #else
+  void* GetWaylandSurface();
   void* GetWaylandDisplay();
 #endif
 };

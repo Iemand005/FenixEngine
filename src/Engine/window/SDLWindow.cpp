@@ -348,10 +348,19 @@ HGLRC fe::SDLWindow::GetOpenGLRenderingContext() {
 	return (HGLRC)SDL_GL_GetCurrentContext();
 }
 #else
-void* fe::SDLWindow::GetWaylandDisplay() {
+void* fe::SDLWindow::GetWaylandSurface() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 	return SDL_GetPointerProperty(
 		props,
+		SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER,
+		nullptr
+	);
+}
+
+void *fe::SDLWindow::GetWaylandDisplay() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
+	return SDL_GetPointerProperty(
+		SDL_GetVideoDevice(),
 		SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER,
 		nullptr
 	);

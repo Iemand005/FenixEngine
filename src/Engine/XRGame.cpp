@@ -281,7 +281,7 @@ void XRGame::initOpenXR() {
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
 	// window->GetWindow()
 	SDL_GetPrimaryDisplay();
-	gfx.display = (wl_display *)window->GetWaylandDisplay();
+	gfx.display = (wl_display *)window->GetWaylandSurface();
 	initOpenXR();
 #endif
 }
