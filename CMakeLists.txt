@@ -56,7 +56,7 @@ set(IMGUI_SRC
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    # ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
@@ -89,7 +89,7 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
     external/imgui/backends/imgui_impl_sdl3.cpp
     external/imgui/backends/imgui_impl_sdlgpu3.cpp
     external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_glfw.cpp
+    # external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_opengl3.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
