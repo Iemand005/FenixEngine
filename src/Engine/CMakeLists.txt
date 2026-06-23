@@ -40,24 +40,21 @@ target_include_directories(Engine PUBLIC
     ../../external/imgui
 )
 
-target_link_libraries(Engine PRIVATE
-    gdi32
-    opengl32
-    shell32
-    user32
-    gdi32
-)
+# target_link_libraries(Engine PRIVATE
+#     gdi32
+#     opengl32
+#     shell32
+#     user32
+#     gdi32
+# )
 
 if(WIN32)
-    # Windows specifieke libraries
     target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
 elseif(APPLE)
-    # macOS specifieke frameworks (indien nodig)
     target_link_libraries(Engine PRIVATE "-framework OpenGL")
 else()
-    # Linux (Arch) specifieke libraries
     find_package(OpenGL REQUIRED)
-    target_link_libraries(Engine     PRIVATE OpenGL::GL)
+    target_link_libraries(Engine PRIVATE OpenGL::GL)
 endif()
 
 
@@ -92,13 +89,16 @@ target_include_directories(Renderer PUBLIC
     ../../external/glm
 )
 
-target_link_libraries(Renderer PRIVATE
-    gdi32
-    opengl32
-    shell32
-    user32
-    gdi32
-)
+
+if(WIN32)
+    target_link_libraries(Renderer PRIVATE gdi32 opengl32 shell32 user32)
+elseif(APPLE)
+    target_link_libraries(Renderer PRIVATE "-framework OpenGL")
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(Renderer PRIVATE OpenGL::GL)
+endif()
+
 
 target_link_libraries(Renderer PUBLIC
     glfw
