@@ -112,16 +112,17 @@ namespace fe
 		}
 
 		fe::Object* model = this->player.get();
-    if (model) {
-		ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
-		for (size_t i = 0; i < this->npcs.size(); ++i) {
-			ImGui::Text("NPC %zu", i);
-			ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
-			ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
-		}
+		if (model) {
+			ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+			for (size_t i = 0; i < this->npcs.size(); ++i) {
+				ImGui::Text("NPC %zu", i);
+				ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
+				ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
+			}
 		}
 		ImGui::End();
-  }
+		}
+
 		ImGui::Begin("Objects");
 		{
 		static char filenameBuffer[512] = "\0";
