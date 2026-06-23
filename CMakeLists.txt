@@ -200,6 +200,12 @@ target_link_libraries(AudioTest PRIVATE
     kissfft::kissfft-float
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
+target_include_directories(<target> PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
+target_link_libraries(<target> PRIVATE ${PIPEWIRE_LIBRARIES})
+target_compile_options(<target> PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+
 set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     
 if(MSVC)
