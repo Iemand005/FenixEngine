@@ -17,15 +17,10 @@
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-#include "kiss_fftr.h"
-
 #include <EditableGame.hpp>
 #include <Primitives.hpp>
-#ifdef _WIN32
-#include <audio/WasapiLoopbackCapture.hpp>
-#else
-#include <audio/PipeWireLoopbackCapture.hpp>
-#endif
+
+#include <audio/AudioVisualiser.hpp>
 
 
 const int FFT_SIZE = 1024;               
