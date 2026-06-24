@@ -56,4 +56,8 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
+	inline Mesh GeneratePlane(float size = 1.0f) {
+		
+	}
+
 } // namespace fe::Primitives
