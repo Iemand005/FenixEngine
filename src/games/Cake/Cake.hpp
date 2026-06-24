@@ -241,6 +241,9 @@ public:
 	
 		glm::vec3 cameraOffset = glm::vec3(0);
 
+		player->state.position.z = 5;
+		player->state.position.1 = y;
+
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
 
@@ -269,15 +272,6 @@ public:
           sin(elapsedTime * 0.7f) * radius
       );
 
-			glm::vec3 orbitCenter = glm::vec3(0, 3, 0);  // Center to orbit around
-      float orbitRadius = 8.0f;
-      float orbitHeight = 4.0f;
-      
-      // glm::vec3 cameraPos = orbitCenter + glm::vec3(
-      //     cos(elapsedTime * 0.3f) * orbitRadius,
-      //     orbitHeight,
-      //     sin(elapsedTime * 0.3f) * orbitRadius
-      // );
       
 			glm::vec3 pos = player->state.position + cameraOffset;
       camera->SetPos(pos);
