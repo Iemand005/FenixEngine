@@ -88,9 +88,11 @@ public:
 
 		ComputeBands(magnitudes, BINS, bandMagnitudes, NUM_BARS);
 
+		if (!smoothed) return;
+
 		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
 		for (int b = 0; b < NUM_BARS; ++b)
-			bandMagnitudesSmoothed[b] = smoothed ? std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f) : bandMagnitudes;
+			bandMagnitudesSmoothed[b] = std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f);
 	}
 
 };
