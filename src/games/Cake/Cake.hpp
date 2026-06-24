@@ -241,55 +241,79 @@ public:
 
 
 	void Run() {
-    auto window = this->GetWindow<fe::SDLWindow>();
-    window->DisableVSync();
-  
-    glm::vec3 cameraOffset = glm::vec3(0);
-    player->state.position.z = 5;
-    player->state.position.y = 2;
-    float elapsedTime = 0.0f;
-    float scale = 10.0f;
+		auto window = this->GetWindow<fe::SDLWindow>();
+		window->DisableVSync();
+	
+		glm::vec3 cameraOffset = glm::vec3(0);
+		player->state.position.z = 5;
+		player->state.position.y = 2;
+		float elapsedTime = 0.0f;
+		float scale = 10.0f;
 		float cameraPanSpeed = 0.01f;
-    SDL_Event event;
-    
-    while (!window->ShouldClose()) {
-      
-      ProcessInput();
-      visualizer.Update();
-      float totalMagnitude = 0.0f;
-      for (int i = 0; i < NUM_BARS; ++i) {
-          totalMagnitude += visualizer.bandMagnitudes[i];
-      }
-      float avgMagnitude = totalMagnitude / NUM_BARS;
-      
-      float baseSpeed = 0.0002f;
-      float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
-      elapsedTime += speed;
-      
-
-      cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f) * 2.0f;
-      cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 1.5f;
-      cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f) * 1.0f;
-      
-      glm::vec3 lightCenter = glm::vec3(5, 5, 5);
-      float radius = 3.0f;
-      
-      scene->GetLights()[0].position = lightCenter + glm::vec3(
-          sin(elapsedTime * 0.5f) * radius,
-          cos(elapsedTime * 0.3f) * radius * 0.5f,
-          sin(elapsedTime * 0.7f) * radius
-      );
-      
-      glm::vec3 pos = player->state.position + cameraOffset;
-      camera->SetPos(pos);
-      camera->LookAt(wick->state.position);
-      flameParticle->LookAt(camera->GetPos());
-      wick->LookAt(camera->GetPos());
-      
-      Update();
-      Redraw();
-    }
-    Destroy();
+		SDL_Event event;
+		
+		while (!window->ShouldClose()) {
+			
+			ProcessInput();
+			visualizer.Update();
+			float totalMagnitude = 0.0f;
+			for (int i = 0; i < NUM_BARS; ++i) {
+					totalMagnitude += visualizer.bandMagnitudes[i];
+			}
+			float avgMagnitude = totalMagnitude / NUM_BARS;
+			
+			float baseSpeed = 0.0002f;
+			float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
+			elapsedTime += speed;
+			
+			// Camera speed variation (randomly speeds up/slows down)
+			float speedVariation = 1.0f + sin(elapsedTime * 0.15f) * 0.4f;
+			
+			cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f * speedVariation) * 2.0f;
+			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f * speedVariation) * 1.5f;
+			cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f * speedVariation) * 1.0f;
+			
+			// Light 0
+			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
+			float radius = 3.0f;
+			scene->GetLights()[0].position = lightCenter + glm::vec3(
+					sin(elapsedTime * 0.5f) * radius,
+					cos(elapsedTime * 0.3f) * radius * 0.5f,
+					sin(elapsedTime * 0.7f) * radius
+			);
+			
+			// Light 1
+			if (scene->GetLights().size() > 1) {
+					glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
+					float radius1 = 2.5f;
+					scene->GetLights()[1].position = lightCenter1 + glm::vec3(
+							sin(elapsedTime * 0.4f) * radius1,
+							cos(elapsedTime * 0.25f) * radius1 * 0.6f,
+							sin(elapsedTime * 0.6f) * radius1
+					);
+			}
+			
+			// Light 2
+			if (scene->GetLights().size() > 2) {
+					glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
+					float radius2 = 2.0f;
+					scene->GetLights()[2].position = lightCenter2 + glm::vec3(
+							sin(elapsedTime * 0.35f) * radius2,
+							cos(elapsedTime * 0.28f) * radius2 * 0.7f,
+							sin(elapsedTime * 0.55f) * radius2
+					);
+			}
+			
+			glm::vec3 pos = player->state.position + cameraOffset;
+			camera->SetPos(pos);
+			camera->LookAt(wick->state.position);
+			flameParticle->LookAt(camera->GetPos());
+			wick->LookAt(camera->GetPos());
+			
+			Update();
+			Redraw();
+		}
+		Destroy();
 	}
 
 
