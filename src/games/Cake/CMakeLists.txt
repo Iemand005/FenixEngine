@@ -59,17 +59,3 @@ if(MSVC)
 
 	target_link_options(Cake PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 endif()
-
-if(WINDOWS)
-	add_custom_command(TARGET Cake POST_BUILD
-		COMMAND cmd /c mklink /J "${CMAKE_BINARY_DIR}/resources" "${CMAKE_SOURCE_DIR}/resources"
-		COMMENT "Creating junction link to resources"
-	)
-else()
-	add_custom_command(TARGET Cake POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E create_symlink
-		"${CMAKE_SOURCE_DIR}/resources"
-		"${CMAKE_BINARY_DIR}/resources"
-		COMMENT "Creating symlink to resources"
-	)
-endif()
