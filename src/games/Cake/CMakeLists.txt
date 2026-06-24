@@ -37,11 +37,13 @@ target_link_libraries(Cake PRIVATE
     Engine
 )
 
+if(NOT WIN32)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 target_include_directories(Cake PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
 target_link_libraries(Cake PRIVATE ${PIPEWIRE_LIBRARIES})
 target_compile_options(Cake PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+endif()
 
 set_property(TARGET Cake PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     
