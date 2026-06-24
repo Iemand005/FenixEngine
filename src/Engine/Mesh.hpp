@@ -152,7 +152,7 @@ namespace fe {
 			// if (textureFilePath == NULL)
 			//   return false;
 			int width, height, nrChannels;
-			unsigned char* data;texScaling
+			unsigned char* data;
 			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
 
 			glGenTextures(1, &this->texture);
