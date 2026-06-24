@@ -192,4 +192,17 @@ namespace fe::Primitives {
 		
 		return GenerateCube(directions, size);
 	}
+
+	inline Mesh GenerateCube(const CubeUVs& uvs, float size = 1.0f) {
+		std::vector<PlaneDirection> directions = {
+			PlaneDirection::Front,
+			PlaneDirection::Back,
+			PlaneDirection::Left,
+			PlaneDirection::Right,
+			PlaneDirection::Top,
+			PlaneDirection::Bottom
+		};
+		
+		return GenerateCube(directions, uvs, size);
+	}
 } // namespace fe::Primitives
