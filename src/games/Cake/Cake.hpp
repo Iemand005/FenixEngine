@@ -256,6 +256,7 @@ public:
 			flameParticle->LookAt(camera->GetPos());
 			wick->LookAt(camera->GetPos());
 
+			scene->GetLights()[0].position += 0.1f;
 
 			
 			Update();
