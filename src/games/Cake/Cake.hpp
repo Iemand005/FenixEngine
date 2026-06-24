@@ -39,7 +39,7 @@ public:
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
-		
+		scene->
 
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
