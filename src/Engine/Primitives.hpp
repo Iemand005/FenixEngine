@@ -63,7 +63,6 @@ namespace fe::Primitives {
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
 			
-			// Offset vertices based on direction
 			glm::vec3 planeOffset = glm::vec3(0.0f);
 			switch(direction) {
 				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, -offset); break;
@@ -74,10 +73,8 @@ namespace fe::Primitives {
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, offset, 0); break;
 			}
 			
-			// Apply offset to all vertices
-			for(auto& vertex : plane.vertices) {
+			for(auto& vertex : plane.vertices)
 				vertex.position += planeOffset;
-			}
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
