@@ -75,7 +75,7 @@ public:
 		auto sampleCube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube());
 		sampleCube->state.position.y += 1;
 		sampleCube->state.position.x += 1;
-		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, -sideInset);
+		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back});
 		sampleSideTest.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
 		sampleCube->meshes.push_back(sampleSideTest);
 		scene->AddObject(sampleCube);
