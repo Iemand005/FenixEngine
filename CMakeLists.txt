@@ -33,7 +33,7 @@ set(KISSFFT_TEST OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-add_subdirectory(external/kissfft)
+# add_subdirectory(external/kissfft)
 
 add_subdirectory(src/Engine)
 
@@ -197,7 +197,7 @@ target_include_directories(AudioTest PRIVATE
 
 target_link_libraries(AudioTest PRIVATE
     Engine
-    kissfft::kissfft-float
+    # kissfft::kissfft-float
 )
 
 find_package(PkgConfig REQUIRED)
