@@ -37,6 +37,7 @@ public:
 
 	bool showCandle = true;
 
+	std::shared_ptr<fe::Object> wick;
 	std::shared_ptr<fe::Object> flameParticle;
 
 	Cake() : Cake(1400, 1200) {}
