@@ -110,10 +110,7 @@ public:
 
 		candleUVs.top = topUV;
 		candleUVs.bottom = topUV;
-		candleUVs.front = sideUV;
-		candleUVs.back = sideUV;
-		candleUVs.left = sideUV;
-		candleUVs.right = sideUV;
+		candleUVs.front = candleUVs.back = candleUVs.left = candleUVs.right = sideUV;
 
 		auto candleMesh = fe::Primitives::GenerateCube(candleUVs);
 		candleMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
