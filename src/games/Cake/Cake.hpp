@@ -74,7 +74,7 @@ public:
 
 		auto plane = std::make_shared<fe::Object>(fe::Primitives::GeneratePlane());
 		// plane->te
-		plane->meshes[0].loadTexture()
+		plane->meshes[0].loadTexture("resources/textures/cake_top.png");
 		this->scene->AddObject(plane);
 	}
 
