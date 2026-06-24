@@ -242,7 +242,7 @@ public:
 		glm::vec3 cameraOffset = glm::vec3(0);
 
 		float elapsedTime = 0.0f;
-		float scale - 1.0f;
+		float scale = 1.0f;
 
 		SDL_Event event;
 		while (!window->ShouldClose()) {
