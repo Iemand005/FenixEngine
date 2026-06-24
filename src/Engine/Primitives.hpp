@@ -136,29 +136,6 @@ namespace fe::Primitives {
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
 			}
 			
-			// for(auto& vertex : plane.vertices) {
-			// 	vertex.position += planeOffset;
-				
-			// 	switch(direction) {
-			// 		case PlaneDirection::Back:
-			// 			vertex.uv.x = 1.0f - vertex.uv.x;
-			// 			vertex.uv.y = 1.0f - vertex.uv.y;
-			// 			break;
-			// 		case PlaneDirection::Right:
-			// 		case PlaneDirection::Left:
-			// 			std::swap(vertex.uv.x, vertex.uv.y);
-			// 			if(direction == PlaneDirection::Left)
-			// 				vertex.uv.y = 1.0f - vertex.uv.y;
-			// 			break;
-			// 		case PlaneDirection::Top:
-			// 		case PlaneDirection::Bottom:
-			// 			vertex.uv.y = 1.0f - vertex.uv.y;
-			// 			break;
-			// 		default:
-			// 			break;
-			// 	}
-			// }
-			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
 			
