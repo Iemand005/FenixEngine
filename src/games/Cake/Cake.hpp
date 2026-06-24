@@ -76,7 +76,7 @@ public:
 
 		
 
-		LoadShaders("/home/lasse/Documents/Projects/FenixEngine/resources/shaders/debug.vert", "/home/lasse/Documents/Projects/FenixEngine/resources/shaders/debug.frag");
+		LoadShaders("resources/shaders/debug.vert", "resources/shaders/debug.frag");
 
 		LoadModels();
 
