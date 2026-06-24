@@ -73,6 +73,7 @@ public:
 		this->scene->AddObject(player);
 
 		auto plane = fe::Primitives::GeneratePlane();
+		this->scene->AddObject(plane);
 	}
 
 	void ProcessInput() {
