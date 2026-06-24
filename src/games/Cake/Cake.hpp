@@ -317,7 +317,7 @@ public:
 
 			// Flicker the flame awaw
 			float flameCycleDuration = 2.0f;
-			float flamePhase = fmod(elapsedTime * 0.10f, flameCycleDuration);
+			float flamePhase = fmod(elapsedTime * 5.10f, flameCycleDuration);
 			float flameProgress = flamePhase / flameCycleDuration;
 
 			if (flameProgress < 0.2f) {
