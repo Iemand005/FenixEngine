@@ -42,8 +42,6 @@ public:
 
 	int lastX, lastY;
 
-	bool capturingMouse = true;
-
 	std::shared_ptr<Character> player;
 
 	std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
