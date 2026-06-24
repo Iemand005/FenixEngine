@@ -62,10 +62,9 @@ endif()
 
 if(WIN32)
 add_custom_command(TARGET Cake POST_BUILD
-    COMMAND cmd.exe /C
-        mklink /J
-        "$<TARGET_FILE_DIR:Cake>\\resources"
-        "${CMAKE_SOURCE_DIR}\\resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/resources"
+        "$<TARGET_FILE_DIR:Cake>/resources"
 )
 else()
 add_custom_command(TARGET Cake POST_BUILD
