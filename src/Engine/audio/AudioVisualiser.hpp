@@ -13,6 +13,11 @@
 #include <audio/PipeWireLoopbackCapture.hpp>
 #endif
 
+const int FFT_SIZE = 1024;               
+const int BINS = (FFT_SIZE / 2) + 1;  
+
+const int NUM_BARS = 32;
+
 std::vector<float> audioSamples;         
 kiss_fftr_cfg      fftConfig;            
 float              fftInput[FFT_SIZE];  
