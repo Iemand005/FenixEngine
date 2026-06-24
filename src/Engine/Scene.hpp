@@ -209,7 +209,7 @@ void main() {
 
     for (auto& model : objects) {
       if (model->shader)
-        model->Render(model->shader);
+        model->Render(model->shader.get());
       else model->Render(shader);
     }
 
