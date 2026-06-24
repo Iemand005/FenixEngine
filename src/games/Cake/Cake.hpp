@@ -116,6 +116,8 @@ public:
 		candleUVs.right = sideUV;
 
 		auto candleMesh = fe::Primitives::GenerateCube(candleUVs);
+		candleMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
+
 		auto candle = std::make_shared<fe::Object>(candleMesh);
 		candle->name = "Candle";
 		scene->AddObject(candle);
