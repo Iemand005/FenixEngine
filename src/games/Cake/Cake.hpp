@@ -105,8 +105,8 @@ public:
 
 		sideUV.u0 = 0;
 		sideUV.u1 = 2.0f / 16.0f;
-		sideUV.v0 = 8.0f / 16.0f;
-		sideUV.v1 = 1;
+		sideUV.v0 = 0;
+		sideUV.v1 = 0.8f / 16.0f;
 
 		candleUVs.top = topUV;
 		candleUVs.bottom = topUV;
