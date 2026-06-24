@@ -11,6 +11,7 @@ add_executable(Cake
 target_include_directories(Cake PRIVATE
     include
     ../..
+    ../../../include
     ../../../external
     ../../../external/imgui
     ../../../external/kissfft
