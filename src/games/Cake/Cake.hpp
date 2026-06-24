@@ -157,11 +157,10 @@ public:
 		auto wickMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.1f, 0.1f, wickUV);
 		wickMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
 
-		auto particle = std::make_shared<fe::Object>(wickMesh);
-		particle->meshes[0].hasTransparency = true;
-		particle->state.position.y = 1.07f;
-		flameParticle = particle;
-		scene->AddObject(particle);
+		auto wickObject = std::make_shared<fe::Object>(wickMesh);
+		wickObject->state.position.y = 1.03f;
+		wick = wickObject;
+		scene->AddObject(wickObject);
 
 		// Flame particle
 
