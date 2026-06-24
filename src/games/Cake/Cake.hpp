@@ -48,18 +48,6 @@ public:
 
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
-
-		for (int i = 0; i < NUM_BARS; ++i) {
-			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-
-			cube->name = "Bar_" + i;
-			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -5.0f);
-	
-			this->scene->AddObject(cube);
-
-			rectangles.push_back(cube);
-		}
-
 		LoadModels();
 
 		visualizer.Init();
@@ -73,6 +61,20 @@ public:
 	}
 
 	void LoadModels() {
+
+		for (int i = 0; i < NUM_BARS; ++i) {
+			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+
+			cube->name = "Bar_" + i;
+			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -5.0f);
+
+			// cube->meshes[0].sha
+			cube->shader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.glsl", "resources/shaders/debug.glsl");
+	
+			this->scene->AddObject(cube);
+
+			rectangles.push_back(cube);
+		}
 
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
