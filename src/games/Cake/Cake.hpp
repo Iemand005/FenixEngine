@@ -61,9 +61,8 @@ public:
 
 	static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
 		Cake* game = (Cake*)userdata;
-		if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
+		if (event->type == SDL_EVENT_WINDOW_EXPOSED)
 			game->Redraw();
-		}
 		return true;
 	}
 
