@@ -88,7 +88,7 @@ private:
 	void LookAt(const glm::vec3& target) {
     glm::vec3 direction = glm::normalize(target - position);
     this->pitch = glm::degrees(asin(direction.y));
-    this->yaw = glm::degrees(atan2(direction.x, direction.z));
+    this->yaw = glm::degrees(atan2(direction.x, direction.z)) - 180;
     UpdateDirection();
 	}
 
