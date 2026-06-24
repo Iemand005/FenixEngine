@@ -63,5 +63,5 @@ endif()
 add_custom_command(TARGET MyExe POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${CMAKE_SOURCE_DIR}/resources"
-        "$<TARGET_FILE_DIR:MyExe>/resources"
+        "$<TARGET_FILE_DIR:Cake>/resources"
 )
