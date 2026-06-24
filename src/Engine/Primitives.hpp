@@ -58,10 +58,26 @@ namespace fe::Primitives {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
+		float offset = size / 2.0f;
+		
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
-			uint32_t vertexOffset = allVertices.size();
 			
+			glm::vec3 planeOffset = glm::vec3(0.0f);
+			switch(direction) {
+				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, offset); break;
+				case PlaneDirection::Back:   planeOffset = glm::vec3(0, 0, -offset); break;
+				case PlaneDirection::Right:  planeOffset = glm::vec3(offset, 0, 0); break;
+				case PlaneDirection::Left:   planeOffset = glm::vec3(-offset, 0, 0); break;
+				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
+				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
+			}
+			
+			for(auto& vertex : plane.vertices) {
+				vertex.position += planeOffset;
+			}
+			
+			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
 			for(uint32_t idx : plane.indices)
 				allIndices.push_back(idx + vertexOffset);
