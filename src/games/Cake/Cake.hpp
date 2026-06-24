@@ -79,6 +79,12 @@ public:
 
 		constexpr float sideInset = 1 - 15.0f / 16.0f;
 
+		fe::UVRect cakeTopBtmUV;
+		cakeTopBtmUV.u0 = 1.0f / 16.0f;
+		cakeTopBtmUV.u1 = 1.0f / 16.0f;
+		cakeTopBtmUV.v0 = 15.0f / 16.0f;
+		cakeTopBtmUV.v1 = 15.0f / 16.0f;
+
 		fe::UVRect cakeSideUV;
 		cakeSideUV.u0 = 1.0f / 16.0f;
 		cakeSideUV.u1 = 1.0f / 16.0f;
@@ -88,7 +94,7 @@ public:
 		fe::CubeUVs cakeUVs;
 
 
-
+		cakeUVs.top = cakeUVs.bottom = cakeTopBtmUV;
 		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = cakeSideUV;
 
 
