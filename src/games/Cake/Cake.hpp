@@ -69,7 +69,8 @@ public:
 			
 			cube->name = "Bar_" + i;
 			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -5.0f);
-			cube->shader = barShader;
+			if (false)
+				cube->shader = barShader;
 
 			// cube->meshes[0].sha
 	
@@ -254,6 +255,8 @@ public:
 
 			flameParticle->LookAt(camera->GetPos());
 			wick->LookAt(camera->GetPos());
+
+
 			
 			Update();
 			Redraw();
