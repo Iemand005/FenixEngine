@@ -75,10 +75,10 @@ public:
 		auto planeMesh = fe::Primitives::GeneratePlane();
 		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
 		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back});
-		planeMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
+		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
 
 		auto plane = std::make_shared<fe::Object>(planeMesh);
-		plane->meshes.push_back()
+		plane->meshes.push_back(sideMesh)
 
 		plane->name = "Cake";
 		this->scene->AddObject(plane);
