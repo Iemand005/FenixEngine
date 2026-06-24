@@ -280,7 +280,7 @@ public:
       );
       
       camera->SetPos(cameraPos);
-      camera->LookAt(orbitCenter);
+      camera->LookAt(wick->state.position);
 
 			flameParticle->LookAt(camera->GetPos());
 			wick->LookAt(camera->GetPos());
