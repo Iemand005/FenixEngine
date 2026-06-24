@@ -1,6 +1,5 @@
 #pragma once
 #include "Mesh.hpp"
-
 namespace fe::Primitives {
 	enum class PlaneDirection {
 		Front,   // +Z
@@ -13,29 +12,29 @@ namespace fe::Primitives {
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
 		switch(direction) {
 			default:
-			case PlaneDirection::Front:
-				return glm::quat(1, 0, 0, 0);
-			case PlaneDirection::Back:
-				return glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 1, 0));
-			case PlaneDirection::Right:
-				return glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0));
-			case PlaneDirection::Left:
-				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 1, 0));
 			case PlaneDirection::Top:
-				return glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
+				return glm::quat(1, 0, 0, 0);
 			case PlaneDirection::Bottom:
+				return glm::angleAxis(glm::radians(180.0f), glm::vec3(1, 0, 0));
+			case PlaneDirection::Front:
 				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
+			case PlaneDirection::Back:
+				return glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
+			case PlaneDirection::Right:
+				return glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1));
+			case PlaneDirection::Left:
+				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1));
 		}
 	}
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0))) {
+	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0)) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
 		
 		std::vector<Vertex> vertices = {
-			Vertex(-w, -h, 0,  0, 0, 1,  0, 0),
-			Vertex(-w,  h, 0,  0, 0, 1,  0, 1),
-			Vertex( w,  h, 0,  0, 0, 1,  1, 1),
-			Vertex( w, -h, 0,  0, 0, 1,  1, 0),
+			Vertex(-w, 0, -h,  0, 1, 0,  0, 0),
+			Vertex(-w, 0,  h,  0, 1, 0,  0, 1),
+			Vertex( w, 0,  h,  0, 1, 0,  1, 1),
+			Vertex( w, 0, -h,  0, 1, 0,  1, 0),
 		};
 		
 		for(auto& v : vertices) {
