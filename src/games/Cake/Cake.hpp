@@ -71,6 +71,8 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
+		// Cube mesh
+
 		auto planeMesh = fe::Primitives::GeneratePlane();
 		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
 		planeMesh.hasTransparency = true;
@@ -90,6 +92,16 @@ public:
 
 		plane->name = "Cake";
 		this->scene->AddObject(plane);
+
+
+		fe::CubeUVs candle;
+
+		candle.top = topUV;
+		candle.bottom = topUV;
+		candle.front = sideUV;
+		candle.back = sideUV;
+		candle.left = sideUV;
+		candle.right = sideUV;
 	}
 
 	void ProcessInput() {
