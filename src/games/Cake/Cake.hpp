@@ -80,10 +80,10 @@ public:
 		constexpr float sideInset = 1 - 15.0f / 16.0f;
 
 		fe::UVRect cakeSideUV;
-		constexpr cakeSideUV.u0 = 1;
-		cakeSideUV.u1 = 2.0f / 16.0f;
-		cakeSideUV.v0 = 6.0f / 16.0f;
-		cakeSideUV.v1 = 8.0f / 16.0f;
+		cakeSideUV.u0 = 1.0f / 16.0f;
+		cakeSideUV.u1 = 1.0f / 16.0f;
+		cakeSideUV.v0 = 15.0f / 16.0f;
+		cakeSideUV.v1 = 15.0f / 16.0f;
 
 		fe::CubeUVs cakeUVs;
 
