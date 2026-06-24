@@ -79,11 +79,17 @@ public:
 
 		constexpr float sideInset = 1 - 15.0f / 16.0f;
 
-		float candleSideUV = 
+		fe::UVRect cakeSideUV;
+		constexpr cakeSideUV.u0 = 1;
+		cakeSideUV.u1 = 2.0f / 16.0f;
+		cakeSideUV.v0 = 6.0f / 16.0f;
+		cakeSideUV.v1 = 8.0f / 16.0f;
 
 		fe::CubeUVs cakeUVs;
 
-		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = sideUV;
+
+
+		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = cakeSideUV;
 
 
 		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, sideInset);
