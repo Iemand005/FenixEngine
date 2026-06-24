@@ -19,7 +19,6 @@ target_include_directories(Cake PRIVATE
 
 target_link_libraries(Cake PRIVATE
     Engine
-    kissfft::kissfft-float
 )
 
 find_package(PkgConfig REQUIRED)

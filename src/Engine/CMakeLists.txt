@@ -21,6 +21,8 @@ endif()
 add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
+add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
+add_subdirectory(../../external/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
 if(MSVC AND TARGET Jolt)
