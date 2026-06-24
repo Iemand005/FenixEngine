@@ -12,11 +12,11 @@ namespace fe::Primitives {
 		Bottom   // -Y
 	};
 
-	// Helper: Convert direction enum to quaternion
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
 		switch(direction) {
+			default:
 			case PlaneDirection::Front:
-				return glm::quat(1, 0, 0, 0); // identity
+				return glm::quat(1, 0, 0, 0);
 			case PlaneDirection::Back:
 				return glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 1, 0));
 			case PlaneDirection::Right:
@@ -27,17 +27,13 @@ namespace fe::Primitives {
 				return glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
 			case PlaneDirection::Bottom:
 				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
-			default:
-				return glm::quat(1, 0, 0, 0);
 		}
 	}
 
-	// Main plane generation with arbitrary rotation
 	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0)) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
 		
-		// Base plane vertices (before rotation)
 		std::vector<Vertex> vertices = {
 			Vertex(-w, -h, 0,  0, 0, 1,  0, 0),
 			Vertex(-w,  h, 0,  0, 0, 1,  0, 1),
@@ -45,12 +41,10 @@ namespace fe::Primitives {
 			Vertex( w, -h, 0,  0, 0, 1,  1, 0),
 		};
 		
-		// Apply rotation to position and normal
 		for(auto& v : vertices) {
 			glm::vec3 pos(v.x, v.y, v.z);
 			glm::vec3 norm(v.nx, v.ny, v.nz);
 			
-			// Rotate position and normal
 			pos = rotation * pos;
 			norm = rotation * norm;
 			
@@ -62,12 +56,10 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
-	// Convenience overload for enum
 	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, PlaneDirection direction = PlaneDirection::Front) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
 
-	// Cube using the plane function
 	inline Mesh GenerateCube(float size = 1.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
