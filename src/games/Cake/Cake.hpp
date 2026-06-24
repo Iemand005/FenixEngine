@@ -104,9 +104,9 @@ public:
 		fe::UVRect sideUV;
 
 		sideUV.u0 = 0;
-		sideUV.v0 = 6.0f / 16.0f;
+		sideUV.v0 = 8.0f / 16.0f;
 		sideUV.u1 = 2.0f / 16.0f;
-		sideUV.v1 = 8.0f / 16.0f;
+		sideUV.v1 = 1;
 
 		candle.top = topUV;
 		candle.bottom = topUV;
