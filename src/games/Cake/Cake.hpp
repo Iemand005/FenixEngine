@@ -35,7 +35,7 @@ public:
 
 	AudioVisualiser visualizer;
 
-	Cake() : Cake(800, 640) {}
+	Cake() : Cake(1400, 1200) {}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
