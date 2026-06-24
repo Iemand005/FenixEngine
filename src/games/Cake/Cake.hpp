@@ -154,6 +154,7 @@ public:
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
 
 		auto particle = std::make_shared<fe::Object>(flameMesh);
+		particle->meshes[0].hasTransparency = true;
 		scene->AddObject(particle);
 	}
 
