@@ -9,6 +9,12 @@ namespace fe {
 		Top,     // +Y
 		Bottom   // -Y
 	};
+	struct UVRect {
+		float u0;
+		float v0;
+		float u1;
+		float v1;
+	};
 }
 namespace fe::Primitives {
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
