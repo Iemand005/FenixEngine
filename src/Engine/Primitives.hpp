@@ -97,8 +97,12 @@ namespace fe::Primitives {
 	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f, UVRect uv = {0, 0, 1, 1}) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction), uv);
 	}
+
+	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f) {
+		return GenerateCube(directions, defaultUVs, size, inset);
+	}
 	
-	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f, const CubeUVs& uvs = {}) {
+	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, float size = 1.0f, float inset = 0.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
