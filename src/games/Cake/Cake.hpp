@@ -53,7 +53,7 @@ public:
 		scene->AddLight();
 		scene->AddLight();
 		scene->GetLights()[1].color = {0.5f, 0.9f, 0.3f};
-		scene->GetLights()[1].color = {0.2f, 0.6f, 0.8f};
+		scene->GetLights()[2].color = {0.2f, 0.6f, 0.8f};
 
 		visualizer.Init();
 	}
