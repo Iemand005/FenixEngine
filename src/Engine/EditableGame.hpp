@@ -76,10 +76,10 @@ namespace fe
 
 	void EndFrame() {
 		ImGui::Render();
-    	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
-    void DrawDebugUI() {
+	void DrawDebugUI() {
 
 
 		ImGui::Begin("Debug");
