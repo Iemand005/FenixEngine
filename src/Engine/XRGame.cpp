@@ -5,12 +5,16 @@
 #include <openxr/openxr_platform.h>
 
 #ifdef WIN32
-#define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 #include <unknwn.h>
+
+#endif
+
+#ifdef XR_USE_PLATFORM_WAYLAND
+#include <wayland-client.h>
 #endif
 
 using namespace fe;
@@ -273,12 +277,30 @@ XRGame::~XRGame() {
 void XRGame::initOpenXR() {
 	auto window = GetWindow<fe::SDLWindow>();
 
+#ifdef XR_USE_PLATFORM_WIN32
 	initOpenXR(window->GetDrawingContext(), window->GetOpenGLRenderingContext());
+// #else // If wayalnd oh wait
+#elif defined(XR_USE_PLATFORM_WAYLAND)
+	XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
+	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
+	gfx.display = (wl_display *)window->GetWaylandDisplay();
+	initOpenXR(&gfx);
+#endif
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
 
 void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
+	XrGraphicsBindingOpenGLWin32KHR gfx{};
+	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
+	gfx.hDC = hDC;
+	gfx.hGLRC = hGLRC;
+
+	initOpenXR(&gfx);
+}
+
+#endif
+void XRGame::initOpenXR(void *next) {
 	XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
 	const char* enabledExtensions[] = {XR_KHR_OPENGL_ENABLE_EXTENSION_NAME};
@@ -288,8 +310,8 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 	createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
 	createInfo.applicationInfo.applicationVersion = 1;
 	createInfo.applicationInfo.engineVersion = 1;
-	strcpy(createInfo.applicationInfo.engineName, "FoxEngine");
-	strcpy(createInfo.applicationInfo.applicationName, "FoxEngineTest");
+	strcpy(createInfo.applicationInfo.engineName, "FenixEngine");
+	strcpy(createInfo.applicationInfo.applicationName, "Fenix Engine");
 
 	impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
 
@@ -306,18 +328,13 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 
 	Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 
-	XrGraphicsBindingOpenGLWin32KHR gfx{};
-	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
-	gfx.hDC = hDC;
-	gfx.hGLRC = hGLRC;
-
 	XrSessionCreateInfo sci{XR_TYPE_SESSION_CREATE_INFO};
 	sci.systemId = impl->systemId;
-	sci.next = &gfx;
+	sci.next = next;
 
 	XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
 	sessionInfo.systemId = impl->systemId;
-	sessionInfo.next = &gfx;
+	sessionInfo.next = next;
 
 	XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
 	PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLGraphicsRequirementsKHR = nullptr;
@@ -338,8 +355,6 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 
 	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
 }
-
-#endif
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
     XrVector2f joystickInput = {0.0f, 0.0f};

@@ -27,7 +27,6 @@
 #include <audio/PipeWireLoopbackCapture.hpp>
 #endif
 
-
 const int FFT_SIZE = 1024;               
 const int BINS = (FFT_SIZE / 2) + 1;  
 

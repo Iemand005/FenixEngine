@@ -239,6 +239,7 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
 #endif
 }
 
+#ifdef _WIN32
 HWND fe::GLFW3Window::GetNativeWindow() {
 	return glfwGetWin32Window(impl->window);
 }
@@ -250,3 +251,4 @@ HDC fe::GLFW3Window::GetDrawingContext() {
 HGLRC fe::GLFW3Window::GetOpenGLRenderingContext() {
 	return glfwGetWGLContext(impl->window);
 }
+#endif

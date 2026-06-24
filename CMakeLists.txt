@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(editor)
+project(EngineRoot)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,7 +33,7 @@ set(KISSFFT_TEST OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-add_subdirectory(external/kissfft)
+# add_subdirectory(external/kissfft)
 
 add_subdirectory(src/Engine)
 
@@ -45,7 +45,7 @@ endif()
 file(GLOB_RECURSE SOURCE_FILES
     # src/extern/*.c
     # src/extern/imgui/*.cpp
-    # src/engine/*.cpp
+    # src/Engine/*.cpp
     src/games/Annihilation/*.cpp
 )
 
@@ -56,7 +56,7 @@ set(IMGUI_SRC
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    # ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
@@ -81,7 +81,7 @@ target_include_directories(main PRIVATE
     external
     external/imgui
     external/SDL/include
-    src/engine
+    src/Engine
 )
 
 file(GLOB_RECURSE EDITOR_SOURCE_FILES
@@ -89,7 +89,7 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
     external/imgui/backends/imgui_impl_sdl3.cpp
     external/imgui/backends/imgui_impl_sdlgpu3.cpp
     external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_glfw.cpp
+    # external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_opengl3.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
@@ -101,11 +101,13 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
 
 add_executable(editor ${EDITOR_SOURCE_FILES})
 
+set(FE_EXCLUDE_GLFW ON CACHE BOOL "Exclude GLFW from the build" FORCE)
+
 target_include_directories(editor PRIVATE
     include
     src
     external
-    src/engine
+    src/Engine
 )
 
 
@@ -118,7 +120,7 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
     external/imgui/backends/imgui_impl_sdl3.cpp
     external/imgui/backends/imgui_impl_sdlgpu3.cpp
     external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_glfw.cpp
+    # external/imgui/backends/imgui_impl_glfw.cpp
     external/imgui/backends/imgui_impl_opengl3.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
@@ -133,7 +135,7 @@ target_include_directories(pool PRIVATE
     src
     external
     external/imgui
-    src/engine
+    src/Engine
 )
 
 add_executable(ShaderSaver
@@ -147,7 +149,7 @@ target_include_directories(ShaderSaver PRIVATE
     external
     external/imgui
     external/glfw/include
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(ShaderSaver PRIVATE Renderer)
@@ -164,7 +166,7 @@ target_include_directories(ShaderSaverSDL PRIVATE
     src
     external
     external/imgui
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(ShaderSaverSDL PRIVATE Renderer)
@@ -190,54 +192,45 @@ target_include_directories(AudioTest PRIVATE
     external
     external/imgui
     external/SDL/include
-    src/engine
+    src/Engine
 )
 
 target_link_libraries(AudioTest PRIVATE
     Engine
-    kissfft::kissfft-float
+    # kissfft::kissfft-float
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
+target_include_directories(AudioTest PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
+target_link_libraries(AudioTest PRIVATE ${PIPEWIRE_LIBRARIES})
+target_compile_options(AudioTest PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+
 set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-if(WIN32)
-    # Main game
-    target_link_directories(main PRIVATE "${LIB_DIR}")
     
-    target_link_libraries(main PRIVATE Engine)
-    
-    if(MSVC)
-        target_link_options(main PRIVATE
-            $<$<CONFIG:Debug>:/DEBUG>
-        )
+if(MSVC)
+	target_link_options(main PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 
-        target_compile_options(AudioTest PRIVATE
-            $<$<CONFIG:Debug>:/Zi>
-        )
+	target_compile_options(AudioTest PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-        target_link_options(AudioTest PRIVATE
-            $<$<CONFIG:Debug>:/DEBUG>
-        )
-    endif()
-
-    # Base editor
-
-    target_link_directories(editor PRIVATE "${LIB_DIR}")
-    
-    target_link_libraries(editor PRIVATE
-        Engine
-    )
-
-
-    # Pool test game
-    target_link_directories(pool PRIVATE "${LIB_DIR}")
-    
-    target_link_libraries(pool PRIVATE
-        Engine
-    )
-    
+	target_link_options(AudioTest PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 endif()
+    
+# Main game
+target_link_directories(main PRIVATE "${LIB_DIR}")
 
+target_link_libraries(main PRIVATE Engine)
+# Base editor
+
+target_link_directories(editor PRIVATE "${LIB_DIR}")
+
+target_link_libraries(editor PRIVATE Engine)
+
+
+# Pool test game
+target_link_directories(pool PRIVATE "${LIB_DIR}")
+
+target_link_libraries(pool PRIVATE Engine)
 
 
 

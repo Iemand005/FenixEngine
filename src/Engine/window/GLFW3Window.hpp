@@ -48,9 +48,9 @@ public:
 	void Hide();
   	void Show();
 
-#ifdef _WIN32
 	void AttachToNativeParent(void* parent);
-
+	  
+#ifdef _WIN32
 	HWND GetNativeWindow();
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();

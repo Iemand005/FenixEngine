@@ -262,6 +262,7 @@ void fe::SDLWindow::SetFullscreen(bool enabled) {
 }
 
 void fe::SDLWindow::GoBorderlessFullscreen() {
+#ifdef _WIN32
 	int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
 	int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
 	int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -310,6 +311,7 @@ SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 		SWP_FRAMECHANGED |
 		SWP_SHOWWINDOW
 	);
+	#endif
 }
 
 void fe::SDLWindow::GetMousePosition(double *x, double *y) {
@@ -344,5 +346,23 @@ HDC fe::SDLWindow::GetDrawingContext() {
 
 HGLRC fe::SDLWindow::GetOpenGLRenderingContext() {
 	return (HGLRC)SDL_GL_GetCurrentContext();
+}
+#else
+void* fe::SDLWindow::GetWaylandSurface() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
+	return SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER,
+		nullptr
+	);
+}
+
+void *fe::SDLWindow::GetWaylandDisplay() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
+	return SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER,
+		nullptr
+	);
 }
 #endif
