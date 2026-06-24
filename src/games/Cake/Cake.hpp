@@ -112,6 +112,7 @@ public:
 		CAKEObject->state.scale.y = 0.5f;
 		this->scene->AddObject(CAKEObject);
 
+		// Candle mesh
 
 		fe::CubeUVs candleUVs;
 
