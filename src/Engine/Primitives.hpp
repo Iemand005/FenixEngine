@@ -26,6 +26,16 @@ namespace fe {
 	};
 }
 namespace fe::Primitives {
+
+	CubeUVs defaultUVs = {
+		{0, 0, 1, 1},  // front
+		{0, 0, 1, 1},  // back
+		{0, 0, 1, 1},  // left
+		{0, 0, 1, 1},  // right
+		{0, 0, 1, 1},  // top
+		{0, 0, 1, 1}   // bottom
+	};
+
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
 		switch(direction) {
 			default:
