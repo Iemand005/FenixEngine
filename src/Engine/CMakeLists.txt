@@ -72,6 +72,11 @@ target_link_libraries(Engine PUBLIC
     Jolt
 )
 
+# TODO: Make the engine only include kiss if audio visualizer engine is requested
+target_link_libraries(Engine PRIVATE
+    kissfft::kissfft-float
+)
+
 if(NOT FE_EXCLUDE_GLFW)
     target_link_libraries(Engine PUBLIC glfw)
 endif()
