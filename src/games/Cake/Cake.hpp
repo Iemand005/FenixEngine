@@ -47,7 +47,6 @@ public:
 
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
-		LoadModels();
 
 		for (int i = 0; i < NUM_BARS; ++i) {
 			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
@@ -58,6 +57,8 @@ public:
 
 			rectangles.push_back(cube);
 		}
+
+		LoadModels();
 
 		visualizer.Init();
 	}
