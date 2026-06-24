@@ -29,6 +29,17 @@ public:
 #endif
 	}
 
+	void Poll() {
+		#ifdef _WIN32
+    g_loopback.Poll(audioSamples);
+#else
+    g_pwLoopback.Poll(audioSamples);
+#endif
+    if (audioSamples.size() > FFT_SIZE) {
+        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
+    }
+	}
+
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
 
