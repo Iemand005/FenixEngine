@@ -94,7 +94,7 @@ public:
 		this->scene->AddObject(plane);
 
 
-		fe::CubeUVs candle;
+		fe::CubeUVs candleUVs;
 
 		fe::UVRect topUV;
 		topUV.u0 = 0;
@@ -108,12 +108,17 @@ public:
 		sideUV.u1 = 2.0f / 16.0f;
 		sideUV.v1 = 1;
 
-		candle.top = topUV;
-		candle.bottom = topUV;
-		candle.front = sideUV;
-		candle.back = sideUV;
-		candle.left = sideUV;
-		candle.right = sideUV;
+		candleUVs.top = topUV;
+		candleUVs.bottom = topUV;
+		candleUVs.front = sideUV;
+		candleUVs.back = sideUV;
+		candleUVs.left = sideUV;
+		candleUVs.right = sideUV;
+
+		auto candleMesh = fe::Primitives::GeneratePlane();
+		auto candle = std::make_shared<fe::Object>(candleMesh);
+		candle->name = "Candle";
+		scene->AddObject(candle);
 	}
 
 	void ProcessInput() {
