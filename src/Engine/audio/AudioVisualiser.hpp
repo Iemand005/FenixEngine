@@ -29,6 +29,11 @@ public:
 #endif
 	}
 
+	void Update() {
+		Poll();
+		UpdateVisualizerData();
+	}
+
 	void Poll() {
 		#ifdef _WIN32
     g_loopback.Poll(audioSamples);

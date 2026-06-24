@@ -209,16 +209,7 @@ public:
 		SDL_Event event;
 		while (!window->ShouldClose()) {
 
-#ifdef _WIN32
-    g_loopback.Poll(audioSamples);
-#else
-    g_pwLoopback.Poll(audioSamples);
-#endif
-    if (audioSamples.size() > FFT_SIZE) {
-        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
-    }
-
-			visualizer.UpdateVisualizerData();
+			visualizer.Update();
 
 			ProcessInput();
 
