@@ -211,7 +211,7 @@ namespace fe {
 			PrepareRender(shader);
 			shader.SetMat4("model", modelMatrix);
 			Draw();
-			EndRender()
+			EndRender();
 		}
 
 		void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
@@ -222,7 +222,7 @@ namespace fe {
 				Draw();
 			}
 
-			EndRender()
+			EndRender();
 		}
 
 		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
