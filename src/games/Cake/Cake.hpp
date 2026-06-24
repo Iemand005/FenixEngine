@@ -242,7 +242,7 @@ public:
 		glm::vec3 cameraOffset = glm::vec3(0);
 
 		player->state.position.z = 5;
-		player->state.position.1 = y;
+		player->state.position.y = 1;
 
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
