@@ -123,7 +123,7 @@ class Object {
 		float pitch = glm::degrees(asin(direction.y));
 		float yaw = glm::degrees(atan2(direction.x, direction.z));
 		this->state.rotation.x = pitch;
-		this->state.rotation.y = yaw;
+		this->state.rotation.y = yaw - 180;
 	}
 
   std::string GetName() {
