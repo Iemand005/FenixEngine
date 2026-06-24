@@ -46,27 +46,14 @@ namespace fe::Primitives {
 		std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
 		return Mesh(vertices, indices);
 	}
-
+	
 	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
 
-	inline Mesh GenerateCube(float size = 1.0f) {
-
-	}
-
-	inline Mesh GenerateCube(float size = 1.0f, PlaneDirection *directions) {
+	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
-		
-		PlaneDirection directions[] = {
-			PlaneDirection::Front,
-			PlaneDirection::Back,
-			PlaneDirection::Left,
-			PlaneDirection::Right,
-			PlaneDirection::Top,
-			PlaneDirection::Bottom
-		};
 		
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
@@ -78,5 +65,18 @@ namespace fe::Primitives {
 		}
 		
 		return Mesh(allVertices, allIndices);
+	}
+
+	inline Mesh GenerateCube(float size = 1.0f) {
+		std::vector<PlaneDirection> directions = {
+			PlaneDirection::Front,
+			PlaneDirection::Back,
+			PlaneDirection::Left,
+			PlaneDirection::Right,
+			PlaneDirection::Top,
+			PlaneDirection::Bottom
+		};
+		
+		return GenerateCube(directions, size);
 	}
 } // namespace fe::Primitives
