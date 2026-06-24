@@ -43,6 +43,26 @@ namespace fe::Primitives {
 				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1));
 		}
 	}
+
+	inline const UVRect& GetUVForDirection(const CubeUVs& uvs, PlaneDirection direction) {
+		switch(direction) {
+			case PlaneDirection::Front:
+				return uvs.front;
+			case PlaneDirection::Back:
+				return uvs.back;
+			case PlaneDirection::Left:
+				return uvs.left;
+			case PlaneDirection::Right:
+				return uvs.right;
+			case PlaneDirection::Top:
+				return uvs.top;
+			case PlaneDirection::Bottom:
+				return uvs.bottom;
+			default:
+				return uvs.front;
+		}
+	}
+
 	
 	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0), UVRect uv = {0, 0, 1, 1}) {
 		float w = width * 0.5f;
