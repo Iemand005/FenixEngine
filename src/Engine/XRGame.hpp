@@ -12,6 +12,8 @@
 #include <Windows.h>
 #include <unknwn.h>
 #endif
+#else
+#define XR_USE_PLATFORM_WAYLAND
 #endif
 // #include <openxr/openxr.h>
 // #include <openxr/openxr_platform.h>
@@ -59,6 +61,7 @@ namespace fe {
     bool IsInstanceValid();
 
     void initOpenXR();
+    void initOpenXR(void *next);
 #ifdef WIN32
     void initOpenXR(HDC hDC, HGLRC hGLRC);
 #endif
