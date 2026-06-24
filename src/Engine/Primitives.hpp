@@ -75,12 +75,10 @@ namespace fe::Primitives {
 					flipWinding = (outset == 0.0f); 
 					break;
 				case PlaneDirection::Right:  
-					planeOffset = glm::vec3(offset, 0, 0); 
-					flipWinding = (outset != 0.0f); 
+					planeOffset = glm::vec3(offset, 0, 0);
 					break;
 				case PlaneDirection::Left:   
-					planeOffset = glm::vec3(-offset, 0, 0); 
-					flipWinding = (outset != 0.0f); 
+					planeOffset = glm::vec3(-offset, 0, 0);
 					break;
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
