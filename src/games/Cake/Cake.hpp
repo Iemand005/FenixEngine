@@ -86,12 +86,12 @@ public:
 		bottomMesh.loadTexture("resources/textures/cake_bottom.png", fe::TextureScaling::Nearest);
 		bottomMesh.hasTransparency = true;
 
-		auto plane = std::make_shared<fe::Object>(planeMesh);
-		plane->meshes.push_back(sideMesh);
-		plane->meshes.push_back(bottomMesh);
+		auto CAKEObject = std::make_shared<fe::Object>(planeMesh);
+		CAKEObject->meshes.push_back(sideMesh);
+		CAKEObject->meshes.push_back(bottomMesh);
 
-		plane->name = "Cake";
-		this->scene->AddObject(plane);
+		CAKEObject->name = "Cake";
+		this->scene->AddObject(CAKEObject);
 
 
 		fe::CubeUVs candleUVs;
