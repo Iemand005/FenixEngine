@@ -269,7 +269,7 @@ public:
 			// float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
 			
 			cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f) * 2.0f;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 1.5f;
+			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 0.5f;
 			cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f) * 1.0f;
 			
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
