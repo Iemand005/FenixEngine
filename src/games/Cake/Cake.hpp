@@ -257,7 +257,7 @@ public:
       }
       float avgMagnitude = totalMagnitude / NUM_BARS;
       
-      float baseSpeed = 0.02f;
+      float baseSpeed = 0.0002f;
       float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
       elapsedTime += speed;
       glm::vec3 lightCenter = glm::vec3(5, 5, 5);
