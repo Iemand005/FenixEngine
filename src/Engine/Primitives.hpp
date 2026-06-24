@@ -35,21 +35,15 @@ namespace fe::Primitives {
 		float h = height * 0.5f;
 		
 		std::vector<Vertex> vertices = {
-			Vertex(-w, -h, 0,  0, 0, 1,  0, 0),
-			Vertex(-w,  h, 0,  0, 0, 1,  0, 1),
-			Vertex( w,  h, 0,  0, 0, 1,  1, 1),
-			Vertex( w, -h, 0,  0, 0, 1,  1, 0),
+			Vertex{{-w, -h, 0}, {0, 0, 1}, {0, 0}},
+			Vertex{{-w,  h, 0}, {0, 0, 1}, {0, 1}},
+			Vertex{{ w,  h, 0}, {0, 0, 1}, {1, 1}},
+			Vertex{{ w, -h, 0}, {0, 0, 1}, {1, 0}},
 		};
 		
 		for(auto& v : vertices) {
-			glm::vec3 pos(v.position.x, v.position.y, v.position.z);
-			glm::vec3 norm(v.normal.x, v.normal.y, v.normal.z);
-			
-			pos = rotation * pos;
-			norm = rotation * norm;
-			
-			v.position = pos;
-			v.nx = norm.x; v.ny = norm.y; v.nz = norm.z;
+			v.position = rotation * v.position;
+			v.normal = rotation * v.normal;
 		}
 		
 		std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
