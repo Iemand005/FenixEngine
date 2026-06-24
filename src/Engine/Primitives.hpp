@@ -1,6 +1,5 @@
 #pragma once
 #include "Mesh.hpp"
-
 namespace fe {
 	enum class PlaneDirection {
 		Front,   // +Z
@@ -11,7 +10,6 @@ namespace fe {
 		Bottom   // -Y
 	};
 }
-
 namespace fe::Primitives {
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
 		switch(direction) {
@@ -54,7 +52,7 @@ namespace fe::Primitives {
 	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
-
+	
 	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float outset = 0.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
@@ -76,25 +74,6 @@ namespace fe::Primitives {
 			
 			for(auto& vertex : plane.vertices) {
 				vertex.position += planeOffset;
-				
-				switch(direction) {
-					case PlaneDirection::Back:
-						vertex.uv.x = 1.0f - vertex.uv.x;
-						vertex.uv.y = 1.0f - vertex.uv.y;
-						break;
-					case PlaneDirection::Right:
-					case PlaneDirection::Left:
-						std::swap(vertex.uv.x, vertex.uv.y);
-						if(direction == PlaneDirection::Left)
-							vertex.uv.y = 1.0f - vertex.uv.y;
-						break;
-					case PlaneDirection::Top:
-					case PlaneDirection::Bottom:
-						vertex.uv.y = 1.0f - vertex.uv.y;
-						break;
-					default:
-						break;
-				}
 			}
 			
 			uint32_t vertexOffset = allVertices.size();
@@ -105,7 +84,7 @@ namespace fe::Primitives {
 		
 		return Mesh(allVertices, allIndices);
 	}
-
+	
 	inline Mesh GenerateCube(float size = 1.0f) {
 		std::vector<PlaneDirection> directions = {
 			PlaneDirection::Front,
