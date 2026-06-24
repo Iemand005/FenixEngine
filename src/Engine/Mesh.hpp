@@ -148,7 +148,7 @@ namespace fe {
 			return true;
 		}
 
-		bool loadTexture(std::string textureFilePath = NULL, TextureScaling scaling = TextureScaling::Linear) {
+		bool loadTexture(std::string textureFilePath = NULL, TextureScaling newScaling = TextureScaling::Linear) {
 			// if (textureFilePath == NULL)
 			//   return false;
 			int width, height, nrChannels;
@@ -162,7 +162,7 @@ namespace fe {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 			GLint texScaling = GL_LINEAR;
-			if (scaling == TextureScaling::Nearest) texScaling = GL_NEAREST;
+			if (newScaling == TextureScaling::Nearest) texScaling = GL_NEAREST;
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texScaling);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texScaling);
