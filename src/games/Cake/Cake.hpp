@@ -41,7 +41,7 @@ public:
 
 		
 
-		LoadShaders("resources/shaders/debug.vert", "resources/shaders/debug.frag");
+		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
 		LoadModels();
 
