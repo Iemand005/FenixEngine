@@ -68,7 +68,7 @@ public:
 			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
 			
 			cube->name = "Bar_" + i;
-			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -5.0f);
+			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -25.0f);
 			if (false)
 				cube->shader = barShader;
 
@@ -242,7 +242,7 @@ public:
 		glm::vec3 cameraOffset = glm::vec3(0);
 
 		float elapsedTime = 0.0f;
-		float scale = 1.0f;
+		float scale = 10.0f;
 
 		SDL_Event event;
 		while (!window->ShouldClose()) {
