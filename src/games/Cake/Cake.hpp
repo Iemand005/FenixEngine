@@ -73,6 +73,7 @@ public:
 		this->scene->AddObject(player);
 
 		auto sampleCube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube());
+		sampleCube->state.position.y += 2;
 		scene->AddObject(sampleCube);
 
 		auto planeMesh = fe::Primitives::GeneratePlane();
