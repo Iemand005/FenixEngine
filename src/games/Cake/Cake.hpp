@@ -250,7 +250,14 @@ public:
 
 			visualizer.Update();
 
-			float speed = 0.02f;
+			float totalMagnitude = 0.0f;
+      for (int i = 0; i < NUM_BARS; ++i) {
+          totalMagnitude += visualizer.bandMagnitudes[i];
+      }
+      float avgMagnitude = totalMagnitude / NUM_BARS;
+      
+      float baseSpeed = 0.02f;
+      float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
       elapsedTime += speed;
       glm::vec3 lightCenter = glm::vec3(5, 5, 5);
       float radius = 3.0f;
