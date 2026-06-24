@@ -155,6 +155,7 @@ public:
 
 		auto particle = std::make_shared<fe::Object>(flameMesh);
 		particle->meshes[0].hasTransparency = true;
+		particle->state.position.y = 1.07f;
 		scene->AddObject(particle);
 	}
 
