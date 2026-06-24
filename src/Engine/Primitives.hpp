@@ -35,10 +35,10 @@ namespace fe::Primitives {
 		float h = height * 0.5f;
 		
 		std::vector<Vertex> vertices = {
-			Vertex{{-w, -h, 0}, {0, 0, 1}, {0, 0}},
-			Vertex{{-w,  h, 0}, {0, 0, 1}, {0, 1}},
-			Vertex{{ w,  h, 0}, {0, 0, 1}, {1, 1}},
-			Vertex{{ w, -h, 0}, {0, 0, 1}, {1, 0}},
+			Vertex(-w, -h, 0,  0, 0, 1,  0, 0),
+			Vertex(-w,  h, 0,  0, 0, 1,  0, 1),
+			Vertex( w,  h, 0,  0, 0, 1,  1, 1),
+			Vertex( w, -h, 0,  0, 0, 1,  1, 0),
 		};
 		
 		for(auto& v : vertices) {
