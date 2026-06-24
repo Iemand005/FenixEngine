@@ -41,7 +41,6 @@ public:
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
-		// scene->
 		SetClearColor(1, 1, 0);
 
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
