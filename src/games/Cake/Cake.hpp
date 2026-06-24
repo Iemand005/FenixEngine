@@ -74,6 +74,7 @@ public:
 
 		auto plane = std::make_shared<fe::Object>(fe::Primitives::GeneratePlane());
 		// plane->te
+		plane->meshes[0].loadTexture()
 		this->scene->AddObject(plane);
 	}
 
