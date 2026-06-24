@@ -10,11 +10,11 @@ add_executable(Cake
 
 target_include_directories(Cake PRIVATE
     include
-    ../../src
-    ../../external
-    ../../external/imgui
-    ../../external/SDL/include
-    ../../src/Engine
+    ../..
+    ../../../external
+    ../../../external/imgui
+    ../../../external/SDL/include
+    ../../Engine
 )
 
 target_link_libraries(Cake PRIVATE
