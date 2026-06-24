@@ -46,10 +46,16 @@ namespace fe::Primitives {
 		std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
 		return Mesh(vertices, indices);
 	}
+
 	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
+
 	inline Mesh GenerateCube(float size = 1.0f) {
+
+	}
+
+	inline Mesh GenerateCube(float size = 1.0f, PlaneDirection *directions) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
