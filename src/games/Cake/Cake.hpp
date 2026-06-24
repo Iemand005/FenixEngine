@@ -257,6 +257,8 @@ public:
 			
 			ProcessInput();
 			visualizer.Update();
+
+
 			float totalMagnitude = 0.0f;
 			for (int i = 0; i < NUM_BARS; ++i) {
 					totalMagnitude += visualizer.bandMagnitudes[i];
@@ -277,6 +279,12 @@ public:
 			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * 0.2f) * 0.5f;
 			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * 0.15f) * 1.0f;
 			
+			float colorR = sin(elapsedTime * 0.3f) * 0.5f + 0.5f;
+			float colorG = sin(elapsedTime * 0.3f + 2.094f) * 0.5f + 0.5f;  // 2.094 ≈ 2π/3
+			float colorB = sin(elapsedTime * 0.3f + 4.189f) * 0.5f + 0.5f;  // 4.189 ≈ 4π/3
+
+			SetClearColor(colorR, colorG, colorB);
+
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
 			scene->GetLights()[0].position = lightCenter + glm::vec3(
