@@ -60,3 +60,10 @@ void Game::Redraw() {
 
 	if (window) window->SwapBuffers();
 }
+
+void Game::CheckErrors() {
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		std::cerr << "OpenGL error: " << err << std::endl;
+	}
+}
