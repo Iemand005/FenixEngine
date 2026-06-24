@@ -149,10 +149,10 @@ public:
 		// Candle wick
 
 		fe::UVRect wickUV;
-		wickUV.u0 = 10.0f / 16.0f;
-		wickUV.u1 = 11.0f / 16.0f;
-		wickUV.v0 = 96.0f / 16.0f;
-		wickUV.v1 = 104.0f / 16.0f;
+		wickUV.u0 = 0.0f / 16.0f;
+		wickUV.u1 = 1.0f / 16.0f;
+		wickUV.v0 = 10.0f / 16.0f;
+		wickUV.v1 = 11.0f / 16.0f;
 
 		auto flameMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.1f, 0.1f, flameUV);
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
