@@ -56,8 +56,23 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
-	inline Mesh GeneratePlane(float size = 1.0f) {
-		
-	}
+	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f) {
+    float w = width * 0.5f;
+    float h = height * 0.5f;
+    
+    std::vector<Vertex> vertices = {
+			Vertex(-w, 0, -h,  0, 1, 0,  0, 0),
+			Vertex( w, 0, -h,  0, 1, 0,  1, 0),
+			Vertex( w, 0,  h,  0, 1, 0,  1, 1),
+			Vertex(-w, 0,  h,  0, 1, 0,  0, 1),
+    };
+    
+    std::vector<uint32_t> indices = {
+			0, 1, 2,
+			0, 2, 3,
+    };
+    
+    return Mesh(vertices, indices);
+}
 
 } // namespace fe::Primitives
