@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.hpp"
+
 namespace fe::Primitives {
 	enum class PlaneDirection {
 		Front,   // +Z
