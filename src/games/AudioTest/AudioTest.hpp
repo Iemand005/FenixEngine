@@ -65,7 +65,7 @@ public:
 	int mapIndex = 0;
 
 	AudioVisualiser visualizer;
-	
+
 	std::vector<std::shared_ptr<fe::Object>> rectangles;
 
 
@@ -90,14 +90,8 @@ public:
 		}
 
 
-#ifdef _WIN32
-		g_loopback.Init();
-#else
-    	g_pwLoopback.Init();
-#endif
-		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
-
-
+		visualizer.Init();
+		
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
 		Uint32 len = 0;
@@ -202,16 +196,7 @@ public:
 		SDL_Event event;
 		while (!window->ShouldClose()) {
 
-#ifdef _WIN32
-    g_loopback.Poll(audioSamples);
-#else
-    g_pwLoopback.Poll(audioSamples);
-#endif
-    if (audioSamples.size() > FFT_SIZE) {
-        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
-    }
-
-			UpdateVisualizerData();
+			visualizer.Update();
 
 			ProcessInput();
 
