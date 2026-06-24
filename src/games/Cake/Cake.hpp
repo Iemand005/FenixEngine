@@ -146,6 +146,23 @@ public:
 		candle->state.scale.y = 8.0f / 16.0f;
 		scene->AddObject(candle);
 
+		// Candle wick
+
+		fe::UVRect wickUV;
+		wickUV.u0 = 10.0f / 16.0f;
+		wickUV.u1 = 11.0f / 16.0f;
+		wickUV.v0 = 96.0f / 16.0f;
+		wickUV.v1 = 104.0f / 16.0f;
+
+		auto flameMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.1f, 0.1f, flameUV);
+		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
+
+		auto particle = std::make_shared<fe::Object>(flameMesh);
+		particle->meshes[0].hasTransparency = true;
+		particle->state.position.y = 1.07f;
+		flameParticle = particle;
+		scene->AddObject(particle);
+
 		// Flame particle
 
 		fe::UVRect flameUV;
