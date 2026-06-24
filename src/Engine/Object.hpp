@@ -118,14 +118,13 @@ class Object {
     return newObj;
   }
 
-  void LookAt(const glm::vec3& target) {
-    glm::vec3 direction = glm::normalize(target - this->state.position);
-    float pitch = glm::degrees(asin(direction.y));
-    float yaw = glm::degrees(atan2(direction.z, direction.x));
-
-    this->state.rotation.x = pitch;
-    this->state.rotation.y = -yaw + 90.0f;
-  }
+  	void LookAt(const glm::vec3& target) {
+		glm::vec3 direction = glm::normalize(target - this->state.position);
+		float pitch = glm::degrees(asin(direction.y));
+		float yaw = glm::degrees(atan2(direction.z, direction.x));
+		this->state.rotation.x = pitch;
+		this->state.rotation.y = yaw - 90.0f;  // Removed negation, adjusted offset
+	}
 
   std::string GetName() {
     return name;
