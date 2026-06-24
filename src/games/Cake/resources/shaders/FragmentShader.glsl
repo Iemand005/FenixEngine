@@ -20,7 +20,6 @@ uniform PointLight pointLights[8];
 void main()
 {
     vec3 n = normalize(Normal);
-    vec3 albedo = texture(ourTexture, TexCoord).rgb;
 
     vec3 lighting = vec3(0.1);
     for (int i = 0; i < lightCount; ++i) {
@@ -37,5 +36,6 @@ void main()
         lighting += contrib;
     }
 
-    FragColor = vec4(albedo * lighting, 1.0);
+    vec4 texSample = texture(ourTexture, TexCoord);
+    FragColor = vec4(texSample.rgb * lighting, texSample.a);
 }
