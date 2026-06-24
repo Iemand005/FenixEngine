@@ -148,7 +148,7 @@ namespace fe {
 			return true;
 		}
 
-		bool loadTexture(std::string textureFilePath = NULL) {
+		bool loadTexture(std::string textureFilePath = NULL, TextureScaling scaling = TextureScaling::Linear) {
 			// if (textureFilePath == NULL)
 			//   return false;
 			int width, height, nrChannels;

@@ -73,8 +73,7 @@ public:
 		this->scene->AddObject(player);
 
 		auto planeMesh = fe::Primitives::GeneratePlane();
-		planeMesh.loadTexture("resources/textures/cake_top.png");
-		planeMesh.scaling = fe::TextureScaling::Nearest;
+		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
 
 		auto plane = std::make_shared<fe::Object>(planeMesh);
 
