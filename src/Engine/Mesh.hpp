@@ -36,6 +36,8 @@ namespace fe {
 
 		std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 
+		TextureScaling scaling = TextureScaling::Linear;
+
 		Mesh() {}
 
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
