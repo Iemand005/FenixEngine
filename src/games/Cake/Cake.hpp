@@ -72,10 +72,12 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		auto plane = std::make_shared<fe::Object>(fe::Primitives::GeneratePlane());
-		// plane->te
-		plane->meshes[0].loadTexture("resources/textures/cake_top.png");
-		// plane.n
+		auto planeMesh = fe::Primitives::GeneratePlane();
+		planeMesh.loadTexture("resources/textures/cake_top.png");
+		planeMesh.scaling = TextureScaling::Nearest;
+
+		auto plane = std::make_shared<fe::Object>(planeMesh);
+
 		plane->name = "Cake";
 		this->scene->AddObject(plane);
 	}
