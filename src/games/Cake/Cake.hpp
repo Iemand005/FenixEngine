@@ -246,6 +246,7 @@ public:
 			camera->UpdateDirection();
 
 			flameParticle->LookAt(camera->GetPos());
+			wick->LookAt(camera->GetPos());
 			
 			Update();
 			Redraw();
