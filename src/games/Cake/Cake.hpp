@@ -69,7 +69,7 @@ public:
 			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -5.0f);
 
 			// cube->meshes[0].sha
-			cube->shader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.glsl", "resources/shaders/debug.glsl");
+			cube->shader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");
 	
 			this->scene->AddObject(cube);
 
