@@ -5,7 +5,7 @@
 #define NOMINMAX
 #endif
 
-#include <glad/glad.h>
+// #include <glad/glad.h>
 #include "../stdafx.h"
 
 #include <glm/glm.hpp>
