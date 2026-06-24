@@ -74,7 +74,7 @@ public:
 
 		auto planeMesh = fe::Primitives::GeneratePlane();
 		planeMesh.loadTexture("resources/textures/cake_top.png");
-		planeMesh.scaling = TextureScaling::Nearest;
+		planeMesh.scaling = fe::TextureScaling::Nearest;
 
 		auto plane = std::make_shared<fe::Object>(planeMesh);
 
