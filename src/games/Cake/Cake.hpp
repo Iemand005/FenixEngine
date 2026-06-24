@@ -249,7 +249,7 @@ public:
 		player->state.position.y = 2;
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
-		float cameraPanSpeed = 0.01f;
+		float cameraPanSpeed = 0.1f;
 		SDL_Event event;
 		
 		while (!window->ShouldClose()) {
