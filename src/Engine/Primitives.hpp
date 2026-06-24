@@ -78,9 +78,8 @@ namespace fe::Primitives {
 			uint32_t vertexOffset = allVertices.size();
 			
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
-			for(uint32_t idx : plane.indices) {
+			for(uint32_t idx : plane.indices)
 				allIndices.push_back(idx + vertexOffset);
-			}
 		}
 		
 		return Mesh(allVertices, allIndices);
