@@ -35,15 +35,15 @@ namespace fe::Primitives {
 		}
 	}
 	
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0)) {
+	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0), UVRect uv = {0, 0, 1, 1}) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
 		
 		std::vector<Vertex> vertices = {
-			Vertex(-w, 0, -h,  0, 1, 0,  0, 0),
-			Vertex(-w, 0,  h,  0, 1, 0,  0, 1),
-			Vertex( w, 0,  h,  0, 1, 0,  1, 1),
-			Vertex( w, 0, -h,  0, 1, 0,  1, 0),
+			Vertex(-w,0,-h, 0,1,0, uv.u0, uv.v0),
+			Vertex(-w,0, h, 0,1,0, uv.u0, uv.v1),
+			Vertex( w,0, h, 0,1,0, uv.u1, uv.v1),
+			Vertex( w,0,-h, 0,1,0, uv.u1, uv.v0),
 		};
 		
 		for(auto& v : vertices) {
