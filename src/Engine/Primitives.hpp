@@ -105,8 +105,8 @@ namespace fe::Primitives {
 	}
 
 	
-	
-	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, glm::vec3 size = {1.0f}, float inset = 0.0f) {
+	// TODO change size to a vec3 and do that shit
+	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, float size = 1.0f, float inset = 0.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
