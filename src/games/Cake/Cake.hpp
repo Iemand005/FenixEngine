@@ -241,12 +241,25 @@ public:
 	
 		glm::vec3 cameraOffset = glm::vec3(0);
 
+		float elapsedTime = 0.0f;
+
 		SDL_Event event;
 		while (!window->ShouldClose()) {
+			
+			ProcessInput();
 
 			visualizer.Update();
 
-			ProcessInput();
+			float speed = 0.02f;
+      elapsedTime += speed;
+      glm::vec3 lightCenter = glm::vec3(5, 5, 5);  // Center point
+      float radius = 3.0f;
+      
+      scene->GetLights()[0].position = lightCenter + glm::vec3(
+          sin(elapsedTime * 0.5f) * radius,
+          cos(elapsedTime * 0.3f) * radius * 0.5f,
+          sin(elapsedTime * 0.7f) * radius
+      );
 
 			glm::vec3 pos = player->state.position + cameraOffset;
 
