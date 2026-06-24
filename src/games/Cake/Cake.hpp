@@ -145,10 +145,10 @@ public:
 		// Flame particle
 
 		fe::UVRect flameUV;
-		flameUV.u0 = 96.0f / 128.0f;
-		flameUV.u1 = 0.0f / 128.0f;
+		flameUV.u0 = 0.0f / 128.0f;
+		flameUV.u1 = 8.0f / 128.0f;
 		flameUV.v0 = 96.0f / 128.0f;
-		flameUV.v1 = 96.0f / 128.0f;
+		flameUV.v1 = 104.0f / 128.0f;
 
 		auto flameMesh = fe::Primitives::GeneratePlane();
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
