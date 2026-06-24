@@ -247,6 +247,7 @@ public:
 		glm::vec3 cameraOffset = glm::vec3(0);
 		player->state.position.z = 5;
 		player->state.position.y = 2;
+		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
 		float cameraPanSpeed = 0.1f;
@@ -264,36 +265,37 @@ public:
 			
 			float baseSpeed = 0.0002f;
 			float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
-			elapsedTime += speed;
+			elapsedTimeBumpy += speed;
+			elapsedTime += baseSpeed;
 			
 			// float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
 			
-			cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f) * 2.0f;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 0.5f;
-			cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f) * 1.0f;
+			cameraOffset.x = sin(elapsedTimeBumpy * cameraPanSpeed * 0.3f) * 2.0f;
+			cameraOffset.y = cos(elapsedTimeBumpy * cameraPanSpeed * 0.2f) * 0.5f;
+			cameraOffset.z = sin(elapsedTimeBumpy * cameraPanSpeed * 0.15f) * 1.0f;
 			
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
 			scene->GetLights()[0].position = lightCenter + glm::vec3(
-				sin(elapsedTime * 0.5f) * radius,
-				cos(elapsedTime * 0.3f) * radius * 0.5f,
-				sin(elapsedTime * 0.7f) * radius
+				sin(elapsedTimeBumpy * 0.5f) * radius,
+				cos(elapsedTimeBumpy * 0.3f) * radius * 0.5f,
+				sin(elapsedTimeBumpy * 0.7f) * radius
 			);
 			
 			glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
 			float radius1 = 2.5f;
 			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
-				sin(elapsedTime * 0.4f) * radius1,
-				cos(elapsedTime * 0.25f) * radius1 * 0.6f,
-				sin(elapsedTime * 0.6f) * radius1
+				sin(elapsedTimeBumpy * 0.4f) * radius1,
+				cos(elapsedTimeBumpy * 0.25f) * radius1 * 0.6f,
+				sin(elapsedTimeBumpy * 0.6f) * radius1
 			);
 	
 			glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
 			float radius2 = 2.0f;
 			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
-				sin(elapsedTime * 0.35f) * radius2,
-				cos(elapsedTime * 0.28f) * radius2 * 0.7f,
-				sin(elapsedTime * 0.55f) * radius2
+				sin(elapsedTimeBumpy * 0.35f) * radius2,
+				cos(elapsedTimeBumpy * 0.28f) * radius2 * 0.7f,
+				sin(elapsedTimeBumpy * 0.55f) * radius2
 			);
 			
 			glm::vec3 pos = player->state.position + cameraOffset;
@@ -304,7 +306,7 @@ public:
 
 			// Flicker the flame awaw
 			float flameCycleDuration = 2.0f;
-			float flamePhase = fmod(elapsedTime * 10.0f, flameCycleDuration);
+			float flamePhase = fmod(elapsedTimeBumpy * 0.10f, flameCycleDuration);
 			float flameProgress = flamePhase / flameCycleDuration;
 
 			if (flameProgress < 0.2f) {
