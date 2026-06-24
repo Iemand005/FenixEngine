@@ -285,6 +285,16 @@ public:
 
 			SetClearColor(colorR, colorG, colorB);
 
+			float light1R = sin(elapsedTime * 0.2f) * 0.5f + 0.5f;
+			float light1G = sin(elapsedTime * 0.2f + 2.094f) * 0.5f + 0.5f;
+			float light1B = sin(elapsedTime * 0.2f + 4.189f) * 0.5f + 0.5f;
+			scene->GetLights()[1].color = {light1R, light1G, light1B};
+
+			float light2R = sin(elapsedTime * 0.25f + 1.047f) * 0.5f + 0.5f;
+			float light2G = sin(elapsedTime * 0.25f + 3.14f) * 0.5f + 0.5f;
+			float light2B = sin(elapsedTime * 0.25f + 5.236f) * 0.5f + 0.5f;
+			scene->GetLights()[2].color = {light2R, light2G, light2B};
+
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
 			scene->GetLights()[0].position = lightCenter + glm::vec3(
@@ -320,11 +330,11 @@ public:
 			float flamePhase = fmod(elapsedTime * 5.10f, flameCycleDuration);
 			float flameProgress = flamePhase / flameCycleDuration;
 
-			if (flameProgress < 0.2f) {
+			if (flameProgress < 0.1f) {
 					float flickerProgress = flameProgress / 0.2f;
 					float flameScale = flickerProgress * (0.8f + sin(flickerProgress * 20.0f) * 0.2f);
 					flameParticle->state.scale = glm::vec3(flameScale);
-			} else if (flameProgress < 0.8f) {
+			} else if (flameProgress < 0.5f) {
 					float shrinkProgress = (flameProgress - 0.2f) / 0.6f;
 					float flameScale = (1.0f - shrinkProgress * 0.7f);
 					flameParticle->state.scale = glm::vec3(flameScale);
