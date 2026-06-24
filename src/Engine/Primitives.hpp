@@ -78,15 +78,15 @@ namespace fe::Primitives {
 				
 				switch(direction) {
 					case PlaneDirection::Back:
-						vertex.texCoord.x = 1.0f - vertex.texCoord.x;
+						vertex.uv.x = 1.0f - vertex.uv.x;
 						break;
 					case PlaneDirection::Right:
 					case PlaneDirection::Left:
-						std::swap(vertex.texCoord.x, vertex.texCoord.y);
+						std::swap(vertex.uv.x, vertex.uv.y);
 						break;
 					case PlaneDirection::Top:
 					case PlaneDirection::Bottom:
-						vertex.texCoord.y = 1.0f - vertex.texCoord.y;
+						vertex.uv.y = 1.0f - vertex.uv.y;
 						break;
 					default:
 						break;
