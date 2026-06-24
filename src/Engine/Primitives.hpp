@@ -64,8 +64,8 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 	
-	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f) {
-		return GeneratePlane(width, height, GetRotationFromDirection(direction));
+	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f, UVRect uv = {0, 0, 1, 1}) {
+		return GeneratePlane(width, height, GetRotationFromDirection(direction), uv);
 	}
 	
 	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f, const CubeUVs& uvs) {
@@ -75,7 +75,8 @@ namespace fe::Primitives {
 		float offset = size / 2.0f - inset;
 		
 		for(auto direction : directions) {
-			Mesh plane = GeneratePlane(direction, size, size);
+			UVRect faceUV = GetUVForDirection(uvs, direction);
+			Mesh plane = GeneratePlane(direction, size, size, faceUV);
 			
 			glm::vec3 planeOffset = glm::vec3(0.0f);
 			bool flipWinding = false;
