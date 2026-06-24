@@ -15,6 +15,15 @@ namespace fe {
 		float u1;
 		float v1;
 	};
+
+	struct CubeUVs {
+		UVRect front;
+		UVRect back;
+		UVRect left;
+		UVRect right;
+		UVRect top;
+		UVRect bottom;
+	};
 }
 namespace fe::Primitives {
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
