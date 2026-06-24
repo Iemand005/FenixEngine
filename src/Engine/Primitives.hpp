@@ -30,6 +30,7 @@ namespace fe::Primitives {
 				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1));
 		}
 	}
+
 	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0)) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
@@ -64,13 +65,15 @@ namespace fe::Primitives {
 			Mesh plane = GeneratePlane(direction, size, size);
 			
 			glm::vec3 planeOffset = glm::vec3(0.0f);
+			bool flipIndices = false;
+			
 			switch(direction) {
 				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, offset); break;
-				case PlaneDirection::Back:   planeOffset = glm::vec3(0, 0, -offset); break;
+				case PlaneDirection::Back:   planeOffset = glm::vec3(0, 0, -offset); flipIndices = true; break;
 				case PlaneDirection::Right:  planeOffset = glm::vec3(offset, 0, 0); break;
-				case PlaneDirection::Left:   planeOffset = glm::vec3(-offset, 0, 0); break;
+				case PlaneDirection::Left:   planeOffset = glm::vec3(-offset, 0, 0); flipIndices = true; break;
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
-				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
+				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); flipIndices = true; break;
 			}
 			
 			for(auto& vertex : plane.vertices) {
@@ -98,8 +101,23 @@ namespace fe::Primitives {
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
-			for(uint32_t idx : plane.indices)
-				allIndices.push_back(idx + vertexOffset);
+			
+			// Flip indices if needed to maintain proper winding
+			if(flipIndices) {
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 3);
+				allIndices.push_back(vertexOffset + 2);
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 2);
+				allIndices.push_back(vertexOffset + 1);
+			} else {
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 1);
+				allIndices.push_back(vertexOffset + 2);
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 2);
+				allIndices.push_back(vertexOffset + 3);
+			}
 		}
 		
 		return Mesh(allVertices, allIndices);
