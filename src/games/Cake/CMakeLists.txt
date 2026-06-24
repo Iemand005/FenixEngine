@@ -60,7 +60,7 @@ if(MSVC)
 	target_link_options(Cake PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 endif()
 
-add_custom_command(TARGET MyExe POST_BUILD
+add_custom_command(TARGET Cake POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${CMAKE_SOURCE_DIR}/resources"
         "$<TARGET_FILE_DIR:Cake>/resources"
