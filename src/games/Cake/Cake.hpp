@@ -252,7 +252,7 @@ public:
 
 			float speed = 0.02f;
       elapsedTime += speed;
-      glm::vec3 lightCenter = glm::vec3(5, 5, 5);  // Center point
+      glm::vec3 lightCenter = glm::vec3(5, 5, 5);
       float radius = 3.0f;
       
       scene->GetLights()[0].position = lightCenter + glm::vec3(
