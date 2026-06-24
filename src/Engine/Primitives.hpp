@@ -48,7 +48,7 @@ namespace fe::Primitives {
 			pos = rotation * pos;
 			norm = rotation * norm;
 			
-			v.x = pos.x; v.y = pos.y; v.z = pos.z;
+			v.position = pos;
 			v.nx = norm.x; v.ny = norm.y; v.nz = norm.z;
 		}
 		
