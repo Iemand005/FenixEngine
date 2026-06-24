@@ -198,12 +198,20 @@ namespace fe {
 			}
 		}
 
+		void EndRender() {
+			if (hasTransparency) {
+				glDepthMask(GL_TRUE);
+				glDisable(GL_BLEND);
+			}
+		}
+
 		void Draw() { glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); }
 
 		void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
 			PrepareRender(shader);
 			shader.SetMat4("model", modelMatrix);
 			Draw();
+			EndRender()
 		}
 
 		void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
@@ -213,6 +221,8 @@ namespace fe {
 				shader.SetMat4("model", modelMatrix);
 				Draw();
 			}
+
+			EndRender()
 		}
 
 		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
