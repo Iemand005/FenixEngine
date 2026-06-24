@@ -38,7 +38,6 @@ namespace fe::Primitives {
 
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
     switch(direction) {
-        default:
         case PlaneDirection::Front:
             // Looking at front, already correct orientation
             return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
@@ -53,6 +52,7 @@ namespace fe::Primitives {
         case PlaneDirection::Left:
             return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 1, 0)) *
                    glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
+        default:
         case PlaneDirection::Top:
             return glm::quat(1, 0, 0, 0); // No rotation needed
         case PlaneDirection::Bottom:
