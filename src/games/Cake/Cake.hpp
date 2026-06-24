@@ -269,10 +269,18 @@ public:
           sin(elapsedTime * 0.7f) * radius
       );
 
-			glm::vec3 pos = player->state.position + cameraOffset;
-
-			camera->SetPos(pos);
-			camera->UpdateDirection();
+			glm::vec3 orbitCenter = glm::vec3(0, 3, 0);  // Center to orbit around
+      float orbitRadius = 8.0f;
+      float orbitHeight = 4.0f;
+      
+      glm::vec3 cameraPos = orbitCenter + glm::vec3(
+          cos(elapsedTime * 0.3f) * orbitRadius,
+          orbitHeight,
+          sin(elapsedTime * 0.3f) * orbitRadius
+      );
+      
+      camera->SetPos(cameraPos);
+      camera->LookAt(orbitCenter);
 
 			flameParticle->LookAt(camera->GetPos());
 			wick->LookAt(camera->GetPos());

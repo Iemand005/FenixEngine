@@ -84,6 +84,15 @@ private:
     this->position = pos;
     viewMatrix = glm::lookAt(position, position + front, up);
   }
+
+	void LookAt(const glm::vec3& target) {
+		glm::vec3 direction = glm::normalize(target - this->state.position);
+		float pitch = glm::degrees(asin(direction.y));
+		float yaw = glm::degrees(atan2(direction.x, direction.z));
+		this->state.rotation.x = pitch;
+		this->state.rotation.y = yaw - 180;
+	}
+
   glm::vec3 GetPos() const { return position; }
   void setFront(const glm::vec3& front) {
     this->front = front;
