@@ -66,17 +66,17 @@ namespace fe
     // }
 
 
-    public:
+public:
 
-    void BeginFrame() {
+	void BeginFrame() {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
-    }
+	}
 
 	void EndFrame() {
 		ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	void DrawDebugUI() {
