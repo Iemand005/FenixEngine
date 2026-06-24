@@ -38,6 +38,8 @@ namespace fe {
 
 		TextureScaling scaling = TextureScaling::Linear;
 
+		bool hasTransparency = false;
+
 		Mesh() {}
 
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
@@ -188,10 +190,12 @@ namespace fe {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture);
 
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			glDepthMask(GL_FALSE); 
+			if (hasTransparency) {
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+				glDepthMask(GL_FALSE); 
+			}
 		}
 
 		void Draw() { glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); }
