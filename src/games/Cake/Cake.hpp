@@ -317,21 +317,18 @@ public:
 
 			// Flicker the flame awaw
 			float flameCycleDuration = 2.0f;
-			float flamePhase = fmod(elapsedTimeBumpy * 0.10f, flameCycleDuration);
+			float flamePhase = fmod(elapsedTime * 0.10f, flameCycleDuration);
 			float flameProgress = flamePhase / flameCycleDuration;
 
 			if (flameProgress < 0.2f) {
-					// Flicker in phase (0-0.2)
 					float flickerProgress = flameProgress / 0.2f;
 					float flameScale = flickerProgress * (0.8f + sin(flickerProgress * 20.0f) * 0.2f);
 					flameParticle->state.scale = glm::vec3(flameScale);
 			} else if (flameProgress < 0.8f) {
-					// Stable/shrink phase (0.2-0.8)
 					float shrinkProgress = (flameProgress - 0.2f) / 0.6f;
 					float flameScale = (1.0f - shrinkProgress * 0.7f);
 					flameParticle->state.scale = glm::vec3(flameScale);
 			} else {
-					// Disappear phase (0.8-1.0)
 					float disappearProgress = (flameProgress - 0.8f) / 0.2f;
 					float flameScale = (1.0f - disappearProgress) * 0.3f;
 					flameParticle->state.scale = glm::vec3(flameScale);
