@@ -64,7 +64,10 @@ public:
 
 	int mapIndex = 0;
 
+	AudioVisualiser visualizer;
+	
 	std::vector<std::shared_ptr<fe::Object>> rectangles;
+
 
 	Cake() : Cake(800, 640) {}
 
