@@ -37,6 +37,8 @@ public:
 
 	bool showCandle = true;
 
+	std::shared_ptr<fe::Object> flameParticle;
+
 	Cake() : Cake(1400, 1200) {}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
