@@ -152,7 +152,7 @@ namespace fe {
 			// if (textureFilePath == NULL)
 			//   return false;
 			int width, height, nrChannels;
-			unsigned char* data;
+			unsigned char* data;texScaling
 			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
 
 			glGenTextures(1, &this->texture);
@@ -162,10 +162,10 @@ namespace fe {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 			GLint texScaling = GL_LINEAR;
-			if (scaling == TextureScaling::Linear)
+			if (scaling == TextureScaling::Nearest) texScaling = GL_NEAREST
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texScaling);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texScaling);
 
 			GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
 			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
