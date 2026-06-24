@@ -60,7 +60,7 @@ void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, flo
 
 
 
-class AudioTest : public fe::EditableGame {
+class Cake : public fe::EditableGame {
 public:
 
 	double lastUpdateTime = 0.0f;
@@ -71,9 +71,9 @@ public:
 
 	std::vector<std::shared_ptr<fe::Object>> rectangles;
 
-	AudioTest() : AudioTest(800, 640) {}
+	Cake() : Cake(800, 640) {}
 
-	AudioTest(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
+	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
 		
 
@@ -135,7 +135,7 @@ public:
 	}
 
 	static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
-		AudioTest* game = (AudioTest*)userdata;
+		Cake* game = (Cake*)userdata;
 		if (event->type == SDL_EVENT_WINDOW_EXPOSED) {
 			game->Redraw();
 		}
