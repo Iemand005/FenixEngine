@@ -116,7 +116,7 @@ public:
 		candleMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
 
 		auto candle = std::make_shared<fe::Object>(candleMesh);
-		candle->state.position.y = 0.75f;
+		candle->state.position.y = 0.50f;
 		candle->state.scale.x = candle->state.scale.z = 2.0f / 16.0f;
 		candle->state.scale.y = 8.0f / 16.0f;
 		candle->name = "Candle";
