@@ -54,11 +54,11 @@ namespace fe::Primitives {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
 
-	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f) {
+	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
-		float offset = size / 2.0f;
+		float offset = size / 2.0f - inset;
 		
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
