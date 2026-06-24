@@ -266,8 +266,7 @@ public:
 			float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
 			elapsedTime += speed;
 			
-			// Camera speed variation (randomly speeds up/slows down)
-			float speedVariation = 1.0f + sin(elapsedTime * 0.15f) * 0.4f;
+			float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
 			
 			cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f * speedVariation) * 2.0f;
 			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f * speedVariation) * 1.5f;
