@@ -72,7 +72,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, -1);
+		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back});
 		auto sampleCube = std::make_shared<fe::Object>(sampleSideTest);
 		sampleCube->state.position.y += 1;
 		sampleCube->state.position.x += 1;

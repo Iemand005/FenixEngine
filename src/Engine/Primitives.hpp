@@ -57,7 +57,7 @@ namespace fe::Primitives {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
-		float offset = size / 2.0f + outset;
+		float offset = size / 2.0f + (1 - outset);
 		
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
@@ -67,16 +67,16 @@ namespace fe::Primitives {
 			
 			switch(direction) {
 				case PlaneDirection::Front:  
-					planeOffset = glm::vec3(0, 0, offset); 
-					break;
-				case PlaneDirection::Back:   
 					planeOffset = glm::vec3(0, 0, -offset); 
 					break;
+				case PlaneDirection::Back:   
+					planeOffset = glm::vec3(0, 0, offset); 
+					break;
 				case PlaneDirection::Right:  
-					planeOffset = glm::vec3(offset, 0, 0);
+					planeOffset = glm::vec3(-offset, 0, 0);
 					break;
 				case PlaneDirection::Left:   
-					planeOffset = glm::vec3(-offset, 0, 0);
+					planeOffset = glm::vec3(offset, 0, 0);
 					break;
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
