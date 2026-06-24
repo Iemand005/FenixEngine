@@ -79,6 +79,8 @@ public:
 
 		constexpr float sideInset = 1 - 15.0f / 16.0f;
 
+		float candleSideUV = 
+
 		fe::CubeUVs cakeUVs;
 
 		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = sideUV;
