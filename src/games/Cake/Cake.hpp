@@ -158,6 +158,7 @@ public:
 		wickMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
 
 		auto wickObject = std::make_shared<fe::Object>(wickMesh);
+		candle->name = "Wick";
 		wickObject->state.position.y = 1.03f;
 		wick = wickObject;
 		scene->AddObject(wickObject);
@@ -174,6 +175,7 @@ public:
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
 
 		auto particle = std::make_shared<fe::Object>(flameMesh);
+		candle->name = "Flame";
 		particle->meshes[0].hasTransparency = true;
 		particle->state.position.y = 1.085f;
 		flameParticle = particle;
