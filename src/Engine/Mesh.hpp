@@ -16,6 +16,11 @@
 
 namespace fe {
 
+  enum class TextureScaling {
+    Linear,
+    Nearest
+  }
+
 class Mesh {
   unsigned int indexCount;
 
