@@ -87,9 +87,9 @@ public:
 
 		fe::UVRect cakeSideUV;
 		cakeSideUV.u0 = 1.0f / 16.0f;
-		cakeSideUV.u1 = 1.0f / 16.0f;
-		cakeSideUV.v0 = 15.0f / 16.0f;
-		cakeSideUV.v1 = 15.0f / 16.0f;
+		cakeSideUV.u1 = 15.0f / 16.0f;
+		cakeSideUV.v0 = 0.0f / 16.0f;
+		cakeSideUV.v1 = 8.0f / 16.0f;
 
 		fe::CubeUVs cakeUVs;
 
