@@ -72,6 +72,8 @@ public:
 
 	std::vector<std::shared_ptr<fe::Object>> rectangles;
 
+	AudioVisualiser visualizer;
+
 	Cake() : Cake(800, 640) {}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
