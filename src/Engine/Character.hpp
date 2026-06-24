@@ -6,6 +6,10 @@ namespace fe {
 
 class Character : public Object {
 public:
+  Character() {
+    this->name = "Character";
+  }
+
   void Move(Direction direction, Camera* camera) {
 
     const float cameraSpeed = 0.0100f;
