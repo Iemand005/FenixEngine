@@ -212,48 +212,6 @@ public:
 		Destroy();
 	}
 
-	float bandMagnitudes[NUM_BARS] = {0};       
-	float bandMagnitudesSmoothed[NUM_BARS] = {0};
-
-	void ComputeBands(const float* magnitudes, int bins, float* bandsOut, int numBars) {
-		float maxBin = (float)(bins - 1);
-		for (int b = 0; b < numBars; ++b) {
-			float t0 = (float)b / numBars;
-			float t1 = (float)(b + 1) / numBars;
-			int bin0 = std::max(1, (int)std::pow(maxBin, t0));   
-			int bin1 = std::min(bins - 1, std::max(bin0 + 1, (int)std::pow(maxBin, t1)));
-
-			float maxVal = 0.0f;
-			for (int i = bin0; i <= bin1; ++i)
-				maxVal = std::max(maxVal, magnitudes[i]);
-			bandsOut[b] = maxVal;
-		}
-	}
-
-	void UpdateVisualizerData() {
-		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
-
-		for (int i = 0; i < FFT_SIZE; ++i) {
-			fftInput[i] = audioSamples[i];
-		}
-
-		kiss_fftr(fftConfig, fftInput, fftOutput);
-
-		float magnitudes[BINS];
-		for (int i = 0; i < BINS; ++i) {
-			float real = fftOutput[i].r;
-			float imag = fftOutput[i].i;
-			magnitudes[i] = std::sqrt(real * real + imag * imag) / FFT_SIZE;
-		}
-
-		ComputeBands(magnitudes, BINS, bandMagnitudes, NUM_BARS);
-
-		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
-		for (int b = 0; b < NUM_BARS; ++b) {
-			bandMagnitudesSmoothed[b] = std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f);
-		}
-	}
-
 	void InitUI() override {}
 	
 	void DrawAudioVisualizer() {	
@@ -272,7 +230,7 @@ public:
 		float scale    = 8.0f;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
-			float ah = bandMagnitudesSmoothed[i] * scale;
+			float ah = visualizer.bandMagnitudesSmoothed[i] * scale;
 			float normalized = std::clamp(ah, 0.0f, 1.0f);
 			float barHeight  = normalized * canvasSize.y;
 
