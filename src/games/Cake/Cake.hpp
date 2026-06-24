@@ -142,6 +142,8 @@ public:
 		candle->state.scale.y = 8.0f / 16.0f;
 		scene->AddObject(candle);
 
+		// Flame particle
+
 		auto flameMesh = fe::Primitives::GeneratePlane();
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
 
