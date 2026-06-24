@@ -193,6 +193,7 @@ target_include_directories(AudioTest PRIVATE
     external/imgui
     external/SDL/include
     external/kissfft
+    external/glfw/include
     src/Engine
 )
 
