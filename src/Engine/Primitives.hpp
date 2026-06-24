@@ -135,6 +135,9 @@ namespace fe::Primitives {
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
 			}
+
+			for(auto& vertex : plane.vertices)
+        		vertex.position += planeOffset;
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
