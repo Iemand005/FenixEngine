@@ -27,7 +27,7 @@ namespace fe {
 }
 namespace fe::Primitives {
 
-	CubeUVs defaultUVs = {
+	static const CubeUVs defaultUVs = {
 		{0, 0, 1, 1},  // front
 		{0, 0, 1, 1},  // back
 		{0, 0, 1, 1},  // left
@@ -99,8 +99,12 @@ namespace fe::Primitives {
 	}
 
 	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f) {
-		return GenerateCube(directions, defaultUVs, size, inset);
-	}
+    static const CubeUVs defaultUVs = {
+        {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1},
+        {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}
+    };
+    return GenerateCube(directions, defaultUVs, size, inset);
+}
 	
 	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, float size = 1.0f, float inset = 0.0f) {
 		std::vector<Vertex> allVertices;
