@@ -78,7 +78,7 @@ public:
 		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
 
 		auto plane = std::make_shared<fe::Object>(planeMesh);
-		plane->meshes.push_back(sideMesh)
+		plane->meshes.push_back(sideMesh);
 
 		plane->name = "Cake";
 		this->scene->AddObject(plane);
