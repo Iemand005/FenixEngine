@@ -37,22 +37,28 @@ namespace fe::Primitives {
 	};
 
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
-		switch(direction) {
-			default:
-			case PlaneDirection::Top:
-				return glm::quat(1, 0, 0, 0);
-			case PlaneDirection::Bottom:
-				return glm::angleAxis(glm::radians(180.0f), glm::vec3(1, 0, 0));
-			case PlaneDirection::Front:
-				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
-			case PlaneDirection::Back:
-				return glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
-			case PlaneDirection::Right:
-				return glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 0, 1));
-			case PlaneDirection::Left:
-				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 0, 1));
-		}
-	}
+    switch(direction) {
+        default:
+        case PlaneDirection::Front:
+            // Looking at front, already correct orientation
+            return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
+        case PlaneDirection::Back:
+            // Flip 180° on Y, then rotate to face back
+            return glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0)) * 
+                   glm::angleAxis(glm::radians(180.0f), glm::vec3(0, 1, 0));
+        case PlaneDirection::Right:
+            // Rotate 90° around Z, then adjust
+            return glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)) *
+                   glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
+        case PlaneDirection::Left:
+            return glm::angleAxis(glm::radians(-90.0f), glm::vec3(0, 1, 0)) *
+                   glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
+        case PlaneDirection::Top:
+            return glm::quat(1, 0, 0, 0); // No rotation needed
+        case PlaneDirection::Bottom:
+            return glm::angleAxis(glm::radians(180.0f), glm::vec3(1, 0, 0));
+    }
+}
 
 	inline const UVRect& GetUVForDirection(const CubeUVs& uvs, PlaneDirection direction) {
 		switch(direction) {
