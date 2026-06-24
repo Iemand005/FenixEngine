@@ -97,8 +97,10 @@ public:
 		fe::CubeUVs candle;
 
 		fe::UVRect topUV;
-		topUV.u0 = 6.0f / 16.0f;
-		topUV.u0 = 6.0f / 16.0f;
+		topUV.v0 = 2.0f / 16.0f;
+		topUV.u0 = 0;
+		topUV.v1 = 8.0f / 16.0f;
+		topUV.u1 = 8.0f / 16.0f;
 		fe::UVRect sideUV;
 
 		candle.top = topUV;
