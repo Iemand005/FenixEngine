@@ -50,7 +50,7 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, PlaneDirection direction) {
+	inline Mesh GeneratePlane(PlaneDirection direction = PlaneDirection::Front, float width = 1.0f, float height = 1.0f) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
 
@@ -68,7 +68,7 @@ namespace fe::Primitives {
 		};
 		
 		for(auto direction : directions) {
-			Mesh plane = GeneratePlane(size, size, direction);
+			Mesh plane = GeneratePlane(direction, size, size);
 			uint32_t vertexOffset = allVertices.size();
 			
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
