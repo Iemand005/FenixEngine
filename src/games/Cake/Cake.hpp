@@ -150,7 +150,7 @@ public:
 		flameUV.v0 = 96.0f / 128.0f;
 		flameUV.v1 = 104.0f / 128.0f;
 
-		auto flameMesh = fe::Primitives::GeneratePlane();
+		auto flameMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 8.0f / 16.0f, , 8.0f / 16.0f);
 		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
 
 		auto particle = std::make_shared<fe::Object>(flameMesh);
