@@ -250,7 +250,7 @@ public:
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
-		float cameraPanSpeed = 0.1f;
+		float cameraPanSpeed = 1.1f;
 		SDL_Event event;
 		
 		while (!window->ShouldClose()) {
@@ -269,10 +269,13 @@ public:
 			elapsedTime += baseSpeed;
 			
 			// float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
+
+			float cameraPanSpeedVariation = 1.0f + sin(elapsedTime * 0.1f) * 0.5f;
+			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
 			
-			cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f) * 2.0f;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 0.5f;
-			cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f) * 1.0f;
+			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * 0.3f) * 2.0f;
+			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * 0.2f) * 0.5f;
+			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * 0.15f) * 1.0f;
 			
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
