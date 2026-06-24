@@ -13,6 +13,7 @@ target_include_directories(Cake PRIVATE
     ../..
     ../../../external
     ../../../external/imgui
+    ../../../external/kissfft
     ../../../external/SDL/include
     ../../Engine
 )
