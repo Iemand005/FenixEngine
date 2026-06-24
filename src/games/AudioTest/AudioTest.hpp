@@ -21,18 +21,7 @@
 #include <Primitives.hpp>
 
 #include <audio/AudioVisualiser.hpp>
-
-
-const int FFT_SIZE = 1024;               
-const int BINS = (FFT_SIZE / 2) + 1;  
-
-const int NUM_BARS = 32;
-
-
-std::vector<float> audioSamples;         
-kiss_fftr_cfg      fftConfig;            
-float              fftInput[FFT_SIZE];  
-kiss_fft_cpx       fftOutput[BINS];      
+   
 
 void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, float* buffer, int buflen) {
     if (!buffer || buflen <= 0) return;
