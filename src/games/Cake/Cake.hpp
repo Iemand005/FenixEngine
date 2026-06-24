@@ -226,7 +226,7 @@ public:
 			camera->SetPos(pos);
 			camera->UpdateDirection();
 
-			flameParticle->LookAt(player->state.position);
+			flameParticle->LookAt(camera->GetPos());
 			
 			Update();
 			Redraw();
