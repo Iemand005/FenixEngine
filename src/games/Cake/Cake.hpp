@@ -72,7 +72,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		auto plane = fe::Primitives::GeneratePlane();
+		auto plane = std::make_shared<fe::Object>(fe::Primitives::GeneratePlane());
 		this->scene->AddObject(plane);
 	}
 
