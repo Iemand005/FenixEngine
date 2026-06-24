@@ -144,8 +144,6 @@ public:
 		Destroy();
 	}
 
-	float bandMagnitudes[NUM_BARS] = {0};       
-	float bandMagnitudesSmoothed[NUM_BARS] = {0};
 
 	void InitUI() override {}
 	

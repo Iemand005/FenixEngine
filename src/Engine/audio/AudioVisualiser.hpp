@@ -50,6 +50,25 @@ public:
     }
 	}
 
+	
+	float bandMagnitudes[NUM_BARS] = {0};       
+	float bandMagnitudesSmoothed[NUM_BARS] = {0};
+
+	void ComputeBands(const float* magnitudes, int bins, float* bandsOut, int numBars) {
+		float maxBin = (float)(bins - 1);
+		for (int b = 0; b < numBars; ++b) {
+			float t0 = (float)b / numBars;
+			float t1 = (float)(b + 1) / numBars;
+			int bin0 = std::max(1, (int)std::pow(maxBin, t0));   
+			int bin1 = std::min(bins - 1, std::max(bin0 + 1, (int)std::pow(maxBin, t1)));
+
+			float maxVal = 0.0f;
+			for (int i = bin0; i <= bin1; ++i)
+				maxVal = std::max(maxVal, magnitudes[i]);
+			bandsOut[b] = maxVal;
+		}
+	}
+
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
 
