@@ -81,8 +81,8 @@ public:
 
 		fe::UVRect cakeTopBtmUV;
 		cakeTopBtmUV.u0 = 1.0f / 16.0f;
-		cakeTopBtmUV.u1 = 1.0f / 16.0f;
-		cakeTopBtmUV.v0 = 15.0f / 16.0f;
+		cakeTopBtmUV.u1 = 15.0f / 16.0f;
+		cakeTopBtmUV.v0 = 1.0f / 16.0f;
 		cakeTopBtmUV.v1 = 15.0f / 16.0f;
 
 		fe::UVRect cakeSideUV;
