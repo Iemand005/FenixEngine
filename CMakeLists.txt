@@ -37,8 +37,6 @@ add_subdirectory(external/kissfft)
 
 add_subdirectory(src/Engine)
 
-add_subdirectory(src/games/Cake)
-
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
