@@ -141,6 +141,11 @@ public:
 		candle->state.scale.x = candle->state.scale.z = 2.0f / 16.0f;
 		candle->state.scale.y = 8.0f / 16.0f;
 		scene->AddObject(candle);
+
+		auto candleMesh = fe::Primitives::GeneratePlane();
+		candleMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
+
+		auto candle = std::make_shared<fe::Object>(candleMesh);
 	}
 
 	void ProcessInput() {
