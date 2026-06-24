@@ -62,7 +62,10 @@ endif()
 
 if(WIN32)
 add_custom_command(TARGET Cake POST_BUILD
-    COMMAND cmd /c if not exist "$<TARGET_FILE_DIR:Cake>\\resources" mklink /J "$<TARGET_FILE_DIR:Cake>\\resources" "${CMAKE_SOURCE_DIR}\\resources"
+    COMMAND cmd.exe /C
+        mklink /J
+        "$<TARGET_FILE_DIR:Cake>\\resources"
+        "${CMAKE_SOURCE_DIR}\\resources"
 )
 else()
 add_custom_command(TARGET Cake POST_BUILD
