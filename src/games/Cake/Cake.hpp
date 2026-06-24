@@ -154,10 +154,10 @@ public:
 		wickUV.v0 = 10.0f / 16.0f;
 		wickUV.v1 = 11.0f / 16.0f;
 
-		auto flameMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.1f, 0.1f, flameUV);
-		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
+		auto wickMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.1f, 0.1f, wickUV);
+		wickMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
 
-		auto particle = std::make_shared<fe::Object>(flameMesh);
+		auto particle = std::make_shared<fe::Object>(wickMesh);
 		particle->meshes[0].hasTransparency = true;
 		particle->state.position.y = 1.07f;
 		flameParticle = particle;
