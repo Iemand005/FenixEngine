@@ -108,7 +108,7 @@ public:
 		sideUV.v0 = 0;
 		sideUV.v1 = 8.0f / 16.0f;
 
-		candleUVs.top = candleUVs..bottom = topUV;
+		candleUVs.top = candleUVs.bottom = topUV;
 		candleUVs.front = candleUVs.back = candleUVs.left = candleUVs.right = sideUV;
 
 		auto candleMesh = fe::Primitives::GenerateCube(candleUVs);
