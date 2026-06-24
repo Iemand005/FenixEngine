@@ -72,9 +72,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		constexpr float e = 15.0f / 16.0f;
-		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, -e);
-		sampleSideTest.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
+		auto sampleSideTest = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, -1);
 		auto sampleCube = std::make_shared<fe::Object>(sampleSideTest);
 		sampleCube->state.position.y += 1;
 		sampleCube->state.position.x += 1;
