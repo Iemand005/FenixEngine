@@ -78,6 +78,7 @@ public:
 		constexpr float sideInset = 15.0f / 16.0f;
 		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, 1, -sideInset);
 		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
+		sideMesh.hasTransparency= true;
 
 		auto plane = std::make_shared<fe::Object>(planeMesh);
 		plane->meshes.push_back(sideMesh);
