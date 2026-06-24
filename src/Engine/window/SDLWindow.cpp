@@ -1,3 +1,8 @@
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
 
@@ -198,8 +203,6 @@ void fe::SDLWindow::Resize(int w, int h) {
 }
 
 #ifdef _WIN32
-#include <SDL3/SDL.h>
-#include <windows.h>
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
