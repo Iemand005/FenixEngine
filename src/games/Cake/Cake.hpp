@@ -142,10 +142,11 @@ public:
 		candle->state.scale.y = 8.0f / 16.0f;
 		scene->AddObject(candle);
 
-		auto candleMesh = fe::Primitives::GeneratePlane();
-		candleMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
+		auto flameMesh = fe::Primitives::GeneratePlane();
+		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
 
-		auto candle = std::make_shared<fe::Object>(candleMesh);
+		auto particle = std::make_shared<fe::Object>(flameMesh);
+		scene->AddObject(particle);
 	}
 
 	void ProcessInput() {
