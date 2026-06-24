@@ -22,31 +22,6 @@
 
 #include <audio/AudioVisualiser.hpp>
 
-
-
-     
-
-void SDLCALL MinimalAudioCallback(void* userdata, const SDL_AudioSpec* spec, float* buffer, int buflen) {
-    if (!buffer || buflen <= 0) return;
-
-    int num_floats = buflen / (int)sizeof(float);
-    int frames = num_floats / spec->channels;
-
-    for (int i = 0; i < frames; ++i) {
-        float monoSample = 0.0f;
-        for (int c = 0; c < spec->channels; ++c) {
-            monoSample += buffer[i * spec->channels + c];
-        }
-        audioSamples.push_back(monoSample / spec->channels);
-    }
-
-    if (audioSamples.size() > FFT_SIZE) {
-        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
-    }
-}
-
-
-
 class Cake : public fe::EditableGame {
 public:
 
@@ -80,49 +55,7 @@ public:
 			rectangles.push_back(cube);
 		}
 
-
-// #ifdef _WIN32
-// 		g_loopback.Init();
-// #else
-//     	g_pwLoopback.Init();
-// #endif
-// 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
-
 		visualizer.Init();
-
-
-		SDL_AudioSpec wavSpec;
-		Uint8* data = nullptr;
-		Uint32 len = 0;
-
-		if (!SDL_LoadWAV("resources/audio/file_example_WAV_5MG.wav", &wavSpec, &data, &len))
-		{
-			std::cout << "Failed to load WAV: " << SDL_GetError() << "\n";
-			return;
-		}
-
-		SDL_AudioSpec targetSpec;
-		targetSpec.format = SDL_AUDIO_F32;
-		targetSpec.channels = 2;
-		targetSpec.freq = wavSpec.freq;
-
-		SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &targetSpec, nullptr, nullptr);
-
-		SDL_SetAudioStreamFormat(stream, &wavSpec, &targetSpec);
-
-		SDL_PutAudioStreamData(stream, data, len);
-
-		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
-
-		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
-
-		
-		SDL_ResumeAudioDevice(dev);
-		
-		
-
-
-		SDL_AddEventWatch(LiveRedrawWatcher, this);
 	}
 
 	static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
