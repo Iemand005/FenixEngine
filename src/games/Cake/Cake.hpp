@@ -71,11 +71,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		// Cube mesh
-
-		auto planeMesh = fe::Primitives::GeneratePlane();
-		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
-		planeMesh.hasTransparency = true;
+		// Cake mesh
 
 		fe::UVRect cakeTopBtmUV;
 		cakeTopBtmUV.u0 = 1.0f / 16.0f;
@@ -95,12 +91,15 @@ public:
 		cakeUVs.top = cakeUVs.bottom = cakeTopBtmUV;
 		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = cakeSideUV;
 
+		auto planeMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Top}, cakeUVs);
+		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
+		planeMesh.hasTransparency = true;
 
 		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, cakeUVs);
 		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
 		sideMesh.hasTransparency = true;
 
-		auto bottomMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Bottom});
+		auto bottomMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Bottom}, cakeUVs);
 		bottomMesh.loadTexture("resources/textures/cake_bottom.png", fe::TextureScaling::Nearest);
 		bottomMesh.hasTransparency = true;
 
