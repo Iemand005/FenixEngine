@@ -2,7 +2,6 @@
 #include "Mesh.hpp"
 
 namespace fe::Primitives {
-
 	enum class PlaneDirection {
 		Front,   // +Z
 		Back,    // -Z
@@ -11,7 +10,6 @@ namespace fe::Primitives {
 		Top,     // +Y
 		Bottom   // -Y
 	};
-
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
 		switch(direction) {
 			default:
@@ -29,8 +27,7 @@ namespace fe::Primitives {
 				return glm::angleAxis(glm::radians(-90.0f), glm::vec3(1, 0, 0));
 		}
 	}
-
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0)) {
+	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0))) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
 		
@@ -49,11 +46,9 @@ namespace fe::Primitives {
 		std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
 		return Mesh(vertices, indices);
 	}
-
 	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
-
 	inline Mesh GenerateCube(float size = 1.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
@@ -78,5 +73,4 @@ namespace fe::Primitives {
 		
 		return Mesh(allVertices, allIndices);
 	}
-
 } // namespace fe::Primitives
