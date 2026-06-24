@@ -95,12 +95,12 @@ public:
 		}
 
 
-#ifdef _WIN32
-		g_loopback.Init();
-#else
-    	g_pwLoopback.Init();
-#endif
-		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
+// #ifdef _WIN32
+// 		g_loopback.Init();
+// #else
+//     	g_pwLoopback.Init();
+// #endif
+// 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
 		visualizer.Init();
 
@@ -128,7 +128,7 @@ public:
 
 		SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(stream);
 
-	SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
+		SDL_SetAudioPostmixCallback(dev, MinimalAudioCallback, nullptr);
 
 		
 		SDL_ResumeAudioDevice(dev);
