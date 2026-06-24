@@ -7,7 +7,10 @@
 			"path": "../../Engine"
 		}
 	],
-	"settings": {
-		// extensions
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cmake-tools"
+		]
 	}
 }
