@@ -102,6 +102,8 @@ public:
 #endif
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 
+		visualizer.Init();
+
 
 		SDL_AudioSpec wavSpec;
 		Uint8* data = nullptr;
