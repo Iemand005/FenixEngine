@@ -61,18 +61,18 @@ namespace fe::Primitives {
     float h = height * 0.5f;
     
     std::vector<Vertex> vertices = {
-			Vertex(-w, 0, -h,  0, 1, 0,  0, 0),
-			Vertex( w, 0, -h,  0, 1, 0,  1, 0),
-			Vertex( w, 0,  h,  0, 1, 0,  1, 1),
-			Vertex(-w, 0,  h,  0, 1, 0,  0, 1),
+      Vertex(-w, -h,  0,  0, 0, 1,  0, 0),
+      Vertex(-w,  h,  0,  0, 0, 1,  0, 1),
+      Vertex( w,  h,  0,  0, 0, 1,  1, 1),
+      Vertex( w, -h,  0,  0, 0, 1,  1, 0),
     };
     
     std::vector<uint32_t> indices = {
-			0, 1, 2,
-			0, 2, 3,
+      0, 1, 2,
+      0, 2, 3,
     };
     
     return Mesh(vertices, indices);
-	O}
+  }
 
 } // namespace fe::Primitives
