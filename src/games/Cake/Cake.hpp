@@ -72,6 +72,9 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
+		auto sampleCube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+		scene->AddObject(sampleCube);
+
 		auto planeMesh = fe::Primitives::GeneratePlane();
 		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
 		planeMesh.hasTransparency = true;
