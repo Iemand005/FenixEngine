@@ -57,7 +57,7 @@ namespace fe::Primitives {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
-		float offset = size / 2.0f + (1 - outset);
+		float offset = size / 2.0f - outset;
 		
 		for(auto direction : directions) {
 			Mesh plane = GeneratePlane(direction, size, size);
