@@ -203,10 +203,10 @@ target_link_libraries(AudioTest PRIVATE
 if(FALSE)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
-endif()
 target_include_directories(AudioTest PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
 target_link_libraries(AudioTest PRIVATE ${PIPEWIRE_LIBRARIES})
 target_compile_options(AudioTest PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+endif()
 
 set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     
