@@ -38,7 +38,7 @@ namespace fe {
 
 		TextureScaling scaling = TextureScaling::Linear;
 
-		bool hasTransparency = true;
+		bool hasTransparency = false;
 
 		Mesh() {}
 

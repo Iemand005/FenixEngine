@@ -93,11 +93,9 @@ public:
 
 		auto planeMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Top}, cakeUVs);
 		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
-		planeMesh.hasTransparency = true;
 
 		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, cakeUVs);
 		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
-		sideMesh.hasTransparency = true;
 
 		auto bottomMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Bottom}, cakeUVs);
 		bottomMesh.loadTexture("resources/textures/cake_bottom.png", fe::TextureScaling::Nearest);
