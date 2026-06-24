@@ -244,6 +244,7 @@ public:
     player->state.position.y = 2;
     float elapsedTime = 0.0f;
     float scale = 10.0f;
+		float cameraPanSpeed = 0.0001f;
     SDL_Event event;
     
     while (!window->ShouldClose()) {
@@ -260,10 +261,10 @@ public:
       float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
       elapsedTime += speed;
       
-      // Slow smooth panning camera offset
-      cameraOffset.x = sin(elapsedTime * 0.3f) * 2.0f;
-      cameraOffset.y = cos(elapsedTime * 0.2f) * 1.5f;
-      cameraOffset.z = sin(elapsedTime * 0.15f) * 1.0f;
+
+      cameraOffset.x = sin(elapsedTime * cameraPanSpeed * 0.3f) * 2.0f;
+      cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f) * 1.5f;
+      cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f) * 1.0f;
       
       glm::vec3 lightCenter = glm::vec3(5, 5, 5);
       float radius = 3.0f;
