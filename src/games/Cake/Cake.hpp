@@ -77,8 +77,6 @@ public:
 		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
 		planeMesh.hasTransparency = true;
 
-		constexpr float sideInset = 1 - 15.0f / 16.0f;
-
 		fe::UVRect cakeTopBtmUV;
 		cakeTopBtmUV.u0 = 1.0f / 16.0f;
 		cakeTopBtmUV.u1 = 15.0f / 16.0f;
@@ -98,7 +96,7 @@ public:
 		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = cakeSideUV;
 
 
-		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, cakeUVs, 1, sideInset);
+		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, cakeUVs);
 		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
 		sideMesh.hasTransparency = true;
 
