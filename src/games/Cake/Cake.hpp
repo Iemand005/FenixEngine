@@ -273,36 +273,29 @@ public:
 			cameraOffset.y = cos(elapsedTime * cameraPanSpeed * 0.2f * speedVariation) * 1.5f;
 			cameraOffset.z = sin(elapsedTime * cameraPanSpeed * 0.15f * speedVariation) * 1.0f;
 			
-			// Light 0
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
 			scene->GetLights()[0].position = lightCenter + glm::vec3(
-					sin(elapsedTime * 0.5f) * radius,
-					cos(elapsedTime * 0.3f) * radius * 0.5f,
-					sin(elapsedTime * 0.7f) * radius
+				sin(elapsedTime * 0.5f) * radius,
+				cos(elapsedTime * 0.3f) * radius * 0.5f,
+				sin(elapsedTime * 0.7f) * radius
 			);
 			
-			// Light 1
-			if (scene->GetLights().size() > 1) {
-					glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
-					float radius1 = 2.5f;
-					scene->GetLights()[1].position = lightCenter1 + glm::vec3(
-							sin(elapsedTime * 0.4f) * radius1,
-							cos(elapsedTime * 0.25f) * radius1 * 0.6f,
-							sin(elapsedTime * 0.6f) * radius1
-					);
-			}
-			
-			// Light 2
-			if (scene->GetLights().size() > 2) {
-					glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
-					float radius2 = 2.0f;
-					scene->GetLights()[2].position = lightCenter2 + glm::vec3(
-							sin(elapsedTime * 0.35f) * radius2,
-							cos(elapsedTime * 0.28f) * radius2 * 0.7f,
-							sin(elapsedTime * 0.55f) * radius2
-					);
-			}
+			glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
+			float radius1 = 2.5f;
+			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
+				sin(elapsedTime * 0.4f) * radius1,
+				cos(elapsedTime * 0.25f) * radius1 * 0.6f,
+				sin(elapsedTime * 0.6f) * radius1
+			);
+	
+			glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
+			float radius2 = 2.0f;
+			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
+				sin(elapsedTime * 0.35f) * radius2,
+				cos(elapsedTime * 0.28f) * radius2 * 0.7f,
+				sin(elapsedTime * 0.55f) * radius2
+			);
 			
 			glm::vec3 pos = player->state.position + cameraOffset;
 			camera->SetPos(pos);
