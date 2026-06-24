@@ -42,8 +42,8 @@ namespace fe::Primitives {
 		};
 		
 		for(auto& v : vertices) {
-			glm::vec3 pos(v.x, v.y, v.z);
-			glm::vec3 norm(v.nx, v.ny, v.nz);
+			glm::vec3 pos(v.position.x, v.position.y, v.position.z);
+			glm::vec3 norm(v.normal.x, v.normal.y, v.normal.z);
 			
 			pos = rotation * pos;
 			norm = rotation * norm;
