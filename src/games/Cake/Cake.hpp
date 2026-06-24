@@ -236,25 +236,21 @@ public:
 
 
 	void Run() {
-		auto window = this->GetWindow<fe::SDLWindow>();
-		window->DisableVSync();
-	
-		glm::vec3 cameraOffset = glm::vec3(0);
-
-		player->state.position.z = 5;
-		player->state.position.y = 2;
-
-		float elapsedTime = 0.0f;
-		float scale = 10.0f;
-
-		SDL_Event event;
-		while (!window->ShouldClose()) {
-			
-			ProcessInput();
-
-			visualizer.Update();
-
-			float totalMagnitude = 0.0f;
+    auto window = this->GetWindow<fe::SDLWindow>();
+    window->DisableVSync();
+  
+    glm::vec3 cameraOffset = glm::vec3(0);
+    player->state.position.z = 5;
+    player->state.position.y = 2;
+    float elapsedTime = 0.0f;
+    float scale = 10.0f;
+    SDL_Event event;
+    
+    while (!window->ShouldClose()) {
+      
+      ProcessInput();
+      visualizer.Update();
+      float totalMagnitude = 0.0f;
       for (int i = 0; i < NUM_BARS; ++i) {
           totalMagnitude += visualizer.bandMagnitudes[i];
       }
@@ -263,6 +259,12 @@ public:
       float baseSpeed = 0.0002f;
       float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
       elapsedTime += speed;
+      
+      // Slow smooth panning camera offset
+      cameraOffset.x = sin(elapsedTime * 0.3f) * 2.0f;
+      cameraOffset.y = cos(elapsedTime * 0.2f) * 1.5f;
+      cameraOffset.z = sin(elapsedTime * 0.15f) * 1.0f;
+      
       glm::vec3 lightCenter = glm::vec3(5, 5, 5);
       float radius = 3.0f;
       
@@ -271,23 +273,17 @@ public:
           cos(elapsedTime * 0.3f) * radius * 0.5f,
           sin(elapsedTime * 0.7f) * radius
       );
-
       
-			glm::vec3 pos = player->state.position + cameraOffset;
+      glm::vec3 pos = player->state.position + cameraOffset;
       camera->SetPos(pos);
       camera->LookAt(wick->state.position);
-
-			flameParticle->LookAt(camera->GetPos());
-			wick->LookAt(camera->GetPos());
-
-			scene->GetLights()[0].position += 0.1f;
-
-			
-			Update();
-			Redraw();
-		}
-
-		Destroy();
+      flameParticle->LookAt(camera->GetPos());
+      wick->LookAt(camera->GetPos());
+      
+      Update();
+      Redraw();
+    }
+    Destroy();
 	}
 
 
