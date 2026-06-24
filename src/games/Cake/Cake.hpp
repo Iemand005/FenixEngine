@@ -72,7 +72,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		auto sampleCube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
+		auto sampleCube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube());
 		scene->AddObject(sampleCube);
 
 		auto planeMesh = fe::Primitives::GeneratePlane();
