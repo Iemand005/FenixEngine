@@ -1,14 +1,16 @@
 #pragma once
 #include "Mesh.hpp"
 
-enum class fe::PlaneDirection {
-	Front,   // +Z
-	Back,    // -Z
-	Right,   // +X
-	Left,    // -X
-	Top,     // +Y
-	Bottom   // -Y
-};
+namespace fe {
+	enum class PlaneDirection {
+		Front,   // +Z
+		Back,    // -Z
+		Right,   // +X
+		Left,    // -X
+		Top,     // +Y
+		Bottom   // -Y
+	};
+}
 
 namespace fe::Primitives {
 	inline glm::quat GetRotationFromDirection(PlaneDirection direction) {
