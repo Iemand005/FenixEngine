@@ -62,8 +62,6 @@ class Renderer {
 
   int lastX, lastY;
 
-  bool capturingMouse = true;
-
   double lastUpdateTime = 0.0f;
 
   bool canJump = true;
