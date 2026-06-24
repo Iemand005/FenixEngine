@@ -50,7 +50,7 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, PlaneDirection direction = PlaneDirection::Front) {
+	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, PlaneDirection direction) {
 		return GeneratePlane(width, height, GetRotationFromDirection(direction));
 	}
 
