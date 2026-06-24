@@ -115,7 +115,7 @@ public:
 		candleUVs.left = sideUV;
 		candleUVs.right = sideUV;
 
-		auto candleMesh = fe::Primitives::GeneratePlane();
+		auto candleMesh = fe::Primitives::GenerateCube(candleUVs);
 		auto candle = std::make_shared<fe::Object>(candleMesh);
 		candle->name = "Candle";
 		scene->AddObject(candle);
