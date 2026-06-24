@@ -66,10 +66,22 @@ namespace fe::Primitives {
 			bool flipWinding = false;
 			
 			switch(direction) {
-				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, offset); break;
-				case PlaneDirection::Back:   planeOffset = glm::vec3(0, 0, -offset); break;
-				case PlaneDirection::Right:  planeOffset = glm::vec3(offset, 0, 0); flipWinding = true; break;
-				case PlaneDirection::Left:   planeOffset = glm::vec3(-offset, 0, 0); flipWinding = true; break;
+				case PlaneDirection::Front:  
+					planeOffset = glm::vec3(0, 0, offset); 
+					flipWinding = (outset == 0.0f); 
+					break;
+				case PlaneDirection::Back:   
+					planeOffset = glm::vec3(0, 0, -offset); 
+					flipWinding = (outset == 0.0f); 
+					break;
+				case PlaneDirection::Right:  
+					planeOffset = glm::vec3(offset, 0, 0); 
+					flipWinding = (outset != 0.0f); 
+					break;
+				case PlaneDirection::Left:   
+					planeOffset = glm::vec3(-offset, 0, 0); 
+					flipWinding = (outset != 0.0f); 
+					break;
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
 			}
