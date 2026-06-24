@@ -63,10 +63,12 @@ namespace fe::Primitives {
 			Mesh plane = GeneratePlane(direction, size, size);
 			
 			glm::vec3 planeOffset = glm::vec3(0.0f);
+			bool flipWinding = false;
+			
 			switch(direction) {
-				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, offset); break;
+				case PlaneDirection::Front:  planeOffset = glm::vec3(0, 0, offset); flipWinding = true; break;
 				case PlaneDirection::Back:   planeOffset = glm::vec3(0, 0, -offset); break;
-				case PlaneDirection::Right:  planeOffset = glm::vec3(offset, 0, 0); break;
+				case PlaneDirection::Right:  planeOffset = glm::vec3(offset, 0, 0); flipWinding = true; break;
 				case PlaneDirection::Left:   planeOffset = glm::vec3(-offset, 0, 0); break;
 				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
 				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
@@ -74,12 +76,41 @@ namespace fe::Primitives {
 			
 			for(auto& vertex : plane.vertices) {
 				vertex.position += planeOffset;
+				
+				switch(direction) {
+					case PlaneDirection::Back:
+						vertex.uv.x = 1.0f - vertex.uv.x;
+						vertex.uv.y = 1.0f - vertex.uv.y;
+						break;
+					case PlaneDirection::Right:
+					case PlaneDirection::Left:
+						std::swap(vertex.uv.x, vertex.uv.y);
+						if(direction == PlaneDirection::Left)
+							vertex.uv.y = 1.0f - vertex.uv.y;
+						break;
+					case PlaneDirection::Top:
+					case PlaneDirection::Bottom:
+						vertex.uv.y = 1.0f - vertex.uv.y;
+						break;
+					default:
+						break;
+				}
 			}
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
-			for(uint32_t idx : plane.indices)
-				allIndices.push_back(idx + vertexOffset);
+			
+			if(flipWinding) {
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 2);
+				allIndices.push_back(vertexOffset + 1);
+				allIndices.push_back(vertexOffset + 0);
+				allIndices.push_back(vertexOffset + 3);
+				allIndices.push_back(vertexOffset + 2);
+			} else {
+				for(uint32_t idx : plane.indices)
+					allIndices.push_back(idx + vertexOffset);
+			}
 		}
 		
 		return Mesh(allVertices, allIndices);
