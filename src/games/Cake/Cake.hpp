@@ -22,11 +22,10 @@
 #include <EditableGame.hpp>
 #include <Primitives.hpp>
 #ifdef _WIN32
-#include "WasapiLoopbackCapture.hpp"
+#include <audio/WasapiLoopbackCapture.hpp>
 #else
-#include "PipeWireLoopbackCapture.hpp"
+#include <audio/PipeWireLoopbackCapture.hpp>
 #endif
-
 
 const int FFT_SIZE = 1024;               
 const int BINS = (FFT_SIZE / 2) + 1;  
