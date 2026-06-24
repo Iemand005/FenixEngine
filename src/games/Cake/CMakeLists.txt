@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(Cake)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Engine)
 add_subdirectory(../../src/Engine)
 
 
