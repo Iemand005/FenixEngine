@@ -81,21 +81,32 @@ namespace fe {
     return ErrorCheck();
   }
 
-  bool LoadShaderFile(std::string fileName) {
-    std::ifstream file(fileName.c_str());
+	bool LoadShaderFile(std::string fileName) {
+		std::ifstream file(fileName.c_str());
 
-    if (!file.is_open()) {
-      std::filesystem::path cwd = std::filesystem::current_path();
-      std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
-      return false;
-    }
+		if (!file.is_open()) {
+		std::filesystem::path cwd = std::filesystem::current_path();
+		std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 
-    shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+			std::string exeDir = GetExecutableDirectory();
+			std::string path2 = exeDir + "\\" + fileName;
+			file.open(path2);
+			if (file.is_open())
+			{
+				std::cerr << "WARNING: File not found in CWD: " << path1 << std::endl;
+				std::cout << "Loaded from exe dir: " << path2 << std::endl;
+				return true;
+			}
 
-    file.close();
+		return false;
+		}
 
-    return LoadText(shaderText);
-  }
+		shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+		file.close();
+
+		return LoadText(shaderText);
+	}
 
   void deleteShader() { glDeleteShader(this->id); }
 
