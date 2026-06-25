@@ -91,6 +91,8 @@ class Renderer {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 	}
 
+#ifdef _WIN32
+
   void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
 		auto window = GetWindow<SDLWindow>();
 		switch (mode) {
@@ -129,6 +131,7 @@ class Renderer {
 			}
 		}
   }
+#endif
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
