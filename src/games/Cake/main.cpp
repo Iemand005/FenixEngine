@@ -6,6 +6,37 @@
 #include <iostream>
 #include "Cake.hpp"
 
+#include <fstream>
+#include <sstream>
+#include <chrono>
+
+void LogToFile(const std::string& message)
+{
+    try
+    {
+        std::ofstream file("C:\\Temp\\Cake_screensaver.log", std::ios::app);
+        if (file.is_open())
+        {
+            auto now = std::chrono::system_clock::now();
+            auto time = std::chrono::system_clock::to_time_t(now);
+            file << "[" << std::ctime(&time) << "] " << message << "\n";
+            file.close();
+        }
+    }
+    catch (...) { }
+}
+
+int main() {
+
+  std::cout << "Hiii" << std::endl;
+  std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
+  std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
+
+  Cake game;
+  game.Run();
+  return 0;
+}
+
 int WINAPI WinMain(
     HINSTANCE,
     HINSTANCE,
@@ -13,6 +44,9 @@ int WINAPI WinMain(
     int
 )
 {
+    LogToFile("=== Screensaver started ===");
+    LogToFile(std::string("Command line: ") + (lpCmdLine ? lpCmdLine : "(null)"));
+    
     ScreenSaverMode mode = ScreenSaverMode::Window;
     HWND previewHwnd = nullptr;
     
