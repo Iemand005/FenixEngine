@@ -41,7 +41,7 @@ public:
 
   }
 
-  virtual void SetTitle(const char *newTitle);
+  virtual void SetTitle(const char *newTitle) {};
 
   bool CapturingMouse() {return false;};
 
