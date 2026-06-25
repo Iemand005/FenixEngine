@@ -1,6 +1,8 @@
+#ifdef _WIN32
 #define _WINSOCKAPI_
 #include <winsock2.h>
 #include <windows.h>
+#endif
 #include <string>
 #include <cstring>
 #include <iostream>
