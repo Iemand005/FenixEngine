@@ -85,20 +85,19 @@ namespace fe {
 		std::ifstream file(fileName.c_str());
 
 		if (!file.is_open()) {
-		std::filesystem::path cwd = std::filesystem::current_path();
-		std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
+			std::filesystem::path cwd = std::filesystem::current_path();
+			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 
 			std::string exeDir = GetExecutableDirectory();
 			std::string path2 = exeDir + "\\" + fileName;
 			file.open(path2);
 			if (file.is_open())
 			{
-				std::cerr << "WARNING: File not found in CWD: " << path1 << std::endl;
 				std::cout << "Loaded from exe dir: " << path2 << std::endl;
 				return true;
 			}
 
-		return false;
+			return false;
 		}
 
 		shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
