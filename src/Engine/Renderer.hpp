@@ -93,8 +93,8 @@ class Renderer {
 
 #ifdef _WIN32
 
-  void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
-		auto window = GetWindow<SDLWindow>();
+  void ActivateScreenSaverMode(ScreenSaverMode mode, HWND previewParent = nullptr) {
+		auto window = GetWindow<DefaultWindow>();
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
 				RECT r;
@@ -115,8 +115,6 @@ class Renderer {
 
 				SDL_HideCursor();
 				SDL_SetCursor(nullptr);
-				
-				fullscreened = true;
 
 				break;
 			}
