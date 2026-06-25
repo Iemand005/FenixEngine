@@ -63,4 +63,4 @@ if(MSVC)
 	add_compile_options(/RTC1)
 endif()
 
-set_target_properties(Cake PROPERTIES SUFFIX ".scr")
+# set_target_properties(Cake PROPERTIES SUFFIX ".scr")
