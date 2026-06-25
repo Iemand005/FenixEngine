@@ -53,8 +53,6 @@ class SDLWindow : public IWindow {
 	void SetBordered(bool enabled);
 	void SetFullscreen(bool enabled = true);
   void ToggleFullscreen() {
-    // SetFullscreen(SDL_GetWindowFullscreenMode)
-    // SDL_isfull
     SetFullscreen(!isFullscreen);
   }
 
