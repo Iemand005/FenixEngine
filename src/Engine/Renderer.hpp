@@ -31,6 +31,7 @@
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
+#include "ScreenSaverMode.hpp"
 
 #include "window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
@@ -89,6 +90,10 @@ class Renderer {
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 	}
+
+  void ActivateScreenSaverMode(ScreenSaverMode mode) {
+
+  }
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
