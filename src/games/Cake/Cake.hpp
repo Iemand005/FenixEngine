@@ -260,7 +260,7 @@ public:
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
-		float cameraPanSpeed = 1.1f;
+		float cameraPanSpeed = 2.1f;
 		SDL_Event event;
 		
 		while (!window->ShouldClose()) {
