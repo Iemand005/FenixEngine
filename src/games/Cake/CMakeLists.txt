@@ -25,6 +25,7 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 )
 
 add_executable(Cake
+    WIN32
     ${IMGUI_SOURCE_FILES}
     main.cpp
 )
