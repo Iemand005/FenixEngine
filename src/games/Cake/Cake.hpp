@@ -42,6 +42,26 @@ public:
 	std::shared_ptr<fe::Object> wick;
 	std::shared_ptr<fe::Object> flameParticle;
 
+
+	float cameraPanSpeed = 2.1f;
+	float lightSpeed = 0.3f;
+	float flameCycleDuration = 3.0f;
+	float flamePhaseMultiplier = 1.10f;
+	float visualizerScale = 8.0f;
+	float visualizerBarHeightMult = 10.0f;
+
+	glm::vec3 lightCenter0 = glm::vec3(5, 5, 5);
+	float lightRadius0 = 3.0f;
+	glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
+	float lightRadius1 = 2.5f;
+	glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
+	float lightRadius2 = 2.0f;
+
+	glm::vec3 cameraOffsetScales = glm::vec3(2.0f, 0.5f, 1.0f);
+	float bgColorFreq = 0.3f;
+	float light1ColorFreq = 0.2f;
+	float light2ColorFreq = 0.25f;
+
 	Cake() : Cake(1400, 1200) {}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
@@ -461,7 +481,7 @@ public:
 	void DrawUI() override {
 		if (!showDebugUI) return;
 		BeginFrame();
-		
+
 		DrawTweaksUI();
 		DrawAudioVisualizer();
 		DrawDebugUI();
