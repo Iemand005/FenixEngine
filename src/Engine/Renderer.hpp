@@ -117,6 +117,8 @@ class Renderer {
 				// SDL_HideCursor();
 				// SDL_SetCursor(nullptr);
 
+        window->Show();
+
         window->ActivateScreenSaverMode();
 
         window->StartMouseCapture();
