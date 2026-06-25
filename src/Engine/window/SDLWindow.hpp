@@ -20,15 +20,15 @@ namespace fe {
 
 class SDLWindow : public IWindow {
 
-  struct Impl;
-  std::unique_ptr<Impl> impl;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 
-  bool shouldClose = false;
+	bool shouldClose = false;
 
-  const bool* keyboardState = nullptr;
+	const bool* keyboardState = nullptr;
 
-  bool isFullscreen = false;
-  bool _isScreensaving = false;
+	bool isFullscreen = false;
+	bool _isScreensaving = false;
 
  public:
   bool capturingMouse = false;
@@ -97,7 +97,9 @@ class SDLWindow : public IWindow {
 
   bool HideMouse();
 
-  void ActivateScreenSaverMode();
+	void ActivateScreenSaverMode() {
+		_isScreensaving = true;
+	}
 
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
