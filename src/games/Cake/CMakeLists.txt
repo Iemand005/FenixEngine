@@ -45,7 +45,7 @@ target_link_libraries(Cake PRIVATE
 	Engine
 )
 
-if(NOT WIN32 AND FALSE)
+if(NOT WIN32)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 target_include_directories(Cake PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
