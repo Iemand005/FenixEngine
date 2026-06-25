@@ -13,36 +13,36 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/../../Engine ${CMAKE_BINARY_DIR}/out/Engine
 set(IMGUI_DIR ../../../external/imgui)
 
 file(GLOB_RECURSE IMGUI_SOURCE_FILES
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_sdlgpu3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-    ${IMGUI_DIR}/imgui_tables.cpp
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_demo.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
+	${IMGUI_DIR}/imgui.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdlgpu3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui_widgets.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
 )
 
 add_executable(Cake
-    WIN32
-    ${IMGUI_SOURCE_FILES}
-    main.cpp
+	WIN32
+	${IMGUI_SOURCE_FILES}
+	main.cpp
 )
 
 target_include_directories(Cake PRIVATE
-    include
-    ../..
-    ../../../include
-    ../../../external
-    ../../../external/imgui
-    ../../../external/kissfft
-    ../../../external/SDL/include
-    ../../Engine
+	include
+	../..
+	../../../include
+	../../../external
+	../../../external/imgui
+	../../../external/kissfft
+	../../../external/SDL/include
+	../../Engine
 )
 
 target_link_libraries(Cake PRIVATE
-    Engine
+	Engine
 )
 
 if(NOT WIN32 AND FALSE)
@@ -54,7 +54,7 @@ target_compile_options(Cake PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
 endif()
 
 set_property(TARGET Cake PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    
+	
 if(MSVC)
 	target_compile_options(Cake PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
