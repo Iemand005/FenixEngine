@@ -37,6 +37,8 @@ public:
 
 	bool showCandle = true;
 
+	bool showDebugUI = false;
+
 	std::shared_ptr<fe::Object> wick;
 	std::shared_ptr<fe::Object> flameParticle;
 
@@ -396,6 +398,7 @@ public:
 	}
 
 	void DrawUI() override {
+		if (!showDebugUI) return;
 		BeginFrame();
 		DrawDebugUI();
 
