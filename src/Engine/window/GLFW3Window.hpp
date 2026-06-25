@@ -45,6 +45,8 @@ public:
 
 	bool HideMouse();
 
+  void SetTitle(const char *newTitle);
+
 	void Hide();
   	void Show();
 
