@@ -200,6 +200,10 @@ void fe::GLFW3Window::Hide() {
 	
 }
 
+void fe::GLFW3Window::SetTitle(const char *title) {
+	glfwSetWindowTitle(impl->window, title);
+}
+
 void fe::GLFW3Window::PrepareClose() {
     glfwSetWindowShouldClose(impl->window, true);
 }
