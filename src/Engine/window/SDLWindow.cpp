@@ -189,8 +189,8 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
 			if (mouseMoveEvent && capturingMouse) {
-			mouseMoveEvent(event->motion.xrel, event->motion.yrel);
-			SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
+				mouseMoveEvent(event->motion.xrel, event->motion.yrel);
+				SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
 			}
 			break;
     }

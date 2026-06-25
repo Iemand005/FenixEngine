@@ -28,6 +28,7 @@ class SDLWindow : public IWindow {
   const bool* keyboardState = nullptr;
 
   bool isFullscreen = false;
+  bool _isScreensaving = false;
 
  public:
   bool capturingMouse = false;
@@ -95,6 +96,8 @@ class SDLWindow : public IWindow {
   void GetFramebufferSize(int *width, int *height);
 
   bool HideMouse();
+
+  void ActivateScreenSaverMode();
 
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
