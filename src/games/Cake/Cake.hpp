@@ -244,9 +244,11 @@ public:
 
 		// Flame particle
 
+		float particleUVOffset = isCyanide ? 0.0f : 16.0f;
+
 		fe::UVRect flameUV;
-		flameUV.u0 = 0.0f / 128.0f;
-		flameUV.u1 = 8.0f / 128.0f;
+		flameUV.u0 = (particleUVOffset + 0.0f) / 128.0f;
+		flameUV.u1 = (particleUVOffset + 8.0f) / 128.0f;
 		flameUV.v0 = 96.0f / 128.0f;
 		flameUV.v1 = 104.0f / 128.0f;
 
