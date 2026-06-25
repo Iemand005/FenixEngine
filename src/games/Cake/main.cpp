@@ -114,17 +114,26 @@ int WINAPI WinMain(
 	}
 	
 	try
-	{
-		Cake game;
-		game.ActivateScreenSaverMode(mode, previewHwnd);
-		game.Run();
-	}
-	catch (const std::exception& e)
-	{
-		OutputDebugStringA("Failed to run screensasver: ");
-		OutputDebugStringA(e.what());
-		OutputDebugStringA("\n");
-	}
+    {
+        LogToFile("Creating game instance...");
+        Cake game;
+        
+        LogToFile("Activating screensaver mode...");
+        game.ActivateScreenSaverMode(mode, previewHwnd);
+        
+        LogToFile("Running game...");
+        game.Run();
+        
+        LogToFile("Game exited normally");
+    }
+    catch (const std::exception& e)
+    {
+        LogToFile(std::string("Exception caught: ") + e.what());
+    }
+    catch (...)
+    {
+        LogToFile("Unknown exception caught");
+    }
 	
 	
 	return 0;
