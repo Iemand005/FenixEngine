@@ -54,7 +54,7 @@ public:
 	float lightSpeed = 0.3f;
 	
 	// Light 0
-	glm::vec3 lightCenter0 = glm::vec3(5, 5, 5);
+	glm::vec3 lightCenter0 = glm::vec3(0, -5, 5);
 	float lightRadius0 = 3.0f;
 	float light0FreqX = 0.5f;
 	float light0FreqY = 0.3f;
@@ -69,7 +69,7 @@ public:
 	float light1ColorFreq = 0.2f;
 	
 	// Light 2
-	glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
+	glm::vec3 lightCenter2 = glm::vec3(3, 6, 4);
 	float lightRadius2 = 2.0f;
 	float light2FreqX = 0.35f;
 	float light2FreqY = 0.28f;
