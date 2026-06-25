@@ -340,7 +340,7 @@ public:
 			elapsedTimeBumpy += speed;
 			elapsedTime += baseSpeedElapsedTime;
 			
-			float cameraPanSpeedVariation = sin(elapsedTime * cameraPanVariationFreq) * 0.5f;
+			float cameraPanSpeedVariation = abs(sin(elapsedTime * cameraPanVariationFreq)) * 0.5f;
 			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
 			
 			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqX) * cameraOffsetScales.x;
