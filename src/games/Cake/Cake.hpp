@@ -461,6 +461,8 @@ public:
 	void DrawUI() override {
 		if (!showDebugUI) return;
 		BeginFrame();
+		
+		DrawTweaksUI();
 		DrawAudioVisualizer();
 		DrawDebugUI();
 
