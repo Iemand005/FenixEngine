@@ -1,4 +1,8 @@
 #pragma once
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <glad/glad.h>
 
 #include <chrono>
@@ -16,8 +20,6 @@ namespace fe {
 
 	std::string GetExecutableDirectory()
 	{
-#ifdef _WIN32
-#include <Windows.h>
 		char exePath[MAX_PATH] = {0};
 		GetModuleFileNameA(NULL, exePath, MAX_PATH);
 		
@@ -27,7 +29,6 @@ namespace fe {
 		{
 			return fullPath.substr(0, lastSlash);
 		}
-#endif
 		return "";
 	}
 
