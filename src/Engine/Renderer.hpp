@@ -92,7 +92,41 @@ class Renderer {
 	}
 
   void ActivateScreenSaverMode(ScreenSaverMode mode) {
+		switch (mode) {
+			case ScreenSaverMode::Preview: {
+				RECT r;
+				GetClientRect(previewParent, &r);
 
+				int w = r.right - r.left;
+				int h = r.bottom - r.top;
+
+				window->AttachToNativeParent(previewParent);
+				window->Resize(w, h);
+				break;
+			}
+
+			case ScreenSaverMode::Fullscreen: {
+				window->GoBorderlessFullscreen();
+				// window->SetFullscreen();
+				window->Show();
+
+				SDL_HideCursor();
+				SDL_SetCursor(nullptr);
+				
+				fullscreened = true;
+
+				break;
+			}
+
+			case ScreenSaverMode::Window: {
+				window->Show();
+				break;
+			}
+
+			case ScreenSaverMode::Config: {
+				break;
+			}
+		}
   }
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
