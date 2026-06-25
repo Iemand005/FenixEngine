@@ -191,13 +191,13 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 			if (resizeEvent) resizeEvent(width, height);
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
-			if (_isScreensaving) {
-				float x, y;
-				SDL_GetMouseState(&x, &y);
+			// if (_isScreensaving) {
+			// 	float x, y;
+			// 	SDL_GetMouseState(&x, &y);
 
-				if (abs(x - startX) > 3 || abs(y - startY) > 3)
-					PrepareClose();
-			}
+			// 	if (abs(x - startX) > 3 || abs(y - startY) > 3)
+			// 		PrepareClose();
+			// }
 			if (mouseMoveEvent && capturingMouse) {
 				mouseMoveEvent(event->motion.xrel, event->motion.yrel);
 				SDL_WarpMouseInWindow(impl->window, width/2.0f, height/2.0f);
