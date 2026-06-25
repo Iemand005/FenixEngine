@@ -282,7 +282,7 @@ public:
 			
 			// float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
 
-			float cameraPanSpeedVariation = 1.0f + sin(elapsedTime * 0.01f) * 0.5f;
+			float cameraPanSpeedVariation = sin(elapsedTime * 0.01f) * 0.5f;
 			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
 			
 			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * 0.3f) * 2.0f;
