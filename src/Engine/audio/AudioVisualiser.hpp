@@ -88,7 +88,7 @@ public:
 
 		ComputeBands(magnitudes, BINS, bandMagnitudes, NUM_BARS);
 
-		if (!smoothed) return;
+		// if (!smoothed) return;
 
 		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
 		for (int b = 0; b < NUM_BARS; ++b)
