@@ -65,7 +65,7 @@ int WINAPI WinMain(
             previewHwnd = (HWND)std::stoull(cur);
     }
 
-    ShaderSaver game(mode == ScreenSaverMode::Fullscreen);
+    Cake game(mode == ScreenSaverMode::Fullscreen);
     game.Run(mode, previewHwnd);
 
     return 0;
