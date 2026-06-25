@@ -224,6 +224,11 @@ public:
 					pitch = std::clamp(pitch, -89.0f, 89.0f);
 					break;
 				}
+				case SDL_EVENT_KEY_DOWN:
+					if (event.key.key == SDLK_F11) {
+						window->ToggleFullscreen();
+					}
+					break;
 			}
 		}
 
@@ -331,20 +336,17 @@ public:
 			float flameProgress = flamePhase / flameCycleDuration;
 
 			if (flameProgress < 0.15f) {
-					// Pop in and quick flicker (0-0.15)
 					float popProgress = flameProgress / 0.15f;
 					float baseScale = 0.9f;
 					float flicker = sin(flameProgress * 30.0f) * 0.15f;
 					float flameScale = baseScale + flicker;
 					flameParticle->state.scale = glm::vec3(flameScale);
 			} else if (flameProgress < 0.85f) {
-					// Slow shrink with occasional flickers (0.15-0.85)
 					float shrinkProgress = (flameProgress - 0.15f) / 0.7f;
 					float flameScale = (1.0f - shrinkProgress * 0.8f);
 					float flicker = sin(flameProgress * 12.0f) * 0.08f;
 					flameParticle->state.scale = glm::vec3(flameScale + flicker);
 			} else {
-					// Quick disappear (0.85-1.0)
 					float disappearProgress = (flameProgress - 0.85f) / 0.15f;
 					float flameScale = (1.0f - disappearProgress) * 0.15f;
 					flameParticle->state.scale = glm::vec3(flameScale);
