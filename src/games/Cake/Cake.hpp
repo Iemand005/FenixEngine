@@ -379,7 +379,7 @@ public:
 		float scale    = 8.0f;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
-			float ah = visualizer.bandMagnitudes[i] * scale;
+			float ah = visualizer.bandMagnitudesSmoothed[i] * scale;
 			float normalized = std::clamp(ah, 0.0f, 1.0f);
 			float barHeight  = normalized * canvasSize.y;
 
