@@ -233,6 +233,9 @@ public:
 					if (event.key.key == SDLK_F11) {
 						window->ToggleFullscreen();
 					}
+					else if (event.key.key == SDLK_F3) {
+						showDebugUI = !showDebugUI;
+					}
 					break;
 			}
 		}
