@@ -1,3 +1,8 @@
+
+#include <windows.h>
+#include <string>
+#include <cstring>
+
 #include "Cake.hpp"
 
 int main() {
@@ -9,4 +14,59 @@ int main() {
   Cake game;
   game.Run();
   return 0;
+}
+
+int WINAPI WinMain(
+    HINSTANCE,
+    HINSTANCE,
+    LPSTR lpCmdLine,
+    int
+)
+{
+    ScreenSaverMode mode = ScreenSaverMode::Window;
+    HWND previewHwnd = nullptr;
+
+    std::string cmd = lpCmdLine ? lpCmdLine : "";
+    std::string cur;
+
+    for (char c : cmd)
+    {
+        if (c == ' ')
+        {
+            if (!cur.empty())
+            {
+                if (_stricmp(cur.c_str(), "/s") == 0)
+                    mode = ScreenSaverMode::Fullscreen;
+                else if (_stricmp(cur.c_str(), "/c") == 0)
+                    mode = ScreenSaverMode::Config;
+                else if (_stricmp(cur.c_str(), "/p") == 0)
+                    mode = ScreenSaverMode::Preview;
+                else if (mode == ScreenSaverMode::Preview)
+                    previewHwnd = (HWND)std::stoull(cur);
+
+                cur.clear();
+            }
+        }
+        else
+        {
+            cur += c;
+        }
+    }
+
+    if (!cur.empty())
+    {
+        if (_stricmp(cur.c_str(), "/s") == 0)
+            mode = ScreenSaverMode::Fullscreen;
+        else if (_stricmp(cur.c_str(), "/c") == 0)
+            mode = ScreenSaverMode::Config;
+        else if (_stricmp(cur.c_str(), "/p") == 0)
+            mode = ScreenSaverMode::Preview;
+        else if (mode == ScreenSaverMode::Preview)
+            previewHwnd = (HWND)std::stoull(cur);
+    }
+
+    ShaderSaver game(mode == ScreenSaverMode::Fullscreen);
+    game.Run(mode, previewHwnd);
+
+    return 0;
 }
