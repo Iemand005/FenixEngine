@@ -1,22 +1,10 @@
-
 #define _WINSOCKAPI_
 #include <winsock2.h>
 #include <windows.h>
 #include <string>
 #include <cstring>
-
+#include <iostream>
 #include "Cake.hpp"
-
-int main() {
-
-  std::cout << "Hiii" << std::endl;
-  std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
-  std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
-
-  Cake game;
-  game.Run();
-  return 0;
-}
 
 int WINAPI WinMain(
     HINSTANCE,
@@ -27,10 +15,10 @@ int WINAPI WinMain(
 {
     ScreenSaverMode mode = ScreenSaverMode::Window;
     HWND previewHwnd = nullptr;
-
+    
     std::string cmd = lpCmdLine ? lpCmdLine : "";
     std::string cur;
-
+    
     for (char c : cmd)
     {
         if (c == ' ')
@@ -44,8 +32,20 @@ int WINAPI WinMain(
                 else if (_stricmp(cur.c_str(), "/p") == 0)
                     mode = ScreenSaverMode::Preview;
                 else if (mode == ScreenSaverMode::Preview)
-                    previewHwnd = (HWND)std::stoull(cur);
-
+                {
+                    // Parse the window handle safely
+                    try
+                    {
+                        unsigned long long handle = std::stoull(cur);
+                        previewHwnd = (HWND)handle;
+                    }
+                    catch (const std::exception& e)
+                    {
+                        OutputDebugStringA("Failed to parse preview window handle: ");
+                        OutputDebugStringA(e.what());
+                        OutputDebugStringA("\n");
+                    }
+                }
                 cur.clear();
             }
         }
@@ -54,7 +54,7 @@ int WINAPI WinMain(
             cur += c;
         }
     }
-
+    
     if (!cur.empty())
     {
         if (_stricmp(cur.c_str(), "/s") == 0)
@@ -64,12 +64,24 @@ int WINAPI WinMain(
         else if (_stricmp(cur.c_str(), "/p") == 0)
             mode = ScreenSaverMode::Preview;
         else if (mode == ScreenSaverMode::Preview)
-            previewHwnd = (HWND)std::stoull(cur);
+        {
+            try
+            {
+                unsigned long long handle = std::stoull(cur);
+                previewHwnd = (HWND)handle;
+            }
+            catch (const std::exception& e)
+            {
+                OutputDebugStringA("Failed to parse preview window handle: ");
+                OutputDebugStringA(e.what());
+                OutputDebugStringA("\n");
+            }
+        }
     }
-
+    
     Cake game;
     game.ActivateScreenSaverMode(mode, previewHwnd);
     game.Run();
-
+    
     return 0;
 }
