@@ -29,6 +29,8 @@ class SDLWindow : public IWindow {
 
 	bool isFullscreen = false;
 	bool _isScreensaving = false;
+	float startX, startY;
+
 
  public:
   bool capturingMouse = false;
@@ -97,9 +99,7 @@ class SDLWindow : public IWindow {
 
   bool HideMouse();
 
-	void ActivateScreenSaverMode() {
-		_isScreensaving = true;
-	}
+	void ActivateScreenSaverMode();
 
 #ifdef _WIN32
   void AttachToNativeParent(void* parent);
