@@ -76,13 +76,14 @@ namespace fe {
 			std::string exeDir = GetExecutableDirectorye();
 			std::string path2 = exeDir + "\\" + fileName;
 			file.open(path2);
-			if (file.is_open())
+			if (!file.is_open())
 			{
-				std::cout << "Loaded from exe dir: " << path2 << std::endl;
-				return true;
+        return false;
+				// return true;
 			}
+      std::cout << "Loaded from exe dir: " << path2 << std::endl;
 
-			return false;
+			// return false;
 		}
 
 		shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
