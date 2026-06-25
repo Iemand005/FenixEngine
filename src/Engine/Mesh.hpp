@@ -13,6 +13,8 @@
 #include "ShaderProgram.hpp"
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
+#include "WawaDir.hpp"
+
 
 namespace fe {
 
@@ -145,6 +147,16 @@ namespace fe {
 			data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
 			if (!data) {
 				std::cerr << "Failed to load texture" << std::endl;
+
+				std::string exeDir = GetExecutableDirectorye();
+				std::string path2 = exeDir + "\\" + textureFilePath;
+				data = stbi_load(path2.c_str(), &width, &height, &nrChannels, 0);
+				if (data)
+				{
+					std::cout << "Loaded from exe dir: " << path2 << std::endl;
+					return true;
+				}
+
 				return false;
 			}
 			return true;
