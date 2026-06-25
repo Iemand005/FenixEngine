@@ -334,6 +334,10 @@ bool fe::SDLWindow::HideMouse() {
 	return SDL_HideCursor();
 }
 
+void fe::SDLWindow::SetTitle(char *title) {
+	SDL_SetWindowTitle(impl->window title);
+}
+
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
