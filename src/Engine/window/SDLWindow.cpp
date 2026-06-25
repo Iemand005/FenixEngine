@@ -334,8 +334,8 @@ bool fe::SDLWindow::HideMouse() {
 	return SDL_HideCursor();
 }
 
-void fe::SDLWindow::SetTitle(char *title) {
-	SDL_SetWindowTitle(impl->window title);
+void fe::SDLWindow::SetTitle(const char *title) {
+	SDL_SetWindowTitle(impl->window, title);
 }
 
 #ifdef _WIN32

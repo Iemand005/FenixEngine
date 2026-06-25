@@ -60,7 +60,7 @@ class SDLWindow : public IWindow {
 		SetBordered(false);
 	}
 
-  void SetTitle(char *newTitle);
+  void SetTitle(const char *newTitle);
 
 	void GoBorderlessFullscreen();
 
