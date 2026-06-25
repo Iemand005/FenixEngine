@@ -283,7 +283,7 @@ public:
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
 		float scale = 10.0f;
-		float cameraPanSpeed = 2.1f;
+		// float cameraPanSpeed = 2.1f;
 		SDL_Event event;
 		
 		while (!window->ShouldClose()) {
@@ -327,8 +327,6 @@ public:
 			float light2G = sin(elapsedTime * 0.25f + 3.14f) * 0.5f + 0.5f;
 			float light2B = sin(elapsedTime * 0.25f + 5.236f) * 0.5f + 0.5f;
 			scene->GetLights()[2].color = {light2R, light2G, light2B};
-
-			float lightSpeed = 0.3f;
 
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
