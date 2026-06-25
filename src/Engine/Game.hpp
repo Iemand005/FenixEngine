@@ -80,7 +80,7 @@ public:
 
 	Game(GLADloadproc loadProc) : Renderer(loadProc) {};
 
-	Game(int width, int height, bool skipInit = false) : Renderer(width, height) {
+	Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow) {
 		Init();
 	}
 
