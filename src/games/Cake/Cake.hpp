@@ -48,7 +48,7 @@ public:
 	float cameraPanFreqY = 0.2f;
 	float cameraPanFreqZ = 0.15f;
 	glm::vec3 cameraOffsetScales = glm::vec3(2.0f, 0.5f, 1.0f);
-	float cameraPanVariationFreq = 0.01f;
+	float cameraPanVariationFreq = 0.001f;
 	
 	// Light tweaks
 	float lightSpeed = 0.3f;
