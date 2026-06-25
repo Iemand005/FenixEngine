@@ -69,7 +69,7 @@ public:
 		}
 	}
 
-	bool smoothed = false;
+	bool smoothed = true;
 
 	void UpdateVisualizerData() {
 		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
