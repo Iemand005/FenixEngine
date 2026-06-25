@@ -305,28 +305,30 @@ public:
 			float light2B = sin(elapsedTime * 0.25f + 5.236f) * 0.5f + 0.5f;
 			scene->GetLights()[2].color = {light2R, light2G, light2B};
 
+			float lightSpeed = 1.0f;
+
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
 			scene->GetLights()[0].position = lightCenter + glm::vec3(
-				sin(elapsedTimeBumpy * 0.5f) * radius,
-				cos(elapsedTimeBumpy * 0.3f) * radius * 0.5f,
-				sin(elapsedTimeBumpy * 0.7f) * radius
+				sin(elapsedTimeBumpy * 0.5f * lightSpeed) * radius,
+				cos(elapsedTimeBumpy * 0.3f * lightSpeed) * radius * 0.5f,
+				sin(elapsedTimeBumpy * 0.7f * lightSpeed) * radius
 			);
-			
+
 			glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
 			float radius1 = 2.5f;
 			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
-				sin(elapsedTimeBumpy * 0.4f) * radius1,
-				cos(elapsedTimeBumpy * 0.25f) * radius1 * 0.6f,
-				sin(elapsedTimeBumpy * 0.6f) * radius1
+				sin(elapsedTimeBumpy * 0.4f * lightSpeed) * radius1,
+				cos(elapsedTimeBumpy * 0.25f * lightSpeed) * radius1 * 0.6f,
+				sin(elapsedTimeBumpy * 0.6f * lightSpeed) * radius1
 			);
-	
+
 			glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
 			float radius2 = 2.0f;
 			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
-				sin(elapsedTimeBumpy * 0.35f) * radius2,
-				cos(elapsedTimeBumpy * 0.28f) * radius2 * 0.7f,
-				sin(elapsedTimeBumpy * 0.55f) * radius2
+				sin(elapsedTimeBumpy * 0.35f * lightSpeed) * radius2,
+				cos(elapsedTimeBumpy * 0.28f * lightSpeed) * radius2 * 0.7f,
+				sin(elapsedTimeBumpy * 0.55f * lightSpeed) * radius2
 			);
 			
 			glm::vec3 pos = player->state.position + cameraOffset;
