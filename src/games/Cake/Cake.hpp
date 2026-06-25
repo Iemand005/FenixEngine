@@ -101,11 +101,13 @@ public:
 	float baseSpeedElapsedTimeBumpy = 0.0002f;
 	float baseSpeedElapsedTime = 0.0002f;
 
+	bool isCyanide = false;
+
 	Cake() : Cake(1400, 1200) {}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
 
-		window->SetTitle("HAPPY BIRTHDAY CYANIDE!!");
+		window->SetTitle(isCyanide ? "HAPPY BIRTHDAY CYANIDE!!" : "HAPPY BIRTHDAY FLEXAN!!");
 
 		SetClearColor(1, 1, 0);
 
