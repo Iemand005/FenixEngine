@@ -116,6 +116,8 @@ class Renderer {
 				SDL_HideCursor();
 				SDL_SetCursor(nullptr);
 
+        window->ActivateScreenSaverMode();
+
 				break;
 			}
 
