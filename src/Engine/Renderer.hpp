@@ -110,8 +110,8 @@ class Renderer {
 
 			case ScreenSaverMode::Fullscreen: {
 				window->GoBorderlessFullscreen();
-				// window->SetFullscreen();
-				window->Show();
+
+        window->Show();
 
 				SDL_HideCursor();
 				SDL_SetCursor(nullptr);
