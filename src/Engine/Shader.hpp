@@ -21,6 +21,7 @@ namespace fe {
 
 	inline std::string GetExecutableDirectorye()
 	{
+#ifdef _WIN32
 		char exePath[MAX_PATH] = {0};
 		GetModuleFileNameA(NULL, exePath, MAX_PATH);
 		
@@ -30,6 +31,7 @@ namespace fe {
 		{
 			return fullPath.substr(0, lastSlash);
 		}
+#endif
 		return "";
 	}
 
