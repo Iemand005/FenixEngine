@@ -42,25 +42,64 @@ public:
 	std::shared_ptr<fe::Object> wick;
 	std::shared_ptr<fe::Object> flameParticle;
 
-
+	// Camera tweaks
 	float cameraPanSpeed = 2.1f;
+	float cameraPanFreqX = 0.3f;
+	float cameraPanFreqY = 0.2f;
+	float cameraPanFreqZ = 0.15f;
+	glm::vec3 cameraOffsetScales = glm::vec3(2.0f, 0.5f, 1.0f);
+	float cameraPanVariationFreq = 0.01f;
+	
+	// Light tweaks
 	float lightSpeed = 0.3f;
-	float flameCycleDuration = 3.0f;
-	float flamePhaseMultiplier = 1.10f;
-	float visualizerScale = 8.0f;
-	float visualizerBarHeightMult = 10.0f;
-
+	
+	// Light 0
 	glm::vec3 lightCenter0 = glm::vec3(5, 5, 5);
 	float lightRadius0 = 3.0f;
+	float light0FreqX = 0.5f;
+	float light0FreqY = 0.3f;
+	float light0FreqZ = 0.7f;
+	
+	// Light 1
 	glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
 	float lightRadius1 = 2.5f;
+	float light1FreqX = 0.4f;
+	float light1FreqY = 0.25f;
+	float light1FreqZ = 0.6f;
+	float light1ColorFreq = 0.2f;
+	
+	// Light 2
 	glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
 	float lightRadius2 = 2.0f;
-
-	glm::vec3 cameraOffsetScales = glm::vec3(2.0f, 0.5f, 1.0f);
-	float bgColorFreq = 0.3f;
-	float light1ColorFreq = 0.2f;
+	float light2FreqX = 0.35f;
+	float light2FreqY = 0.28f;
+	float light2FreqZ = 0.55f;
 	float light2ColorFreq = 0.25f;
+	
+	// Colors
+	float bgColorFreq = 0.3f;
+	float light1RadialColorFreq = 0.2f;
+	float light2RadialColorFreq = 0.25f;
+	
+	// Flame tweaks
+	float flameCycleDuration = 3.0f;
+	float flamePhaseMultiplier = 1.10f;
+	float flameFlickerSpeed1 = 30.0f;
+	float flameFlickerIntensity1 = 0.15f;
+	float flameFlickerSpeed2 = 12.0f;
+	float flameFlickerIntensity2 = 0.08f;
+	float flameShrinkAmount = 0.8f;
+	float flameBaseScale = 0.9f;
+	
+	// Visualizer tweaks
+	float visualizerScale = 8.0f;
+	float visualizerBarHeightMult = 10.0f;
+	
+	// Simulation tweaks
+	float audioAmplitudeScale = 10.0f;
+	float audioSpeedMultiplier = 0.15f;
+	float baseSpeedElapsedTimeBumpy = 0.0002f;
+	float baseSpeedElapsedTime = 0.0002f;
 
 	Cake() : Cake(1400, 1200) {}
 
@@ -284,8 +323,6 @@ public:
 		player->state.position.y = 2;
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
-		float scale = 10.0f;
-		// float cameraPanSpeed = 2.1f;
 		SDL_Event event;
 		
 		while (!window->ShouldClose()) {
@@ -293,65 +330,58 @@ public:
 			ProcessInput();
 			visualizer.Update();
 
-
 			float totalMagnitude = 0.0f;
 			for (int i = 0; i < NUM_BARS; ++i) {
 					totalMagnitude += visualizer.bandMagnitudes[i];
 			}
 			float avgMagnitude = totalMagnitude / NUM_BARS;
 			
-			float baseSpeed = 0.0002f;
-			float speed = baseSpeed + (avgMagnitude * scale * 0.15f);
+			float speed = baseSpeedElapsedTimeBumpy + (avgMagnitude * audioAmplitudeScale * audioSpeedMultiplier);
 			elapsedTimeBumpy += speed;
-			elapsedTime += baseSpeed;
+			elapsedTime += baseSpeedElapsedTime;
 			
-			// float speedVariation = 0.001f + abs(sin(elapsedTime * 0.15f)) * 0.4f;
-
-			float cameraPanSpeedVariation = sin(elapsedTime * 0.01f) * 0.5f;
+			float cameraPanSpeedVariation = sin(elapsedTime * cameraPanVariationFreq) * 0.5f;
 			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
 			
-			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * 0.3f) * 2.0f;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * 0.2f) * 0.5f;
-			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * 0.15f) * 1.0f;
+			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqX) * cameraOffsetScales.x;
+			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * cameraPanFreqY) * cameraOffsetScales.y;
+			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqZ) * cameraOffsetScales.z;
 			
-			float colorR = sin(elapsedTime * 0.3f) * 0.5f + 0.5f;
-			float colorG = sin(elapsedTime * 0.3f + 2.094f) * 0.5f + 0.5f;  // 2.094 ≈ 2π/3
-			float colorB = sin(elapsedTime * 0.3f + 4.189f) * 0.5f + 0.5f;  // 4.189 ≈ 4π/3
+			float colorR = sin(elapsedTime * bgColorFreq) * 0.5f + 0.5f;
+			float colorG = sin(elapsedTime * bgColorFreq + 2.094f) * 0.5f + 0.5f;
+			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 
 			SetClearColor(colorR, colorG, colorB);
 
-			float light1R = sin(elapsedTime * 0.2f) * 0.5f + 0.5f;
-			float light1G = sin(elapsedTime * 0.2f + 2.094f) * 0.5f + 0.5f;
-			float light1B = sin(elapsedTime * 0.2f + 4.189f) * 0.5f + 0.5f;
+			float light1R = sin(elapsedTime * light1RadialColorFreq) * 0.5f + 0.5f;
+			float light1G = sin(elapsedTime * light1RadialColorFreq + 2.094f) * 0.5f + 0.5f;
+			float light1B = sin(elapsedTime * light1RadialColorFreq + 4.189f) * 0.5f + 0.5f;
 			scene->GetLights()[1].color = {light1R, light1G, light1B};
 
-			float light2R = sin(elapsedTime * 0.25f + 1.047f) * 0.5f + 0.5f;
-			float light2G = sin(elapsedTime * 0.25f + 3.14f) * 0.5f + 0.5f;
-			float light2B = sin(elapsedTime * 0.25f + 5.236f) * 0.5f + 0.5f;
+			float light2R = sin(elapsedTime * light2RadialColorFreq + 1.047f) * 0.5f + 0.5f;
+			float light2G = sin(elapsedTime * light2RadialColorFreq + 3.14f) * 0.5f + 0.5f;
+			float light2B = sin(elapsedTime * light2RadialColorFreq + 5.236f) * 0.5f + 0.5f;
 			scene->GetLights()[2].color = {light2R, light2G, light2B};
 
-			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
-			float radius = 3.0f;
-			scene->GetLights()[0].position = lightCenter + glm::vec3(
-				sin(elapsedTimeBumpy * 0.5f * lightSpeed) * radius,
-				cos(elapsedTimeBumpy * 0.3f * lightSpeed) * radius * 0.5f,
-				sin(elapsedTimeBumpy * 0.7f * lightSpeed) * radius
+			// Light 0
+			scene->GetLights()[0].position = lightCenter0 + glm::vec3(
+				sin(elapsedTimeBumpy * light0FreqX * lightSpeed) * lightRadius0,
+				cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
+				sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
 			);
 
-			glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
-			float radius1 = 2.5f;
+			// Light 1
 			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
-				sin(elapsedTimeBumpy * 0.4f * lightSpeed) * radius1,
-				cos(elapsedTimeBumpy * 0.25f * lightSpeed) * radius1 * 0.6f,
-				sin(elapsedTimeBumpy * 0.6f * lightSpeed) * radius1
+				sin(elapsedTimeBumpy * light1FreqX * lightSpeed) * lightRadius1,
+				cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
+				sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
 			);
 
-			glm::vec3 lightCenter2 = glm::vec3(3, 6, -4);
-			float radius2 = 2.0f;
+			// Light 2
 			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
-				sin(elapsedTimeBumpy * 0.35f * lightSpeed) * radius2,
-				cos(elapsedTimeBumpy * 0.28f * lightSpeed) * radius2 * 0.7f,
-				sin(elapsedTimeBumpy * 0.55f * lightSpeed) * radius2
+				sin(elapsedTimeBumpy * light2FreqX * lightSpeed) * lightRadius2,
+				cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
+				sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
 			);
 			
 			glm::vec3 pos = player->state.position + cameraOffset;
@@ -360,21 +390,19 @@ public:
 			flameParticle->LookAt(camera->GetPos());
 			wick->LookAt(camera->GetPos());
 
-			// Flicker the flame awaw
-			float flameCycleDuration = 3.0f;
-			float flamePhase = fmod(elapsedTime * 1.10f, flameCycleDuration);
+			// Flame flicker
+			float flamePhase = fmod(elapsedTime * flamePhaseMultiplier, flameCycleDuration);
 			float flameProgress = flamePhase / flameCycleDuration;
 
 			if (flameProgress < 0.15f) {
 					float popProgress = flameProgress / 0.15f;
-					float baseScale = 0.9f;
-					float flicker = sin(flameProgress * 30.0f) * 0.15f;
-					float flameScale = baseScale + flicker;
+					float flicker = sin(flameProgress * flameFlickerSpeed1) * flameFlickerIntensity1;
+					float flameScale = flameBaseScale + flicker;
 					flameParticle->state.scale = glm::vec3(flameScale);
 			} else if (flameProgress < 0.85f) {
 					float shrinkProgress = (flameProgress - 0.15f) / 0.7f;
-					float flameScale = (1.0f - shrinkProgress * 0.8f);
-					float flicker = sin(flameProgress * 12.0f) * 0.08f;
+					float flameScale = (1.0f - shrinkProgress * flameShrinkAmount);
+					float flicker = sin(flameProgress * flameFlickerSpeed2) * flameFlickerIntensity2;
 					flameParticle->state.scale = glm::vec3(flameScale + flicker);
 			} else {
 					float disappearProgress = (flameProgress - 0.85f) / 0.15f;
@@ -394,11 +422,10 @@ public:
 	void InitUI() override {}
 
 	void UpdateVisualizerBars() {
-		float scale = 8.0f;
     for (int i = 0; i < NUM_BARS; ++i) {
-      float ah = visualizer.bandMagnitudesSmoothed[i] * scale;
+      float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
       float normalized = std::clamp(ah, 0.0f, 1.0f);
-      float barHeight = normalized * 10;
+      float barHeight = normalized * visualizerBarHeightMult;
       rectangles[i]->state.scale = glm::vec3(1.0f, barHeight, 1.0f);
     }
 	}
@@ -416,10 +443,9 @@ public:
 
 		float barGap   = 2.0f;
 		float barWidth = (canvasSize.x - barGap * (NUM_BARS - 1)) / NUM_BARS;
-		float scale    = 8.0f;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
-			float ah = visualizer.bandMagnitudesSmoothed[i] * scale;
+			float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
 			float normalized = std::clamp(ah, 0.0f, 1.0f);
 			float barHeight  = normalized * canvasSize.y;
 
@@ -436,43 +462,75 @@ public:
 	}
 
 	void DrawTweaksUI() {
-    ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Runtime Tweaks")) {
-        if (ImGui::CollapsingHeader("Camera")) {
+        if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::SliderFloat("Pan Speed##camera", &cameraPanSpeed, 0.0f, 5.0f);
+            ImGui::SliderFloat("Pan Variation Freq", &cameraPanVariationFreq, 0.0f, 0.1f);
+            ImGui::SliderFloat("Pan Freq X", &cameraPanFreqX, 0.0f, 1.0f);
+            ImGui::SliderFloat("Pan Freq Y", &cameraPanFreqY, 0.0f, 1.0f);
+            ImGui::SliderFloat("Pan Freq Z", &cameraPanFreqZ, 0.0f, 1.0f);
             ImGui::SliderFloat3("Offset Scales", &cameraOffsetScales.x, 0.0f, 5.0f);
         }
         
-        if (ImGui::CollapsingHeader("Lights")) {
+        if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::SliderFloat("Light Speed", &lightSpeed, 0.0f, 2.0f);
             
-            ImGui::Text("Light 0");
-            ImGui::SliderFloat3("Center##L0", &lightCenter0.x, -10.0f, 10.0f);
-            ImGui::SliderFloat("Radius##L0", &lightRadius0, 0.0f, 10.0f);
+            if (ImGui::TreeNode("Light 0")) {
+                ImGui::SliderFloat3("Center##L0", &lightCenter0.x, -10.0f, 10.0f);
+                ImGui::SliderFloat("Radius##L0", &lightRadius0, 0.0f, 10.0f);
+                ImGui::SliderFloat("Freq X##L0", &light0FreqX, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Y##L0", &light0FreqY, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Z##L0", &light0FreqZ, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
             
-            ImGui::Text("Light 1");
-            ImGui::SliderFloat3("Center##L1", &lightCenter1.x, -10.0f, 10.0f);
-            ImGui::SliderFloat("Radius##L1", &lightRadius1, 0.0f, 10.0f);
+            if (ImGui::TreeNode("Light 1")) {
+                ImGui::SliderFloat3("Center##L1", &lightCenter1.x, -10.0f, 10.0f);
+                ImGui::SliderFloat("Radius##L1", &lightRadius1, 0.0f, 10.0f);
+                ImGui::SliderFloat("Freq X##L1", &light1FreqX, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Y##L1", &light1FreqY, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Z##L1", &light1FreqZ, 0.0f, 1.0f);
+                ImGui::SliderFloat("Color Freq##L1", &light1RadialColorFreq, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
             
-            ImGui::Text("Light 2");
-            ImGui::SliderFloat3("Center##L2", &lightCenter2.x, -10.0f, 10.0f);
-            ImGui::SliderFloat("Radius##L2", &lightRadius2, 0.0f, 10.0f);
+            if (ImGui::TreeNode("Light 2")) {
+                ImGui::SliderFloat3("Center##L2", &lightCenter2.x, -10.0f, 10.0f);
+                ImGui::SliderFloat("Radius##L2", &lightRadius2, 0.0f, 10.0f);
+                ImGui::SliderFloat("Freq X##L2", &light2FreqX, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Y##L2", &light2FreqY, 0.0f, 1.0f);
+                ImGui::SliderFloat("Freq Z##L2", &light2FreqZ, 0.0f, 1.0f);
+                ImGui::SliderFloat("Color Freq##L2", &light2RadialColorFreq, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
         }
         
         if (ImGui::CollapsingHeader("Colors")) {
-            ImGui::SliderFloat("Background Freq", &bgColorFreq, 0.0f, 1.0f);
-            ImGui::SliderFloat("Light1 Color Freq", &light1ColorFreq, 0.0f, 1.0f);
-            ImGui::SliderFloat("Light2 Color Freq", &light2ColorFreq, 0.0f, 1.0f);
+            ImGui::SliderFloat("Background Color Freq", &bgColorFreq, 0.0f, 1.0f);
         }
         
         if (ImGui::CollapsingHeader("Flame")) {
             ImGui::SliderFloat("Cycle Duration", &flameCycleDuration, 0.5f, 10.0f);
             ImGui::SliderFloat("Phase Multiplier", &flamePhaseMultiplier, 0.0f, 5.0f);
+            ImGui::SliderFloat("Base Scale", &flameBaseScale, 0.1f, 2.0f);
+            ImGui::SliderFloat("Flicker Speed 1", &flameFlickerSpeed1, 0.0f, 50.0f);
+            ImGui::SliderFloat("Flicker Intensity 1", &flameFlickerIntensity1, 0.0f, 0.5f);
+            ImGui::SliderFloat("Flicker Speed 2", &flameFlickerSpeed2, 0.0f, 50.0f);
+            ImGui::SliderFloat("Flicker Intensity 2", &flameFlickerIntensity2, 0.0f, 0.5f);
+            ImGui::SliderFloat("Shrink Amount", &flameShrinkAmount, 0.0f, 1.0f);
         }
         
         if (ImGui::CollapsingHeader("Visualizer")) {
             ImGui::SliderFloat("Scale##vis", &visualizerScale, 0.0f, 20.0f);
             ImGui::SliderFloat("Bar Height Mult", &visualizerBarHeightMult, 0.0f, 20.0f);
+        }
+
+        if (ImGui::CollapsingHeader("Simulation")) {
+            ImGui::SliderFloat("Audio Amplitude Scale", &audioAmplitudeScale, 0.0f, 20.0f);
+            ImGui::SliderFloat("Audio Speed Multiplier", &audioSpeedMultiplier, 0.0f, 1.0f);
+            ImGui::SliderFloat("Base Speed Bumpy", &baseSpeedElapsedTimeBumpy, 0.00001f, 0.001f);
+            ImGui::SliderFloat("Base Speed Regular", &baseSpeedElapsedTime, 0.00001f, 0.001f);
         }
     }
     ImGui::End();
