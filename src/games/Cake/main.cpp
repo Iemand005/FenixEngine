@@ -39,6 +39,8 @@ game.Run();
 return 0;
 }
 
+#ifdef _WIN32
+
 int WINAPI WinMain(
 	HINSTANCE,
 	HINSTANCE,
@@ -140,3 +142,5 @@ int WINAPI WinMain(
 	
 	return 0;
 }
+
+#endif
