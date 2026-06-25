@@ -120,6 +120,8 @@ class Renderer {
 
         window->ActivateScreenSaverMode();
 
+        window->StartMouseCapture();
+
 				break;
 			}
 
