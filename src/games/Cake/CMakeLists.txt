@@ -59,6 +59,8 @@ if(MSVC)
 	target_compile_options(Cake PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
 	target_link_options(Cake PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+
+	add_compile_options(/RTC1)
 endif()
 
 set_target_properties(Cake PROPERTIES SUFFIX ".scr")
