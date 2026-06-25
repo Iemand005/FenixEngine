@@ -19,7 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace fe {
 
-	std::string GetExecutableDirectory()
+	inline std::string GetExecutableDirectory()
 	{
 		char exePath[MAX_PATH] = {0};
 		GetModuleFileNameA(NULL, exePath, MAX_PATH);
