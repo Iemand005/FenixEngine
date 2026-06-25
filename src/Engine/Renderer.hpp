@@ -91,7 +91,8 @@ class Renderer {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 	}
 
-  void ActivateScreenSaverMode(ScreenSaverMode mode) {
+  void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
+		auto window = GetWindow<SDLWindow>();
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
 				RECT r;
