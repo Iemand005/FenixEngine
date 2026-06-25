@@ -60,3 +60,5 @@ if(MSVC)
 
 	target_link_options(Cake PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 endif()
+
+set_target_properties(Cake PROPERTIES SUFFIX ".scr")
