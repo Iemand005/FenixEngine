@@ -19,7 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace fe {
 
-	inline std::string GetExecutableDirectory()
+	inline std::string GetExecutableDirectorye()
 	{
 		char exePath[MAX_PATH] = {0};
 		GetModuleFileNameA(NULL, exePath, MAX_PATH);
@@ -89,7 +89,7 @@ namespace fe {
 			std::filesystem::path cwd = std::filesystem::current_path();
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 
-			std::string exeDir = GetExecutableDirectory();
+			std::string exeDir = GetExecutableDirectorye();
 			std::string path2 = exeDir + "\\" + fileName;
 			file.open(path2);
 			if (file.is_open())
