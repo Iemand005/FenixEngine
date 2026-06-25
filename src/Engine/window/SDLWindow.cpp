@@ -196,9 +196,7 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 				SDL_GetMouseState(&x, &y);
 
 				if (abs(x - startX) > 3 || abs(y - startY) > 3)
-				{
 					PrepareClose();
-				}
 			}
 			if (mouseMoveEvent && capturingMouse) {
 				mouseMoveEvent(event->motion.xrel, event->motion.yrel);
