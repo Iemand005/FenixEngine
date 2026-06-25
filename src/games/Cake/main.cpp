@@ -68,8 +68,8 @@ int WINAPI WinMain(
     }
 
     Cake game;
-    game.Run();
     game.ActivateScreenSaverMode(mode, previewHwnd);
+    game.Run();
 
     return 0;
 }
