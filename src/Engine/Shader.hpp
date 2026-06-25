@@ -16,6 +16,8 @@ namespace fe {
 
 	std::string GetExecutableDirectory()
 	{
+		#ifdef _WIN32
+		#include <Windows.h>
 		char exePath[MAX_PATH] = {0};
 		GetModuleFileNameA(NULL, exePath, MAX_PATH);
 		
