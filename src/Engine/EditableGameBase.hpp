@@ -25,7 +25,7 @@ namespace fe
     EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {
     }
 
-    EditableGameBase(int width, int height, bool vr = false) : XRGame(width, height, vr) {
+    EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr,  showWindow) {
     }
 
     void OnDraw() override {

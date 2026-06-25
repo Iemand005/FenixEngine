@@ -106,7 +106,7 @@ public:
 
 	Cake() : Cake(1400, 1200) {}
 
-	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
+	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
 
 		window->SetTitle(isCyanide ? "HAPPY BIRTHDAY CYANIDE!!" : "HAPPY BIRTHDAY FLEXAN!!");
 

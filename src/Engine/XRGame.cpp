@@ -263,7 +263,7 @@ struct fe::XRGame::Impl {
 
 XRGame::XRGame(bool launchVR) : XRGame(0, 0, launchVR, true) {}
 
-XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow) : Game(width, height), impl(std::make_unique<Impl>()) {
+XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow, bool showWindow = true) : Game(width, height, ), impl(std::make_unique<Impl>()) {
   this->drawWindow = drawWindow;
   if (launchVR) LaunchVR();
 }
