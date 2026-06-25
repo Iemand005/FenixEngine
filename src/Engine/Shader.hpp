@@ -17,21 +17,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-namespace fe {
 
-	inline std::string GetExecutableDirectorye()
-	{
-		char exePath[MAX_PATH] = {0};
-		GetModuleFileNameA(NULL, exePath, MAX_PATH);
-		
-		std::string fullPath(exePath);
-		size_t lastSlash = fullPath.find_last_of("\\/");
-		if (lastSlash != std::string::npos)
-		{
-			return fullPath.substr(0, lastSlash);
-		}
-		return "";
-	}
+#include "WavaDir.hpp"
+
+namespace fe {
 
   enum ShaderType : GLenum {
     VertexShaderType = GL_VERTEX_SHADER,
