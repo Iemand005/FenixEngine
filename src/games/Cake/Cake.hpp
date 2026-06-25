@@ -21,6 +21,7 @@
 #include <Primitives.hpp>
 
 #include <audio/AudioVisualiser.hpp>
+#include <ScreenSaverMode.hpp>
 
 class Cake : public fe::EditableGame {
 public:
