@@ -14,6 +14,20 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace fe {
 
+	std::string GetExecutableDirectory()
+	{
+		char exePath[MAX_PATH] = {0};
+		GetModuleFileNameA(NULL, exePath, MAX_PATH);
+		
+		std::string fullPath(exePath);
+		size_t lastSlash = fullPath.find_last_of("\\/");
+		if (lastSlash != std::string::npos)
+		{
+			return fullPath.substr(0, lastSlash);
+		}
+		return "";
+	}
+
   enum ShaderType : GLenum {
     VertexShaderType = GL_VERTEX_SHADER,
     FragmentShaderType = GL_FRAGMENT_SHADER
