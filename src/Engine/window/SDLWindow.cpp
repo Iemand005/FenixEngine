@@ -192,7 +192,13 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 			break;
 		case SDL_EVENT_MOUSE_MOTION:
 			if (_isScreensaving) {
-				PrepareClose();
+				float x, y;
+				SDL_GetMouseState(&x, &y);
+
+				if (abs(x - startX) > 3 || abs(y - startY) > 3)
+				{
+					PrepareClose();
+				}
 			}
 			if (mouseMoveEvent && capturingMouse) {
 				mouseMoveEvent(event->motion.xrel, event->motion.yrel);
@@ -209,10 +215,8 @@ void fe::SDLWindow::Resize(int w, int h) {
 }
 
 void fe::SDLWindow::ActivateScreenSaverMode() {
-	{
     SDL_GetMouseState(&startX, &startY);
-		_isScreensaving = true;
-	}
+	_isScreensaving = true;
 }
 
 #ifdef _WIN32
