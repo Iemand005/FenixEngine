@@ -41,6 +41,8 @@ public:
 
   }
 
+  virtual void SetTitle(const char *newTitle);
+
   bool CapturingMouse() {return false;};
 
   	void GetMousePosition(double *x, double *y);
