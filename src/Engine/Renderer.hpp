@@ -113,12 +113,12 @@ class Renderer {
 				// window->GoBorderlessFullscreen();
         window->SetFullscreen();
 
-        window->Show();
+        // window->Show();
 
-				SDL_HideCursor();
-				SDL_SetCursor(nullptr);
+				// SDL_HideCursor();
+				// SDL_SetCursor(nullptr);
 
-        window->ActivateScreenSaverMode();
+        // window->ActivateScreenSaverMode();
 
 				break;
 			}
