@@ -305,7 +305,7 @@ public:
 			float light2B = sin(elapsedTime * 0.25f + 5.236f) * 0.5f + 0.5f;
 			scene->GetLights()[2].color = {light2R, light2G, light2B};
 
-			float lightSpeed = 1.0f;
+			float lightSpeed = 0.3f;
 
 			glm::vec3 lightCenter = glm::vec3(5, 5, 5);
 			float radius = 3.0f;
