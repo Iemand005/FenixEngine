@@ -95,7 +95,6 @@ class Renderer {
 
   void ActivateScreenSaverMode(ScreenSaverMode mode, HWND previewParent = nullptr) {
 		auto window = GetWindow<DefaultWindow>();
-    mode = ScreenSaverMode::Fullscreen;
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
 				RECT r;
