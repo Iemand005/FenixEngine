@@ -353,6 +353,8 @@ public:
 					float flameScale = (1.0f - disappearProgress) * 0.15f;
 					flameParticle->state.scale = glm::vec3(flameScale);
 			}
+
+			UpdateVisualizerBars()
 			
 			Update();
 			Redraw();
@@ -399,8 +401,6 @@ public:
 
 			ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
 			draw->AddRectFilled(barMin, barMax, color);
-
-			rectangles[i]->state.scale = glm::vec3(1.0f, barHeight / 10.0f, 1.0f);
 		}
 
 		ImGui::Dummy(canvasSize);
@@ -408,10 +408,10 @@ public:
 	}
 
 	void DrawUI() override {
+		if (!showDebugUI) return;
 		BeginFrame();
 		DrawAudioVisualizer();
 		DrawDebugUI();
-		if (!showDebugUI) return;
 
 		EndFrame();
 	}
