@@ -175,9 +175,9 @@ SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
     if (!SDL_PollEvent(event)) return false;
 
     switch (event->type) {
-		// case SDL_EVENT_MOUSE_BUTTON_DOWN:
-		// case SDL_EVENT_KEY_DOWN:
-		// 	if (!_isScreensaving) break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_KEY_DOWN:
+			if (!_isScreensaving) break;
 		case SDL_EVENT_QUIT:
 			PrepareClose();
 			break;
