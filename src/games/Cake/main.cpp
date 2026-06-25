@@ -12,120 +12,120 @@
 
 void LogToFile(const std::string& message)
 {
-    try
-    {
-        std::ofstream file("C:\\Temp\\Cake_screensaver.log", std::ios::app);
-        if (file.is_open())
-        {
-            auto now = std::chrono::system_clock::now();
-            auto time = std::chrono::system_clock::to_time_t(now);
-            file << "[" << std::ctime(&time) << "] " << message << "\n";
-            file.close();
-        }
-    }
-    catch (...) { }
+	try
+	{
+		std::ofstream file("C:\\Temp\\Cake_screensaver.log", std::ios::app);
+		if (file.is_open())
+		{
+			auto now = std::chrono::system_clock::now();
+			auto time = std::chrono::system_clock::to_time_t(now);
+			file << "[" << std::ctime(&time) << "] " << message << "\n";
+			file.close();
+		}
+	}
+	catch (...) { }
 }
 
 int main() {
 
-  std::cout << "Hiii" << std::endl;
-  std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
-  std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
+std::cout << "Hiii" << std::endl;
+std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
+std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
 
-  Cake game;
-  game.Run();
-  return 0;
+Cake game;
+game.Run();
+return 0;
 }
 
 int WINAPI WinMain(
-    HINSTANCE,
-    HINSTANCE,
-    LPSTR lpCmdLine,
-    int
+	HINSTANCE,
+	HINSTANCE,
+	LPSTR lpCmdLine,
+	int
 )
 {
-    LogToFile("=== Screensaver started ===");
-    LogToFile(std::string("Command line: ") + (lpCmdLine ? lpCmdLine : "(null)"));
-    
-    ScreenSaverMode mode = ScreenSaverMode::Window;
-    HWND previewHwnd = nullptr;
-    
-    std::string cmd = lpCmdLine ? lpCmdLine : "";
-    std::string cur;
-    
-    for (char c : cmd)
-    {
-        if (c == ' ')
-        {
-            if (!cur.empty())
-            {
-                if (_stricmp(cur.c_str(), "/s") == 0)
-                    mode = ScreenSaverMode::Fullscreen;
-                else if (_stricmp(cur.c_str(), "/c") == 0)
-                    mode = ScreenSaverMode::Config;
-                else if (_stricmp(cur.c_str(), "/p") == 0)
-                    mode = ScreenSaverMode::Preview;
-                else if (mode == ScreenSaverMode::Preview)
-                {
-                    // Parse the window handle safely
-                    try
-                    {
-                        unsigned long long handle = std::stoull(cur);
-                        previewHwnd = (HWND)handle;
-                    }
-                    catch (const std::exception& e)
-                    {
-                        OutputDebugStringA("Failed to parse preview window handle: ");
-                        OutputDebugStringA(e.what());
-                        OutputDebugStringA("\n");
-                    }
-                }
-                cur.clear();
-            }
-        }
-        else
-        {
-            cur += c;
-        }
-    }
-    
-    if (!cur.empty())
-    {
-        if (_stricmp(cur.c_str(), "/s") == 0)
-            mode = ScreenSaverMode::Fullscreen;
-        else if (_stricmp(cur.c_str(), "/c") == 0)
-            mode = ScreenSaverMode::Config;
-        else if (_stricmp(cur.c_str(), "/p") == 0)
-            mode = ScreenSaverMode::Preview;
-        else if (mode == ScreenSaverMode::Preview)
-        {
-            try
-            {
-                unsigned long long handle = std::stoull(cur);
-                previewHwnd = (HWND)handle;
-            }
-            catch (const std::exception& e)
-            {
-                OutputDebugStringA("Failed to parse preview window handle: ");
-                OutputDebugStringA(e.what());
-                OutputDebugStringA("\n");
-            }
-        }
-    }
-    
-    try
-    {
-        Cake game;
-        game.ActivateScreenSaverMode(mode, previewHwnd);
-        game.Run();
-    }
-    catch (const std::exception& e)
-    {
-        OutputDebugStringA("Failed to run screensasver: ");
-        OutputDebugStringA(e.what());
-        OutputDebugStringA("\n");
-    }
-    
-    
-    return 0;
+	LogToFile("=== Screensaver started ===");
+	LogToFile(std::string("Command line: ") + (lpCmdLine ? lpCmdLine : "(null)"));
+	
+	ScreenSaverMode mode = ScreenSaverMode::Window;
+	HWND previewHwnd = nullptr;
+	
+	std::string cmd = lpCmdLine ? lpCmdLine : "";
+	std::string cur;
+	
+	for (char c : cmd)
+	{
+		if (c == ' ')
+		{
+			if (!cur.empty())
+			{
+				if (_stricmp(cur.c_str(), "/s") == 0)
+					mode = ScreenSaverMode::Fullscreen;
+				else if (_stricmp(cur.c_str(), "/c") == 0)
+					mode = ScreenSaverMode::Config;
+				else if (_stricmp(cur.c_str(), "/p") == 0)
+					mode = ScreenSaverMode::Preview;
+				else if (mode == ScreenSaverMode::Preview)
+				{
+					// Parse the window handle safely
+					try
+					{
+						unsigned long long handle = std::stoull(cur);
+						previewHwnd = (HWND)handle;
+					}
+					catch (const std::exception& e)
+					{
+						OutputDebugStringA("Failed to parse preview window handle: ");
+						OutputDebugStringA(e.what());
+						OutputDebugStringA("\n");
+					}
+				}
+				cur.clear();
+			}
+		}
+		else
+		{
+			cur += c;
+		}
+	}
+	
+	if (!cur.empty())
+	{
+		if (_stricmp(cur.c_str(), "/s") == 0)
+			mode = ScreenSaverMode::Fullscreen;
+		else if (_stricmp(cur.c_str(), "/c") == 0)
+			mode = ScreenSaverMode::Config;
+		else if (_stricmp(cur.c_str(), "/p") == 0)
+			mode = ScreenSaverMode::Preview;
+		else if (mode == ScreenSaverMode::Preview)
+		{
+			try
+			{
+				unsigned long long handle = std::stoull(cur);
+				previewHwnd = (HWND)handle;
+			}
+			catch (const std::exception& e)
+			{
+				OutputDebugStringA("Failed to parse preview window handle: ");
+				OutputDebugStringA(e.what());
+				OutputDebugStringA("\n");
+			}
+		}
+	}
+	
+	try
+	{
+		Cake game;
+		game.ActivateScreenSaverMode(mode, previewHwnd);
+		game.Run();
+	}
+	catch (const std::exception& e)
+	{
+		OutputDebugStringA("Failed to run screensasver: ");
+		OutputDebugStringA(e.what());
+		OutputDebugStringA("\n");
+	}
+	
+	
+	return 0;
 }
