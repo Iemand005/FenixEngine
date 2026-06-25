@@ -354,7 +354,7 @@ public:
 					flameParticle->state.scale = glm::vec3(flameScale);
 			}
 
-			UpdateVisualizerBars()
+			UpdateVisualizerBars();
 			
 			Update();
 			Redraw();
