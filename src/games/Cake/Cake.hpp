@@ -415,6 +415,49 @@ public:
 		ImGui::End();
 	}
 
+	void DrawTweaksUI() {
+    ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Runtime Tweaks")) {
+        if (ImGui::CollapsingHeader("Camera")) {
+            ImGui::SliderFloat("Pan Speed##camera", &cameraPanSpeed, 0.0f, 5.0f);
+            ImGui::SliderFloat3("Offset Scales", &cameraOffsetScales.x, 0.0f, 5.0f);
+        }
+        
+        if (ImGui::CollapsingHeader("Lights")) {
+            ImGui::SliderFloat("Light Speed", &lightSpeed, 0.0f, 2.0f);
+            
+            ImGui::Text("Light 0");
+            ImGui::SliderFloat3("Center##L0", &lightCenter0.x, -10.0f, 10.0f);
+            ImGui::SliderFloat("Radius##L0", &lightRadius0, 0.0f, 10.0f);
+            
+            ImGui::Text("Light 1");
+            ImGui::SliderFloat3("Center##L1", &lightCenter1.x, -10.0f, 10.0f);
+            ImGui::SliderFloat("Radius##L1", &lightRadius1, 0.0f, 10.0f);
+            
+            ImGui::Text("Light 2");
+            ImGui::SliderFloat3("Center##L2", &lightCenter2.x, -10.0f, 10.0f);
+            ImGui::SliderFloat("Radius##L2", &lightRadius2, 0.0f, 10.0f);
+        }
+        
+        if (ImGui::CollapsingHeader("Colors")) {
+            ImGui::SliderFloat("Background Freq", &bgColorFreq, 0.0f, 1.0f);
+            ImGui::SliderFloat("Light1 Color Freq", &light1ColorFreq, 0.0f, 1.0f);
+            ImGui::SliderFloat("Light2 Color Freq", &light2ColorFreq, 0.0f, 1.0f);
+        }
+        
+        if (ImGui::CollapsingHeader("Flame")) {
+            ImGui::SliderFloat("Cycle Duration", &flameCycleDuration, 0.5f, 10.0f);
+            ImGui::SliderFloat("Phase Multiplier", &flamePhaseMultiplier, 0.0f, 5.0f);
+        }
+        
+        if (ImGui::CollapsingHeader("Visualizer")) {
+            ImGui::SliderFloat("Scale##vis", &visualizerScale, 0.0f, 20.0f);
+            ImGui::SliderFloat("Bar Height Mult", &visualizerBarHeightMult, 0.0f, 20.0f);
+        }
+    }
+    ImGui::End();
+	}
+
 	void DrawUI() override {
 		if (!showDebugUI) return;
 		BeginFrame();
