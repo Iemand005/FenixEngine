@@ -261,7 +261,8 @@ void fe::SDLWindow::SetBordered(bool enabled) {
 }
 
 void fe::SDLWindow::SetFullscreen(bool enabled) {
-	SDL_SetWindowFullscreen(impl->window, enabled);
+	if (SDL_SetWindowFullscreen(impl->window, enabled))
+		isFullscreen = enabled;
 }
 
 void fe::SDLWindow::GoBorderlessFullscreen() {

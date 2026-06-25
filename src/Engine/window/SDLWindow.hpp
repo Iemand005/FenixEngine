@@ -27,6 +27,8 @@ class SDLWindow : public IWindow {
 
   const bool* keyboardState = nullptr;
 
+  bool isFullscreen = false;
+
  public:
   bool capturingMouse = false;
 
@@ -50,6 +52,11 @@ class SDLWindow : public IWindow {
 
 	void SetBordered(bool enabled);
 	void SetFullscreen(bool enabled = true);
+  void ToggleFullscreen() {
+    // SetFullscreen(SDL_GetWindowFullscreenMode)
+    // SDL_isfull
+    SetFullscreen(!isFullscreen);
+  }
 
 	void SetBorderless() {
 		SetBordered(false);
