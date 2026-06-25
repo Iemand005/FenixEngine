@@ -79,9 +79,19 @@ int WINAPI WinMain(
         }
     }
     
-    Cake game;
-    game.ActivateScreenSaverMode(mode, previewHwnd);
-    game.Run();
+    try
+    {
+        Cake game;
+        game.ActivateScreenSaverMode(mode, previewHwnd);
+        game.Run();
+    }
+    catch (const std::exception& e)
+    {
+        OutputDebugStringA("Failed to run screensasver: ");
+        OutputDebugStringA(e.what());
+        OutputDebugStringA("\n");
+    }
+    
     
     return 0;
 }
