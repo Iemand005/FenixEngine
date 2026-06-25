@@ -7,8 +7,7 @@
 #include <iostream>
 
 #include "../../engine/Renderer.hpp"
-
-enum class ScreenSaverMode { Window, Preview, Fullscreen, Config };
+#include "../../engine/ScreenSaverMode.hpp"
 
 class ShaderSaver : public fe::Renderer {
    public:
