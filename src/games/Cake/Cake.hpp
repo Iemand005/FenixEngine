@@ -370,7 +370,7 @@ public:
     for (int i = 0; i < NUM_BARS; ++i) {
       float ah = visualizer.bandMagnitudesSmoothed[i] * scale;
       float normalized = std::clamp(ah, 0.0f, 1.0f);
-      float barHeight = normalized;
+      float barHeight = normalized * 10;
       rectangles[i]->state.scale = glm::vec3(1.0f, barHeight, 1.0f);
     }
 	}
