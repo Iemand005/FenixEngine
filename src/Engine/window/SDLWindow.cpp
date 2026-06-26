@@ -278,9 +278,14 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	Window sdl_xwindow = (Window)(uintptr_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 	Display *display = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
 
-	XReparentWindow(display, child, (Window)parent, 0, 0);
-	XMapWindow(display, child);
-	XFlush(display);
+	if (!display || sdl_xwindow == 0) {
+		SDL_Log("Failed to get X11 window properties");
+		return;
+	}
+
+	Window parent_window_id = /* your parent X11 window ID */;
+	XReparentWindow(display, sdl_xwindow, parent_window_id, 0, 0);
+	XSync(display, False);
 #endif
 
 }
