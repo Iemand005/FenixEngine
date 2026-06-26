@@ -15,14 +15,14 @@
 #include <map>
 #include <string>
 
-#include <Game.hpp>
+#include <EditableGame.hpp>
 
-class Foxcraft : public Game {
+class Foxcraft : public fe::EditableGame {
 public:
   int mapIndex = 0;
 
 
-  Foxcraft(int width, int height) : Game(width, height) {
+  Foxcraft(int width, int height) : fe::EditableGame(width, height) {
 
   }
 
