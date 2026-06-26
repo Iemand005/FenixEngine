@@ -1,8 +1,3 @@
-#pragma once
-#ifdef _WIN32
-#define NOMINMAX
-#include <Windows.h>
-#endif
 
 #include <glad/glad.h>
 
@@ -17,23 +12,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-namespace fe {
 
-	inline std::string GetExecutableDirectorye()
-	{
-#ifdef _WIN32
-		char exePath[MAX_PATH] = {0};
-		GetModuleFileNameA(NULL, exePath, MAX_PATH);
-		
-		std::string fullPath(exePath);
-		size_t lastSlash = fullPath.find_last_of("\\/");
-		if (lastSlash != std::string::npos)
-		{
-			return fullPath.substr(0, lastSlash);
-		}
-#endif
-		return "";
-	}
+#include "WawaDir.hpp"
+
+namespace fe {
 
 
   enum ShaderType : GLenum {
@@ -96,13 +78,14 @@ namespace fe {
 			std::string exeDir = GetExecutableDirectorye();
 			std::string path2 = exeDir + "\\" + fileName;
 			file.open(path2);
-			if (file.is_open())
+			if (!file.is_open())
 			{
-				std::cout << "Loaded from exe dir: " << path2 << std::endl;
-				return true;
+        return false;
+				// return true;
 			}
+      std::cout << "Loaded from exe dir: " << path2 << std::endl;
 
-			return false;
+			// return false;
 		}
 
 		shaderText.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
