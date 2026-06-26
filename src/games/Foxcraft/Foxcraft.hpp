@@ -69,9 +69,7 @@ public:
   float freeCamSpeed = 15.0f;
   float segmentLength = 12.0f;
 
-  Foxcraft() : Tunnel(1400, 1200) {}
-
-  Foxcraft(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
+  Foxcraft(int width = -1, int height = -1, bool vr = false) : fe::EditableGame(width, height, vr, false) {
 
     SetClearColor(1, 1, 0);
 
