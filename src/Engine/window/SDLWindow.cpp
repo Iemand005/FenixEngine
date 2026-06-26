@@ -283,7 +283,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		return;
 	}
 
-	Window parent_window_id = /* your parent X11 window ID */;
+	Window parent_window_id = (ulong)parent;
 	XReparentWindow(display, sdl_xwindow, parent_window_id, 0, 0);
 	XSync(display, False);
 #endif
