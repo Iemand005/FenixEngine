@@ -71,7 +71,7 @@ public:
   
   virtual void SwapBuffers() = 0;
 
-  virtual void getDeltaTime() = 0;
+  virtual void GetTime() = 0;
 
   // virtual void PollEvents() = 0;
 
