@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(Cake)
+project(Tunnel)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,7 +30,7 @@ add_executable(Tunnel
 	main.cpp
 )
 
-target_include_directories(Cake PRIVATE
+target_include_directories(Tunnel PRIVATE
 	include
 	../..
 	../../../include
@@ -41,30 +41,30 @@ target_include_directories(Cake PRIVATE
 	../../Engine
 )
 
-target_link_libraries(Cake PRIVATE
+target_link_libraries(Tunnel PRIVATE
 	Engine
 )
 
 if(NOT WIN32)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
-target_include_directories(Cake PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
-target_link_libraries(Cake PRIVATE ${PIPEWIRE_LIBRARIES})
-target_compile_options(Cake PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+target_include_directories(Tunnel PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
+target_link_libraries(Tunnel PRIVATE ${PIPEWIRE_LIBRARIES})
+target_compile_options(Tunnel PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
 
 find_package(X11 REQUIRED)
 
-target_link_libraries(Cake PRIVATE X11::X11)
+target_link_libraries(Tunnel PRIVATE X11::X11)
 endif()
 
-set_property(TARGET Cake PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_property(TARGET Tunnel PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	
 if(MSVC)
-	target_compile_options(Cake PRIVATE $<$<CONFIG:Debug>:/Zi>)
+	target_compile_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-	target_link_options(Cake PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+	target_link_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 
 	add_compile_options(/RTC1)
 endif()
 
-# set_target_properties(Cake PROPERTIES SUFFIX ".scr")
+# set_target_properties(Tunnel PROPERTIES SUFFIX ".scr")
