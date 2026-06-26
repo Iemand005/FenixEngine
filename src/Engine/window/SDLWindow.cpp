@@ -238,11 +238,14 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
 	if (!parent)
 		return;
-#ifdef _WIN32
 
 	SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
 	if (!props)
 		return;
+
+#ifdef _WIN32
+
+
 
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
 		props,
@@ -274,14 +277,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 #else
 #include <X11/Xlib.h>
 
-	SDL_Window *window = SDL_CreateWindow(
-		"SDL",
-		800, 600,
-		SDL_WINDOW_RESIZABLE
-	);
-
-	// Get the native X11 window
-	SDL_PropertiesID props = SDL_GetWindowProperties(window);
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 
 	Window child = (Window)(uintptr_t)SDL_GetPointerProperty(
 		props,
