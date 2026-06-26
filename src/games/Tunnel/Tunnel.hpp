@@ -313,8 +313,7 @@ public:
 			//shader->SetFloat("");
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 0.5f);
-			shader->SetFloat("wobbleAmount", 100.0f);  // was 0.5f
+			shader->SetFloat("wobbleAmount", 2	.0f);
 			
 			Update();
 			Redraw();
