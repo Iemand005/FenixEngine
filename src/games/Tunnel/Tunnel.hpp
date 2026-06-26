@@ -59,7 +59,10 @@ public:
 	float tunnelRoundness = 0.15f;
 	float haustraStrength = 0.6f;
 	float animationSpeed = 1.0f;
-	float curvatureStrength = 1.0f;
+	float turnStrength = 1.0f;
+	float twistStrength = 1.0f;
+	float swirlStrength = 1.0f;
+	float farPlane = 500.0f;
 
 	Tunnel() : Tunnel(1400, 1200) {}
 
@@ -91,9 +94,9 @@ public:
 	void GenerateInitialTunnels() {
 		path = {
 			{0, 0, 0},
-			{3, 1, 0},
-			{6, 2, 6},
-			{10, 2, 14}
+			{3, 1, 5},
+			{8, 3, 12},
+			{10, 5, 22}
 		};
 		GrowPath(NUM_CHUNKS * SHIFT);
 
@@ -112,9 +115,10 @@ public:
 	void GrowPath(int count) {
 		float t = window->GetTime();
 		int freeSeg = (path.size() - 4) / 3;
-		float cs = curvatureStrength;
 		for (int i = 0; i < count; i++) {
 			int n = path.size();
+			float seg = freeSeg;
+			float ampMod = 0.2 + 0.8 * pow(abs(sin(seg * 0.12 + t * 0.02)), 2.0);
 			if (n % 3 == 1) {
 				path.push_back(2.0f * path[n-1] - path[n-2]);
 			} else if (n % 3 == 2) {
@@ -123,10 +127,13 @@ public:
 				glm::vec3 step = (dirLen > 1e-6f)
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
+				float sa = seg * 0.3f + t * 0.08f;
 				glm::vec3 wobble(
-					sin(t * 0.7f + freeSeg * 0.7f) * 3.0f * cs,
-					cos(t * 0.5f + freeSeg * 0.5f) * 1.5f * cs,
-					0.0f);
+					(sin(t * 0.7f + seg * 0.7f) * 4.0f * turnStrength
+					 + sin(sa) * 5.0f * swirlStrength) * ampMod,
+					(cos(t * 0.5f + seg * 0.5f) * 2.5f * twistStrength) * ampMod,
+					(sin(t * 0.3f + seg * 1.1f) * 3.0f
+					 + cos(sa) * 5.0f * swirlStrength) * ampMod);
 				path.push_back(path[n-1] + step + wobble);
 			} else {
 				glm::vec3 dir = path[n-1] - path[n-2];
@@ -134,10 +141,13 @@ public:
 				glm::vec3 step = (dirLen > 1e-6f)
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
+				float sa = seg * 0.3f + t * 0.08f;
 				glm::vec3 wobble(
-					sin(t * 0.5f + freeSeg * 0.5f) * 4.0f * cs,
-					cos(t * 0.3f + freeSeg * 0.3f) * 2.0f * cs,
-					0.0f);
+					(sin(t * 0.5f + seg * 0.5f) * 5.0f * turnStrength
+					 + sin(sa + 1.0f) * 6.0f * swirlStrength) * ampMod,
+					(cos(t * 0.3f + seg * 0.3f) * 3.0f * twistStrength) * ampMod,
+					(sin(t * 0.4f + seg * 0.9f) * 3.5f
+					 + cos(sa + 1.0f) * 6.0f * swirlStrength) * ampMod);
 				path.push_back(path[n-1] + step + wobble);
 				freeSeg++;
 			}
@@ -267,6 +277,8 @@ public:
 
 		player->state.position.z = 5;
 		player->state.position.y = 2;
+		camera->farDist = farPlane;
+		camera->SetAspect(camera->aspect);
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
 
@@ -377,7 +389,16 @@ public:
 		ImGui::SliderFloat("Haustra Strength", &haustraStrength, 0.0f, 2.0f);
 		ImGui::SliderFloat("Animation Speed", &animationSpeed, 0.0f, 5.0f);
 		ImGui::SliderFloat("Camera Speed", &cameraSpeed, 0.0f, 5.0f);
-		ImGui::SliderFloat("Curvature Strength", &curvatureStrength, 0.0f, 5.0f);
+		ImGui::Separator();
+		ImGui::Text("Path Curves");
+		ImGui::SliderFloat("Turn Strength", &turnStrength, 0.0f, 5.0f);
+		ImGui::SliderFloat("Twist Strength", &twistStrength, 0.0f, 5.0f);
+		ImGui::SliderFloat("Swirl Strength", &swirlStrength, 0.0f, 5.0f);
+		ImGui::Separator();
+		if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 5000.0f)) {
+			camera->farDist = farPlane;
+			camera->SetAspect(camera->aspect);
+		}
 		ImGui::End();
 
 		DrawDebugUI();
