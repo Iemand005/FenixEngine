@@ -11,7 +11,7 @@ class Chunk {
 private:
     BlockType blocks[16][16][256];
 public:
-    BlockType *GetBlocks() {
+    BlockType (*GetBlocks())[16][256] {
         return blocks;
     }
 };
