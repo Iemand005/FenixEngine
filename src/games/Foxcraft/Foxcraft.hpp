@@ -15,13 +15,7 @@
 #include <map>
 #include <string>
 
-#include "../../engine/engine.h"
-#include "../../imgui/imgui.h"
-#include "../../imgui/imgui_impl_glfw.h"
-#include "../../imgui/imgui_impl_opengl3.h"
-// #include "engine/networking/udp.cpp"
-#include "../../engine/networking/networking.hpp"
-#include "../../engine/game.hpp"
+#include <Game.hpp>
 
 class Foxcraft : public Game {
 public:
