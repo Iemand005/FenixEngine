@@ -45,8 +45,7 @@ if (xss_window) {
 	Window parent_id = (Window)strtoul(xss_window, &endptr, 0);
 	if (endptr != xss_window) {
 		// Valid window ID from xscreensaver
-		AttachToNativeParent((void*)(uintptr_t)parent_id);
-		return;
+		game.ActivateScreenSaverMode(ScreenSaverMode::Fullscreen, parent_id);
 	}
 }
 
