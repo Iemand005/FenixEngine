@@ -94,8 +94,10 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
 	if (!IsWayland())
 		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
-	if (!SDL_Init(SDL_INIT_VIDEO))
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		std::cout << "Failed to initialize video driver uhm" << std::endl;
 		return;
+    }
 
 	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
