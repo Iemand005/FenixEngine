@@ -61,13 +61,16 @@ public:
 
     fe::Mesh GenerateMesh() {
         fe::Mesh mesh;
+        int blockCount = 0;
+        int faceCount = 0;
 
         for(int x = 0; x < WIDTH; x++) {
             for(int y = 0; y < HEIGHT; y++) {
                 for(int z = 0; z < DEPTH; z++) {
                     BlockType block = GetBlock(x, y, z);
-
                     if(block == BlockType::Air) continue;
+
+                    blockCount++;
 
                     std::vector<fe::PlaneDirection> visibleFaces;
                     for(auto direction : {fe::PlaneDirection::Front, fe::PlaneDirection::Back,
@@ -75,29 +78,25 @@ public:
                         fe::PlaneDirection::Top, fe::PlaneDirection::Bottom}) {
                         if(NeedsFace(glm::vec3(x, y, z), direction)) {
                             visibleFaces.push_back(direction);
+                            faceCount++;
                         }
                         }
 
                         if(!visibleFaces.empty()) {
+                            std::cout << "Block at (" << x << "," << y << "," << z
+                            << ") has " << visibleFaces.size() << " visible faces\n";
+
                             fe::Mesh cubeMesh = fe::Primitives::GenerateCube(visibleFaces, 1.0f);
+                            std::cout << "  Generated mesh: " << cubeMesh.vertices.size()
+                            << " verts, " << cubeMesh.indices.size() << " indices\n";
 
-                            for(auto& vertex : cubeMesh.vertices) {
-                                vertex.position += glm::vec3(x, y, z);
-                            }
-
-                            int indexOffset = mesh.vertices.size();
-                            mesh.vertices.insert(mesh.vertices.end(),
-                                                 cubeMesh.vertices.begin(),
-                                                 cubeMesh.vertices.end());
-
-                            for(auto index : cubeMesh.indices) {
-                                mesh.indices.push_back(index + indexOffset);
-                            }
+                            // ... rest of merge code
                         }
                 }
             }
         }
 
+        std::cout << "Total blocks: " << blockCount << ", faces: " << faceCount << std::endl;
         return mesh;
     }
 };
