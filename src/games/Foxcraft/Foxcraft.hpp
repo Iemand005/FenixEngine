@@ -312,16 +312,6 @@ public:
         audioR /= total; audioG /= total; audioB /= total;
       }
       scene->GetLights()[0].color = glm::vec3(1.0f, 0.9f, 0.7f) + glm::vec3(audioR, audioG, audioB) * 0.4f;
-      scene->GetLights()[0].intensity = 3.0f;
-      scene->GetLights()[0].radius = 80.0f;
-
-      shader->Use();
-      shader->SetFloat("wobbleAmount", motionAmount);
-      shader->SetFloat("roundness", tunnelRoundness);
-      shader->SetFloat("haustraStrength", haustraStrength);
-      shader->SetFloat("animSpeed", animationSpeed);
-      shader->SetFloat("time", elapsedTime);
-      shader->SetVec3("objectColor", glm::vec3(0.55f, 0.08f, 0.12f));
 
       Update();
       Redraw();
