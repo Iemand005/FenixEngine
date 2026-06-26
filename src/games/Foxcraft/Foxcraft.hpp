@@ -130,6 +130,14 @@ public:
     AddMonoBlock("resources/textures/dirt.png");
     AddMonoBlock("resources/textures/dirt.png", {1, 0, 0});
 
+    for(int x = 0; x < 16; x++) {
+      for(int y = 0; y < 16; y++) {
+        for(int z = 0; z < 256; z++) {
+          AddMonoBlock("resources/textures/dirt.png", {x, y, z});
+        }
+      }
+    }
+
   }
 
   void AddBlock(std::string topTexturePath, std::string sideTexturePath, std::string bottomTexturePath) {
