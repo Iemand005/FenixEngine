@@ -287,9 +287,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		nullptr
 	);
 
-	Window parent = paernt;
-
-	XReparentWindow(display, child, parent, 0, 0);
+	XReparentWindow(display, child, (Window)parent, 0, 0);
 	XMapWindow(display, child);
 	XFlush(display);
 #endif
