@@ -169,7 +169,7 @@ public:
 
   }
 
-  void AddMonoBlock(std::string texturePath) {
+  void AddMonoBlock(std::string texturePath, glm::vec3 pos) {
     auto cubeMesh = fe::Primitives::GenerateCube();
     cubeMesh.loadTexture(texturePath, fe::TextureScaling::Nearest);
     cubeMesh.hasTransparency = true;
