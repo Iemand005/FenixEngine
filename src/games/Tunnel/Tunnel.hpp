@@ -39,8 +39,8 @@ public:
 	bool hasPrevEnd = false;
 
 	static constexpr int NUM_CHUNKS = 12;
-	static constexpr int TUNNEL_SEGMENTS = 48;
-	static constexpr int SUBDIVISIONS_PER_SEG = 20;
+	static constexpr int TUNNEL_SEGMENTS = 64;
+	static constexpr int SUBDIVISIONS_PER_SEG = 48;
 	static constexpr int POINTS_PER_CHUNK = 4;
 	static constexpr int SHIFT = 3;
 
