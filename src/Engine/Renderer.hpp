@@ -96,17 +96,9 @@ class Renderer {
 		auto window = GetWindow<DefaultWindow>();
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
-#ifdef _WIN32
-				RECT r;
-				GetClientRect(previewParent, &r);
-
-				int w = r.right - r.left;
-				int h = r.bottom - r.top;
-#endif
 
 
 				window->AttachToNativeParent(previewParent);
-				window->Resize(w, h);
 				break;
 			}
 
