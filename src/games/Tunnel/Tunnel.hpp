@@ -243,7 +243,7 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
-			float cameraSpeed = 5.0f;
+			float cameraSpeed = 1.0f;
 			pathIndex += baseSpeedElapsedTime * cameraSpeed;
 
 			while (pathIndex > (float)(windowStart / SHIFT) + 1.0f)

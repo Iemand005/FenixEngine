@@ -300,8 +300,10 @@ namespace fe::Primitives {
 
 			if (p > 0) {
 				float cosAng = glm::clamp(glm::dot(prevForward, forward), -1.0f, 1.0f);
-				if (cosAng < 0.9999f) {
-					glm::vec3 axis = glm::normalize(glm::cross(prevForward, forward));
+				glm::vec3 axis = glm::cross(prevForward, forward);
+				float len = glm::length(axis);
+				if (len > 1e-6f) {
+					axis = axis / len;
 					float angle = acos(cosAng);
 					glm::quat q = glm::angleAxis(angle, axis);
 					right = glm::normalize(q * right);
