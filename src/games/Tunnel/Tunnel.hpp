@@ -147,6 +147,7 @@ public:
 	void GenerateNextTunnelPath() {
 		glm::vec3 lastPoint = currentPath.back();
 		glm::vec3 prevPoint = currentPath[currentPath.size() - 2];
+		glm::vec3 unitTangent = glm::normalize(lastPoint - prevPoint);
 
 		nextPath.clear();
 		nextPath.push_back(lastPoint);
@@ -157,7 +158,10 @@ public:
 			float newX = sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f;
 			float newY = cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f;
 			float newZ = 2.0f;
-			nextPath.push_back(lastPoint + glm::vec3(newX, newY, newZ * (i + 1)));
+			glm::vec3 offset = glm::vec3(newX, newY, newZ * (i + 1));
+			if (i == 0)
+				offset = unitTangent * glm::length(offset);
+			nextPath.push_back(lastPoint + offset);
 		}
 	}
 
@@ -185,6 +189,26 @@ public:
 		for (size_t i = 0; i < path.size() - 1; i++)
 			length += glm::distance(path[i], path[i + 1]);
 		return length;
+	}
+
+	glm::vec3 GetSmoothPathPosition(const std::vector<glm::vec3>& path, float progress) const {
+		progress = glm::clamp(progress, 0.0f, 1.0f);
+		float scaled = progress * (float)(path.size() - 1);
+		int seg = (int)scaled;
+		if (seg >= (int)path.size() - 1) {
+			seg = (int)path.size() - 2;
+			scaled = seg + 1.0f;
+		}
+		float t = scaled - seg;
+
+		glm::vec3 p0 = (seg > 0) ? path[seg - 1]
+		                         : path[seg] - (path[seg + 1] - path[seg]);
+		glm::vec3 p1 = path[seg];
+		glm::vec3 p2 = path[seg + 1];
+		glm::vec3 p3 = (seg + 2 < (int)path.size()) ? path[seg + 2]
+		                                             : path[seg + 1] + (path[seg + 1] - path[seg]);
+
+		return fe::Primitives::CatmullRom(p0, p1, p2, p3, t);
 	}
 
 	void ProcessInput() {
@@ -298,20 +322,17 @@ public:
 			);
 
 			float cameraSpeed = 15.0f;
-			float oldProgress = pathProgress;
 			pathProgress += baseSpeedElapsedTime * cameraSpeed / currentPathLength;
-			if (pathProgress >= 1.0f)
-				pathProgress -= 1.0f;
 
-			if (oldProgress < 0.7f && pathProgress >= 0.7f) {
+			if (pathProgress >= 1.0f) {
 				SwapTunnels();
-				pathProgress = 0.0f;
+				pathProgress -= 1.0f;
 			}
 
-			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(currentPath, pathProgress);
+			glm::vec3 cameraPos = GetSmoothPathPosition(currentPath, pathProgress);
 			camera->SetPos(cameraPos);
 
-			glm::vec3 lookAhead = fe::Primitives::GetPositionAlongPath(currentPath, fmod(pathProgress + 0.05f, 1.0f));
+			glm::vec3 lookAhead = GetSmoothPathPosition(currentPath, std::min(pathProgress + 0.05f, 1.0f));
 			camera->LookAt(lookAhead);
 
 			UpdateVisualizerBars();
