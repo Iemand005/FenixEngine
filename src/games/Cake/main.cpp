@@ -16,9 +16,14 @@
 
 void LogToFile(const std::string& message)
 {
+#ifdef _WIN32
+	std::string logpath = "C:\\Temp\\Cake_screensaver.log";
+#else
+	std::string logpath = "/tmp/Cake_screensaver.log";
+#endif
 	try
 	{
-		std::ofstream file("C:\\Temp\\Cake_screensaver.log", std::ios::app);
+		std::ofstream file(logpath, std::ios::app);
 		if (file.is_open())
 		{
 			auto now = std::chrono::system_clock::now();
@@ -32,13 +37,19 @@ void LogToFile(const std::string& message)
 
 int main() {
 
-std::cout << "Hiii" << std::endl;
-std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
-std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
+	std::cout << "Hiii" << std::endl;
+	std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
+	std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
 
-Cake game;
+	Cake game;
 
-const char* xss_window = getenv("XSCREENSAVER_WINDOW");
+	const char* xss_window = getenv("XSCREENSAVER_WINDOW");
+
+	if (xss_window) {
+		LogToFile("XSCREENSAVER_WINDOW=" + std::string(xss_window));
+	} else {
+		LogToFile("XSCREENSAVER_WINDOW not set");
+	}
 
 if (xss_window) {
 	char* endptr;
