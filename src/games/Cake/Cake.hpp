@@ -23,7 +23,7 @@
 #include <audio/AudioVisualiser.hpp>
 #include <ScreenSaverMode.hpp>
 
-class Tunnel : public fe::EditableGame {
+class Cake : public fe::EditableGame {
 public:
 
 	double lastUpdateTime = 0.0f;
@@ -104,9 +104,9 @@ public:
 
 	bool isCyanide = false;
 
-	Tunnel() : Tunnel(1400, 1200) {}
+	Cake() : Cake(1400, 1200) {}
 
-	Tunnel(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
+	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
 
 		window->SetTitle(isCyanide ? "HAPPY BIRTHDAY CYANIDE!!" : "HAPPY BIRTHDAY FLEXAN!!");
 
