@@ -211,8 +211,6 @@ public:
 		Redraw();
 	}
 
-	void Redraw();
-
 	void CheckErrors();
 
 	void Update() {

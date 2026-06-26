@@ -439,7 +439,7 @@ void XRGame::RedrawWindow(GLuint fbo) {
   // if (window && window.get())
   BindFrameBuffer(fbo);
   CheckErrors();
-  Game::Redraw(fbo);
+  Renderer::Redraw(fbo);
 }
 
 void XRGame::EnableXR() {
