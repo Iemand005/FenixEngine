@@ -124,6 +124,7 @@ public:
     this->scene->AddObject(CAKEObject);
 
     AddMonoBlock("resources/textures/dirt.png");
+    AddMonoBlock("resources/textures/dirt.png");
 
   }
 
