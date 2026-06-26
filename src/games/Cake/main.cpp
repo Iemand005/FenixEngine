@@ -2,6 +2,8 @@
 #define _WINSOCKAPI_
 #include <winsock2.h>
 #include <windows.h>
+#else
+#include <X11/Xlib.h>
 #endif
 #include <string>
 #include <cstring>
@@ -35,6 +37,19 @@ std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
 std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
 
 Cake game;
+
+const char* xss_window = getenv("XSCREENSAVER_WINDOW");
+
+if (xss_window) {
+	char* endptr;
+	Window parent_id = (Window)strtoul(xss_window, &endptr, 0);
+	if (endptr != xss_window) {
+		// Valid window ID from xscreensaver
+		AttachToNativeParent((void*)(uintptr_t)parent_id);
+		return;
+	}
+}
+
 game.Run();
 return 0;
 }
