@@ -249,13 +249,6 @@ public:
 			elapsedTimeBumpy += speed;
 			elapsedTime += baseSpeedElapsedTime;
 			
-			float cameraPanSpeedVariation = abs(sin(elapsedTime * cameraPanVariationFreq)) * 0.5f;
-			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
-			
-			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqX) * cameraOffsetScales.x;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * cameraPanFreqY) * cameraOffsetScales.y;
-			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqZ) * cameraOffsetScales.z;
-			
 			float colorR = sin(elapsedTime * bgColorFreq) * 0.5f + 0.5f;
 			float colorG = sin(elapsedTime * bgColorFreq + 2.094f) * 0.5f + 0.5f;
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
@@ -293,7 +286,7 @@ public:
 				sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
 			);
 			
-			glm::vec3 pos = player->state.position + cameraOffset;
+			glm::vec3 pos = player->state.position;
 			camera->SetPos(pos);
 
 			UpdateVisualizerBars();
