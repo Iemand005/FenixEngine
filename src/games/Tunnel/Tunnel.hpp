@@ -193,6 +193,7 @@ public:
 
 					camera->yaw   += event.motion.xrel * sensitivity;
 					camera->pitch -= event.motion.yrel * sensitivity;
+					camera->UpdateDirection();
 
 					pitch = std::clamp(pitch, -89.0f, 89.0f);
 					break;
