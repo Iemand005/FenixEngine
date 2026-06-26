@@ -132,20 +132,15 @@ public:
 
 	void LoadModels() {
 
-		fe::Mesh tunnel = fe::Primitives::GenerateTunnel();
-		fe::Mesh bigTunnel = fe::Primitives::GenerateTunnel(0.5f, 20.0f, 64, 20);
-
-		auto tunnelObject = std::make_shared<fe::Object>(bigTunnel);
-		tunnelObject->name = "Tunnel";
-
-
-		//	this->scene->AddObject(tunnelObject);
-
 		std::vector<glm::vec3> path = {
 			{0, 0, 0},
 			{2, 1, 0},
 			{4, 2, 2},
-			{5, 1, 4}
+			{5, 1, 4},
+			{6, 0, 6},
+			{7, -1, 8},
+			{8, 0, 10},
+			{9, 1, 12}
 		};
 		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
 		auto tunne2obj = this->scene->AddObject(tunnel2);
@@ -313,7 +308,7 @@ public:
 			//shader->SetFloat("");
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 0.5f);
+			shader->SetFloat("wobbleAmount", 0.2f);
 			shader->SetVec3("objectColor", glm::vec3(0.2f, 0.8f, 1.0f));
 
 			Update();
