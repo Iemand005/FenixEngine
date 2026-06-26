@@ -136,6 +136,40 @@ class Renderer {
 			}
 		}
   }
+#else
+  void ActivateScreenSaverMode(ScreenSaverMode mode, unsigned long long int parent = 0) {
+    auto window = GetWindow<DefaultWindow>();
+    switch (mode) {
+
+      case ScreenSaverMode::Fullscreen: {
+        // window->GoBorderlessFullscreen();
+        window->AttachToNativeParent((void*)parent);
+        window->SetFullscreen();
+
+        // window->Show();
+
+        // SDL_HideCursor();
+        // SDL_SetCursor(nullptr);
+
+        window->Show();
+
+        window->ActivateScreenSaverMode();
+
+        window->StartMouseCapture();
+
+        break;
+      }
+
+      case ScreenSaverMode::Window: {
+        window->Show();
+        break;
+      }
+
+      case ScreenSaverMode::Config: {
+        break;
+      }
+    }
+  }
 #endif
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
