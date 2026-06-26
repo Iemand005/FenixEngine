@@ -194,6 +194,8 @@ template<typename WindowT = DefaultWindow>
       float elapsedTime = (float)window->GetTime();
       shader->SetFloat("time", elapsedTime);
 
+      std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
+
       int count = scene->GetLightCount();
       auto pointLights = scene->GetLights();
       shader->SetInt("lightCount", count);
