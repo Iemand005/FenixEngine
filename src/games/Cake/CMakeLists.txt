@@ -51,6 +51,10 @@ pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 target_include_directories(Cake PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
 target_link_libraries(Cake PRIVATE ${PIPEWIRE_LIBRARIES})
 target_compile_options(Cake PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+
+find_package(X11 REQUIRED)
+
+target_link_libraries(Cake PRIVATE X11::X11)
 endif()
 
 set_property(TARGET Cake PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
