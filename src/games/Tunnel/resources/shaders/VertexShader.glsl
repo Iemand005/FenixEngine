@@ -23,7 +23,11 @@ void main() {
 
     pos += vec3(wobbleX, wobbleY, wobbleZ);
 
-    gl_Position = projection * view * model * vec4(pos, 1.0);
-    fragNormal = normal;
-    fragTexCoord = texCoord;
+    vec4 worldPos = model * vec4(aPos, 1.0);
+    gl_Position = projection * view * worldPos;
+
+    mat3 normalMat = transpose(inverse(mat3(model)));
+    Normal = normalMat * aNormal;
+    FragPos = worldPos.xyz;
+    TexCoord = aTexCoord;
 }
