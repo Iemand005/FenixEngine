@@ -152,8 +152,9 @@ public:
 			{5, 1, 4}
 		};
 		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f);
-		tunnel2->name = "Taratatatar";
-		this->scene->AddObject(tunnel2);
+		auto tunne2obj = this->scene->AddObject(tunnel2);
+		tunne2obj->name = "Taratatatar";
+
 
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
