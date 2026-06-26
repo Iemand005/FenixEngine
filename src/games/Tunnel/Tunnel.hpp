@@ -2,6 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -30,12 +31,14 @@ public:
 
 	std::vector<glm::vec3> path;
 	int windowStart = 0;
-	std::shared_ptr<fe::Object> tunnel;
-	std::shared_ptr<fe::Object> nextTunnel;
-	float pathProgress = 0.0f;
+	float pathIndex = 1.0f;
+	std::vector<std::shared_ptr<fe::Object>> chunks;
 
+	static constexpr int NUM_CHUNKS = 12;
 	static constexpr int TUNNEL_SEGMENTS = 32;
 	static constexpr int SUBDIVISIONS_PER_SEG = 12;
+	static constexpr int POINTS_PER_CHUNK = 4;
+	static constexpr int OVERLAP = 3;
 
 	float lightSpeed = 0.3f;
 
@@ -83,101 +86,75 @@ public:
 			{14, 1, 22},
 			{18, 0, 30}
 		};
-
-		GrowPath();
-		GrowPath();
+		GrowPath(NUM_CHUNKS + OVERLAP);
 
 		windowStart = 0;
-		tunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(
-				{path[0], path[1], path[2], path[3]},
-				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
-		);
-		tunnel->name = "Tunnel";
-		scene->AddObject(tunnel);
+		pathIndex = 1.0f;
 
-		nextTunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(
-				{path[1], path[2], path[3], path[4]},
-				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
-		);
-	}
-
-	void GrowPath() {
-		float t = window->GetTime();
-		int seg = path.size();
-		glm::vec3 offset(
-			sin(t * 0.5f + seg * 0.5f) * 2.0f,
-			cos(t * 0.3f + seg * 0.3f) * 1.0f,
-			15.0f);
-		path.push_back(path.back() + offset);
-	}
-
-	void SwapTunnels() {
-		windowStart++;
-		if (windowStart + 4 >= (int)path.size())
-			GrowPath();
-
-		tunnel->meshes.clear();
-		auto w0 = path[windowStart], w1 = path[windowStart + 1],
-		     w2 = path[windowStart + 2], w3 = path[windowStart + 3];
-		tunnel->meshes.push_back(
-			fe::Primitives::GenerateBentTunnel(
-				{w0, w1, w2, w3},
-				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
-		);
-
-		nextTunnel->meshes.clear();
-		nextTunnel->meshes.push_back(
-			fe::Primitives::GenerateBentTunnel(
-				{w1, w2, w3, path[windowStart + 4]},
-				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
-		);
-	}
-
-	static float CalcPathLength(const std::vector<glm::vec3>& p) {
-		float length = 0.0f;
-		for (size_t i = 0; i < p.size() - 1; i++)
-			length += glm::distance(p[i], p[i + 1]);
-		return length;
-	}
-
-	struct PathSample {
-		int seg;
-		float t;
-		glm::vec3 p0, p1, p2, p3;
-	};
-
-	PathSample SamplePath(const std::vector<glm::vec3>& path, float progress) const {
-		progress = glm::clamp(progress, 0.0f, 1.0f);
-		float scaled = progress * (float)(path.size() - 1);
-		int seg = (int)scaled;
-		if (seg >= (int)path.size() - 1) {
-			seg = (int)path.size() - 2;
-			scaled = (float)seg + 1.0f;
+		chunks.resize(NUM_CHUNKS);
+		for (int i = 0; i < NUM_CHUNKS; i++) {
+			chunks[i] = std::make_shared<fe::Object>();
+			BuildTunnelMesh(chunks[i], i);
+			chunks[i]->name = "Tunnel" + std::to_string(i);
+			scene->AddObject(chunks[i]);
 		}
-		float t = scaled - seg;
-		return {
-			seg, t,
-			(seg > 0) ? path[seg - 1] : path[seg] - (path[seg + 1] - path[seg]),
-			path[seg],
-			path[seg + 1],
-			(seg + 2 < (int)path.size()) ? path[seg + 2] : path[seg + 1] + (path[seg + 1] - path[seg])
-		};
 	}
 
-	glm::vec3 GetSmoothPathPosition(const std::vector<glm::vec3>& path, float progress) const {
-		auto s = SamplePath(path, progress);
-		return fe::Primitives::CatmullRom(s.p0, s.p1, s.p2, s.p3, s.t);
+	void GrowPath(int count) {
+		float t = window->GetTime();
+		int base = path.size();
+		for (int i = 0; i < count; i++) {
+			int seg = base + i;
+			glm::vec3 offset(
+				sin(t * 0.5f + seg * 0.5f) * 16.0f,
+				cos(t * 0.3f + seg * 0.3f) * 8.0f,
+				60.0f);
+			path.push_back(path.back() + offset);
+		}
 	}
 
-	glm::vec3 GetSmoothPathTangent(const std::vector<glm::vec3>& path, float progress) const {
-		auto s = SamplePath(path, progress);
-		float t2 = s.t * s.t;
+	void BuildTunnelMesh(std::shared_ptr<fe::Object> obj, int chunkIndex) {
+		std::vector<glm::vec3> pts(POINTS_PER_CHUNK);
+		for (int i = 0; i < POINTS_PER_CHUNK; i++)
+			pts[i] = path[windowStart + chunkIndex + i];
+		obj->meshes.clear();
+		obj->meshes.push_back(
+			fe::Primitives::GenerateBentTunnel(
+				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
+		);
+	}
+
+	void SlideChunks() {
+		while (windowStart + NUM_CHUNKS + OVERLAP >= (int)path.size())
+			GrowPath(1);
+
+		BuildTunnelMesh(chunks[0], NUM_CHUNKS);
+		std::rotate(chunks.begin(), chunks.begin() + 1, chunks.end());
+		windowStart++;
+	}
+
+	glm::vec3 GetGlobalPosition(float idx) const {
+		int i = (int)idx;
+		float t = idx - i;
+		if (i < 1) { i = 1; t = 0.0f; }
+		if (i + 2 >= (int)path.size()) { i = (int)path.size() - 3; t = 0.0f; }
+		return fe::Primitives::CatmullRom(path[i-1], path[i], path[i+1], path[i+2], t);
+	}
+
+	glm::vec3 GetGlobalTangent(float idx) const {
+		int i = (int)idx;
+		float t = idx - i;
+		if (i < 1) { i = 1; t = 0.0f; }
+		if (i + 2 >= (int)path.size()) { i = (int)path.size() - 3; t = 0.0f; }
+		float t2 = t * t;
+		const glm::vec3& p0 = path[i-1];
+		const glm::vec3& p1 = path[i];
+		const glm::vec3& p2 = path[i+1];
+		const glm::vec3& p3 = path[i+2];
 		return 0.5f * (
-			(-s.p0 + s.p2) +
-			2.0f * (2.0f * s.p0 - 5.0f * s.p1 + 4.0f * s.p2 - s.p3) * s.t +
-			3.0f * (-s.p0 + 3.0f * s.p1 - 3.0f * s.p2 + s.p3) * t2
+			(-p0 + p2) +
+			2.0f * (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t +
+			3.0f * (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t2
 		);
 	}
 
@@ -263,24 +240,16 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
-			auto w = std::vector<glm::vec3>{
-				path[windowStart], path[windowStart + 1],
-				path[windowStart + 2], path[windowStart + 3]
-			};
-			float windowLen = CalcPathLength(w);
+			float cameraSpeed = 50.0f;
+			pathIndex += baseSpeedElapsedTime * cameraSpeed;
 
-			float cameraSpeed = 15.0f;
-			pathProgress += baseSpeedElapsedTime * cameraSpeed / windowLen;
+			while (pathIndex > windowStart + 2.0f)
+				SlideChunks();
 
-			if (pathProgress >= 1.0f) {
-				SwapTunnels();
-				pathProgress = 2.0f / 3.0f;
-			}
-
-			glm::vec3 cameraPos = GetSmoothPathPosition(w, pathProgress);
+			glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
 			camera->SetPos(cameraPos);
 
-			glm::vec3 tangent = GetSmoothPathTangent(w, pathProgress);
+			glm::vec3 tangent = GetGlobalTangent(pathIndex);
 			camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
 
 			float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
