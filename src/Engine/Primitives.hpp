@@ -237,19 +237,49 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
-	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32) {
+	// Add this helper function
+	glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1,
+						 const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float t2 = t * t;
+		float t3 = t2 * t;
+
+		return 0.5f * (
+			(2.0f * p1) +
+			(-p0 + p2) * t +
+			(2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
+			(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
+		);
+						 }
+
+	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32, int subdivisionsPerSegment = 12) {  // NEW param
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
+		std::vector<glm::vec3> smoothPath;  // Store interpolated path
 		const float PI = 3.14159265359f;
 
-		for (size_t p = 0; p < path.size(); p++) {
-			glm::vec3 pos = path[p];
+		// Generate smooth path via splines
+		for (size_t p = 0; p < path.size() - 1; p++) {
+			glm::vec3 p0 = (p > 0) ? path[p-1] : path[p] - (path[p+1] - path[p]);
+			glm::vec3 p1 = path[p];
+			glm::vec3 p2 = path[p+1];
+			glm::vec3 p3 = (p + 2 < path.size()) ? path[p+2] : path[p+1] + (path[p+1] - path[p]);
+
+			for (int sub = 0; sub < subdivisionsPerSegment; sub++) {
+				float t = sub / (float)subdivisionsPerSegment;
+				smoothPath.push_back(CatmullRom(p0, p1, p2, p3, t));
+			}
+		}
+		smoothPath.push_back(path.back());  // Add final point
+
+		// Generate tunnel from smooth path
+		for (size_t p = 0; p < smoothPath.size(); p++) {
+			glm::vec3 pos = smoothPath[p];
 
 			glm::vec3 forward;
-			if (p == path.size() - 1) {
-				forward = glm::normalize(path[p] - path[p-1]);
+			if (p == smoothPath.size() - 1) {
+				forward = glm::normalize(smoothPath[p] - smoothPath[p-1]);
 			} else {
-				forward = glm::normalize(path[p+1] - path[p]);
+				forward = glm::normalize(smoothPath[p+1] - smoothPath[p]);
 			}
 
 			glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
@@ -259,27 +289,24 @@ namespace fe::Primitives {
 				float angle = (i / (float)segments) * 2.0f * PI;
 				float x = cos(angle);
 				float y = sin(angle);
-
 				glm::vec3 offset = right * x * radius + up * y * radius;
 				glm::vec3 vPos = pos + offset;
 				glm::vec3 normal = glm::normalize(offset);
-
 				vertices.push_back(Vertex(vPos.x, vPos.y, vPos.z, normal.x, normal.y, normal.z,
-										  i / (float)segments, p / (float)(path.size()-1)));
+											i / (float)segments, p / (float)(smoothPath.size()-1)));
 			}
 		}
 
-		for (size_t p = 0; p < path.size() - 1; p++) {
+		// Index generation (same as before)
+		for (size_t p = 0; p < smoothPath.size() - 1; p++) {
 			for (int i = 0; i < segments; i++) {
 				int current = p * segments + i;
 				int next = p * segments + ((i + 1) % segments);
 				int currentNext = (p + 1) * segments + i;
 				int nextNext = (p + 1) * segments + ((i + 1) % segments);
-
 				indices.push_back(current);
 				indices.push_back(next);
 				indices.push_back(currentNext);
-
 				indices.push_back(next);
 				indices.push_back(nextNext);
 				indices.push_back(currentNext);
