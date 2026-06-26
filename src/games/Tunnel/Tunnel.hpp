@@ -35,6 +35,7 @@ public:
 	std::shared_ptr<fe::Object> nextTunnel;
 	float currentPathLength = 0.0f;
 	float nextPathLength = 0.0f;
+	float pathProgress = 0.0f;
 
 	float lightSpeed = 0.3f;
 
@@ -101,9 +102,7 @@ public:
 	void LoadModels() {
 		GenerateInitialTunnels();
 
-		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
-
-		for (int i = 0; i < NUM_BARS; ++i) {
+			for (int i = 0; i < NUM_BARS; ++i) {
 			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
 			cube->name = "Bar_";
 			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -25.0f);
@@ -158,14 +157,12 @@ public:
 			float newX = sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f;
 			float newY = cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f;
 			float newZ = 2.0f;
-			glm::vec3 offset = glm::vec3(newX, newY, newZ * (i + 1));
-			if (i == 0)
-				offset = unitTangent * glm::length(offset);
+			glm::vec3 offset = (i == 0)
+				? unitTangent * glm::length(glm::vec3(newX, newY, newZ * (i + 1)))
+				: glm::vec3(newX, newY, newZ * (i + 1));
 			nextPath.push_back(lastPoint + offset);
 		}
 	}
-
-	float pathProgress = 0.0f;
 
 	void SwapTunnels() {
 		currentPath = nextPath;
@@ -191,7 +188,13 @@ public:
 		return length;
 	}
 
-	glm::vec3 GetSmoothPathPosition(const std::vector<glm::vec3>& path, float progress) const {
+	struct PathSample {
+		int seg;
+		float t;
+		glm::vec3 p0, p1, p2, p3;
+	};
+
+	PathSample SamplePath(const std::vector<glm::vec3>& path, float progress) const {
 		progress = glm::clamp(progress, 0.0f, 1.0f);
 		float scaled = progress * (float)(path.size() - 1);
 		int seg = (int)scaled;
@@ -200,39 +203,27 @@ public:
 			scaled = (float)seg + 1.0f;
 		}
 		float t = scaled - seg;
+		return {
+			seg, t,
+			(seg > 0) ? path[seg - 1] : path[seg] - (path[seg + 1] - path[seg]),
+			path[seg],
+			path[seg + 1],
+			(seg + 2 < (int)path.size()) ? path[seg + 2] : path[seg + 1] + (path[seg + 1] - path[seg])
+		};
+	}
 
-		glm::vec3 p0 = (seg > 0) ? path[seg - 1]
-		                         : path[seg] - (path[seg + 1] - path[seg]);
-		glm::vec3 p1 = path[seg];
-		glm::vec3 p2 = path[seg + 1];
-		glm::vec3 p3 = (seg + 2 < (int)path.size()) ? path[seg + 2]
-		                                             : path[seg + 1] + (path[seg + 1] - path[seg]);
-
-		return fe::Primitives::CatmullRom(p0, p1, p2, p3, t);
+	glm::vec3 GetSmoothPathPosition(const std::vector<glm::vec3>& path, float progress) const {
+		auto s = SamplePath(path, progress);
+		return fe::Primitives::CatmullRom(s.p0, s.p1, s.p2, s.p3, s.t);
 	}
 
 	glm::vec3 GetSmoothPathTangent(const std::vector<glm::vec3>& path, float progress) const {
-		progress = glm::clamp(progress, 0.0f, 1.0f);
-		float scaled = progress * (float)(path.size() - 1);
-		int seg = (int)scaled;
-		if (seg >= (int)path.size() - 1) {
-			seg = (int)path.size() - 2;
-			scaled = (float)seg + 1.0f;
-		}
-		float t = scaled - seg;
-
-		glm::vec3 p0 = (seg > 0) ? path[seg - 1]
-		                         : path[seg] - (path[seg + 1] - path[seg]);
-		glm::vec3 p1 = path[seg];
-		glm::vec3 p2 = path[seg + 1];
-		glm::vec3 p3 = (seg + 2 < (int)path.size()) ? path[seg + 2]
-		                                             : path[seg + 1] + (path[seg + 1] - path[seg]);
-
-		float t2 = t * t;
+		auto s = SamplePath(path, progress);
+		float t2 = s.t * s.t;
 		return 0.5f * (
-			(-p0 + p2) +
-			2.0f * (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t +
-			3.0f * (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t2
+			(-s.p0 + s.p2) +
+			2.0f * (2.0f * s.p0 - 5.0f * s.p1 + 4.0f * s.p2 - s.p3) * s.t +
+			3.0f * (-s.p0 + 3.0f * s.p1 - 3.0f * s.p2 + s.p3) * t2
 		);
 	}
 
@@ -330,20 +321,20 @@ public:
 
 			scene->GetLights()[0].position = lightCenter0 + glm::vec3(
 				sin(elapsedTimeBumpy * light0FreqX * lightSpeed) * lightRadius0,
-																	  cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
-																	  sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
+				cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
+				sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
 			);
 
 			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
 				sin(elapsedTimeBumpy * light1FreqX * lightSpeed) * lightRadius1,
-																	  cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
-																	  sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
+				cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
+				sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
 			);
 
 			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
 				sin(elapsedTimeBumpy * light2FreqX * lightSpeed) * lightRadius2,
-																	  cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
-																	  sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
+				cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
+				sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
 			);
 
 			float cameraSpeed = 15.0f;
