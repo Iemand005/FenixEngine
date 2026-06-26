@@ -312,7 +312,7 @@ public:
 			//this->scene->Set
 			//shader->SetFloat("");
 
-			shader.SetFloat("wobbleAmount", 0.5f);
+			shader->SetFloat("wobbleAmount", 0.5f);
 			
 			Update();
 			Redraw();
