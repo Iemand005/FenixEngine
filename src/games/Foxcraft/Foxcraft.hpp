@@ -164,9 +164,9 @@ public:
     this->scene->AddObject(CAKEObject);
   }
 
-  void AddMonoBlock(std::string topTexturePath, std::string sideTexturePath, std::string bottomTexturePath) {
+  void AddMonoBlock(std::string texturePath) {
     auto cubeMesh = fe::Primitives::GenerateCube();
-    cubeMesh.loadTexture(bottomTexturePath, fe::TextureScaling::Nearest);
+    cubeMesh.loadTexture(texturePath, fe::TextureScaling::Nearest);
     cubeMesh.hasTransparency = true;
 
     auto cubeObject = std::make_shared<fe::Object>(cubeMesh);
