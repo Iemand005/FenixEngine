@@ -197,7 +197,7 @@ public:
 		int seg = (int)scaled;
 		if (seg >= (int)path.size() - 1) {
 			seg = (int)path.size() - 2;
-			scaled = seg + 1.0f;
+			scaled = (float)seg + 1.0f;
 		}
 		float t = scaled - seg;
 
@@ -209,6 +209,31 @@ public:
 		                                             : path[seg + 1] + (path[seg + 1] - path[seg]);
 
 		return fe::Primitives::CatmullRom(p0, p1, p2, p3, t);
+	}
+
+	glm::vec3 GetSmoothPathTangent(const std::vector<glm::vec3>& path, float progress) const {
+		progress = glm::clamp(progress, 0.0f, 1.0f);
+		float scaled = progress * (float)(path.size() - 1);
+		int seg = (int)scaled;
+		if (seg >= (int)path.size() - 1) {
+			seg = (int)path.size() - 2;
+			scaled = (float)seg + 1.0f;
+		}
+		float t = scaled - seg;
+
+		glm::vec3 p0 = (seg > 0) ? path[seg - 1]
+		                         : path[seg] - (path[seg + 1] - path[seg]);
+		glm::vec3 p1 = path[seg];
+		glm::vec3 p2 = path[seg + 1];
+		glm::vec3 p3 = (seg + 2 < (int)path.size()) ? path[seg + 2]
+		                                             : path[seg + 1] + (path[seg + 1] - path[seg]);
+
+		float t2 = t * t;
+		return 0.5f * (
+			(-p0 + p2) +
+			2.0f * (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t +
+			3.0f * (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t2
+		);
 	}
 
 	void ProcessInput() {
@@ -332,8 +357,8 @@ public:
 			glm::vec3 cameraPos = GetSmoothPathPosition(currentPath, pathProgress);
 			camera->SetPos(cameraPos);
 
-			glm::vec3 lookAhead = GetSmoothPathPosition(currentPath, std::min(pathProgress + 0.05f, 1.0f));
-			camera->LookAt(lookAhead);
+			glm::vec3 tangent = GetSmoothPathTangent(currentPath, pathProgress);
+			camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
 
 			UpdateVisualizerBars();
 
