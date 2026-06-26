@@ -187,6 +187,7 @@ template<typename WindowT = DefaultWindow>
   void Redraw() {
     auto window = GetWindow<DefaultWindow>();
     if (!scene || !camera || !shader) return;
+    std::cout << "OK: " << std::endl;
 
     if (shader) {
       shader->Use();
