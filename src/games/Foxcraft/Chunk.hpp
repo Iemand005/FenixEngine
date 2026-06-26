@@ -26,4 +26,10 @@ public:
     void SetBlock(int x, int y, int z, BlockType type) {
         blocks[x * HEIGHT * DEPTH + y * DEPTH + z] = type;
     }
+
+    bool NeedsFace(fe::PlaneDirection diection) {
+        switch (diection) {
+
+        }
+    }
 };
