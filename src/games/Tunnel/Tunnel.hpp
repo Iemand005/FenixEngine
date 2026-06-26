@@ -138,6 +138,8 @@ public:
 
 		fe::Mesh tunnel = fe::Primitives::GenerateTunnel();
 
+		this->scene->AddObject(tunnel);
+
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
