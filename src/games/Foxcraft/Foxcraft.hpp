@@ -138,7 +138,9 @@ public:
       }
     }*/
 
-    auto cubeMesh = chunk.GenerateMesh();
+    fe::Mesh mesh = chunk.GenerateMesh();
+    std::cout << "Vertices: " << mesh.vertices.size()
+    << " Indices: " << mesh.indices.size() << std::endl;
     cubeMesh.loadTexture("resources/textures/dirt.png", fe::TextureScaling::Nearest);
 
     auto cubeObject = std::make_shared<fe::Object>(cubeMesh);
