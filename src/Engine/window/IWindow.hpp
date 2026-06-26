@@ -9,14 +9,12 @@ namespace fe {
 
   bool IsWayland() {
     const char* session = getenv("XDG_SESSION_TYPE");
-    if (session && strcmp(session, "wayland") == 0) {
+    if (session && strcmp(session, "wayland") == 0)
       return true;
-    }
 
     const char* wayland_display = getenv("WAYLAND_DISPLAY");
-    if (wayland_display != NULL) {
+    if (wayland_display != NULL)
       return true;
-    }
 
     return false;
   }
