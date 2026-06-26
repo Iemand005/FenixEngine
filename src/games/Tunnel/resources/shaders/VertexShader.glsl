@@ -16,6 +16,10 @@ uniform float roundness;
 uniform float haustraStrength;
 uniform float animSpeed;
 
+float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
 void main()
 {
     float angle = aTexCoord.x * 6.2832;
@@ -23,18 +27,32 @@ void main()
 
     float tri = max(cos(angle * 3.0), 0.0) * roundness;
 
-    float hfPos = fract(v * 5.0);
+    float randH = hash(vec2(floor(v * 4.0), 0));
+    float haustraFreq = 3.5 + randH * 3.5;
+    float haustraDepth = 0.3 + randH * 0.7;
+    float hfPhase = sin(v * 0.7 + v * v * 0.01) * 0.25;
+    float hfPos = fract(v * haustraFreq + hfPhase);
     float hfDist = min(hfPos, 1.0 - hfPos) * 2.0;
-    float haustra = -pow(1.0 - hfDist, 2.0) * haustraStrength;
+    float haustra = -pow(1.0 - hfDist, 2.0) * haustraStrength * haustraDepth;
 
-    float pWave = sin(animSpeed * time * 0.3 - v * 2.0 * 3.14159);
-    float peristalsis = -pow(max(pWave, 0.0), 4.0) * 0.65;
-    float breath = sin(animSpeed * time * 0.1 - v * 1.0) * 0.15;
-    float radialPulse = sin(angle + animSpeed * time * 0.2) * 0.06 + 0.94;
+    float bulgeRand = hash(vec2(floor(v * 2.5 + time * 0.02), 1));
+    float bulgeAngle = max(cos(angle * 2.0 + bulgeRand * 6.28), 0.0);
+    float bulgePos = pow(max(sin(v * 2.7 + time * 0.08 + bulgeRand * 3.0), 0.0), 2.0);
+    float bulge = bulgePos * bulgeAngle * bulgeRand * 0.5;
 
-    float dynamic = (peristalsis + breath) * wobbleAmount * radialPulse;
+    float gurgle1 = pow(max(sin(animSpeed * time * 1.5 - v * 7.0), 0.0), 10.0) * 0.35;
+    float gurgle2 = pow(max(sin(animSpeed * time * 1.2 - v * 5.3 + 1.2), 0.0), 10.0) * 0.3;
+    float gurgle3 = pow(max(sin(animSpeed * time * 0.9 - v * 6.7 + 3.1), 0.0), 10.0) * 0.25;
+    float gurgle = (gurgle1 + gurgle2 + gurgle3) * wobbleAmount;
 
-    float newRadius = 1.5 + tri + haustra + dynamic;
+    float forwardWave = sin(animSpeed * time * 0.2 - v * 2.0 * 3.14159) * 0.25;
+    float backwardWave = sin(animSpeed * time * 0.12 + v * 2.5) * 0.15;
+    float slowBreath = sin(animSpeed * time * 0.05 - v * 0.8) * 0.2;
+    float radialPulse = sin(angle + animSpeed * time * 0.15) * 0.06 + 0.94;
+
+    float dynamic = (forwardWave + backwardWave + slowBreath) * wobbleAmount * radialPulse;
+
+    float newRadius = 1.5 + tri + haustra + bulge + gurgle + dynamic;
     newRadius = max(newRadius, 0.1);
 
     vec3 pos = aPos + aNormal * (1.0 - newRadius);

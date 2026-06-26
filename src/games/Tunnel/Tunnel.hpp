@@ -44,7 +44,7 @@ public:
 	static constexpr int TUNNEL_SEGMENTS = 64;
 	static constexpr int SUBDIVISIONS_PER_SEG = 48;
 
-	int NUM_CHUNKS = 12;
+	int NUM_CHUNKS = 4;
 
 	float lightSpeed = 0.3f;
 
