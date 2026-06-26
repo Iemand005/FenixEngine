@@ -73,7 +73,7 @@ public:
 
     SetClearColor(1, 1, 0);
 
-    LoadShaders("/home/lasse/Documents/Projects/FenixEngine/src/games/Tunnel/resources/shaders/VertexShader.glsl", "/home/lasse/Documents/Projects/FenixEngine/src/games/Tunnel/resources/shaders/FragmentShader.glsl");
+    LoadShaders("/home/lasse/Documents/Projects/FenixEngine/src/games/Foxcraft/resources/shaders/VertexShader.glsl", "/home/lasse/Documents/Projects/FenixEngine/src/games/Foxcraft/resources/shaders/FragmentShader.glsl");
 
     LoadModels();
 
