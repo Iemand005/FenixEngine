@@ -318,4 +318,20 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
+	inline glm::vec3 GetPositionAlongPath(const std::vector<glm::vec3>& path, float progress) {
+		progress = glm::clamp(progress, 0.0f, 1.0f);
+
+		float scaledProgress = progress * (path.size() - 1);
+		int currentSegment = (int)scaledProgress;
+		int nextSegment = currentSegment + 1;
+
+		if (nextSegment >= path.size()) {
+			nextSegment = path.size() - 1;
+			currentSegment = path.size() - 2;
+		}
+
+		float blend = scaledProgress - currentSegment;
+		return glm::mix(path[currentSegment], path[nextSegment], blend);
+	}
+
 } // namespace fe::Primitives

@@ -102,6 +102,20 @@ public:
 	float baseSpeedElapsedTimeBumpy = 0.0002f;
 	float baseSpeedElapsedTime = 0.0002f;
 
+	std::vector<glm::vec3> path = {
+		{0, 0, 0},
+		{2, 1, 0},
+		{4, 2, 2},
+		{5, 1, 4},
+		{6, 0, 6},
+		{7, -1, 8},
+		{8, 0, 10},
+		{9, 1, 12}
+	};
+
+	float totalPathLength = 0.0f;
+
+
 	Tunnel() : Tunnel(1400, 1200) {}
 
 	Tunnel(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
@@ -146,7 +160,9 @@ public:
 		auto tunne2obj = this->scene->AddObject(tunnel2);
 		tunne2obj->name = "Taratatatar";
 
-
+		for (size_t i = 0; i < path.size() - 1; i++) {
+			totalPathLength += glm::distance(path[i], path[i + 1]);
+		}
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 
@@ -298,8 +314,14 @@ public:
 			);
 			
 			// glm::vec3 pos = player->state.position + cameraOffset;
-			glm::vec3 pos = player->state.position;
-			camera->SetPos(pos);
+			float cameraSpeed = 5.0f; // units per second
+			float pathProgress = fmod(elapsedTime * cameraSpeed / totalPathLength, 1.0f);
+
+			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(path, pathProgress);
+			camera->SetPos(cameraPos);
+
+			glm::vec3 lookAhead = fe::Primitives::GetPositionAlongPath(path, fmod(pathProgress + 0.05f, 1.0f));
+			camera->SetLookAt(lookAhead);
 
 			UpdateVisualizerBars();
 
