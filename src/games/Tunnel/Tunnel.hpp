@@ -127,25 +127,21 @@ public:
 			{9, 1, 12}
 		};
 
-		GenerateTunnelMesh(currentPath, currentTunnel, currentPathLength, "CurrentTunnel");
+		currentTunnel = std::make_shared<fe::Object>(
+			fe::Primitives::GenerateBentTunnel(currentPath, 1.0f, 32, 12, true)
+		);
+		currentTunnel->name = "CurrentTunnel";
+		scene->AddObject(currentTunnel);
+		currentPathLength = CalcPathLength(currentPath);
+
 		GenerateNextTunnelPath();
-		GenerateTunnelMesh(nextPath, nextTunnel, nextPathLength, "NextTunnel");
-	}
 
-	void GenerateTunnelMesh(const std::vector<glm::vec3>& path, std::shared_ptr<fe::Object>& tunnelObj, float& pathLength, const std::string& name) {
-		fe::Mesh tunnelMesh = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
-
-		if (tunnelObj) {
-			scene->RemoveObject(tunnelObj);
-		}
-
-		tunnelObj = this->scene->AddObject(tunnelMesh);
-		tunnelObj->name = name;
-
-		pathLength = 0.0f;
-		for (size_t i = 0; i < path.size() - 1; i++) {
-			pathLength += glm::distance(path[i], path[i + 1]);
-		}
+		nextTunnel = std::make_shared<fe::Object>(
+			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, 32, 12, true)
+		);
+		nextTunnel->name = "NextTunnel";
+		scene->AddObject(nextTunnel);
+		nextPathLength = CalcPathLength(nextPath);
 	}
 
 	void GenerateNextTunnelPath() {
@@ -165,19 +161,30 @@ public:
 		}
 	}
 
-	bool swapped = false;
+	float pathProgress = 0.0f;
 
 	void SwapTunnels() {
 		currentPath = nextPath;
 		currentPathLength = nextPathLength;
 
-		if (currentTunnel) {
-			//scene->RemoveObject(currentTunnel);
-		}
-		currentTunnel = nextTunnel;
+		std::swap(currentTunnel, nextTunnel);
+		currentTunnel->name = "CurrentTunnel";
+		nextTunnel->name = "NextTunnel";
 
 		GenerateNextTunnelPath();
-		GenerateTunnelMesh(nextPath, nextTunnel, nextPathLength, "NextTunnel");
+
+		nextTunnel->meshes.clear();
+		nextTunnel->meshes.push_back(
+			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, 32, 12, true)
+		);
+		nextPathLength = CalcPathLength(nextPath);
+	}
+
+	static float CalcPathLength(const std::vector<glm::vec3>& path) {
+		float length = 0.0f;
+		for (size_t i = 0; i < path.size() - 1; i++)
+			length += glm::distance(path[i], path[i + 1]);
+		return length;
 	}
 
 	void ProcessInput() {
@@ -291,16 +298,15 @@ public:
 			);
 
 			float cameraSpeed = 15.0f;
-			float pathProgress = fmod(elapsedTime * cameraSpeed / currentPathLength, 1.0f);
+			float oldProgress = pathProgress;
+			pathProgress += baseSpeedElapsedTime * cameraSpeed / currentPathLength;
+			if (pathProgress >= 1.0f)
+				pathProgress -= 1.0f;
 
-			if (pathProgress > 0.7f && !swapped)
-			{
+			if (oldProgress < 0.7f && pathProgress >= 0.7f) {
 				SwapTunnels();
-				swapped = true;
+				pathProgress = 0.0f;
 			}
-
-			if (pathProgress < 0.7f)
-				swapped = false;
 
 			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(currentPath, pathProgress);
 			camera->SetPos(cameraPos);
