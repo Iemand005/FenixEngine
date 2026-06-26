@@ -192,7 +192,7 @@ template<typename WindowT = DefaultWindow>
       shader->Use();
 
       float elapsedTime = (float)window->GetTime();
-      shader.SetFloat("time", elapsedTime);
+      shader->SetFloat("time", elapsedTime);
 
       int count = scene->GetLightCount();
       auto pointLights = scene->GetLights();
