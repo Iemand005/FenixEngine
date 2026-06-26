@@ -347,86 +347,10 @@ public:
 		ImGui::End();
 	}
 
-	void DrawTweaksUI() {
-    ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Runtime Tweaks")) {
-        if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::SliderFloat("Pan Speed##camera", &cameraPanSpeed, 0.0f, 5.0f);
-            ImGui::SliderFloat("Pan Variation Freq", &cameraPanVariationFreq, 0.0f, 0.1f);
-            ImGui::SliderFloat("Pan Freq X", &cameraPanFreqX, 0.0f, 1.0f);
-            ImGui::SliderFloat("Pan Freq Y", &cameraPanFreqY, 0.0f, 1.0f);
-            ImGui::SliderFloat("Pan Freq Z", &cameraPanFreqZ, 0.0f, 1.0f);
-            ImGui::SliderFloat3("Offset Scales", &cameraOffsetScales.x, 0.0f, 5.0f);
-        }
-        
-        if (ImGui::CollapsingHeader("Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::SliderFloat("Light Speed", &lightSpeed, 0.0f, 2.0f);
-            
-            if (ImGui::TreeNode("Light 0")) {
-                ImGui::SliderFloat3("Center##L0", &lightCenter0.x, -10.0f, 10.0f);
-                ImGui::SliderFloat("Radius##L0", &lightRadius0, 0.0f, 10.0f);
-                ImGui::SliderFloat("Freq X##L0", &light0FreqX, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Y##L0", &light0FreqY, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Z##L0", &light0FreqZ, 0.0f, 1.0f);
-                ImGui::TreePop();
-            }
-            
-            if (ImGui::TreeNode("Light 1")) {
-                ImGui::SliderFloat3("Center##L1", &lightCenter1.x, -10.0f, 10.0f);
-                ImGui::SliderFloat("Radius##L1", &lightRadius1, 0.0f, 10.0f);
-                ImGui::SliderFloat("Freq X##L1", &light1FreqX, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Y##L1", &light1FreqY, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Z##L1", &light1FreqZ, 0.0f, 1.0f);
-                ImGui::SliderFloat("Color Freq##L1", &light1RadialColorFreq, 0.0f, 1.0f);
-                ImGui::TreePop();
-            }
-            
-            if (ImGui::TreeNode("Light 2")) {
-                ImGui::SliderFloat3("Center##L2", &lightCenter2.x, -10.0f, 10.0f);
-                ImGui::SliderFloat("Radius##L2", &lightRadius2, 0.0f, 10.0f);
-                ImGui::SliderFloat("Freq X##L2", &light2FreqX, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Y##L2", &light2FreqY, 0.0f, 1.0f);
-                ImGui::SliderFloat("Freq Z##L2", &light2FreqZ, 0.0f, 1.0f);
-                ImGui::SliderFloat("Color Freq##L2", &light2RadialColorFreq, 0.0f, 1.0f);
-                ImGui::TreePop();
-            }
-        }
-        
-        if (ImGui::CollapsingHeader("Colors")) {
-            ImGui::SliderFloat("Background Color Freq", &bgColorFreq, 0.0f, 1.0f);
-        }
-        
-        if (ImGui::CollapsingHeader("Flame")) {
-            ImGui::SliderFloat("Cycle Duration", &flameCycleDuration, 0.5f, 10.0f);
-            ImGui::SliderFloat("Phase Multiplier", &flamePhaseMultiplier, 0.0f, 5.0f);
-            ImGui::SliderFloat("Base Scale", &flameBaseScale, 0.1f, 2.0f);
-            ImGui::SliderFloat("Flicker Speed 1", &flameFlickerSpeed1, 0.0f, 50.0f);
-            ImGui::SliderFloat("Flicker Intensity 1", &flameFlickerIntensity1, 0.0f, 0.5f);
-            ImGui::SliderFloat("Flicker Speed 2", &flameFlickerSpeed2, 0.0f, 50.0f);
-            ImGui::SliderFloat("Flicker Intensity 2", &flameFlickerIntensity2, 0.0f, 0.5f);
-            ImGui::SliderFloat("Shrink Amount", &flameShrinkAmount, 0.0f, 1.0f);
-        }
-        
-        if (ImGui::CollapsingHeader("Visualizer")) {
-            ImGui::SliderFloat("Scale##vis", &visualizerScale, 0.0f, 20.0f);
-            ImGui::SliderFloat("Bar Height Mult", &visualizerBarHeightMult, 0.0f, 20.0f);
-        }
-
-        if (ImGui::CollapsingHeader("Simulation")) {
-            ImGui::SliderFloat("Audio Amplitude Scale", &audioAmplitudeScale, 0.0f, 20.0f);
-            ImGui::SliderFloat("Audio Speed Multiplier", &audioSpeedMultiplier, 0.0f, 1.0f);
-            ImGui::SliderFloat("Base Speed Bumpy", &baseSpeedElapsedTimeBumpy, 0.00001f, 0.001f);
-            ImGui::SliderFloat("Base Speed Regular", &baseSpeedElapsedTime, 0.00001f, 0.001f);
-        }
-    }
-    ImGui::End();
-	}
-
 	void DrawUI() override {
 		if (!showDebugUI) return;
 		BeginFrame();
 
-		DrawTweaksUI();
 		DrawAudioVisualizer();
 		DrawDebugUI();
 
