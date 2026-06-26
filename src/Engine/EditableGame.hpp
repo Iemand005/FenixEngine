@@ -185,6 +185,10 @@ public:
 
 
 		if (this->client) DrawNetworkDebugUI();
+
+#ifdef USE_VISUALIZER
+		void DrawAudioVisualizerUI() {
+#endif
     }
 
     void DrawNetworkDebugUI() {
@@ -257,6 +261,39 @@ ImGui::Begin("Multiplayer");
     }
     ImGui::End();
     }
+
+#ifdef USE_VISUALIZER
+    void DrawAudioVisualizerUI() {
+		ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Audio Spectrum");
+
+		ImVec2 canvasPos  = ImGui::GetCursorScreenPos();
+		ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+		canvasSize.y = std::max(canvasSize.y, 80.0f);
+
+		ImDrawList* draw = ImGui::GetWindowDrawList();
+		draw->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(18, 18, 18, 255));
+
+		float barGap   = 2.0f;
+		float barWidth = (canvasSize.x - barGap * (NUM_BARS - 1)) / NUM_BARS;
+
+		for (int i = 0; i < NUM_BARS; ++i) {
+			float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
+			float normalized = std::clamp(ah, 0.0f, 1.0f);
+			float barHeight  = normalized * canvasSize.y;
+
+			float x0 = canvasPos.x + i * (barWidth + barGap);
+			ImVec2 barMin(x0, canvasPos.y + canvasSize.y - barHeight);
+			ImVec2 barMax(x0 + barWidth, canvasPos.y + canvasSize.y);
+
+			ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
+			draw->AddRectFilled(barMin, barMax, color);
+		}
+
+		ImGui::Dummy(canvasSize);
+		ImGui::End();
+	}
+#endif
   
   };
   

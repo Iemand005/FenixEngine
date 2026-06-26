@@ -69,6 +69,10 @@ class Renderer {
 
   int mapIndex = 0;
 
+#ifdef USE_VISUALIZER
+  AudioVisualiser visualizer;
+#endif
+
 #ifndef EXCLUDE_NETWORKING
   std::unique_ptr<Networker> client = nullptr;
 #endif
