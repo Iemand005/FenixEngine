@@ -37,6 +37,16 @@ public:
         blocks[x * HEIGHT * DEPTH + y * DEPTH + z] = type;
     }
 
+    void Generate() {
+        for(int x = 0; x < WIDTH; x++) {
+            for(int y = 0; y < HEIGHT; y++) {
+                for(int z = 0; z < DEPTH; z++) {
+                    chunk.SetBlock(x, y, z, BlockType::Dirt);
+                }
+            }
+        }
+    }
+
     glm::vec3 GetOffsetAt(glm::vec3 pos, fe::PlaneDirection direction) {
         switch (direction) {
             case fe::PlaneDirection::Front:

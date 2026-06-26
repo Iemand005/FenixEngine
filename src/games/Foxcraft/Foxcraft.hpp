@@ -138,13 +138,7 @@ public:
       }
     }*/
 
-    for(int x = 0; x < chunk.WIDTH; x++) {
-      for(int y = 0; y < HEIGHT; y++) {
-        for(int z = 0; z < DEPTH; z++) {
-          chunk.SetBlock(x, y, z, BlockType::Dirt);
-        }
-      }
-    }
+  chunk.Generate();
 
     fe::Mesh mesh = chunk.GenerateMesh();
     std::cout << "Vertices: " << mesh.vertices.size()
