@@ -112,7 +112,7 @@ public:
 
 		SetClearColor(1, 1, 0);
 
-		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+		LoadShaders("/home/lasse/Documents/Projects/FenixEngine/src/games/Tunnel/resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
 		LoadModels();
 
@@ -143,7 +143,7 @@ public:
 		tunnelObject->name = "Tunnel";
 
 
-		//this->scene->AddObject(tunnelObject);
+		//	this->scene->AddObject(tunnelObject);
 
 		std::vector<glm::vec3> path = {
 			{0, 0, 0},
