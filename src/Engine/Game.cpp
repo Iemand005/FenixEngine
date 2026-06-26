@@ -29,7 +29,8 @@ void Game::BindFrameBuffer(int bufferIndex) {
 }
 
 void Game::Redraw() {
-	if (!scene || !camera || !shader) return;
+	Renderer::Redraw();
+	/*if (!scene || !camera || !shader) return;
 
 	if (shader) {
 		shader->Use();
@@ -58,7 +59,7 @@ void Game::Redraw() {
 
 	DrawUI();
 
-	if (window) window->SwapBuffers();
+	if (window) window->SwapBuffers();*/
 }
 
 void Game::CheckErrors() {
