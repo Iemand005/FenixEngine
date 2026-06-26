@@ -318,13 +318,15 @@ public:
 			if (freeCamera) {
 				float dt = fpsCounter.deltaTime;
 				float spd = freeCamSpeed * dt;
-				if (window->IsKeyDown(SDL_SCANCODE_W)) camera->position += camera->front * spd;
-				if (window->IsKeyDown(SDL_SCANCODE_S)) camera->position -= camera->front * spd;
-				if (window->IsKeyDown(SDL_SCANCODE_A)) camera->position -= glm::normalize(glm::cross(camera->front, camera->up)) * spd;
-				if (window->IsKeyDown(SDL_SCANCODE_D)) camera->position += glm::normalize(glm::cross(camera->front, camera->up)) * spd;
-				if (window->IsKeyDown(SDL_SCANCODE_SPACE)) camera->position += camera->up * spd;
-				if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) camera->position -= camera->up * spd;
-				camera->viewMatrix = glm::lookAt(camera->position, camera->position + camera->front, camera->up);
+				glm::vec3 cp = camera->GetPos();
+				glm::vec3 right = glm::normalize(glm::cross(camera->front, camera->up));
+				if (window->IsKeyDown(SDL_SCANCODE_W)) cp += camera->front * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_S)) cp -= camera->front * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_A)) cp -= right * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_D)) cp += right * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_SPACE)) cp += camera->up * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) cp -= camera->up * spd;
+				camera->SetPos(cp);
 				glm::vec3 riderPos = GetGlobalPosition(pathIndex);
 				player->state.position = riderPos;
 				scene->GetLights()[0].position = riderPos;
