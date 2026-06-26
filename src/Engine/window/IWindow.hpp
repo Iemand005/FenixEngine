@@ -7,21 +7,18 @@
 namespace fe {
 
 
-  // Returns 1 if Wayland is active, 0 if X11 (or fallback)
-  int is_running_wayland() {
-    // 1. Check the primary desktop session type
+  bool IsWayland() {
     const char* session = getenv("XDG_SESSION_TYPE");
     if (session && strcmp(session, "wayland") == 0) {
-      return 1;
+      return true;
     }
 
-    // 2. Fallback check for the specific Wayland socket
     const char* wayland_display = getenv("WAYLAND_DISPLAY");
     if (wayland_display != NULL) {
-      return 1;
+      return true;
     }
 
-    return 0; // Assume X11 or XWayland context
+    return false;
   }
 
 
