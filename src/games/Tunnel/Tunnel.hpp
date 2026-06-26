@@ -137,8 +137,9 @@ public:
 	void LoadModels() {
 
 		fe::Mesh tunnel = fe::Primitives::GenerateTunnel();
+		fe::Mesh bigTunnel = fe::Primitives::GenerateTunnel(0.5f, 20.0f, 64, 20);
 
-		auto tunnelObject = std::make_shared<fe::Object>(tunnel);
+		auto tunnelObject = std::make_shared<fe::Object>(bigTunnel);
 		tunnelObject->name = "Tunnel";
 
 		this->scene->AddObject(tunnelObject);
@@ -293,7 +294,6 @@ public:
 			
 			glm::vec3 pos = player->state.position + cameraOffset;
 			camera->SetPos(pos);
-			camera->LookAt(wick->state.position);
 
 			UpdateVisualizerBars();
 			
