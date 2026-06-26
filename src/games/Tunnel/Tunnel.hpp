@@ -314,7 +314,8 @@ public:
 
 			shader->Use();
 			shader->SetFloat("wobbleAmount", 0.5f);
-			
+			shader->SetVec3("objectColor", glm::vec3(0.2f, 0.8f, 1.0f));
+
 			Update();
 			Redraw();
 		}
