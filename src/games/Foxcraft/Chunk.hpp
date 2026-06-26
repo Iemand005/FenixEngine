@@ -54,4 +54,8 @@ public:
         BlockType neighbor = GetBlock(offsetPos);
         return neighbor == BlockType::Air;
     }
+
+    fe::Mesh GenerateMesh() {
+
+    }
 };
