@@ -143,7 +143,7 @@ public:
 		tunnelObject->name = "Tunnel";
 
 
-		this->scene->AddObject(tunnelObject);
+		//this->scene->AddObject(tunnelObject);
 
 		std::vector<glm::vec3> path = {
 			{0, 0, 0},
