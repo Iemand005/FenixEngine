@@ -23,13 +23,21 @@ public:
         return blocks[x * HEIGHT * DEPTH + y * DEPTH + z];
     }
 
+    BlockType GetBlock(glm::vec3 pos) const {
+        return GetBlock(pos.x, pos.y, pos.z);
+    }
+
     void SetBlock(int x, int y, int z, BlockType type) {
         blocks[x * HEIGHT * DEPTH + y * DEPTH + z] = type;
     }
 
-    bool NeedsFace(fe::PlaneDirection diection) {
+    glm::vec3 GetOffsetAt(glm::vec3 pos, fe::PlaneDirection diection) {
         switch (diection) {
 
         }
+    }
+
+    bool NeedsFace(glm::vec3 pos, fe::PlaneDirection diection) {
+        return GetBlock(GetOffsetAt(pos, diection));
     }
 };
