@@ -321,7 +321,7 @@ public:
 			camera->SetPos(cameraPos);
 
 			glm::vec3 lookAhead = fe::Primitives::GetPositionAlongPath(path, fmod(pathProgress + 0.05f, 1.0f));
-			camera->SetLookAt(lookAhead);
+			camera->LookAt(lookAhead);
 
 			UpdateVisualizerBars();
 
