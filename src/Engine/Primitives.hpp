@@ -248,23 +248,46 @@ namespace fe::Primitives {
 		);
 	}
 
-	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32, int subdivisionsPerSegment = 12, bool insideOut = false) {
+	inline glm::vec3 CubicBezier(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float u = 1.0f - t;
+		float u2 = u * u;
+		float t2 = t * t;
+		return u2 * u * p0 + 3.0f * u2 * t * p1 + 3.0f * u * t2 * p2 + t2 * t * p3;
+	}
+
+	inline glm::vec3 CubicBezierTangent(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float u = 1.0f - t;
+		float u2 = u * u;
+		float t2 = t * t;
+		return 3.0f * u2 * (p1 - p0) + 6.0f * u * t * (p2 - p1) + 3.0f * t2 * (p3 - p2);
+	}
+
+	inline Mesh GenerateBentTunnel(
+		const std::vector<glm::vec3>& path,
+		float radius = 1.0f,
+		int segments = 32,
+		int subdivisionsPerSegment = 12,
+		bool insideOut = false,
+		glm::vec3* inUp = nullptr,
+		glm::vec3* inRight = nullptr,
+		glm::vec3* outUp = nullptr,
+		glm::vec3* outRight = nullptr)
+	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<glm::vec3> smoothPath;
 		const float PI = 3.14159265359f;
 
-		for (size_t p = 0; p < path.size() - 1; p++) {
-			glm::vec3 p0 = (p > 0) ? path[p-1] : path[p] - (path[p+1] - path[p]);
-			glm::vec3 p1 = path[p];
-			glm::vec3 p2 = path[p+1];
-			glm::vec3 p3 = (p + 2 < path.size()) ? path[p+2] : path[p+1] + (path[p+1] - path[p]);
-			for (int sub = 0; sub < subdivisionsPerSegment; sub++) {
-				float t = sub / (float)subdivisionsPerSegment;
-				smoothPath.push_back(CatmullRom(p0, p1, p2, p3, t));
-			}
+		int totalSamples = subdivisionsPerSegment * (int)(path.size() - 1);
+		for (int sub = 0; sub < totalSamples; sub++) {
+			float t = sub / (float)totalSamples;
+			smoothPath.push_back(CubicBezier(path[0], path[1], path[2], path[3], t));
 		}
-		smoothPath.push_back(path.back());
+		smoothPath.push_back(CubicBezier(path[0], path[1], path[2], path[3], 1.0f));
+
+		glm::vec3 prevForward(0.0f);
+		glm::vec3 right = inRight ? *inRight : glm::vec3(1, 0, 0);
+		glm::vec3 up = inUp ? *inUp : glm::vec3(0, 1, 0);
 
 		for (size_t p = 0; p < smoothPath.size(); p++) {
 			glm::vec3 pos = smoothPath[p];
@@ -274,8 +297,27 @@ namespace fe::Primitives {
 			} else {
 				forward = glm::normalize(smoothPath[p+1] - smoothPath[p]);
 			}
-			glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
-			glm::vec3 up = glm::cross(forward, right);
+
+			if (p > 0) {
+				float cosAng = glm::clamp(glm::dot(prevForward, forward), -1.0f, 1.0f);
+				if (cosAng < 0.9999f) {
+					glm::vec3 axis = glm::normalize(glm::cross(prevForward, forward));
+					float angle = acos(cosAng);
+					glm::quat q = glm::angleAxis(angle, axis);
+					right = glm::normalize(q * right);
+					up = glm::normalize(q * up);
+				}
+			} else if (!inRight) {
+				glm::vec3 r = glm::cross(up, forward);
+				if (glm::length(r) < 1e-6f) {
+					up = glm::vec3(0, 0, 1);
+					r = glm::cross(up, forward);
+				}
+				right = glm::normalize(r);
+			}
+			right = glm::normalize(right - glm::dot(right, forward) * forward);
+			up = glm::cross(forward, right);
+			prevForward = forward;
 
 			for (int i = 0; i < segments; i++) {
 				float angle = (i / (float)segments) * 2.0f * PI;
@@ -315,6 +357,8 @@ namespace fe::Primitives {
 				}
 			}
 		}
+		if (outUp) *outUp = up;
+		if (outRight) *outRight = right;
 		return Mesh(vertices, indices);
 	}
 
