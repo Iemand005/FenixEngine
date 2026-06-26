@@ -9,9 +9,9 @@ enum class BlockType : short {
 
 class Chunk {
 private:
-    BlockType blocks[16][16][256];
+    BlockType blocks[16][128][16];
 public:
-    BlockType (&GetBlocks())[16][16][256] {
+    BlockType (&GetBlocks())[16][128][16] {
         return blocks;
     }
 };

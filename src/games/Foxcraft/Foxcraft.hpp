@@ -131,8 +131,8 @@ public:
     AddMonoBlock("resources/textures/dirt.png", {1, 0, 0});
 
     for(int x = 0; x < 16; x++) {
-      for(int y = 0; y < 16; y++) {
-        for(int z = 0; z < 256; z++) {
+      for(int y = 0; y < 128; y++) {
+        for(int z = 0; z < 16; z++) {
           AddMonoBlock("resources/textures/dirt.png", {x, y, z});
         }
       }
