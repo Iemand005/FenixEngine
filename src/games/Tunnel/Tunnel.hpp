@@ -152,6 +152,7 @@ public:
 			{5, 1, 4}
 		};
 		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f);
+		tunnel2->name = "Taratatatar";
 		this->scene->AddObject(tunnel2);
 
 
@@ -159,8 +160,8 @@ public:
 
 		for (int i = 0; i < NUM_BARS; ++i) {
 			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-			
-			cube->name = "Bar_" + i;
+
+			cube->name = "Bar_";
 			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -25.0f);
 			if (false)
 				cube->shader = barShader;
