@@ -105,21 +105,19 @@ public:
 	void GenerateNextTunnelPath() {
 		glm::vec3 lastPoint = currentPath.back();
 		glm::vec3 prevPoint = currentPath[currentPath.size() - 2];
-		glm::vec3 unitTangent = glm::normalize(lastPoint - prevPoint);
 
 		nextPath.clear();
-		nextPath.push_back(prevPoint);
 		nextPath.push_back(lastPoint);
 
 		float elapsedTime = window->GetTime();
 
 		for (int i = 0; i < 8; i++) {
-			float newX = sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f;
-			float newY = cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f;
-			float newZ = 2.0f;
 			glm::vec3 offset = (i == 0)
-				? unitTangent * glm::length(glm::vec3(newX, newY, newZ * (i + 1)))
-				: glm::vec3(newX, newY, newZ * (i + 1));
+				? lastPoint - prevPoint
+				: glm::vec3(
+					sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f,
+					cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f,
+					2.0f * (i + 1));
 			nextPath.push_back(lastPoint + offset);
 		}
 	}
@@ -131,8 +129,6 @@ public:
 		std::swap(currentTunnel, nextTunnel);
 		currentTunnel->name = "CurrentTunnel";
 		nextTunnel->name = "NextTunnel";
-
-		pathProgress = 1.0f / (float)(currentPath.size() - 1);
 
 		GenerateNextTunnelPath();
 
