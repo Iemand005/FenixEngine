@@ -115,6 +115,8 @@ public:
 
 	float totalPathLength = 0.0f;
 
+	std::shared_ptr<fe::Object> tunnelObj;
+
 
 	Tunnel() : Tunnel(1400, 1200) {}
 
@@ -146,19 +148,7 @@ public:
 
 	void LoadModels() {
 
-		std::vector<glm::vec3> path = {
-			{0, 0, 0},
-			{2, 1, 0},
-			{4, 2, 2},
-			{5, 1, 4},
-			{6, 0, 6},
-			{7, -1, 8},
-			{8, 0, 10},
-			{9, 1, 12}
-		};
-		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
-		auto tunne2obj = this->scene->AddObject(tunnel2);
-		tunne2obj->name = "Taratatatar";
+		RegenerateTunnelMesh();
 
 		for (size_t i = 0; i < path.size() - 1; i++) {
 			totalPathLength += glm::distance(path[i], path[i + 1]);
@@ -241,6 +231,34 @@ public:
 		if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
 	}
 
+	void RegenerateTunnelMesh() {
+		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
+
+		if (tunnelObj) {
+			scene->RemoveObject(tunnelObj);
+		}
+
+		tunnelObj = this->scene->AddObject(tunnel2);
+		tunnelObj->name = "Tunnel";
+
+		totalPathLength = 0.0f;
+		for (size_t i = 0; i < path.size() - 1; i++) {
+			totalPathLength += glm::distance(path[i], path[i + 1]);
+		}
+	}
+
+	void ExtendTunnelPath() {
+		glm::vec3 lastPoint = path.back();
+		glm::vec3 prevPoint = path[path.size() - 2];
+		glm::vec3 direction = glm::normalize(lastPoint - prevPoint);
+
+		float newX = sin(elapsedTime * 0.5f) * 2.0f;
+		float newY = cos(elapsedTime * 0.3f) * 1.0f;
+		float newZ = 2.0f;
+
+		path.push_back(lastPoint + glm::vec3(newX, newY, newZ));
+		RegenerateTunnelMesh();
+	}
 
 	void Run() {
 		auto window = this->GetWindow<fe::SDLWindow>();
@@ -316,6 +334,10 @@ public:
 			// glm::vec3 pos = player->state.position + cameraOffset;
 			float cameraSpeed = 5.0f; // units per second
 			float pathProgress = fmod(elapsedTime * cameraSpeed / totalPathLength, 1.0f);
+
+			if (pathProgress > 0.7f && path.size() < 100) {
+				ExtendTunnelPath();
+			}
 
 			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(path, pathProgress);
 			camera->SetPos(cameraPos);
