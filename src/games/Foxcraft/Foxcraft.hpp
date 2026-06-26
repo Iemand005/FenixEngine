@@ -130,14 +130,22 @@ public:
     AddMonoBlock("resources/textures/dirt.png");
     AddMonoBlock("resources/textures/dirt.png", {1, 0, 0});
 
-    for(int x = 0; x < 16; x++) {
+    /*for(int x = 0; x < 16; x++) {
       for(int y = 0; y < 20; y++) {
         for(int z = 0; z < 16; z++) {
           AddMonoBlock("resources/textures/dirt.png", {x, y, z});
         }
       }
-    }
+    }*/
 
+    auto cubeMesh = chunk.GenerateMesh();
+    cubeMesh.loadTexture("resources/textures/dirt.png", fe::TextureScaling::Nearest);
+    cubeMesh.hasTransparency = true;
+
+    auto cubeObject = std::make_shared<fe::Object>(cubeMesh);
+
+    cubeObject->name = "Chunk";
+    this->scene->AddObject(cubeObject);
   }
 
   void AddBlock(std::string topTexturePath, std::string sideTexturePath, std::string bottomTexturePath) {
