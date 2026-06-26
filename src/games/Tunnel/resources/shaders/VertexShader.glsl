@@ -15,7 +15,12 @@ uniform float wobbleAmount;
 
 void main()
 {
-    float wave = sin(time * 3.0 - aTexCoord.y * 12.0) * wobbleAmount;
+    float slowWave = sin(time * 2.0 - aTexCoord.y * 8.0) * 0.6;
+    float fastWave = sin(time * 5.0 - aTexCoord.y * 16.0) * 0.3;
+    float squeeze = sin(time * 1.5 - aTexCoord.y * 6.0) * 0.3;
+    float radial = sin(aTexCoord.x * 6.2832 + time * 2.0) * 0.15 + 0.85;
+
+    float wave = (slowWave + fastWave + squeeze) * wobbleAmount * radial;
     vec3 pos = aPos + aNormal * wave;
 
     vec4 worldPos = model * vec4(pos, 1.0);

@@ -39,8 +39,8 @@ public:
 	bool hasPrevEnd = false;
 
 	static constexpr int NUM_CHUNKS = 12;
-	static constexpr int TUNNEL_SEGMENTS = 32;
-	static constexpr int SUBDIVISIONS_PER_SEG = 12;
+	static constexpr int TUNNEL_SEGMENTS = 48;
+	static constexpr int SUBDIVISIONS_PER_SEG = 20;
 	static constexpr int POINTS_PER_CHUNK = 4;
 	static constexpr int SHIFT = 3;
 
@@ -312,9 +312,9 @@ public:
 			scene->GetLights()[0].radius = 80.0f;
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 0.4f);
+			shader->SetFloat("wobbleAmount", 1.2f);
 			shader->SetFloat("time", elapsedTime);
-			shader->SetVec3("objectColor", glm::vec3(0.95f, 0.25f, 0.55f));
+			shader->SetVec3("objectColor", glm::vec3(0.55f, 0.08f, 0.12f));
 
 			Update();
 			Redraw();
