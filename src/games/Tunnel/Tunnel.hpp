@@ -327,15 +327,12 @@ public:
 				camera->viewMatrix = glm::lookAt(camera->position, camera->position + camera->front, camera->up);
 				glm::vec3 riderPos = GetGlobalPosition(pathIndex);
 				player->state.position = riderPos;
-				glm::vec3 riderTangent = GetGlobalTangent(pathIndex);
-				player->state.visible = true;
 				scene->GetLights()[0].position = riderPos;
 			} else {
 				glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
 				camera->SetPos(cameraPos);
 				glm::vec3 tangent = GetGlobalTangent(pathIndex);
 				camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
-				player->state.visible = false;
 				scene->GetLights()[0].position = cameraPos;
 			}
 
