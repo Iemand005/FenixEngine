@@ -54,6 +54,13 @@ public:
 	float baseSpeedElapsedTimeBumpy = 0.0002f;
 	float baseSpeedElapsedTime = 0.0002f;
 
+	float cameraSpeed = 1.0f;
+	float motionAmount = 1.2f;
+	float tunnelRoundness = 0.15f;
+	float haustraStrength = 0.6f;
+	float animationSpeed = 1.0f;
+	float curvatureStrength = 1.0f;
+
 	Tunnel() : Tunnel(1400, 1200) {}
 
 	Tunnel(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
@@ -105,6 +112,7 @@ public:
 	void GrowPath(int count) {
 		float t = window->GetTime();
 		int freeSeg = (path.size() - 4) / 3;
+		float cs = curvatureStrength;
 		for (int i = 0; i < count; i++) {
 			int n = path.size();
 			if (n % 3 == 1) {
@@ -116,8 +124,8 @@ public:
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
 				glm::vec3 wobble(
-					sin(t * 0.7f + freeSeg * 0.7f) * 3.0f,
-					cos(t * 0.5f + freeSeg * 0.5f) * 1.5f,
+					sin(t * 0.7f + freeSeg * 0.7f) * 3.0f * cs,
+					cos(t * 0.5f + freeSeg * 0.5f) * 1.5f * cs,
 					0.0f);
 				path.push_back(path[n-1] + step + wobble);
 			} else {
@@ -127,8 +135,8 @@ public:
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
 				glm::vec3 wobble(
-					sin(t * 0.5f + freeSeg * 0.5f) * 4.0f,
-					cos(t * 0.3f + freeSeg * 0.3f) * 2.0f,
+					sin(t * 0.5f + freeSeg * 0.5f) * 4.0f * cs,
+					cos(t * 0.3f + freeSeg * 0.3f) * 2.0f * cs,
 					0.0f);
 				path.push_back(path[n-1] + step + wobble);
 				freeSeg++;
@@ -282,7 +290,6 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
-			float cameraSpeed = 1.0f;
 			pathIndex += baseSpeedElapsedTime * cameraSpeed;
 
 			while (pathIndex > (float)(windowStart / SHIFT) + 1.0f)
@@ -312,7 +319,10 @@ public:
 			scene->GetLights()[0].radius = 80.0f;
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 1.2f);
+			shader->SetFloat("wobbleAmount", motionAmount);
+			shader->SetFloat("roundness", tunnelRoundness);
+			shader->SetFloat("haustraStrength", haustraStrength);
+			shader->SetFloat("animSpeed", animationSpeed);
 			shader->SetFloat("time", elapsedTime);
 			shader->SetVec3("objectColor", glm::vec3(0.55f, 0.08f, 0.12f));
 
@@ -360,6 +370,16 @@ public:
 		BeginFrame();
 
 		DrawAudioVisualizer();
+
+		ImGui::Begin("Tunnel Controls");
+		ImGui::SliderFloat("Motion Amount", &motionAmount, 0.0f, 3.0f);
+		ImGui::SliderFloat("Roundness", &tunnelRoundness, 0.0f, 0.6f);
+		ImGui::SliderFloat("Haustra Strength", &haustraStrength, 0.0f, 2.0f);
+		ImGui::SliderFloat("Animation Speed", &animationSpeed, 0.0f, 5.0f);
+		ImGui::SliderFloat("Camera Speed", &cameraSpeed, 0.0f, 5.0f);
+		ImGui::SliderFloat("Curvature Strength", &curvatureStrength, 0.0f, 5.0f);
+		ImGui::End();
+
 		DrawDebugUI();
 
 		EndFrame();
