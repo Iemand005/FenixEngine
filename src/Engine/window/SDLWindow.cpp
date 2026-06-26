@@ -233,12 +233,12 @@ void fe::SDLWindow::ActivateScreenSaverMode() {
 	_isScreensaving = true;
 }
 
-#ifdef _WIN32
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
 	if (!parent)
 		return;
+#ifdef _WIN32
 
 	SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
 	if (!props)
@@ -271,8 +271,38 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		SWP_NOACTIVATE |
 		SWP_SHOWWINDOW
 	);
-}
+#else
+#include <X11/Xlib.h>
+
+	SDL_Window *window = SDL_CreateWindow(
+		"SDL",
+		800, 600,
+		SDL_WINDOW_RESIZABLE
+	);
+
+	// Get the native X11 window
+	SDL_PropertiesID props = SDL_GetWindowProperties(window);
+
+	Window child = (Window)(uintptr_t)SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_X11_WINDOW_POINTER,
+		nullptr
+	);
+
+	Display *display = (Display *)SDL_GetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_X11_DISPLAY_POINTER,
+		nullptr
+	);
+
+	Window parent = paernt;
+
+	XReparentWindow(display, child, parent, 0, 0);
+	XMapWindow(display, child);
+	XFlush(display);
 #endif
+
+}
 
 void fe::SDLWindow::Show() {
 	SDL_ShowWindow(impl->window);
