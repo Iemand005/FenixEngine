@@ -240,7 +240,6 @@ namespace fe::Primitives {
 	glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
 		float t2 = t * t;
 		float t3 = t2 * t;
-
 		return 0.5f * (
 			(2.0f * p1) +
 			(-p0 + p2) * t +
@@ -249,7 +248,7 @@ namespace fe::Primitives {
 		);
 	}
 
-	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32, int subdivisionsPerSegment = 12) {
+	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32, int subdivisionsPerSegment = 12, bool insideOut = false) {
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<glm::vec3> smoothPath;
@@ -260,7 +259,6 @@ namespace fe::Primitives {
 			glm::vec3 p1 = path[p];
 			glm::vec3 p2 = path[p+1];
 			glm::vec3 p3 = (p + 2 < path.size()) ? path[p+2] : path[p+1] + (path[p+1] - path[p]);
-
 			for (int sub = 0; sub < subdivisionsPerSegment; sub++) {
 				float t = sub / (float)subdivisionsPerSegment;
 				smoothPath.push_back(CatmullRom(p0, p1, p2, p3, t));
@@ -270,14 +268,12 @@ namespace fe::Primitives {
 
 		for (size_t p = 0; p < smoothPath.size(); p++) {
 			glm::vec3 pos = smoothPath[p];
-
 			glm::vec3 forward;
 			if (p == smoothPath.size() - 1) {
 				forward = glm::normalize(smoothPath[p] - smoothPath[p-1]);
 			} else {
 				forward = glm::normalize(smoothPath[p+1] - smoothPath[p]);
 			}
-
 			glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
 			glm::vec3 up = glm::cross(forward, right);
 
@@ -288,8 +284,10 @@ namespace fe::Primitives {
 				glm::vec3 offset = right * x * radius + up * y * radius;
 				glm::vec3 vPos = pos + offset;
 				glm::vec3 normal = glm::normalize(offset);
+				if (insideOut) normal = -normal;
+
 				vertices.push_back(Vertex(vPos.x, vPos.y, vPos.z, normal.x, normal.y, normal.z,
-											i / (float)segments, p / (float)(smoothPath.size()-1)));
+										  i / (float)segments, p / (float)(smoothPath.size()-1)));
 			}
 		}
 
@@ -299,15 +297,24 @@ namespace fe::Primitives {
 				int next = p * segments + ((i + 1) % segments);
 				int currentNext = (p + 1) * segments + i;
 				int nextNext = (p + 1) * segments + ((i + 1) % segments);
-				indices.push_back(current);
-				indices.push_back(next);
-				indices.push_back(currentNext);
-				indices.push_back(next);
-				indices.push_back(nextNext);
-				indices.push_back(currentNext);
+
+				if (insideOut) {
+					indices.push_back(currentNext);
+					indices.push_back(next);
+					indices.push_back(current);
+					indices.push_back(currentNext);
+					indices.push_back(nextNext);
+					indices.push_back(next);
+				} else {
+					indices.push_back(current);
+					indices.push_back(next);
+					indices.push_back(currentNext);
+					indices.push_back(next);
+					indices.push_back(nextNext);
+					indices.push_back(currentNext);
+				}
 			}
 		}
-
 		return Mesh(vertices, indices);
 	}
 
