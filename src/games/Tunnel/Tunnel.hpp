@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -26,97 +25,50 @@
 class Tunnel : public fe::EditableGame {
 public:
 
-	double lastUpdateTime = 0.0f;
-
-	bool canJump = true;
-
-	int mapIndex = 0;
-
 	std::vector<std::shared_ptr<fe::Object>> rectangles;
-
 	AudioVisualiser visualizer;
-
-	bool showCandle = true;
-
 	bool showDebugUI = false;
 
-	std::shared_ptr<fe::Object> wick;
-	std::shared_ptr<fe::Object> flameParticle;
+	std::vector<glm::vec3> currentPath;
+	std::vector<glm::vec3> nextPath;
+	std::shared_ptr<fe::Object> currentTunnel;
+	std::shared_ptr<fe::Object> nextTunnel;
+	float currentPathLength = 0.0f;
+	float nextPathLength = 0.0f;
 
-	// Camera tweaks
-	float cameraPanSpeed = 2.1f;
-	float cameraPanFreqX = 0.3f;
-	float cameraPanFreqY = 0.2f;
-	float cameraPanFreqZ = 0.15f;
-	glm::vec3 cameraOffsetScales = glm::vec3(2.0f, 0.5f, 1.0f);
-	float cameraPanVariationFreq = 0.001f;
-	
-	// Light tweaks
 	float lightSpeed = 0.3f;
-	
-	// Light 0
+
 	glm::vec3 lightCenter0 = glm::vec3(0, 5, 5);
 	float lightRadius0 = 3.0f;
 	float light0FreqX = 0.5f;
 	float light0FreqY = 0.3f;
 	float light0FreqZ = 0.7f;
-	
-	// Light 1
+
 	glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
 	float lightRadius1 = 2.5f;
 	float light1FreqX = 0.4f;
 	float light1FreqY = 0.25f;
 	float light1FreqZ = 0.6f;
 	float light1ColorFreq = 0.2f;
-	
-	// Light 2
+
 	glm::vec3 lightCenter2 = glm::vec3(3, 6, 4);
 	float lightRadius2 = 2.0f;
 	float light2FreqX = 0.35f;
 	float light2FreqY = 0.28f;
 	float light2FreqZ = 0.55f;
 	float light2ColorFreq = 0.25f;
-	
-	// Colors
+
 	float bgColorFreq = 0.3f;
 	float light1RadialColorFreq = 0.2f;
 	float light2RadialColorFreq = 0.25f;
-	
-	// Flame tweaks
-	float flameCycleDuration = 3.0f;
-	float flamePhaseMultiplier = 1.10f;
-	float flameFlickerSpeed1 = 30.0f;
-	float flameFlickerIntensity1 = 0.15f;
-	float flameFlickerSpeed2 = 12.0f;
-	float flameFlickerIntensity2 = 0.08f;
-	float flameShrinkAmount = 0.8f;
-	float flameBaseScale = 0.9f;
-	
-	// Visualizer tweaks
+
 	float visualizerScale = 8.0f;
 	float visualizerBarHeightMult = 10.0f;
-	
-	// Simulation tweaks
+
 	float audioAmplitudeScale = 10.0f;
 	float audioSpeedMultiplier = 0.15f;
 	float baseSpeedElapsedTimeBumpy = 0.0002f;
 	float baseSpeedElapsedTime = 0.0002f;
-
-	std::vector<glm::vec3> path = {
-		{0, 0, 0},
-		{2, 1, 0},
-		{4, 2, 2},
-		{5, 1, 4},
-		{6, 0, 6},
-		{7, -1, 8},
-		{8, 0, 10},
-		{9, 1, 12}
-	};
-
-	float totalPathLength = 0.0f;
-
-	std::shared_ptr<fe::Object> tunnelObj;
-
 
 	Tunnel() : Tunnel(1400, 1200) {}
 
@@ -147,33 +99,83 @@ public:
 	}
 
 	void LoadModels() {
-
-		RegenerateTunnelMesh();
-
-		for (size_t i = 0; i < path.size() - 1; i++) {
-			totalPathLength += glm::distance(path[i], path[i + 1]);
-		}
+		GenerateInitialTunnels();
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 
 		for (int i = 0; i < NUM_BARS; ++i) {
 			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-
 			cube->name = "Bar_";
 			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -25.0f);
-			if (false)
-				cube->shader = barShader;
-
-			// cube->meshes[0].sha
-	
 			this->scene->AddObject(cube);
-
 			rectangles.push_back(cube);
 		}
 
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
+	}
 
+	void GenerateInitialTunnels() {
+		currentPath = {
+			{0, 0, 0},
+			{2, 1, 0},
+			{4, 2, 2},
+			{5, 1, 4},
+			{6, 0, 6},
+			{7, -1, 8},
+			{8, 0, 10},
+			{9, 1, 12}
+		};
+
+		GenerateTunnelMesh(currentPath, currentTunnel, currentPathLength, "CurrentTunnel");
+		GenerateNextTunnelPath();
+		GenerateTunnelMesh(nextPath, nextTunnel, nextPathLength, "NextTunnel");
+	}
+
+	void GenerateTunnelMesh(const std::vector<glm::vec3>& path, std::shared_ptr<fe::Object>& tunnelObj, float& pathLength, const std::string& name) {
+		fe::Mesh tunnelMesh = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
+
+		if (tunnelObj) {
+			scene->RemoveObject(tunnelObj);
+		}
+
+		tunnelObj = this->scene->AddObject(tunnelMesh);
+		tunnelObj->name = name;
+
+		pathLength = 0.0f;
+		for (size_t i = 0; i < path.size() - 1; i++) {
+			pathLength += glm::distance(path[i], path[i + 1]);
+		}
+	}
+
+	void GenerateNextTunnelPath() {
+		glm::vec3 lastPoint = currentPath.back();
+		glm::vec3 prevPoint = currentPath[currentPath.size() - 2];
+
+		nextPath.clear();
+		nextPath.push_back(lastPoint);
+
+		float elapsedTime = window->GetTime();
+
+		for (int i = 0; i < 8; i++) {
+			float newX = sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f;
+			float newY = cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f;
+			float newZ = 2.0f;
+			nextPath.push_back(lastPoint + glm::vec3(newX, newY, newZ * (i + 1)));
+		}
+	}
+
+	void SwapTunnels() {
+		currentPath = nextPath;
+		currentPathLength = nextPathLength;
+
+		if (currentTunnel) {
+			scene->RemoveObject(currentTunnel);
+		}
+		currentTunnel = nextTunnel;
+
+		GenerateNextTunnelPath();
+		GenerateTunnelMesh(nextPath, nextTunnel, nextPathLength, "NextTunnel");
 	}
 
 	void ProcessInput() {
@@ -184,27 +186,24 @@ public:
 			auto io = ImGui::GetIO();
 			switch (event.type) {
 				case SDL_EVENT_QUIT:
-				window->PrepareClose();
-				break;
+					window->PrepareClose();
+					break;
 				case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				if (event.button.button == SDL_BUTTON_LEFT && !io.WantCaptureMouse) {
-					window->StartMouseCapture();
-				}
-				break;
+					if (event.button.button == SDL_BUTTON_LEFT && !io.WantCaptureMouse) {
+						window->StartMouseCapture();
+					}
+					break;
 				case SDL_EVENT_WINDOW_RESIZED:
 				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-				// Get actual pixel dimensions
 					Redraw();
 					break;
 				case SDL_EVENT_MOUSE_MOTION:
 				{
 					if (!window->capturingMouse) break;
 					float sensitivity = 0.1f;
-
 					camera->yaw   += event.motion.xrel * sensitivity;
 					camera->pitch -= event.motion.yrel * sensitivity;
 					camera->UpdateDirection();
-
 					pitch = std::clamp(pitch, -89.0f, 89.0f);
 					break;
 				}
@@ -231,75 +230,34 @@ public:
 		if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
 	}
 
-	void RegenerateTunnelMesh() {
-		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
-
-		if (tunnelObj) {
-			scene->RemoveObject(tunnelObj);
-		}
-
-		tunnelObj = this->scene->AddObject(tunnel2);
-		tunnelObj->name = "Tunnel";
-
-		totalPathLength = 0.0f;
-		for (size_t i = 0; i < path.size() - 1; i++) {
-			totalPathLength += glm::distance(path[i], path[i + 1]);
-		}
-	}
-
-	void ExtendTunnelPath() {
-		glm::vec3 lastPoint = path.back();
-		glm::vec3 prevPoint = path[path.size() - 2];
-		glm::vec3 direction = glm::normalize(lastPoint - prevPoint);
-
-		float elapsedTime = window->GetTime();
-
-		float newX = sin(elapsedTime * 0.5f) * 2.0f;
-		float newY = cos(elapsedTime * 0.3f) * 1.0f;
-		float newZ = 2.0f;
-
-		path.push_back(lastPoint + glm::vec3(newX, newY, newZ));
-		RegenerateTunnelMesh();
-	}
-
 	void Run() {
 		auto window = this->GetWindow<fe::SDLWindow>();
 		window->Show();
 		window->DisableVSync();
-	
-		glm::vec3 cameraOffset = glm::vec3(0);
+
 		player->state.position.z = 5;
 		player->state.position.y = 2;
 		float elapsedTimeBumpy = 0.0f;
 		float elapsedTime = 0.0f;
-		SDL_Event event;
-		
+
 		while (!window->ShouldClose()) {
-			
+
 			ProcessInput();
 			visualizer.Update();
 
 			float totalMagnitude = 0.0f;
 			for (int i = 0; i < NUM_BARS; ++i) {
-					totalMagnitude += visualizer.bandMagnitudes[i];
+				totalMagnitude += visualizer.bandMagnitudes[i];
 			}
 			float avgMagnitude = totalMagnitude / NUM_BARS;
-			
+
 			float speed = baseSpeedElapsedTimeBumpy + (avgMagnitude * audioAmplitudeScale * audioSpeedMultiplier);
 			elapsedTimeBumpy += speed;
 			elapsedTime += baseSpeedElapsedTime;
 
-			float cameraPanSpeedVariation = abs(sin(elapsedTime * cameraPanVariationFreq)) * 0.5f;
-			float cameraPanSpeeda = cameraPanSpeed + cameraPanSpeedVariation;
-
-			cameraOffset.x = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqX) * cameraOffsetScales.x;
-			cameraOffset.y = cos(elapsedTime * cameraPanSpeeda * cameraPanFreqY) * cameraOffsetScales.y;
-			cameraOffset.z = sin(elapsedTime * cameraPanSpeeda * cameraPanFreqZ) * cameraOffsetScales.z;
-			
 			float colorR = sin(elapsedTime * bgColorFreq) * 0.5f + 0.5f;
 			float colorG = sin(elapsedTime * bgColorFreq + 2.094f) * 0.5f + 0.5f;
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
-
 			SetClearColor(colorR, colorG, colorB);
 
 			float light1R = sin(elapsedTime * light1RadialColorFreq) * 0.5f + 0.5f;
@@ -312,46 +270,38 @@ public:
 			float light2B = sin(elapsedTime * light2RadialColorFreq + 5.236f) * 0.5f + 0.5f;
 			scene->GetLights()[2].color = {light2R, light2G, light2B};
 
-			// Light 0
 			scene->GetLights()[0].position = lightCenter0 + glm::vec3(
 				sin(elapsedTimeBumpy * light0FreqX * lightSpeed) * lightRadius0,
-				cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
-				sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
+																	  cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
+																	  sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
 			);
 
-			// Light 1
 			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
 				sin(elapsedTimeBumpy * light1FreqX * lightSpeed) * lightRadius1,
-				cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
-				sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
+																	  cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
+																	  sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
 			);
 
-			// Light 2
 			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
 				sin(elapsedTimeBumpy * light2FreqX * lightSpeed) * lightRadius2,
-				cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
-				sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
+																	  cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
+																	  sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
 			);
-			
-			// glm::vec3 pos = player->state.position + cameraOffset;
-			float cameraSpeed = 5.0f; // units per second
-			float pathProgress = fmod(elapsedTime * cameraSpeed / totalPathLength, 1.0f);
 
-			if (pathProgress > 0.7f && path.size() < 100) {
-				ExtendTunnelPath();
+			float cameraSpeed = 5.0f;
+			float pathProgress = fmod(elapsedTime * cameraSpeed / currentPathLength, 1.0f);
+
+			if (pathProgress > 0.7f) {
+				SwapTunnels();
 			}
 
-			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(path, pathProgress);
+			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(currentPath, pathProgress);
 			camera->SetPos(cameraPos);
 
-			glm::vec3 lookAhead = fe::Primitives::GetPositionAlongPath(path, fmod(pathProgress + 0.05f, 1.0f));
+			glm::vec3 lookAhead = fe::Primitives::GetPositionAlongPath(currentPath, fmod(pathProgress + 0.05f, 1.0f));
 			camera->LookAt(lookAhead);
 
 			UpdateVisualizerBars();
-
-			//scene.shader
-			//this->scene->Set
-			//shader->SetFloat("");
 
 			shader->Use();
 			shader->SetFloat("wobbleAmount", 0.2f);
@@ -363,19 +313,18 @@ public:
 		Destroy();
 	}
 
-
 	void InitUI() override {}
 
 	void UpdateVisualizerBars() {
-    for (int i = 0; i < NUM_BARS; ++i) {
-      float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
-      float normalized = std::clamp(ah, 0.0f, 1.0f);
-      float barHeight = normalized * visualizerBarHeightMult;
-      rectangles[i]->state.scale = glm::vec3(1.0f, barHeight, 1.0f);
-    }
+		for (int i = 0; i < NUM_BARS; ++i) {
+			float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
+			float normalized = std::clamp(ah, 0.0f, 1.0f);
+			float barHeight = normalized * visualizerBarHeightMult;
+			rectangles[i]->state.scale = glm::vec3(1.0f, barHeight, 1.0f);
+		}
 	}
-	
-	void DrawAudioVisualizer() {	
+
+	void DrawAudioVisualizer() {
 		ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Audio Spectrum");
 
