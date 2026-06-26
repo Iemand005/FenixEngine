@@ -102,17 +102,13 @@ public:
 	float baseSpeedElapsedTimeBumpy = 0.0002f;
 	float baseSpeedElapsedTime = 0.0002f;
 
-	bool isCyanide = false;
-
 	Tunnel() : Tunnel(1400, 1200) {}
 
 	Tunnel(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
 
-		window->SetTitle(isCyanide ? "HAPPY BIRTHDAY CYANIDE!!" : "HAPPY BIRTHDAY FLEXAN!!");
-
 		SetClearColor(1, 1, 0);
 
-		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+		LoadShaders("/home/lasse/Documents/Projects/FenixEngine/src/games/Tunnel/resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
 		LoadModels();
 
