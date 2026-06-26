@@ -56,6 +56,49 @@ public:
     }
 
     fe::Mesh GenerateMesh() {
+        fe::Mesh mesh;
 
+        for(int x = 0; x < WIDTH; x++) {
+            for(int y = 0; y < HEIGHT; y++) {
+                for(int z = 0; z < DEPTH; z++) {
+                    BlockType block = GetBlock(x, y, z);
+
+                    // Skip air blocks
+                    if(block == BlockType::Air) continue;
+
+                    // Check which faces need to be rendered
+                    std::vector<PlaneDirection> visibleFaces;
+                    for(auto direction : {PlaneDirection::Front, PlaneDirection::Back,
+                        PlaneDirection::Left, PlaneDirection::Right,
+                        PlaneDirection::Top, PlaneDirection::Bottom}) {
+                        if(NeedsFace(glm::vec3(x, y, z), direction)) {
+                            visibleFaces.push_back(direction);
+                        }
+                        }
+
+                        // Generate cube with only visible faces
+                        if(!visibleFaces.empty()) {
+                            fe::Mesh cubeMesh = GenerateCube(visibleFaces, 1.0f);
+
+                            // Offset mesh to block position
+                            for(auto& vertex : cubeMesh.vertices) {
+                                vertex.position += glm::vec3(x, y, z);
+                            }
+
+                            // Merge into main mesh
+                            int indexOffset = mesh.vertices.size();
+                            mesh.vertices.insert(mesh.vertices.end(),
+                                                 cubeMesh.vertices.begin(),
+                                                 cubeMesh.vertices.end());
+
+                            for(auto index : cubeMesh.indices) {
+                                mesh.indices.push_back(index + indexOffset);
+                            }
+                        }
+                }
+            }
+        }
+
+        return mesh;
     }
 };
