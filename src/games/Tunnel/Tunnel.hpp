@@ -25,7 +25,6 @@
 class Tunnel : public fe::EditableGame {
 public:
 
-	std::vector<std::shared_ptr<fe::Object>> rectangles;
 	AudioVisualiser visualizer;
 	bool showDebugUI = false;
 
@@ -39,32 +38,8 @@ public:
 
 	float lightSpeed = 0.3f;
 
-	glm::vec3 lightCenter0 = glm::vec3(0, 5, 5);
-	float lightRadius0 = 3.0f;
-	float light0FreqX = 0.5f;
-	float light0FreqY = 0.3f;
-	float light0FreqZ = 0.7f;
-
-	glm::vec3 lightCenter1 = glm::vec3(-5, 4, 3);
-	float lightRadius1 = 2.5f;
-	float light1FreqX = 0.4f;
-	float light1FreqY = 0.25f;
-	float light1FreqZ = 0.6f;
-	float light1ColorFreq = 0.2f;
-
-	glm::vec3 lightCenter2 = glm::vec3(3, 6, 4);
-	float lightRadius2 = 2.0f;
-	float light2FreqX = 0.35f;
-	float light2FreqY = 0.28f;
-	float light2FreqZ = 0.55f;
-	float light2ColorFreq = 0.25f;
-
 	float bgColorFreq = 0.3f;
-	float light1RadialColorFreq = 0.2f;
-	float light2RadialColorFreq = 0.25f;
-
 	float visualizerScale = 8.0f;
-	float visualizerBarHeightMult = 10.0f;
 
 	float audioAmplitudeScale = 10.0f;
 	float audioSpeedMultiplier = 0.15f;
@@ -81,14 +56,6 @@ public:
 
 		LoadModels();
 
-		scene->AddLight();
-		scene->AddLight();
-		scene->GetLights()[1].color = {0.9f, 0.4f, 0.3f};
-		scene->GetLights()[1].radius = 15.0f;
-
-		scene->GetLights()[2].color = {0.2f, 0.6f, 0.8f};
-		scene->GetLights()[2].intensity = 2.0f;
-
 		visualizer.Init();
 	}
 
@@ -101,14 +68,6 @@ public:
 
 	void LoadModels() {
 		GenerateInitialTunnels();
-
-			for (int i = 0; i < NUM_BARS; ++i) {
-			auto cube = std::make_shared<fe::Object>(fe::Primitives::GenerateCube(1.0f));
-			cube->name = "Bar_";
-			cube->state.position = glm::vec3(-15.0f + i * 1.0f, 0.0f, -25.0f);
-			this->scene->AddObject(cube);
-			rectangles.push_back(cube);
-		}
 
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
@@ -149,6 +108,7 @@ public:
 		glm::vec3 unitTangent = glm::normalize(lastPoint - prevPoint);
 
 		nextPath.clear();
+		nextPath.push_back(prevPoint);
 		nextPath.push_back(lastPoint);
 
 		float elapsedTime = window->GetTime();
@@ -171,6 +131,8 @@ public:
 		std::swap(currentTunnel, nextTunnel);
 		currentTunnel->name = "CurrentTunnel";
 		nextTunnel->name = "NextTunnel";
+
+		pathProgress = 1.0f / (float)(currentPath.size() - 1);
 
 		GenerateNextTunnelPath();
 
@@ -309,34 +271,6 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
-			float light1R = sin(elapsedTime * light1RadialColorFreq) * 0.5f + 0.5f;
-			float light1G = sin(elapsedTime * light1RadialColorFreq + 2.094f) * 0.5f + 0.5f;
-			float light1B = sin(elapsedTime * light1RadialColorFreq + 4.189f) * 0.5f + 0.5f;
-			scene->GetLights()[1].color = {light1R, light1G, light1B};
-
-			float light2R = sin(elapsedTime * light2RadialColorFreq + 1.047f) * 0.5f + 0.5f;
-			float light2G = sin(elapsedTime * light2RadialColorFreq + 3.14f) * 0.5f + 0.5f;
-			float light2B = sin(elapsedTime * light2RadialColorFreq + 5.236f) * 0.5f + 0.5f;
-			scene->GetLights()[2].color = {light2R, light2G, light2B};
-
-			scene->GetLights()[0].position = lightCenter0 + glm::vec3(
-				sin(elapsedTimeBumpy * light0FreqX * lightSpeed) * lightRadius0,
-				cos(elapsedTimeBumpy * light0FreqY * lightSpeed) * lightRadius0 * 0.5f,
-				sin(elapsedTimeBumpy * light0FreqZ * lightSpeed) * lightRadius0
-			);
-
-			scene->GetLights()[1].position = lightCenter1 + glm::vec3(
-				sin(elapsedTimeBumpy * light1FreqX * lightSpeed) * lightRadius1,
-				cos(elapsedTimeBumpy * light1FreqY * lightSpeed) * lightRadius1 * 0.6f,
-				sin(elapsedTimeBumpy * light1FreqZ * lightSpeed) * lightRadius1
-			);
-
-			scene->GetLights()[2].position = lightCenter2 + glm::vec3(
-				sin(elapsedTimeBumpy * light2FreqX * lightSpeed) * lightRadius2,
-				cos(elapsedTimeBumpy * light2FreqY * lightSpeed) * lightRadius2 * 0.7f,
-				sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
-			);
-
 			float cameraSpeed = 15.0f;
 			pathProgress += baseSpeedElapsedTime * cameraSpeed / currentPathLength;
 
@@ -351,7 +285,22 @@ public:
 			glm::vec3 tangent = GetSmoothPathTangent(currentPath, pathProgress);
 			camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
 
-			UpdateVisualizerBars();
+			float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
+			for (int i = 0; i < NUM_BARS; i++) {
+				float val = visualizer.bandMagnitudesSmoothed[i];
+				float frac = (float)i / NUM_BARS;
+				audioR += val * (1.0f - frac);
+				audioG += val * (0.5f - fabs(frac - 0.5f) * 2.0f);
+				audioB += val * frac;
+			}
+			float total = audioR + audioG + audioB;
+			if (total > 0.0f) {
+				audioR /= total; audioG /= total; audioB /= total;
+			}
+			scene->GetLights()[0].position = cameraPos;
+			scene->GetLights()[0].color = {audioR, audioG, audioB};
+			scene->GetLights()[0].intensity = 3.0f;
+			scene->GetLights()[0].radius = 8.0f;
 
 			shader->Use();
 			shader->SetFloat("wobbleAmount", 0.2f);
@@ -364,15 +313,6 @@ public:
 	}
 
 	void InitUI() override {}
-
-	void UpdateVisualizerBars() {
-		for (int i = 0; i < NUM_BARS; ++i) {
-			float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
-			float normalized = std::clamp(ah, 0.0f, 1.0f);
-			float barHeight = normalized * visualizerBarHeightMult;
-			rectangles[i]->state.scale = glm::vec3(1.0f, barHeight, 1.0f);
-		}
-	}
 
 	void DrawAudioVisualizer() {
 		ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
