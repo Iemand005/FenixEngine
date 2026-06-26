@@ -24,13 +24,13 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_draw.cpp
 )
 
-add_executable(Tunnel
+add_executable(Foxcraft
 	WIN32
 	${IMGUI_SOURCE_FILES}
 	main.cpp
 )
 
-target_include_directories(Tunnel PRIVATE
+target_include_directories(Foxcraft PRIVATE
 	include
 	../..
 	../../../include
@@ -41,30 +41,30 @@ target_include_directories(Tunnel PRIVATE
 	../../Engine
 )
 
-target_link_libraries(Tunnel PRIVATE
+target_link_libraries(Foxcraft PRIVATE
 	Engine
 )
 
 if(NOT WIN32)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
-target_include_directories(Tunnel PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
-target_link_libraries(Tunnel PRIVATE ${PIPEWIRE_LIBRARIES})
-target_compile_options(Tunnel PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+target_include_directories(Foxcraft PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
+target_link_libraries(Foxcraft PRIVATE ${PIPEWIRE_LIBRARIES})
+target_compile_options(Foxcraft PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
 
 find_package(X11 REQUIRED)
 
-target_link_libraries(Tunnel PRIVATE X11::X11)
+target_link_libraries(Foxcraft PRIVATE X11::X11)
 endif()
 
-set_property(TARGET Tunnel PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_property(TARGET Foxcraft PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	
 if(MSVC)
-	target_compile_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/Zi>)
+	target_compile_options(Foxcraft PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-	target_link_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+	target_link_options(Foxcraft PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 
 	add_compile_options(/RTC1)
 endif()
 
-# set_target_properties(Tunnel PROPERTIES SUFFIX ".scr")
+# set_target_properties(Foxcraft PROPERTIES SUFFIX ".scr")
