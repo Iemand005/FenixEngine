@@ -208,7 +208,7 @@ public:
 
 	void Redraw(GLuint fbo) {
 		BindFrameBuffer(fbo);
-		Redraw();
+		Renderer::Redraw();
 	}
 
 	void CheckErrors();
