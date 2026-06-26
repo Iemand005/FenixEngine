@@ -24,7 +24,7 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_draw.cpp
 )
 
-add_executable(Cake
+add_executable(Tunnel
 	WIN32
 	${IMGUI_SOURCE_FILES}
 	main.cpp
