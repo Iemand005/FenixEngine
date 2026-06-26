@@ -235,7 +235,11 @@ void main() {
   void ClearObjects() { objects.clear(); }
 
   void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
-  void AddObject(Mesh mesh) { objects.push_back(std::make_shared<Object>(mesh)); }
+  std::shared_ptr<Object> AddObject(Mesh mesh) {
+    auto obj = std::make_shared<Object>(mesh);
+    objects.push_back(obj);
+    return obj;
+  }
 
   void AddLight() {
     ++lightCount;

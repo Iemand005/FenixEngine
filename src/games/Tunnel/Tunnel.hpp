@@ -151,7 +151,9 @@ public:
 			{4, 2, 2},
 			{5, 1, 4}
 		};
-		fe::Mesh tunnel = fe::Primitives::GenerateBentTunnel(path, 1.0f);
+		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f);
+		this->scene->AddObject(tunnel2);
+
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 
