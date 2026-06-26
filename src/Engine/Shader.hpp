@@ -35,6 +35,7 @@ namespace fe {
 		return "";
 	}
 
+
   enum ShaderType : GLenum {
     VertexShaderType = GL_VERTEX_SHADER,
     FragmentShaderType = GL_FRAGMENT_SHADER
