@@ -197,7 +197,6 @@ namespace fe::Primitives {
 		Mesh mesh;
 		const float PI = 3.14159265359f;
 
-		// Generate vertices
 		for (int h = 0; h <= heightSegments; h++) {
 			float y = (h / (float)heightSegments) * height;
 			float vCoord = h / (float)heightSegments;
@@ -219,7 +218,6 @@ namespace fe::Primitives {
 			}
 		}
 
-		// Generate indices
 		for (int h = 0; h < heightSegments; h++) {
 			for (int i = 0; i < segments; i++) {
 				// Current and next segment indices
@@ -241,6 +239,6 @@ namespace fe::Primitives {
 		}
 
 		return mesh;
-							   }
+	}
 
 } // namespace fe::Primitives
