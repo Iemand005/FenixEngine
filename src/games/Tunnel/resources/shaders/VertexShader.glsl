@@ -18,19 +18,20 @@ void main()
     float angle = aTexCoord.x * 6.2832;
     float v = aTexCoord.y;
 
-    float tri = cos(angle * 3.0) * 0.4;
+    float tri = max(cos(angle * 3.0), 0.0) * 0.15;
 
-    float haustra = -pow(abs(sin(v * 6.0 * 3.14159)), 0.25) * 1.0;
+    float hf = abs(sin(v * 6.0 * 3.14159));
+    float haustraFold  = -pow(hf, 0.6) * 0.65;
+    float haustraPouch =  pow(abs(sin(v * 6.0 * 3.14159 - 1.57)), 0.6) * 0.3;
 
-    float wave1 = sin(time * 0.3 - v * 3.0) * 0.35;
-    float wave2 = sin(time * 0.15 - v * 1.2) * 0.55;
-    float wave3 = sin(time * 0.4 - v * 5.0) * 0.2;
-    float radialPulse = sin(angle + time * 0.35) * 0.1 + 0.9;
+    float peristalsis = -pow(abs(sin(time * 0.2 - v * 1.5 * 3.14159)), 3.0) * 0.6;
+    float wave = sin(time * 0.25 - v * 2.5) * 0.2;
+    float radialPulse = sin(angle + time * 0.25) * 0.08 + 0.92;
 
-    float dynamic = (wave1 + wave2 + wave3) * wobbleAmount * radialPulse;
+    float dynamic = (peristalsis + wave) * wobbleAmount * radialPulse;
 
-    float newRadius = 2.2 + tri + haustra + dynamic;
-    newRadius = max(newRadius, 0.1);
+    float newRadius = 1.5 + tri + haustraFold + haustraPouch + dynamic;
+    newRadius = max(newRadius, 0.15);
 
     vec3 pos = aPos + aNormal * (1.0 - newRadius);
 
