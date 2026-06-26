@@ -50,7 +50,7 @@ int main() {
 		LogToFile("XSCREENSAVER_WINDOW not set");
 	}
 
-	Cake game;
+	Tunnel game;
 
 
 if (xss_window) {
