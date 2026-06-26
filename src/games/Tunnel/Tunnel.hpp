@@ -128,7 +128,7 @@ public:
 	}
 
 	static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
-		Cake* game = (Cake*)userdata;
+		Tunnel* game = (Tunnel*)userdata;
 		if (event->type == SDL_EVENT_WINDOW_EXPOSED)
 			game->Redraw();
 		return true;
@@ -156,7 +156,7 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		// Cake mesh
+		// Tunnel mesh
 
 		fe::UVRect cakeTopBtmUV;
 		cakeTopBtmUV.u0 = 1.0f / 16.0f;
@@ -190,7 +190,7 @@ public:
 		CAKEObject->meshes.push_back(sideMesh);
 		CAKEObject->meshes.push_back(bottomMesh);
 
-		CAKEObject->name = "Cake";
+		CAKEObject->name = "Tunnel";
 		CAKEObject->state.position.y = 0.25f;
 		CAKEObject->state.scale.x = CAKEObject->state.scale.z = 14.0f / 16.0f;
 		CAKEObject->state.scale.y = 0.5f;
