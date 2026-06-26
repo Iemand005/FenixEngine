@@ -275,12 +275,8 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 #else
 #include <X11/Xlib.h>
 
-	SDL_SysWMinfo wminfo;
-	SDL_GetVersion(&wminfo.version);
-	SDL_GetWindowWMInfo(sdl_window, &wminfo);
-
-	Window sdl_xwindow = wminfo.info.x11.window;
-	Display *display = wminfo.info.x11.display;
+	Window sdl_xwindow = (Window)(uintptr_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+	Display *display = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
 
 	XReparentWindow(display, child, (Window)parent, 0, 0);
 	XMapWindow(display, child);
