@@ -20,18 +20,19 @@ void main()
 
     float tri = max(cos(angle * 3.0), 0.0) * 0.15;
 
-    float hf = abs(sin(v * 6.0 * 3.14159));
-    float haustraFold  = -pow(hf, 0.6) * 0.65;
-    float haustraPouch =  pow(abs(sin(v * 6.0 * 3.14159 - 1.57)), 0.6) * 0.3;
+    float hfPos = fract(v * 5.0);
+    float hfDist = min(hfPos, 1.0 - hfPos) * 2.0;
+    float haustra = -pow(1.0 - hfDist, 2.0) * 0.6;
 
-    float peristalsis = -pow(abs(sin(time * 0.2 - v * 1.5 * 3.14159)), 3.0) * 0.6;
-    float wave = sin(time * 0.25 - v * 2.5) * 0.2;
-    float radialPulse = sin(angle + time * 0.25) * 0.08 + 0.92;
+    float pWave = sin(time * 0.3 - v * 2.0 * 3.14159);
+    float peristalsis = -pow(max(pWave, 0.0), 4.0) * 0.65;
+    float breath = sin(time * 0.1 - v * 1.0) * 0.15;
+    float radialPulse = sin(angle + time * 0.2) * 0.06 + 0.94;
 
-    float dynamic = (peristalsis + wave) * wobbleAmount * radialPulse;
+    float dynamic = (peristalsis + breath) * wobbleAmount * radialPulse;
 
-    float newRadius = 1.5 + tri + haustraFold + haustraPouch + dynamic;
-    newRadius = max(newRadius, 0.15);
+    float newRadius = 1.5 + tri + haustra + dynamic;
+    newRadius = max(newRadius, 0.1);
 
     vec3 pos = aPos + aNormal * (1.0 - newRadius);
 
