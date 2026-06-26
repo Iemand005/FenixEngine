@@ -185,12 +185,13 @@ template<typename WindowT = DefaultWindow>
   }
 
   void Redraw() {
+    auto window = GetWindow<DefaultWindow>();
     if (!scene || !camera || !shader) return;
 
     if (shader) {
       shader->Use();
 
-      float elapsedTime = window->getDeltaTime();
+      float elapsedTime = (float)window->GetTime();
       shader.SetFloat("time", elapsedTime);
 
       int count = scene->GetLightCount();
