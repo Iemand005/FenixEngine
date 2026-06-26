@@ -144,7 +144,7 @@ class Renderer {
       case ScreenSaverMode::Fullscreen: {
         // window->GoBorderlessFullscreen();
         window->AttachToNativeParent((void*)parent);
-        window->SetFullscreen();
+        //window->SetFullscreen();
 
         // window->Show();
 
