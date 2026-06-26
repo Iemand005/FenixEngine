@@ -191,4 +191,56 @@ namespace fe::Primitives {
 		
 		return GenerateCube(directions, uvs, size);
 	}
+
+	inline Mesh GenerateTunnel(float radius = 1.0f, float height = 10.0f,
+							   int segments = 32, int heightSegments = 10) {
+		Mesh mesh;
+		const float PI = 3.14159265359f;
+
+		// Generate vertices
+		for (int h = 0; h <= heightSegments; h++) {
+			float y = (h / (float)heightSegments) * height;
+			float vCoord = h / (float)heightSegments;
+
+			for (int i = 0; i < segments; i++) {
+				float angle = (i / (float)segments) * 2.0f * PI;
+				float uCoord = i / (float)segments;
+
+				// Position on cylinder surface
+				float x = radius * cos(angle);
+				float z = radius * sin(angle);
+
+				// Normal points outward (radial direction)
+				float nx = cos(angle);
+				float ny = 0.0f;
+				float nz = sin(angle);
+
+				mesh.vertices.push_back(Vertex(x, y, z, nx, ny, nz, uCoord, vCoord));
+			}
+		}
+
+		// Generate indices
+		for (int h = 0; h < heightSegments; h++) {
+			for (int i = 0; i < segments; i++) {
+				// Current and next segment indices
+				int current = h * segments + i;
+				int next = h * segments + ((i + 1) % segments);
+				int currentTop = (h + 1) * segments + i;
+				int nextTop = (h + 1) * segments + ((i + 1) % segments);
+
+				// First triangle
+				mesh.indices.push_back(current);
+				mesh.indices.push_back(currentTop);
+				mesh.indices.push_back(next);
+
+				// Second triangle
+				mesh.indices.push_back(next);
+				mesh.indices.push_back(currentTop);
+				mesh.indices.push_back(nextTop);
+			}
+		}
+
+		return mesh;
+							   }
+
 } // namespace fe::Primitives
