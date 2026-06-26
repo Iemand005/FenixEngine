@@ -7,7 +7,7 @@
 namespace fe {
 
 
-  bool IsWayland() {
+  inline bool IsWayland() {
     const char* session = getenv("XDG_SESSION_TYPE");
     if (session && strcmp(session, "wayland") == 0)
       return true;
