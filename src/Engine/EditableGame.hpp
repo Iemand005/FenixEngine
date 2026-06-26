@@ -159,6 +159,8 @@ public:
 			ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
 			ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
 			if(ImGui::Button(("Focus##" + std::to_string(i)).c_str())) {
+				glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
+				camera->SetPos(object->state.position + offset);
 				camera->LookAt(object->state.position);
 			}
 
