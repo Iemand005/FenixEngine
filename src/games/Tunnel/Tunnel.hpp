@@ -36,6 +36,9 @@ public:
 	float nextPathLength = 0.0f;
 	float pathProgress = 0.0f;
 
+	static constexpr int TUNNEL_SEGMENTS = 32;
+	static constexpr int SUBDIVISIONS_PER_SEG = 12;
+
 	float lightSpeed = 0.3f;
 
 	float bgColorFreq = 0.3f;
@@ -86,7 +89,7 @@ public:
 		};
 
 		currentTunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(currentPath, 1.0f, 32, 12, true)
+			fe::Primitives::GenerateBentTunnel(currentPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
 		currentTunnel->name = "CurrentTunnel";
 		scene->AddObject(currentTunnel);
@@ -95,34 +98,60 @@ public:
 		GenerateNextTunnelPath();
 
 		nextTunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, 32, 12, true)
+			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
 		nextTunnel->name = "NextTunnel";
 		scene->AddObject(nextTunnel);
 		nextPathLength = CalcPathLength(nextPath);
+
+		CopySeamRing(currentTunnel->meshes[0], nextTunnel->meshes[0]);
 	}
 
 	void GenerateNextTunnelPath() {
 		glm::vec3 lastPoint = currentPath.back();
 		glm::vec3 prevPoint = currentPath[currentPath.size() - 2];
+		glm::vec3 thirdLast = currentPath[currentPath.size() - 3];
+		glm::vec3 mirrorPoint = lastPoint + (lastPoint - prevPoint);
 
 		nextPath.clear();
+		nextPath.reserve(8);
+		nextPath.push_back(thirdLast);
+		nextPath.push_back(prevPoint);
 		nextPath.push_back(lastPoint);
+		nextPath.push_back(mirrorPoint);
 
 		float elapsedTime = window->GetTime();
 
-		for (int i = 0; i < 8; i++) {
-			glm::vec3 offset = (i == 0)
-				? lastPoint - prevPoint
-				: glm::vec3(
-					sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f,
-					cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f,
-					2.0f * (i + 1));
-			nextPath.push_back(lastPoint + offset);
+		for (int i = 0; i < 4; i++) {
+			glm::vec3 offset(
+				sin(elapsedTime * 0.5f + i * 0.5f) * 3.0f,
+				cos(elapsedTime * 0.3f + i * 0.3f) * 1.5f,
+				2.0f * (i + 1));
+			nextPath.push_back(mirrorPoint + offset);
 		}
 	}
 
+	static void CopySeamRing(fe::Mesh& currentMesh, const fe::Mesh& nextMesh) {
+		size_t ringSize = TUNNEL_SEGMENTS;
+		size_t nextRingStart = 2 * SUBDIVISIONS_PER_SEG * ringSize;
+		size_t currLastStart = currentMesh.vertices.size() - ringSize;
+		std::copy(
+			nextMesh.vertices.begin() + nextRingStart,
+			nextMesh.vertices.begin() + nextRingStart + ringSize,
+			currentMesh.vertices.begin() + currLastStart
+		);
+	}
+
 	void SwapTunnels() {
+		// Save the forward-difference ring at lastPoint from nextTunnel
+		const auto& nextVerts = nextTunnel->meshes[0].vertices;
+		size_t ringSize = TUNNEL_SEGMENTS;
+		size_t lastPointRingStart = 2 * SUBDIVISIONS_PER_SEG * ringSize;
+		std::vector<fe::Vertex> seamVerts(
+			nextVerts.begin() + lastPointRingStart,
+			nextVerts.begin() + lastPointRingStart + ringSize
+		);
+
 		currentPath = nextPath;
 		currentPathLength = nextPathLength;
 
@@ -134,8 +163,14 @@ public:
 
 		nextTunnel->meshes.clear();
 		nextTunnel->meshes.push_back(
-			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, 32, 12, true)
+			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
+
+		// Stamp the saved seam vertices onto the new mesh's ring at lastPoint
+		auto& newVerts = nextTunnel->meshes[0].vertices;
+		std::copy(seamVerts.begin(), seamVerts.end(),
+				  newVerts.begin() + lastPointRingStart);
+
 		nextPathLength = CalcPathLength(nextPath);
 	}
 
@@ -272,7 +307,7 @@ public:
 
 			if (pathProgress >= 1.0f) {
 				SwapTunnels();
-				pathProgress -= 1.0f;
+				pathProgress = 2.0f / (currentPath.size() - 1);
 			}
 
 			glm::vec3 cameraPos = GetSmoothPathPosition(currentPath, pathProgress);
