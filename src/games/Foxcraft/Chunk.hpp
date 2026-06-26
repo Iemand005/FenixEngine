@@ -1,4 +1,8 @@
 
+#pragma once
+
+#include <memory>
+
 enum class BlockType : short {
     Air = 0,
     Stone = 1,
@@ -9,16 +13,18 @@ enum class BlockType : short {
 
 class Chunk {
 private:
-    std::vector<std::vector<std::vector<BlockType>>> blocks;
+    std::unique_ptr<BlockType[16][256][16]> blocks;
 
 public:
-    Chunk() : blocks(16, std::vector<std::vector<BlockType>>(128, std::vector<BlockType>(16, BlockType::Air))) {}
+    Chunk() : blocks(std::make_unique<BlockType[16][256][16]>()) {
+        std::memset(blocks.get(), 0, 16 * 256 * 16 * sizeof(BlockType));
+    }
 
     BlockType GetBlock(int x, int y, int z) const {
-        return blocks[x][y][z];
+        return (*blocks)[x][y][z];
     }
 
     void SetBlock(int x, int y, int z, BlockType type) {
-        blocks[x][y][z] = type;
+        (*blocks)[x][y][z] = type;
     }
 };
