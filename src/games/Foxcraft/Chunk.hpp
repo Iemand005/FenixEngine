@@ -16,7 +16,7 @@ private:
     std::unique_ptr<BlockType[16][256][16]> blocks;
 
 public:
-    Chunk() : blocks(std::make_unique<BlockType[16][256][16]>()) {
+    Chunk() : blocks(new BlockType[16][256][16]()) {
         std::memset(blocks.get(), 0, 16 * 256 * 16 * sizeof(BlockType));
     }
 
