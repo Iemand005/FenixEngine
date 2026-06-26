@@ -285,8 +285,9 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		return;
 	}
 
-	Window parent_window_id = (ulong)parent;
+	Window parent_window_id = (Window)(uintptr_t)parent;
 	XReparentWindow(display, sdl_xwindow, parent_window_id, 0, 0);
+	XMapWindow(display, sdl_xwindow); // mayb ehtat fills it huh
 	XSync(display, False);
 #endif
 
