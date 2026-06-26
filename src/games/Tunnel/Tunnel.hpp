@@ -28,12 +28,10 @@ public:
 	AudioVisualiser visualizer;
 	bool showDebugUI = false;
 
-	std::vector<glm::vec3> currentPath;
-	std::vector<glm::vec3> nextPath;
-	std::shared_ptr<fe::Object> currentTunnel;
+	std::vector<glm::vec3> path;
+	int windowStart = 0;
+	std::shared_ptr<fe::Object> tunnel;
 	std::shared_ptr<fe::Object> nextTunnel;
-	float currentPathLength = 0.0f;
-	float nextPathLength = 0.0f;
 	float pathProgress = 0.0f;
 
 	static constexpr int TUNNEL_SEGMENTS = 32;
@@ -77,107 +75,70 @@ public:
 	}
 
 	void GenerateInitialTunnels() {
-		currentPath = {
+		path = {
 			{0, 0, 0},
 			{3, 1, 0},
-			{6, 2, 4},
-			{9, 2, 9},
-			{12, 1, 14},
-			{15, 0, 19},
-			{18, -1, 24},
-			{21, 0, 29}
+			{6, 2, 6},
+			{10, 2, 14},
+			{14, 1, 22},
+			{18, 0, 30}
 		};
 
-		currentTunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(currentPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
-		);
-		currentTunnel->name = "CurrentTunnel";
-		scene->AddObject(currentTunnel);
-		currentPathLength = CalcPathLength(currentPath);
+		GrowPath();
+		GrowPath();
 
-		GenerateNextTunnelPath();
+		windowStart = 0;
+		tunnel = std::make_shared<fe::Object>(
+			fe::Primitives::GenerateBentTunnel(
+				{path[0], path[1], path[2], path[3]},
+				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
+		);
+		tunnel->name = "Tunnel";
+		scene->AddObject(tunnel);
 
 		nextTunnel = std::make_shared<fe::Object>(
-			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
+			fe::Primitives::GenerateBentTunnel(
+				{path[1], path[2], path[3], path[4]},
+				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
-		nextTunnel->name = "NextTunnel";
-		scene->AddObject(nextTunnel);
-		nextPathLength = CalcPathLength(nextPath);
-
-		CopySeamRing(currentTunnel->meshes[0], nextTunnel->meshes[0]);
 	}
 
-	void GenerateNextTunnelPath() {
-		glm::vec3 lastPoint = currentPath.back();
-		glm::vec3 prevPoint = currentPath[currentPath.size() - 2];
-		glm::vec3 thirdLast = currentPath[currentPath.size() - 3];
-		glm::vec3 mirrorPoint = lastPoint + (lastPoint - prevPoint);
-
-		nextPath.clear();
-		nextPath.reserve(12);
-		nextPath.push_back(thirdLast);
-		nextPath.push_back(prevPoint);
-		nextPath.push_back(lastPoint);
-		nextPath.push_back(mirrorPoint);
-
-		float elapsedTime = window->GetTime();
-
-		for (int i = 0; i < 8; i++) {
-			glm::vec3 offset(
-				sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f,
-				cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f,
-				3.0f * (i + 1));
-			nextPath.push_back(mirrorPoint + offset);
-		}
-	}
-
-	static void CopySeamRing(fe::Mesh& currentMesh, const fe::Mesh& nextMesh) {
-		size_t ringSize = TUNNEL_SEGMENTS;
-		size_t nextRingStart = 2 * SUBDIVISIONS_PER_SEG * ringSize;
-		size_t currLastStart = currentMesh.vertices.size() - ringSize;
-		std::copy(
-			nextMesh.vertices.begin() + nextRingStart,
-			nextMesh.vertices.begin() + nextRingStart + ringSize,
-			currentMesh.vertices.begin() + currLastStart
-		);
+	void GrowPath() {
+		float t = window->GetTime();
+		int seg = path.size();
+		glm::vec3 offset(
+			sin(t * 0.5f + seg * 0.5f) * 2.0f,
+			cos(t * 0.3f + seg * 0.3f) * 1.0f,
+			15.0f);
+		path.push_back(path.back() + offset);
 	}
 
 	void SwapTunnels() {
-		// Save the forward-difference ring at lastPoint from nextTunnel
-		const auto& nextVerts = nextTunnel->meshes[0].vertices;
-		size_t ringSize = TUNNEL_SEGMENTS;
-		size_t lastPointRingStart = 2 * SUBDIVISIONS_PER_SEG * ringSize;
-		std::vector<fe::Vertex> seamVerts(
-			nextVerts.begin() + lastPointRingStart,
-			nextVerts.begin() + lastPointRingStart + ringSize
+		windowStart++;
+		if (windowStart + 4 >= (int)path.size())
+			GrowPath();
+
+		tunnel->meshes.clear();
+		auto w0 = path[windowStart], w1 = path[windowStart + 1],
+		     w2 = path[windowStart + 2], w3 = path[windowStart + 3];
+		tunnel->meshes.push_back(
+			fe::Primitives::GenerateBentTunnel(
+				{w0, w1, w2, w3},
+				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
-
-		currentPath = nextPath;
-		currentPathLength = nextPathLength;
-
-		std::swap(currentTunnel, nextTunnel);
-		currentTunnel->name = "CurrentTunnel";
-		nextTunnel->name = "NextTunnel";
-
-		GenerateNextTunnelPath();
 
 		nextTunnel->meshes.clear();
 		nextTunnel->meshes.push_back(
-			fe::Primitives::GenerateBentTunnel(nextPath, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
+			fe::Primitives::GenerateBentTunnel(
+				{w1, w2, w3, path[windowStart + 4]},
+				1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
 		);
-
-		// Stamp the saved seam vertices onto the new mesh's ring at lastPoint
-		auto& newVerts = nextTunnel->meshes[0].vertices;
-		std::copy(seamVerts.begin(), seamVerts.end(),
-				  newVerts.begin() + lastPointRingStart);
-
-		nextPathLength = CalcPathLength(nextPath);
 	}
 
-	static float CalcPathLength(const std::vector<glm::vec3>& path) {
+	static float CalcPathLength(const std::vector<glm::vec3>& p) {
 		float length = 0.0f;
-		for (size_t i = 0; i < path.size() - 1; i++)
-			length += glm::distance(path[i], path[i + 1]);
+		for (size_t i = 0; i < p.size() - 1; i++)
+			length += glm::distance(p[i], p[i + 1]);
 		return length;
 	}
 
@@ -302,18 +263,24 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
+			auto w = std::vector<glm::vec3>{
+				path[windowStart], path[windowStart + 1],
+				path[windowStart + 2], path[windowStart + 3]
+			};
+			float windowLen = CalcPathLength(w);
+
 			float cameraSpeed = 15.0f;
-			pathProgress += baseSpeedElapsedTime * cameraSpeed / currentPathLength;
+			pathProgress += baseSpeedElapsedTime * cameraSpeed / windowLen;
 
 			if (pathProgress >= 1.0f) {
 				SwapTunnels();
-				pathProgress = 2.0f / (currentPath.size() - 1);
+				pathProgress = 2.0f / 3.0f;
 			}
 
-			glm::vec3 cameraPos = GetSmoothPathPosition(currentPath, pathProgress);
+			glm::vec3 cameraPos = GetSmoothPathPosition(w, pathProgress);
 			camera->SetPos(cameraPos);
 
-			glm::vec3 tangent = GetSmoothPathTangent(currentPath, pathProgress);
+			glm::vec3 tangent = GetSmoothPathTangent(w, pathProgress);
 			camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
 
 			float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
@@ -329,9 +296,9 @@ public:
 				audioR /= total; audioG /= total; audioB /= total;
 			}
 			scene->GetLights()[0].position = cameraPos;
-			scene->GetLights()[0].color = {audioR, audioG, audioB};
+			scene->GetLights()[0].color = glm::vec3(1.0f, 0.9f, 0.7f) + glm::vec3(audioR, audioG, audioB) * 0.4f;
 			scene->GetLights()[0].intensity = 3.0f;
-			scene->GetLights()[0].radius = 8.0f;
+			scene->GetLights()[0].radius = 80.0f;
 
 			shader->Use();
 			shader->SetFloat("wobbleAmount", 0.2f);
