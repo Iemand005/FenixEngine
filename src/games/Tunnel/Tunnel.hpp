@@ -142,7 +142,16 @@ public:
 		auto tunnelObject = std::make_shared<fe::Object>(bigTunnel);
 		tunnelObject->name = "Tunnel";
 
+
 		this->scene->AddObject(tunnelObject);
+
+		std::vector<glm::vec3> path = {
+			{0, 0, 0},
+			{2, 1, 0},
+			{4, 2, 2},
+			{5, 1, 4}
+		};
+		fe::Mesh tunnel = fe::Primitives::GenerateBentTunnel(path, 1.0f);
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 

@@ -237,4 +237,56 @@ namespace fe::Primitives {
 		return Mesh(vertices, indices);
 	}
 
+	inline Mesh GenerateBentTunnel(const std::vector<glm::vec3>& path, float radius = 1.0f, int segments = 32) {
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		const float PI = 3.14159265359f;
+
+		for (size_t p = 0; p < path.size(); p++) {
+			glm::vec3 pos = path[p];
+
+			glm::vec3 forward;
+			if (p == path.size() - 1) {
+				forward = glm::normalize(path[p] - path[p-1]);
+			} else {
+				forward = glm::normalize(path[p+1] - path[p]);
+			}
+
+			glm::vec3 right = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+			glm::vec3 up = glm::cross(forward, right);
+
+			for (int i = 0; i < segments; i++) {
+				float angle = (i / (float)segments) * 2.0f * PI;
+				float x = cos(angle);
+				float y = sin(angle);
+
+				glm::vec3 offset = right * x * radius + up * y * radius;
+				glm::vec3 vPos = pos + offset;
+				glm::vec3 normal = glm::normalize(offset);
+
+				vertices.push_back(Vertex(vPos.x, vPos.y, vPos.z, normal.x, normal.y, normal.z,
+										  i / (float)segments, p / (float)(path.size()-1)));
+			}
+		}
+
+		for (size_t p = 0; p < path.size() - 1; p++) {
+			for (int i = 0; i < segments; i++) {
+				int current = p * segments + i;
+				int next = p * segments + ((i + 1) % segments);
+				int currentNext = (p + 1) * segments + i;
+				int nextNext = (p + 1) * segments + ((i + 1) % segments);
+
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(currentNext);
+
+				indices.push_back(next);
+				indices.push_back(nextNext);
+				indices.push_back(currentNext);
+			}
+		}
+
+		return Mesh(vertices, indices);
+	}
+
 } // namespace fe::Primitives
