@@ -41,7 +41,6 @@ int main() {
 	std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
 	std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
 
-	Cake game;
 
 	const char* xss_window = getenv("XSCREENSAVER_WINDOW");
 
@@ -50,6 +49,9 @@ int main() {
 	} else {
 		LogToFile("XSCREENSAVER_WINDOW not set");
 	}
+
+	Cake game;
+
 
 if (xss_window) {
 	char* endptr;
