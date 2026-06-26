@@ -288,7 +288,7 @@ public:
 																	  sin(elapsedTimeBumpy * light2FreqZ * lightSpeed) * lightRadius2
 			);
 
-			float cameraSpeed = 5.0f;
+			float cameraSpeed = 15.0f;
 			float pathProgress = fmod(elapsedTime * cameraSpeed / currentPathLength, 1.0f);
 
 			if (pathProgress > 0.7f) {
