@@ -303,10 +303,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	XSelectInput(display, sdl_xwindow, StructureNotifyMask | ExposureMask);
 	int oldWidth, oldHeight;
 	resizeEvent = [&](int width, int height) {
-		int new_width = event.window.data1;
-		int new_height = event.window.data2;
 
-		// Only resize if dimensions actually changed
 		if (width != oldWidth || height != oldHeight) {
 			oldWidth = width;
 			oldHeight = height;
