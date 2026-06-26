@@ -58,7 +58,7 @@ public:
 
 	float cameraSpeed = 1.0f;
 	float motionAmount = 1.2f;
-	float tunnelRoundness = 0.15f;
+	float tunnelRoundness = 0.0f;
 	float haustraStrength = 0.6f;
 	float animationSpeed = 1.0f;
 	float turnStrength = 1.0f;
