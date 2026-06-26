@@ -2,6 +2,8 @@
 #include "IWindow.hpp"
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <X11/Xlib.h>
 #endif
 
 #include <SDL3/SDL.h>
@@ -273,7 +275,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		SWP_SHOWWINDOW
 	);
 #else
-#include <X11/Xlib.h>
+
 
 	Window sdl_xwindow = (Window)(uintptr_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 	Display *display = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
