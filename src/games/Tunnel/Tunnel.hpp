@@ -110,19 +110,27 @@ public:
 			if (n % 3 == 1) {
 				path.push_back(2.0f * path[n-1] - path[n-2]);
 			} else if (n % 3 == 2) {
-				path.push_back(path[n-4] + 4.0f * (path[n-2] - path[n-3]));
-			} else {
-				glm::vec3 P3 = path[n-3];
-				glm::vec3 dir = P3 - path[n-4];
+				glm::vec3 dir = path[n-1] - path[n-2];
 				float dirLen = glm::length(dir);
 				glm::vec3 step = (dirLen > 1e-6f)
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
 				glm::vec3 wobble(
-					sin(t * 0.5f + freeSeg * 0.5f) * 2.0f,
-					cos(t * 0.3f + freeSeg * 0.3f) * 1.0f,
+					sin(t * 0.7f + freeSeg * 0.7f) * 3.0f,
+					cos(t * 0.5f + freeSeg * 0.5f) * 1.5f,
 					0.0f);
-				path.push_back(P3 + step + wobble);
+				path.push_back(path[n-1] + step + wobble);
+			} else {
+				glm::vec3 dir = path[n-1] - path[n-2];
+				float dirLen = glm::length(dir);
+				glm::vec3 step = (dirLen > 1e-6f)
+					? dir * (60.0f / dirLen)
+					: glm::vec3(0, 0, 60);
+				glm::vec3 wobble(
+					sin(t * 0.5f + freeSeg * 0.5f) * 4.0f,
+					cos(t * 0.3f + freeSeg * 0.3f) * 2.0f,
+					0.0f);
+				path.push_back(path[n-1] + step + wobble);
 				freeSeg++;
 			}
 		}
