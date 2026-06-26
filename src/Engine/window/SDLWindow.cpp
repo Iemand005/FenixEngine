@@ -102,6 +102,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
+	// SDL_CreateWindowFrom()
 	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
 	if (!impl->window) {
