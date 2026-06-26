@@ -268,11 +268,12 @@ void main() {
     return pointLights;
   }
 
-  void PrepareRender(ShaderProgram shader, Camera const& camera) {
+  void PrepareRender(ShaderProgram shader, Camera const& camera, float elapsedTime = 0.0f) {
     this->Clear();
     shader.Use();
     shader.SetMat4("view", camera.GetViewMatrix());
     shader.SetMat4("projection", camera.GetProjectionMatrix());
+    shader.SetFloat("time", elapsedTime);
 
     lastViewMatrix = camera.GetViewMatrix();
     lastProjectionMatrix = camera.GetProjectionMatrix();
