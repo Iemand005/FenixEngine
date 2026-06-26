@@ -1,7 +1,30 @@
 #pragma once
 
 #include <functional>
+#include <stdlib.h>
+#include <string.h>
+
 namespace fe {
+
+
+  // Returns 1 if Wayland is active, 0 if X11 (or fallback)
+  int is_running_wayland() {
+    // 1. Check the primary desktop session type
+    const char* session = getenv("XDG_SESSION_TYPE");
+    if (session && strcmp(session, "wayland") == 0) {
+      return 1;
+    }
+
+    // 2. Fallback check for the specific Wayland socket
+    const char* wayland_display = getenv("WAYLAND_DISPLAY");
+    if (wayland_display != NULL) {
+      return 1;
+    }
+
+    return 0; // Assume X11 or XWayland context
+  }
+
+
   using ResizeDelegate = std::function<void(int, int)>;
   using MouseMoveDelegate = std::function<void(int, int)>;
 
