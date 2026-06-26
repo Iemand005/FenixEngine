@@ -138,7 +138,10 @@ public:
 
 		fe::Mesh tunnel = fe::Primitives::GenerateTunnel();
 
-		this->scene->AddObject(tunnel);
+		auto tunnelObject = std::make_shared<fe::Object>(tunnel);
+		tunnelObject->name = "Tunnel";
+
+		this->scene->AddObject(tunnelObject);
 
 		auto barShader = std::make_shared<fe::ShaderProgram>("resources/shaders/debug.vert", "resources/shaders/debug.frag");;
 
@@ -160,112 +163,6 @@ public:
 		this->player = std::make_shared<fe::Character>();
 		this->scene->AddObject(player);
 
-		// Tunnel mesh
-
-		fe::UVRect cakeTopBtmUV;
-		cakeTopBtmUV.u0 = 1.0f / 16.0f;
-		cakeTopBtmUV.u1 = 15.0f / 16.0f;
-		cakeTopBtmUV.v0 = 1.0f / 16.0f;
-		cakeTopBtmUV.v1 = 15.0f / 16.0f;
-
-		fe::UVRect cakeSideUV;
-		cakeSideUV.u0 = 1.0f / 16.0f;
-		cakeSideUV.u1 = 15.0f / 16.0f;
-		cakeSideUV.v0 = 0.0f / 16.0f;
-		cakeSideUV.v1 = 8.0f / 16.0f;
-
-		fe::CubeUVs cakeUVs;
-
-
-		cakeUVs.top = cakeUVs.bottom = cakeTopBtmUV;
-		cakeUVs.front = cakeUVs.back = cakeUVs.left = cakeUVs.right = cakeSideUV;
-
-		auto planeMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Top}, cakeUVs);
-		planeMesh.loadTexture("resources/textures/cake_top.png", fe::TextureScaling::Nearest);
-
-		auto sideMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Front, fe::PlaneDirection::Left, fe::PlaneDirection::Right, fe::PlaneDirection::Back}, cakeUVs);
-		sideMesh.loadTexture("resources/textures/cake_side.png", fe::TextureScaling::Nearest);
-
-		auto bottomMesh = fe::Primitives::GenerateCube({fe::PlaneDirection::Bottom}, cakeUVs);
-		bottomMesh.loadTexture("resources/textures/cake_bottom.png", fe::TextureScaling::Nearest);
-		bottomMesh.hasTransparency = true;
-
-		auto CAKEObject = std::make_shared<fe::Object>(planeMesh);
-		CAKEObject->meshes.push_back(sideMesh);
-		CAKEObject->meshes.push_back(bottomMesh);
-
-		CAKEObject->name = "Tunnel";
-		CAKEObject->state.position.y = 0.25f;
-		CAKEObject->state.scale.x = CAKEObject->state.scale.z = 14.0f / 16.0f;
-		CAKEObject->state.scale.y = 0.5f;
-		this->scene->AddObject(CAKEObject);
-
-		// Candle mesh
-
-		fe::CubeUVs candleUVs;
-
-		fe::UVRect topUV;
-		topUV.u0 = 0;
-		topUV.u1 = 2.0f / 16.0f;
-		topUV.v0 = 6.0f / 16.0f;
-		topUV.v1 = 8.0f / 16.0f;
-		fe::UVRect sideUV;
-
-		sideUV.u0 = 0;
-		sideUV.u1 = 2.0f / 16.0f;
-		sideUV.v0 = 0;
-		sideUV.v1 = 8.0f / 16.0f;
-
-		candleUVs.top = candleUVs.bottom = topUV;
-		candleUVs.front = candleUVs.back = candleUVs.left = candleUVs.right = sideUV;
-
-		auto candleMesh = fe::Primitives::GenerateCube(candleUVs);
-		candleMesh.loadTexture("resources/textures/blue_candle_lit.png", fe::TextureScaling::Nearest);
-
-		auto candle = std::make_shared<fe::Object>(candleMesh);
-
-		candle->name = "Candle";
-		candle->state.position.y = 0.75f;
-		candle->state.scale.x = candle->state.scale.z = 2.0f / 16.0f;
-		candle->state.scale.y = 8.0f / 16.0f;
-		scene->AddObject(candle);
-
-		// Candle wick
-
-		fe::UVRect wickUV;
-		wickUV.u0 = 0.0f / 16.0f;
-		wickUV.u1 = 1.0f / 16.0f;
-		wickUV.v0 = 10.0f / 16.0f;
-		wickUV.v1 = 11.0f / 16.0f;
-
-		auto wickMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 1.0f / 16.0f, 1.0f / 16.0f, wickUV);
-		wickMesh.loadTexture("resources/textures/candle.png", fe::TextureScaling::Nearest);
-
-		auto wickObject = std::make_shared<fe::Object>(wickMesh);
-		candle->name = "Wick";
-		wickObject->state.position.y = 1.03f;
-		wick = wickObject;
-		scene->AddObject(wickObject);
-
-		// Flame particle
-
-		float particleUVOffset = isCyanide ? 0.0f : 16.0f;
-
-		fe::UVRect flameUV;
-		flameUV.u0 = (particleUVOffset + 0.0f) / 128.0f;
-		flameUV.u1 = (particleUVOffset + 8.0f) / 128.0f;
-		flameUV.v0 = 96.0f / 128.0f;
-		flameUV.v1 = 104.0f / 128.0f;
-
-		auto flameMesh = fe::Primitives::GeneratePlane(fe::PlaneDirection::Front, 0.15f, 0.15f, flameUV);
-		flameMesh.loadTexture("resources/textures/particles.png", fe::TextureScaling::Nearest);
-
-		auto particle = std::make_shared<fe::Object>(flameMesh);
-		candle->name = "Flame";
-		particle->meshes[0].hasTransparency = true;
-		particle->state.position.y = 1.085f;
-		flameParticle = particle;
-		scene->AddObject(particle);
 	}
 
 	void ProcessInput() {
