@@ -397,28 +397,6 @@ public:
 			glm::vec3 pos = player->state.position + cameraOffset;
 			camera->SetPos(pos);
 			camera->LookAt(wick->state.position);
-			flameParticle->LookAt(camera->GetPos());
-			wick->LookAt(camera->GetPos());
-
-			// Flame flicker
-			float flamePhase = fmod(elapsedTime * flamePhaseMultiplier, flameCycleDuration);
-			float flameProgress = flamePhase / flameCycleDuration;
-
-			if (flameProgress < 0.15f) {
-					float popProgress = flameProgress / 0.15f;
-					float flicker = sin(flameProgress * flameFlickerSpeed1) * flameFlickerIntensity1;
-					float flameScale = flameBaseScale + flicker;
-					flameParticle->state.scale = glm::vec3(flameScale);
-			} else if (flameProgress < 0.85f) {
-					float shrinkProgress = (flameProgress - 0.15f) / 0.7f;
-					float flameScale = (1.0f - shrinkProgress * flameShrinkAmount);
-					float flicker = sin(flameProgress * flameFlickerSpeed2) * flameFlickerIntensity2;
-					flameParticle->state.scale = glm::vec3(flameScale + flicker);
-			} else {
-					float disappearProgress = (flameProgress - 0.85f) / 0.15f;
-					float flameScale = (1.0f - disappearProgress) * 0.15f;
-					flameParticle->state.scale = glm::vec3(flameScale);
-			}
 
 			UpdateVisualizerBars();
 			
