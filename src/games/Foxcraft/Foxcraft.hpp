@@ -28,7 +28,6 @@
 class Foxcraft : public fe::EditableGame {
 public:
 
-  AudioVisualiser visualizer;
   bool showDebugUI = false;
 
   std::vector<glm::vec3> path;
@@ -310,20 +309,6 @@ public:
       } else {
       }
 
-      float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
-      for (int i = 0; i < NUM_BARS; i++) {
-        float val = visualizer.bandMagnitudesSmoothed[i];
-        float frac = (float)i / NUM_BARS;
-        audioR += val * (1.0f - frac);
-        audioG += val * (0.5f - fabs(frac - 0.5f) * 2.0f);
-        audioB += val * frac;
-      }
-      float total = audioR + audioG + audioB;
-      if (total > 0.0f) {
-        audioR /= total; audioG /= total; audioB /= total;
-      }
-      scene->GetLights()[0].color = glm::vec3(1.0f, 0.9f, 0.7f) + glm::vec3(audioR, audioG, audioB) * 0.4f;
-
       Update();
       Redraw();
     }
@@ -332,42 +317,10 @@ public:
 
   void InitUI() override {}
 
-  void DrawAudioVisualizer() {
-    ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Audio Spectrum");
-
-    ImVec2 canvasPos  = ImGui::GetCursorScreenPos();
-    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-    canvasSize.y = std::max(canvasSize.y, 80.0f);
-
-    ImDrawList* draw = ImGui::GetWindowDrawList();
-    draw->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(18, 18, 18, 255));
-
-    float barGap   = 2.0f;
-    float barWidth = (canvasSize.x - barGap * (NUM_BARS - 1)) / NUM_BARS;
-
-    for (int i = 0; i < NUM_BARS; ++i) {
-      float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
-      float normalized = std::clamp(ah, 0.0f, 1.0f);
-      float barHeight  = normalized * canvasSize.y;
-
-      float x0 = canvasPos.x + i * (barWidth + barGap);
-      ImVec2 barMin(x0, canvasPos.y + canvasSize.y - barHeight);
-      ImVec2 barMax(x0 + barWidth, canvasPos.y + canvasSize.y);
-
-      ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
-      draw->AddRectFilled(barMin, barMax, color);
-    }
-
-    ImGui::Dummy(canvasSize);
-    ImGui::End();
-  }
 
   void DrawUI() override {
     if (!showDebugUI) return;
     BeginFrame();
-
-    DrawAudioVisualizer();
 
     DrawDebugUI();
 
