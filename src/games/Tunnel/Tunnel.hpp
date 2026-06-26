@@ -63,6 +63,8 @@ public:
 	float twistStrength = 1.0f;
 	float swirlStrength = 1.0f;
 	float farPlane = 500.0f;
+	bool freeCamera = false;
+	float freeCamSpeed = 15.0f;
 
 	Tunnel() : Tunnel(1400, 1200) {}
 
@@ -118,7 +120,7 @@ public:
 		for (int i = 0; i < count; i++) {
 			int n = path.size();
 			float seg = freeSeg;
-			float ampMod = 0.2 + 0.8 * pow(abs(sin(seg * 0.12 + t * 0.02)), 2.0);
+			float ampMod = 0.1 + 0.9 * pow(abs(sin(seg * 0.5 + t * 0.05)), 1.0);
 			if (n % 3 == 1) {
 				path.push_back(2.0f * path[n-1] - path[n-2]);
 			} else if (n % 3 == 2) {
@@ -127,11 +129,11 @@ public:
 				glm::vec3 step = (dirLen > 1e-6f)
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
-				float sa = seg * 0.3f + t * 0.08f;
+				float sa = seg * 0.8f + t * 0.15f;
 				glm::vec3 wobble(
-					(sin(t * 0.7f + seg * 0.7f) * 4.0f * turnStrength
+					(sin(t * 0.7f + seg * 1.5f) * 4.0f * turnStrength
 					 + sin(sa) * 5.0f * swirlStrength) * ampMod,
-					(cos(t * 0.5f + seg * 0.5f) * 2.5f * twistStrength) * ampMod,
+					(cos(t * 0.5f + seg * 1.2f) * 2.5f * twistStrength) * ampMod,
 					(sin(t * 0.3f + seg * 1.1f) * 3.0f
 					 + cos(sa) * 5.0f * swirlStrength) * ampMod);
 				path.push_back(path[n-1] + step + wobble);
@@ -141,11 +143,11 @@ public:
 				glm::vec3 step = (dirLen > 1e-6f)
 					? dir * (60.0f / dirLen)
 					: glm::vec3(0, 0, 60);
-				float sa = seg * 0.3f + t * 0.08f;
+				float sa = seg * 0.8f + t * 0.15f;
 				glm::vec3 wobble(
-					(sin(t * 0.5f + seg * 0.5f) * 5.0f * turnStrength
+					(sin(t * 0.5f + seg * 1.2f) * 5.0f * turnStrength
 					 + sin(sa + 1.0f) * 6.0f * swirlStrength) * ampMod,
-					(cos(t * 0.3f + seg * 0.3f) * 3.0f * twistStrength) * ampMod,
+					(cos(t * 0.3f + seg * 1.0f) * 3.0f * twistStrength) * ampMod,
 					(sin(t * 0.4f + seg * 0.9f) * 3.5f
 					 + cos(sa + 1.0f) * 6.0f * swirlStrength) * ampMod);
 				path.push_back(path[n-1] + step + wobble);
@@ -244,7 +246,7 @@ public:
 					camera->yaw   += event.motion.xrel * sensitivity;
 					camera->pitch -= event.motion.yrel * sensitivity;
 					camera->UpdateDirection();
-					pitch = std::clamp(pitch, -89.0f, 89.0f);
+					camera->pitch = std::clamp(camera->pitch, -89.0f, 89.0f);
 					break;
 				}
 				case SDL_EVENT_KEY_DOWN:
@@ -254,17 +256,23 @@ public:
 					else if (event.key.key == SDLK_F3) {
 						showDebugUI = !showDebugUI;
 					}
+					else if (event.key.key == SDLK_F2) {
+						freeCamera = !freeCamera;
+						window->StartMouseCapture();
+					}
 					break;
 			}
 		}
 
-		if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
-		if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
-		if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
-		if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
+		if (!freeCamera) {
+			if (window->IsKeyDown(SDL_SCANCODE_W)) this->player->Move(fe::Direction::Forwards, camera.get());
+			if (window->IsKeyDown(SDL_SCANCODE_A)) this->player->Move(fe::Direction::Left, camera.get());
+			if (window->IsKeyDown(SDL_SCANCODE_S)) this->player->Move(fe::Direction::Backwards, camera.get());
+			if (window->IsKeyDown(SDL_SCANCODE_D)) this->player->Move(fe::Direction::Right, camera.get());
 
-		if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
-		if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+			if (window->IsKeyDown(SDL_SCANCODE_SPACE)) this->player->Move(fe::Direction::Up, camera.get());
+			if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) this->player->Move(fe::Direction::Down, camera.get());
+		}
 
 		if (window->IsKeyDown(SDL_SCANCODE_ESCAPE)) window->StopMouseCapture();
 		if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
@@ -307,11 +315,29 @@ public:
 			while (pathIndex > (float)(windowStart / SHIFT) + 1.0f)
 				SlideChunks();
 
-			glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
-			camera->SetPos(cameraPos);
-
-			glm::vec3 tangent = GetGlobalTangent(pathIndex);
-			camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
+			if (freeCamera) {
+				float dt = fpsCounter.deltaTime;
+				float spd = freeCamSpeed * dt;
+				if (window->IsKeyDown(SDL_SCANCODE_W)) camera->position += camera->front * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_S)) camera->position -= camera->front * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_A)) camera->position -= glm::normalize(glm::cross(camera->front, camera->up)) * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_D)) camera->position += glm::normalize(glm::cross(camera->front, camera->up)) * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_SPACE)) camera->position += camera->up * spd;
+				if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) camera->position -= camera->up * spd;
+				camera->viewMatrix = glm::lookAt(camera->position, camera->position + camera->front, camera->up);
+				glm::vec3 riderPos = GetGlobalPosition(pathIndex);
+				player->state.position = riderPos;
+				glm::vec3 riderTangent = GetGlobalTangent(pathIndex);
+				player->state.visible = true;
+				scene->GetLights()[0].position = riderPos;
+			} else {
+				glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
+				camera->SetPos(cameraPos);
+				glm::vec3 tangent = GetGlobalTangent(pathIndex);
+				camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
+				player->state.visible = false;
+				scene->GetLights()[0].position = cameraPos;
+			}
 
 			float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
 			for (int i = 0; i < NUM_BARS; i++) {
@@ -325,7 +351,6 @@ public:
 			if (total > 0.0f) {
 				audioR /= total; audioG /= total; audioB /= total;
 			}
-			scene->GetLights()[0].position = cameraPos;
 			scene->GetLights()[0].color = glm::vec3(1.0f, 0.9f, 0.7f) + glm::vec3(audioR, audioG, audioB) * 0.4f;
 			scene->GetLights()[0].intensity = 3.0f;
 			scene->GetLights()[0].radius = 80.0f;
@@ -384,11 +409,13 @@ public:
 		DrawAudioVisualizer();
 
 		ImGui::Begin("Tunnel Controls");
+		ImGui::Text(freeCamera ? "Camera: FREE (F2 to toggle)" : "Camera: FOLLOW (F2 to toggle)");
 		ImGui::SliderFloat("Motion Amount", &motionAmount, 0.0f, 3.0f);
 		ImGui::SliderFloat("Roundness", &tunnelRoundness, 0.0f, 0.6f);
 		ImGui::SliderFloat("Haustra Strength", &haustraStrength, 0.0f, 2.0f);
 		ImGui::SliderFloat("Animation Speed", &animationSpeed, 0.0f, 5.0f);
 		ImGui::SliderFloat("Camera Speed", &cameraSpeed, 0.0f, 5.0f);
+		ImGui::SliderFloat("Free Cam Speed", &freeCamSpeed, 1.0f, 100.0f);
 		ImGui::Separator();
 		ImGui::Text("Path Curves");
 		ImGui::SliderFloat("Turn Strength", &turnStrength, 0.0f, 5.0f);
