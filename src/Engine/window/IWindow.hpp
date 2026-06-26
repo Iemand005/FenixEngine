@@ -19,6 +19,10 @@ namespace fe {
     return false;
   }
 
+  struct WindowOptions {
+    x11WindowId;
+  };
+
 
   using ResizeDelegate = std::function<void(int, int)>;
   using MouseMoveDelegate = std::function<void(int, int)>;
