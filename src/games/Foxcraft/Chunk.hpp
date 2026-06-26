@@ -20,13 +20,7 @@ private:
 
 public:
     Chunk() : blocks(WIDTH * HEIGHT * DEPTH, BlockType::Air) {
-        for(int x = 0; x < WIDTH; x++) {
-            for(int y = 0; y < HEIGHT; y++) {
-                for(int z = 0; z < DEPTH; z++) {
-                    SetBlock(x, y, z, BlockType::Dirt);
-                }
-            }
-        }
+
     }
 
     BlockType GetBlock(int x, int y, int z) const {
