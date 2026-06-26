@@ -140,7 +140,6 @@ public:
 
     auto cubeMesh = chunk.GenerateMesh();
     cubeMesh.loadTexture("resources/textures/dirt.png", fe::TextureScaling::Nearest);
-    cubeMesh.hasTransparency = true;
 
     auto cubeObject = std::make_shared<fe::Object>(cubeMesh);
 
