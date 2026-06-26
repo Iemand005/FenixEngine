@@ -241,6 +241,15 @@ void main() {
     return obj;
   }
 
+  bool RemoveObject(std::shared_ptr<Object> object) {
+    auto it = std::find(objects.begin(), objects.end(), object);
+    if (it != objects.end()) {
+      objects.erase(it);
+      return true;
+    }
+    return false;
+  }
+
   void AddLight() {
     ++lightCount;
   }
