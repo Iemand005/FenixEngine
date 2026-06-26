@@ -35,6 +35,8 @@ public:
 	std::vector<std::shared_ptr<fe::Object>> chunks;
 	glm::vec3 lastUp = glm::vec3(0, 1, 0);
 	glm::vec3 lastRight = glm::vec3(1, 0, 0);
+	glm::vec3 prevEndForward{0};
+	bool hasPrevEnd = false;
 
 	static constexpr int NUM_CHUNKS = 12;
 	static constexpr int TUNNEL_SEGMENTS = 32;
@@ -84,11 +86,9 @@ public:
 			{0, 0, 0},
 			{3, 1, 0},
 			{6, 2, 6},
-			{10, 2, 14},
-			{14, 1, 22},
-			{18, 0, 30}
+			{10, 2, 14}
 		};
-		GrowPath(NUM_CHUNKS * SHIFT + POINTS_PER_CHUNK);
+		GrowPath(NUM_CHUNKS * SHIFT);
 
 		windowStart = 0;
 		pathIndex = 0.5f;
@@ -104,14 +104,27 @@ public:
 
 	void GrowPath(int count) {
 		float t = window->GetTime();
-		int base = path.size();
+		int freeSeg = (path.size() - 4) / 3;
 		for (int i = 0; i < count; i++) {
-			int seg = base + i;
-			glm::vec3 offset(
-				sin(t * 0.5f + seg * 0.5f) * 16.0f,
-				cos(t * 0.3f + seg * 0.3f) * 8.0f,
-				60.0f);
-			path.push_back(path.back() + offset);
+			int n = path.size();
+			if (n % 3 == 1) {
+				path.push_back(2.0f * path[n-1] - path[n-2]);
+			} else if (n % 3 == 2) {
+				path.push_back(path[n-4] + 4.0f * (path[n-2] - path[n-3]));
+			} else {
+				glm::vec3 P3 = path[n-3];
+				glm::vec3 dir = P3 - path[n-4];
+				float dirLen = glm::length(dir);
+				glm::vec3 step = (dirLen > 1e-6f)
+					? dir * (60.0f / dirLen)
+					: glm::vec3(0, 0, 60);
+				glm::vec3 wobble(
+					sin(t * 0.5f + freeSeg * 0.5f) * 2.0f,
+					cos(t * 0.3f + freeSeg * 0.3f) * 1.0f,
+					0.0f);
+				path.push_back(P3 + step + wobble);
+				freeSeg++;
+			}
 		}
 	}
 
@@ -119,12 +132,29 @@ public:
 		std::vector<glm::vec3> pts(POINTS_PER_CHUNK);
 		for (int i = 0; i < POINTS_PER_CHUNK; i++)
 			pts[i] = path[pointIdx + i];
+
+		const glm::vec3* endFwdPtr = nullptr;
+		glm::vec3 endFwd;
+		{
+			glm::vec3 diff = pts[3] - pts[2];
+			float len = glm::length(diff);
+			if (len > 1e-6f) {
+				endFwd = diff / len;
+				endFwdPtr = &endFwd;
+			}
+		}
+
 		obj->meshes.clear();
 		obj->meshes.push_back(
 			fe::Primitives::GenerateBentTunnel(
 				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true,
-				&lastUp, &lastRight, &lastUp, &lastRight)
+				&lastUp, &lastRight, &lastUp, &lastRight,
+				hasPrevEnd ? &prevEndForward : nullptr, endFwdPtr)
 		);
+
+		if (endFwdPtr)
+			prevEndForward = endFwd;
+		hasPrevEnd = true;
 	}
 
 	void SlideChunks() {

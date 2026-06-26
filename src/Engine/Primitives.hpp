@@ -271,7 +271,9 @@ namespace fe::Primitives {
 		glm::vec3* inUp = nullptr,
 		glm::vec3* inRight = nullptr,
 		glm::vec3* outUp = nullptr,
-		glm::vec3* outRight = nullptr)
+		glm::vec3* outRight = nullptr,
+		const glm::vec3* firstForward = nullptr,
+		const glm::vec3* endForward = nullptr)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -292,8 +294,13 @@ namespace fe::Primitives {
 		for (size_t p = 0; p < smoothPath.size(); p++) {
 			glm::vec3 pos = smoothPath[p];
 			glm::vec3 forward;
-			if (p == smoothPath.size() - 1) {
-				forward = glm::normalize(smoothPath[p] - smoothPath[p-1]);
+			if (p == 0 && firstForward) {
+				forward = *firstForward;
+			} else if (p == smoothPath.size() - 1) {
+				if (endForward)
+					forward = *endForward;
+				else
+					forward = glm::normalize(smoothPath[p] - smoothPath[p-1]);
 			} else {
 				forward = glm::normalize(smoothPath[p+1] - smoothPath[p]);
 			}
