@@ -157,7 +157,8 @@ public:
 			fe::Primitives::GenerateBentTunnel(
 				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true,
 				&lastUp, &lastRight, &lastUp, &lastRight,
-				hasPrevEnd ? &prevEndForward : nullptr, endFwdPtr)
+				hasPrevEnd ? &prevEndForward : nullptr, endFwdPtr,
+				(float)(pointIdx / SHIFT))
 		);
 
 		if (endFwdPtr)
@@ -311,7 +312,7 @@ public:
 			scene->GetLights()[0].radius = 80.0f;
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 0.0f);
+			shader->SetFloat("wobbleAmount", 0.4f);
 			shader->SetFloat("time", elapsedTime);
 			shader->SetVec3("objectColor", glm::vec3(0.95f, 0.25f, 0.55f));
 

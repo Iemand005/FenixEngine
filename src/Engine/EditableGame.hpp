@@ -29,7 +29,7 @@ namespace fe
     
     public:
     EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
-      this->physicsEngine->DisableGravity();
+      // this->physicsEngine->DisableGravity();
       
       // SDL_Init(SDL_INIT_VIDEO);
 

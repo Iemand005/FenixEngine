@@ -24,7 +24,7 @@
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
-#include "physics/PhysicsEngine.hpp"
+// #include "physics/PhysicsEngine.hpp"
 #include "bases.h"
 #include "Object.hpp"
 #include "Camera.hpp"
@@ -65,7 +65,7 @@ public:
 
 	bool isConnectedToServer = false;
 
-	std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
+	// std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
@@ -89,7 +89,7 @@ public:
 	void Init() {
 		SetClearColor(0.0F, 0.0F, 0.0f);
 
-		this->physicsEngine = std::make_unique<PhysicsEngine>();
+		// this->physicsEngine = std::make_unique<PhysicsEngine>();
 		
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 		
@@ -162,7 +162,7 @@ public:
 		for (auto& mesh : map->meshes) {
 			auto vertices = std::vector<glm::vec3>();
 			for (auto& vertex : mesh.vertices) vertices.push_back(vertex.position);
-			mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
+			mesh.SetPhysicsObject(nullptr);
 		}
 	}
 
@@ -219,7 +219,7 @@ public:
 	}
 
 	void UpdatePhysics(double deltaTime) {
-		if (physicsEngine) physicsEngine->Update(deltaTime);
+		// if (physicsEngine) physicsEngine->Update(deltaTime);
 	}
 
 	virtual void InitUI() {}

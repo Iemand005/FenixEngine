@@ -273,7 +273,8 @@ namespace fe::Primitives {
 		glm::vec3* outUp = nullptr,
 		glm::vec3* outRight = nullptr,
 		const glm::vec3* firstForward = nullptr,
-		const glm::vec3* endForward = nullptr)
+		const glm::vec3* endForward = nullptr,
+		float vOffset = 0.0f)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -338,7 +339,7 @@ namespace fe::Primitives {
 				if (insideOut) normal = -normal;
 
 				vertices.push_back(Vertex(vPos.x, vPos.y, vPos.z, normal.x, normal.y, normal.z,
-										  i / (float)segments, p / (float)(smoothPath.size()-1)));
+										  i / (float)segments, vOffset + p / (float)(smoothPath.size()-1)));
 			}
 		}
 
