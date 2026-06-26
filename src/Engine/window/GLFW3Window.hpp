@@ -51,6 +51,9 @@ public:
   	void Show();
 
 	void AttachToNativeParent(void* parent);
+
+	void getDeltaTime() override;;
+
 	  
 #ifdef _WIN32
 	HWND GetNativeWindow();

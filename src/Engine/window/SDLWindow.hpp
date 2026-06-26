@@ -95,6 +95,8 @@ class SDLWindow : public IWindow {
 
   double GetTime();
 
+  double getDeltaTime() override;;
+
   void GetFramebufferSize(int *width, int *height);
 
   bool HideMouse();
