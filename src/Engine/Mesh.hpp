@@ -149,7 +149,7 @@ namespace fe {
 				std::cerr << "Failed to load texture" << std::endl;
 
 				std::string exeDir = GetExecutableDirectorye();
-				std::string path2 = exeDir + "\\" + textureFilePath;
+				std::string path2 = exeDir + "/" + textureFilePath; // TODO WINDOWS BLEH BACKLSAHS DOES IT ACCPET FWND SLSH I THINK TI DOES
 				data = stbi_load(path2.c_str(), &width, &height, &nrChannels, 0);
 				if (data)
 				{
