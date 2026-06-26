@@ -245,8 +245,6 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 
 #ifdef _WIN32
 
-
-
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
 		props,
 		SDL_PROP_WINDOW_WIN32_HWND_POINTER,
@@ -276,8 +274,6 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	);
 #else
 #include <X11/Xlib.h>
-
-	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 
 	Window child = (Window)(uintptr_t)SDL_GetPointerProperty(
 		props,

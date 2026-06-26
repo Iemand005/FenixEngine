@@ -71,6 +71,12 @@ elseif(APPLE)
 else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(Engine PRIVATE OpenGL::GL)
+
+    find_package(X11 REQUIRED)
+
+    target_link_libraries(Engine PRIVATE
+        X11::X11
+    )
 endif()
 
 
@@ -122,6 +128,12 @@ elseif(APPLE)
 else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(Renderer PRIVATE OpenGL::GL)
+
+    find_package(X11 REQUIRED)
+
+    target_link_libraries(Renderer PRIVATE
+        X11::X11
+    )
 endif()
 
 
