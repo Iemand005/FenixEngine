@@ -15,13 +15,8 @@ uniform float wobbleAmount;
 
 void main()
 {
-    vec3 pos = aPos;
-
-    float wobbleX = sin(time * 2.0 + pos.z * 0.5) * wobbleAmount;
-    float wobbleY = cos(time * 1.5 + pos.z * 0.3) * wobbleAmount;
-    float wobbleZ = sin(time * 1.8 + pos.z * 0.7) * wobbleAmount;
-
-    pos += vec3(wobbleX, wobbleY, wobbleZ);
+    float wave = sin(time * 3.0 - aTexCoord.y * 12.0) * wobbleAmount;
+    vec3 pos = aPos + aNormal * wave;
 
     vec4 worldPos = model * vec4(pos, 1.0);
     gl_Position = projection * view * worldPos;

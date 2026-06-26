@@ -79,13 +79,13 @@ public:
 	void GenerateInitialTunnels() {
 		currentPath = {
 			{0, 0, 0},
-			{2, 1, 0},
-			{4, 2, 2},
-			{5, 1, 4},
-			{6, 0, 6},
-			{7, -1, 8},
-			{8, 0, 10},
-			{9, 1, 12}
+			{3, 1, 0},
+			{6, 2, 4},
+			{9, 2, 9},
+			{12, 1, 14},
+			{15, 0, 19},
+			{18, -1, 24},
+			{21, 0, 29}
 		};
 
 		currentTunnel = std::make_shared<fe::Object>(
@@ -114,7 +114,7 @@ public:
 		glm::vec3 mirrorPoint = lastPoint + (lastPoint - prevPoint);
 
 		nextPath.clear();
-		nextPath.reserve(8);
+		nextPath.reserve(12);
 		nextPath.push_back(thirdLast);
 		nextPath.push_back(prevPoint);
 		nextPath.push_back(lastPoint);
@@ -122,11 +122,11 @@ public:
 
 		float elapsedTime = window->GetTime();
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 8; i++) {
 			glm::vec3 offset(
-				sin(elapsedTime * 0.5f + i * 0.5f) * 3.0f,
-				cos(elapsedTime * 0.3f + i * 0.3f) * 1.5f,
-				2.0f * (i + 1));
+				sin(elapsedTime * 0.5f + i * 0.5f) * 2.0f,
+				cos(elapsedTime * 0.3f + i * 0.3f) * 1.0f,
+				3.0f * (i + 1));
 			nextPath.push_back(mirrorPoint + offset);
 		}
 	}
@@ -335,7 +335,8 @@ public:
 
 			shader->Use();
 			shader->SetFloat("wobbleAmount", 0.2f);
-			shader->SetVec3("objectColor", glm::vec3(0.2f, 0.8f, 1.0f));
+			shader->SetFloat("time", elapsedTime);
+			shader->SetVec3("objectColor", glm::vec3(0.95f, 0.25f, 0.55f));
 
 			Update();
 			Redraw();
