@@ -41,7 +41,7 @@ public:
         for(int x = 0; x < WIDTH; x++) {
             for(int y = 0; y < HEIGHT; y++) {
                 for(int z = 0; z < DEPTH; z++) {
-                    chunk.SetBlock(x, y, z, BlockType::Dirt);
+                    SetBlock(x, y, z, BlockType::Dirt);
                 }
             }
         }
