@@ -80,13 +80,6 @@ public:
     visualizer.Init();
   }
 
-  static bool SDLCALL LiveRedrawWatcher(void* userdata, SDL_Event* event) {
-    Tunnel* game = (Tunnel*)userdata;
-    if (event->type == SDL_EVENT_WINDOW_EXPOSED)
-      game->Redraw();
-    return true;
-  }
-
   void LoadModels() {
     GenerateInitialTunnels();
 
