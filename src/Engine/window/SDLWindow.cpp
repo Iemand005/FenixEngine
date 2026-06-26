@@ -300,6 +300,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	int x, y;
 	unsigned int border_width, depth;
 	XGetGeometry(display, parent_window_id, &root, &x, &y, &w, &h, &border_width, &depth);
+	XSelectInput(display, sdl_xwindow, StructureNotifyMask | ExposureMask);
 	XSync(display, False);
 #endif
 	 Resize(w, h);
