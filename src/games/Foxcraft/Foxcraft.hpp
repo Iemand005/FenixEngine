@@ -81,155 +81,9 @@ public:
   }
 
   void LoadModels() {
-    GenerateInitialTunnels();
 
     this->player = std::make_shared<fe::Character>();
     this->scene->AddObject(player);
-  }
-
-  void GenerateInitialTunnels() {
-    path = {
-      {0, 0, 0},
-      {3, 1, 5},
-      {8, 3, 12},
-      {10, 5, 22}
-    };
-    GrowPath(NUM_CHUNKS * SHIFT);
-
-    windowStart = 0;
-    pathIndex = 0.5f;
-
-    chunks.resize(NUM_CHUNKS);
-    for (int i = 0; i < NUM_CHUNKS; i++) {
-      chunks[i] = std::make_shared<fe::Object>();
-      BuildTunnelMesh(chunks[i], windowStart + i * SHIFT);
-      chunks[i]->name = "Tunnel" + std::to_string(i);
-      scene->AddObject(chunks[i]);
-    }
-  }
-
-  void GrowPath(int count) {
-    float t = window->GetTime();
-    int freeSeg = (path.size() - 4) / 3;
-    float sl = segmentLength;
-    for (int i = 0; i < count; i++) {
-      int n = path.size();
-      float seg = freeSeg;
-      float ampMod = 0.05 + 0.95 * pow(abs(sin(seg * 1.5 + t * 0.1)), 0.5);
-      if (n % 3 == 1) {
-        path.push_back(2.0f * path[n-1] - path[n-2]);
-      } else if (n % 3 == 2) {
-        glm::vec3 dir = path[n-1] - path[n-2];
-        float dirLen = glm::length(dir);
-        glm::vec3 step = (dirLen > 1e-6f)
-        ? dir * (sl / dirLen)
-        : glm::vec3(0, 0, sl);
-        float sa = seg * 2.0f + t * 0.3f;
-        glm::vec3 wobble(
-          (sin(t * 1.5f + seg * 4.0f) * 6.0f * turnStrength
-          + sin(sa) * 8.0f * swirlStrength) * ampMod,
-                         (cos(t * 1.0f + seg * 3.5f) * 4.0f * twistStrength) * ampMod,
-                         (sin(t * 0.8f + seg * 3.0f) * 4.0f
-                         + cos(sa) * 8.0f * swirlStrength) * ampMod);
-        path.push_back(path[n-1] + step + wobble);
-      } else {
-        glm::vec3 dir = path[n-1] - path[n-2];
-        float dirLen = glm::length(dir);
-        glm::vec3 step = (dirLen > 1e-6f)
-        ? dir * (sl / dirLen)
-        : glm::vec3(0, 0, sl);
-        float sa = seg * 2.0f + t * 0.3f;
-        glm::vec3 wobble(
-          (sin(t * 1.2f + seg * 3.5f) * 7.0f * turnStrength
-          + sin(sa + 1.0f) * 9.0f * swirlStrength) * ampMod,
-                         (cos(t * 0.8f + seg * 3.0f) * 5.0f * twistStrength) * ampMod,
-                         (sin(t * 0.6f + seg * 2.5f) * 4.5f
-                         + cos(sa + 1.0f) * 9.0f * swirlStrength) * ampMod);
-        path.push_back(path[n-1] + step + wobble);
-        freeSeg++;
-      }
-    }
-  }
-
-  void BuildTunnelMesh(std::shared_ptr<fe::Object> obj, int pointIdx) {
-    std::vector<glm::vec3> pts(POINTS_PER_CHUNK);
-    for (int i = 0; i < POINTS_PER_CHUNK; i++)
-      pts[i] = path[pointIdx + i];
-
-    const glm::vec3* endFwdPtr = nullptr;
-    glm::vec3 endFwd;
-    {
-      glm::vec3 diff = pts[3] - pts[2];
-      float len = glm::length(diff);
-      if (len > 1e-6f) {
-        endFwd = diff / len;
-        endFwdPtr = &endFwd;
-      }
-    }
-
-    obj->meshes.clear();
-    obj->meshes.push_back(
-      fe::Primitives::GenerateBentTunnel(
-        pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true,
-        &lastUp, &lastRight, &lastUp, &lastRight,
-        hasPrevEnd ? &prevEndForward : nullptr, endFwdPtr,
-        (float)(pointIdx / SHIFT))
-    );
-
-    if (endFwdPtr)
-      prevEndForward = endFwd;
-    hasPrevEnd = true;
-  }
-
-  void SlideChunks() {
-    int needed = windowStart + NUM_CHUNKS * SHIFT + POINTS_PER_CHUNK;
-    while (needed >= (int)path.size())
-      GrowPath(SHIFT);
-
-    BuildTunnelMesh(chunks[0], windowStart + NUM_CHUNKS * SHIFT);
-    std::rotate(chunks.begin(), chunks.begin() + 1, chunks.end());
-    windowStart += SHIFT;
-  }
-
-  void SetActiveChunks(int newCount) {
-    newCount = std::clamp(newCount, 2, MAX_CHUNKS);
-    if (newCount > NUM_CHUNKS) {
-      for (int i = NUM_CHUNKS; i < newCount; i++) {
-        chunks.push_back(std::make_shared<fe::Object>());
-        BuildTunnelMesh(chunks[i], windowStart + i * SHIFT);
-        chunks[i]->name = "Tunnel" + std::to_string(i);
-        scene->AddObject(chunks[i]);
-      }
-    } else if (newCount < NUM_CHUNKS) {
-      for (int i = newCount; i < NUM_CHUNKS; i++)
-        scene->RemoveObject(chunks[i]);
-      chunks.resize(newCount);
-    }
-    NUM_CHUNKS = newCount;
-  }
-
-  glm::vec3 GetGlobalPosition(float idx) const {
-    int seg = (int)idx;
-    float t = idx - seg;
-    if (seg < 0) { seg = 0; t = 0.0f; }
-    int base = seg * SHIFT;
-    if (base + 3 >= (int)path.size()) {
-      base = (int)path.size() - 4;
-      t = 0.0f;
-    }
-    return fe::Primitives::CubicBezier(path[base], path[base+1], path[base+2], path[base+3], t);
-  }
-
-  glm::vec3 GetGlobalTangent(float idx) const {
-    int seg = (int)idx;
-    float t = idx - seg;
-    if (seg < 0) { seg = 0; t = 0.0f; }
-    int base = seg * SHIFT;
-    if (base + 3 >= (int)path.size()) {
-      base = (int)path.size() - 4;
-      t = 0.0f;
-    }
-    return fe::Primitives::CubicBezierTangent(path[base], path[base+1], path[base+2], path[base+3], t);
   }
 
   void ProcessInput() {
@@ -322,10 +176,6 @@ public:
       float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
       SetClearColor(colorR, colorG, colorB);
 
-      pathIndex += baseSpeedElapsedTime * cameraSpeed;
-
-      while (pathIndex > (float)(windowStart / SHIFT) + 1.0f)
-        SlideChunks();
 
       if (freeCamera) {
         float dt = fpsCounter.deltaTime;
@@ -339,15 +189,7 @@ public:
         if (window->IsKeyDown(SDL_SCANCODE_SPACE)) cp += camera->up * spd;
         if (window->IsKeyDown(SDL_SCANCODE_LSHIFT)) cp -= camera->up * spd;
         camera->SetPos(cp);
-        glm::vec3 riderPos = GetGlobalPosition(pathIndex);
-        player->state.position = riderPos;
-        scene->GetLights()[0].position = riderPos;
       } else {
-        glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
-        camera->SetPos(cameraPos);
-        glm::vec3 tangent = GetGlobalTangent(pathIndex);
-        camera->LookAt(cameraPos + glm::normalize(tangent) * 10.0f);
-        scene->GetLights()[0].position = cameraPos;
       }
 
       float audioR = 0.0f, audioG = 0.0f, audioB = 0.0f;
@@ -418,30 +260,6 @@ public:
     BeginFrame();
 
     DrawAudioVisualizer();
-
-    ImGui::Begin("Tunnel Controls");
-    ImGui::Text(freeCamera ? "Camera: FREE (F2 to toggle)" : "Camera: FOLLOW (F2 to toggle)");
-    ImGui::SliderFloat("Motion Amount", &motionAmount, 0.0f, 3.0f);
-    ImGui::SliderFloat("Roundness", &tunnelRoundness, 0.0f, 0.6f);
-    ImGui::SliderFloat("Haustra Strength", &haustraStrength, 0.0f, 2.0f);
-    ImGui::SliderFloat("Animation Speed", &animationSpeed, 0.0f, 5.0f);
-    ImGui::SliderFloat("Camera Speed", &cameraSpeed, 0.0f, 5.0f);
-    ImGui::SliderFloat("Free Cam Speed", &freeCamSpeed, 1.0f, 100.0f);
-    ImGui::SliderFloat("Segment Length", &segmentLength, 1.0f, 30.0f);
-    int nc = NUM_CHUNKS;
-    if (ImGui::SliderInt("Active Segments", &nc, 2, MAX_CHUNKS) && nc != NUM_CHUNKS)
-      SetActiveChunks(nc);
-    ImGui::Separator();
-    ImGui::Text("Path Curves");
-    ImGui::SliderFloat("Turn Strength", &turnStrength, 0.0f, 10.0f);
-    ImGui::SliderFloat("Twist Strength", &twistStrength, 0.0f, 10.0f);
-    ImGui::SliderFloat("Swirl Strength", &swirlStrength, 0.0f, 10.0f);
-    ImGui::Separator();
-    if (ImGui::SliderFloat("Far Plane", &farPlane, 50.0f, 5000.0f)) {
-      camera->farDist = farPlane;
-      camera->SetAspect(camera->aspect);
-    }
-    ImGui::End();
 
     DrawDebugUI();
 
