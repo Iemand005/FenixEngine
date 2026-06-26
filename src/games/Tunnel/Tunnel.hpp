@@ -252,6 +252,8 @@ public:
 		glm::vec3 prevPoint = path[path.size() - 2];
 		glm::vec3 direction = glm::normalize(lastPoint - prevPoint);
 
+		float elapsedTime = window->GetTime();
+
 		float newX = sin(elapsedTime * 0.5f) * 2.0f;
 		float newY = cos(elapsedTime * 0.3f) * 1.0f;
 		float newZ = 2.0f;
