@@ -1,6 +1,10 @@
+#ifdef _WIN32
 #define _WINSOCKAPI_
 #include <winsock2.h>
 #include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -12,9 +16,14 @@
 
 void LogToFile(const std::string& message)
 {
+#ifdef _WIN32
+	std::string logpath = "C:\\Temp\\Cake_screensaver.log";
+#else
+	std::string logpath = "/tmp/Cake_screensaver.log";
+#endif
 	try
 	{
-		std::ofstream file("C:\\Temp\\Cake_screensaver.log", std::ios::app);
+		std::ofstream file(logpath, std::ios::app);
 		if (file.is_open())
 		{
 			auto now = std::chrono::system_clock::now();
@@ -28,14 +37,36 @@ void LogToFile(const std::string& message)
 
 int main() {
 
-std::cout << "Hiii" << std::endl;
-std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
-std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
+	std::cout << "Hiii" << std::endl;
+	std::cout << "You're super amazing!! I hope you like the show :3" << std::endl;
+	std::cout << "Meow and happy birthday!!! Listen to your favourite tracks!" << std::endl;
 
-Cake game;
+
+	const char* xss_window = getenv("XSCREENSAVER_WINDOW");
+
+	if (xss_window) {
+		LogToFile("XSCREENSAVER_WINDOW=" + std::string(xss_window));
+	} else {
+		LogToFile("XSCREENSAVER_WINDOW not set");
+	}
+
+	Cake game;
+
+
+if (xss_window) {
+	char* endptr;
+	Window parent_id = (Window)strtoul(xss_window, &endptr, 0);
+	if (endptr != xss_window) {
+		// Valid window ID from xscreensaver
+		game.ActivateScreenSaverMode(ScreenSaverMode::Fullscreen, parent_id);
+	}
+}
+
 game.Run();
 return 0;
 }
+
+#ifdef _WIN32
 
 int WINAPI WinMain(
 	HINSTANCE,
@@ -138,3 +169,5 @@ int WINAPI WinMain(
 	
 	return 0;
 }
+
+#endif

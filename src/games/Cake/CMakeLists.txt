@@ -45,12 +45,16 @@ target_link_libraries(Cake PRIVATE
 	Engine
 )
 
-if(NOT WIN32 AND FALSE)
+if(NOT WIN32)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 target_include_directories(Cake PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
 target_link_libraries(Cake PRIVATE ${PIPEWIRE_LIBRARIES})
 target_compile_options(Cake PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
+
+find_package(X11 REQUIRED)
+
+target_link_libraries(Cake PRIVATE X11::X11)
 endif()
 
 set_property(TARGET Cake PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
@@ -63,4 +67,4 @@ if(MSVC)
 	add_compile_options(/RTC1)
 endif()
 
-set_target_properties(Cake PROPERTIES SUFFIX ".scr")
+# set_target_properties(Cake PROPERTIES SUFFIX ".scr")

@@ -1,4 +1,5 @@
 
+#include "IWindow.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -31,6 +32,14 @@ bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) 
 		std::cerr << "No Wayland Support" << std::endl;
 	}
 #endif
+
+	if (IsWayland()) {
+		printf("Setting GLFW platform hint to Wayland\n");
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+	} else {
+		printf("Setting GLFW platform hint to X11\n");
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+	}
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

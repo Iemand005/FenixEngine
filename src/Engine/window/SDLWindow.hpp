@@ -35,7 +35,7 @@ class SDLWindow : public IWindow {
  public:
   bool capturingMouse = false;
 
-  SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false);
+  SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {});
   ~SDLWindow();
 
   void SetSwapInterval(int interval) override;
@@ -101,8 +101,8 @@ class SDLWindow : public IWindow {
 
 	void ActivateScreenSaverMode();
 
+	void AttachToNativeParent(void* parent);
 #ifdef _WIN32
-  void AttachToNativeParent(void* parent);
 	HWND GetNativeWindow();
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();

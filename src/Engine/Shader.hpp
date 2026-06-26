@@ -17,6 +17,7 @@
 
 namespace fe {
 
+
   enum ShaderType : GLenum {
     VertexShaderType = GL_VERTEX_SHADER,
     FragmentShaderType = GL_FRAGMENT_SHADER
@@ -52,8 +53,9 @@ namespace fe {
     if (!success || length > 1) {
       std::string log(length, '\0');
       glGetShaderInfoLog(id, length, NULL, log.data());
-        std::cout << "SHADER COMPILE ERROR:\n" << log << std::endl;
-      throw std::runtime_error(log);
+      std::cout << "SHADER COMPILE ERROR:\n" << log << std::endl;
+      //throw std::runtime_error(log);
+      std::cerr << log;
       return false;
     }
     return true;

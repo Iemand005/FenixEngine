@@ -1,7 +1,29 @@
 #pragma once
 
 #include <functional>
+#include <stdlib.h>
+#include <string.h>
+
 namespace fe {
+
+
+  inline bool IsWayland() {
+    const char* session = getenv("XDG_SESSION_TYPE");
+    if (session && strcmp(session, "wayland") == 0)
+      return true;
+
+    const char* wayland_display = getenv("WAYLAND_DISPLAY");
+    if (wayland_display != NULL)
+      return true;
+
+    return false;
+  }
+
+  struct WindowOptions {
+		long long int x11WindowId;
+  };
+
+
   using ResizeDelegate = std::function<void(int, int)>;
   using MouseMoveDelegate = std::function<void(int, int)>;
 

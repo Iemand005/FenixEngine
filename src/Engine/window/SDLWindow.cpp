@@ -1,6 +1,9 @@
 
+#include "IWindow.hpp"
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <X11/Xlib.h>
 #endif
 
 #include <SDL3/SDL.h>
@@ -78,7 +81,7 @@ fe::SDLWindow::~SDLWindow() {
   Destroy();
 }
 
-fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height) {
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options) : IWindow(width, height) {
 	impl = std::make_unique<Impl>();
 	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO));
 
@@ -92,8 +95,25 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
-	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	if (!IsWayland())
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		std::cout << "Failed to initialize video driver uhm" << std::endl;
+		return;
+    }
+
+	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
+
+	// SDL_PropertiesID props = SDL_CreateProperties();
+ //
+	// SDL_SetPointerProperty(
+	// 	props,
+	// 	SDL_PROP_WINDOW_CREATE_X11_WINDOW_POINTER,
+	// 	(void*)existing_x11_window
+	// );
+
+	// SDL_Window* window = SDL_CreateWindowWithProperties(props);
 
 	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
@@ -215,7 +235,6 @@ void fe::SDLWindow::ActivateScreenSaverMode() {
 	_isScreensaving = true;
 }
 
-#ifdef _WIN32
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
 {
@@ -225,6 +244,8 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	SDL_PropertiesID props = SDL_GetWindowProperties(GetWindow());
 	if (!props)
 		return;
+
+#ifdef _WIN32
 
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
 		props,
@@ -253,8 +274,24 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		SWP_NOACTIVATE |
 		SWP_SHOWWINDOW
 	);
-}
+#else
+
+
+	Window sdl_xwindow = (Window)(uintptr_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+	Display *display = (Display *)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+
+	if (!display || sdl_xwindow == 0) {
+		SDL_Log("Failed to get X11 window properties");
+		return;
+	}
+
+	Window parent_window_id = (Window)(uintptr_t)parent;
+	XReparentWindow(display, sdl_xwindow, parent_window_id, 0, 0);
+	XMapWindow(display, sdl_xwindow); // mayb ehtat fills it huh
+	XSync(display, False);
 #endif
+
+}
 
 void fe::SDLWindow::Show() {
 	SDL_ShowWindow(impl->window);
