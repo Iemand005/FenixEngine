@@ -33,12 +33,14 @@ public:
 	int windowStart = 0;
 	float pathIndex = 1.0f;
 	std::vector<std::shared_ptr<fe::Object>> chunks;
+	glm::vec3 lastUp = glm::vec3(0, 1, 0);
+	glm::vec3 lastRight = glm::vec3(1, 0, 0);
 
 	static constexpr int NUM_CHUNKS = 12;
 	static constexpr int TUNNEL_SEGMENTS = 32;
 	static constexpr int SUBDIVISIONS_PER_SEG = 12;
 	static constexpr int POINTS_PER_CHUNK = 4;
-	static constexpr int OVERLAP = 3;
+	static constexpr int SHIFT = 3;
 
 	float lightSpeed = 0.3f;
 
@@ -86,15 +88,15 @@ public:
 			{14, 1, 22},
 			{18, 0, 30}
 		};
-		GrowPath(NUM_CHUNKS + OVERLAP);
+		GrowPath(NUM_CHUNKS * SHIFT + POINTS_PER_CHUNK);
 
 		windowStart = 0;
-		pathIndex = 1.0f;
+		pathIndex = 0.5f;
 
 		chunks.resize(NUM_CHUNKS);
 		for (int i = 0; i < NUM_CHUNKS; i++) {
 			chunks[i] = std::make_shared<fe::Object>();
-			BuildTunnelMesh(chunks[i], i);
+			BuildTunnelMesh(chunks[i], windowStart + i * SHIFT);
 			chunks[i]->name = "Tunnel" + std::to_string(i);
 			scene->AddObject(chunks[i]);
 		}
@@ -113,49 +115,50 @@ public:
 		}
 	}
 
-	void BuildTunnelMesh(std::shared_ptr<fe::Object> obj, int chunkIndex) {
+	void BuildTunnelMesh(std::shared_ptr<fe::Object> obj, int pointIdx) {
 		std::vector<glm::vec3> pts(POINTS_PER_CHUNK);
 		for (int i = 0; i < POINTS_PER_CHUNK; i++)
-			pts[i] = path[windowStart + chunkIndex + i];
+			pts[i] = path[pointIdx + i];
 		obj->meshes.clear();
 		obj->meshes.push_back(
 			fe::Primitives::GenerateBentTunnel(
-				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true)
+				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true,
+				&lastUp, &lastRight, &lastUp, &lastRight)
 		);
 	}
 
 	void SlideChunks() {
-		while (windowStart + NUM_CHUNKS + OVERLAP >= (int)path.size())
-			GrowPath(1);
+		int needed = windowStart + NUM_CHUNKS * SHIFT + POINTS_PER_CHUNK;
+		while (needed >= (int)path.size())
+			GrowPath(SHIFT);
 
-		BuildTunnelMesh(chunks[0], NUM_CHUNKS);
+		BuildTunnelMesh(chunks[0], windowStart + NUM_CHUNKS * SHIFT);
 		std::rotate(chunks.begin(), chunks.begin() + 1, chunks.end());
-		windowStart++;
+		windowStart += SHIFT;
 	}
 
 	glm::vec3 GetGlobalPosition(float idx) const {
-		int i = (int)idx;
-		float t = idx - i;
-		if (i < 1) { i = 1; t = 0.0f; }
-		if (i + 2 >= (int)path.size()) { i = (int)path.size() - 3; t = 0.0f; }
-		return fe::Primitives::CatmullRom(path[i-1], path[i], path[i+1], path[i+2], t);
+		int seg = (int)idx;
+		float t = idx - seg;
+		if (seg < 0) { seg = 0; t = 0.0f; }
+		int base = seg * SHIFT;
+		if (base + 3 >= (int)path.size()) {
+			base = (int)path.size() - 4;
+			t = 0.0f;
+		}
+		return fe::Primitives::CubicBezier(path[base], path[base+1], path[base+2], path[base+3], t);
 	}
 
 	glm::vec3 GetGlobalTangent(float idx) const {
-		int i = (int)idx;
-		float t = idx - i;
-		if (i < 1) { i = 1; t = 0.0f; }
-		if (i + 2 >= (int)path.size()) { i = (int)path.size() - 3; t = 0.0f; }
-		float t2 = t * t;
-		const glm::vec3& p0 = path[i-1];
-		const glm::vec3& p1 = path[i];
-		const glm::vec3& p2 = path[i+1];
-		const glm::vec3& p3 = path[i+2];
-		return 0.5f * (
-			(-p0 + p2) +
-			2.0f * (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t +
-			3.0f * (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t2
-		);
+		int seg = (int)idx;
+		float t = idx - seg;
+		if (seg < 0) { seg = 0; t = 0.0f; }
+		int base = seg * SHIFT;
+		if (base + 3 >= (int)path.size()) {
+			base = (int)path.size() - 4;
+			t = 0.0f;
+		}
+		return fe::Primitives::CubicBezierTangent(path[base], path[base+1], path[base+2], path[base+3], t);
 	}
 
 	void ProcessInput() {
@@ -240,10 +243,10 @@ public:
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 			SetClearColor(colorR, colorG, colorB);
 
-			float cameraSpeed = 50.0f;
+			float cameraSpeed = 15.0f;
 			pathIndex += baseSpeedElapsedTime * cameraSpeed;
 
-			while (pathIndex > windowStart + 2.0f)
+			while (pathIndex > (float)(windowStart / SHIFT) + 1.0f)
 				SlideChunks();
 
 			glm::vec3 cameraPos = GetGlobalPosition(pathIndex);
@@ -270,7 +273,7 @@ public:
 			scene->GetLights()[0].radius = 80.0f;
 
 			shader->Use();
-			shader->SetFloat("wobbleAmount", 0.2f);
+			shader->SetFloat("wobbleAmount", 0.0f);
 			shader->SetFloat("time", elapsedTime);
 			shader->SetVec3("objectColor", glm::vec3(0.95f, 0.25f, 0.55f));
 
