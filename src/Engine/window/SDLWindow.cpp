@@ -92,6 +92,11 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
+	if (!IsWayland())
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
+	if (!SDL_Init(SDL_INIT_VIDEO))
+		return;
+
 	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
