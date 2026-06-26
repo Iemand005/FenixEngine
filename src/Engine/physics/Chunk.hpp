@@ -10,4 +10,8 @@ enum class BlockType : short {
 class Chunk {
 private:
     BlockType blocks[16][16][256];
+public:
+    BlockType *GetBlocks() {
+        return blocks;
+    }
 };
