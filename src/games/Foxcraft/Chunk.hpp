@@ -13,18 +13,17 @@ enum class BlockType : short {
 
 class Chunk {
 private:
-    std::unique_ptr<BlockType[16][256][16]> blocks;
+    std::vector<BlockType> blocks;
+    static constexpr int WIDTH = 16, HEIGHT = 20, DEPTH = 16;
 
 public:
-    Chunk() : blocks(new BlockType[16][256][16]()) {
-        std::memset(blocks.get(), 0, 16 * 256 * 16 * sizeof(BlockType));
-    }
+    Chunk() : blocks(WIDTH * HEIGHT * DEPTH, BlockType::Air) {}
 
     BlockType GetBlock(int x, int y, int z) const {
-        return (*blocks)[x][y][z];
+        return blocks[x * HEIGHT * DEPTH + y * DEPTH + z];
     }
 
     void SetBlock(int x, int y, int z, BlockType type) {
-        (*blocks)[x][y][z] = type;
+        blocks[x * HEIGHT * DEPTH + y * DEPTH + z] = type;
     }
 };
