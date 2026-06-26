@@ -80,6 +80,7 @@ namespace fe {
 			file.open(path2);
 			if (!file.is_open())
 			{
+              std::cout << "NO LOADY OH NO " << path2 << std::endl;
         return false;
 				// return true;
 			}
