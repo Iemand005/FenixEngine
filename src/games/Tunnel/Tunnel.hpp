@@ -165,12 +165,14 @@ public:
 		}
 	}
 
+	bool swapped = false;
+
 	void SwapTunnels() {
 		currentPath = nextPath;
 		currentPathLength = nextPathLength;
 
 		if (currentTunnel) {
-			scene->RemoveObject(currentTunnel);
+			//scene->RemoveObject(currentTunnel);
 		}
 		currentTunnel = nextTunnel;
 
@@ -291,9 +293,14 @@ public:
 			float cameraSpeed = 15.0f;
 			float pathProgress = fmod(elapsedTime * cameraSpeed / currentPathLength, 1.0f);
 
-			if (pathProgress > 0.7f) {
+			if (pathProgress > 0.7f && !swapped)
+			{
 				SwapTunnels();
+				swapped = true;
 			}
+
+			if (pathProgress < 0.7f)
+				swapped = false;
 
 			glm::vec3 cameraPos = fe::Primitives::GetPositionAlongPath(currentPath, pathProgress);
 			camera->SetPos(cameraPos);
