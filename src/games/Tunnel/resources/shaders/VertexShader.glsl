@@ -1,4 +1,4 @@
-#version 450
+#version 330 core
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
@@ -10,8 +10,8 @@ uniform mat4 model;
 uniform float time;
 uniform float wobbleAmount;
 
-layout(location = 0) out vec3 fragNormal;
-layout(location = 1) out vec2 fragTexCoord;
+out vec3 fragNormal;
+out vec2 fragTexCoord;
 
 void main() {
     vec3 pos = position;
