@@ -101,8 +101,8 @@ class SDLWindow : public IWindow {
 
 	void ActivateScreenSaverMode();
 
+	void AttachToNativeParent(void* parent);
 #ifdef _WIN32
-  void AttachToNativeParent(void* parent);
 	HWND GetNativeWindow();
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();
