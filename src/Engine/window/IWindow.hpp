@@ -20,7 +20,7 @@ namespace fe {
   }
 
   struct WindowOptions {
-    x11WindowId;
+    long long int x11WindowId;
   };
 
 
