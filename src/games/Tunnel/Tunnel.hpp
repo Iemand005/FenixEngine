@@ -308,23 +308,11 @@ public:
 
 			UpdateVisualizerBars();
 
-			struct UniformBuffer {
-				glm::mat4 projection;
-				glm::mat4 view;
-				glm::mat4 model;
-				float time;
-				float wobbleAmount;
-				// padding to 16-byte alignment if needed
-			};
+			//scene.shader
+			//this->scene->Set
+			//shader->SetFloat("");
 
-			UniformBuffer ubo;
-			ubo.projection = camera.getProjectionMatrix();
-			ubo.view = camera.getViewMatrix();
-			ubo.model = glm::mat4(1.0f);  // or your transform
-			ubo.time = elapsedTime;
-			ubo.wobbleAmount = 0.5f;
-
-			updateUniformBuffer(binding_0, &ubo, sizeof(UniformBuffer));
+			shader.SetFloat("wobbleAmount", 0.5f);
 			
 			Update();
 			Redraw();
