@@ -21,7 +21,7 @@ void main()
 {
     vec3 n = normalize(Normal);
 
-    vec3 lighting = vec3(0.1);
+    vec3 lighting = vec3(1);
 
 
     vec4 texSample = texture(ourTexture, TexCoord);
