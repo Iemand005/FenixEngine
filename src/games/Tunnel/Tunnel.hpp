@@ -151,7 +151,7 @@ public:
 			{4, 2, 2},
 			{5, 1, 4}
 		};
-		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f);
+		fe::Mesh tunnel2 = fe::Primitives::GenerateBentTunnel(path, 1.0f, 32, 12, true);
 		auto tunne2obj = this->scene->AddObject(tunnel2);
 		tunne2obj->name = "Taratatatar";
 
