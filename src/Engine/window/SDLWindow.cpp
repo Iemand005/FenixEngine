@@ -1,4 +1,5 @@
 
+#include "IWindow.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -78,7 +79,7 @@ fe::SDLWindow::~SDLWindow() {
   Destroy();
 }
 
-fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height) {
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options) : IWindow(width, height) {
 	impl = std::make_unique<Impl>();
 	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO));
 
@@ -102,7 +103,16 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
-	// SDL_CreateWindowFrom()
+	SDL_PropertiesID props = SDL_CreateProperties();
+
+	SDL_SetPointerProperty(
+		props,
+		SDL_PROP_WINDOW_CREATE_X11_WINDOW_POINTER,
+		(void*)existing_x11_window
+	);
+
+	SDL_Window* window = SDL_CreateWindowWithProperties(props);
+
 	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
 	if (!impl->window) {
