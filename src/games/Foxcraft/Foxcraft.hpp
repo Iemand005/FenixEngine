@@ -162,6 +162,8 @@ public:
     CAKEObject->state.scale.x = CAKEObject->state.scale.z = 14.0f / 16.0f;
     CAKEObject->state.scale.y = 0.5f;
     this->scene->AddObject(CAKEObject);
+
+    AddMonoBlock("resources/textures/dirt.png");
   }
 
   void AddMonoBlock(std::string texturePath) {
