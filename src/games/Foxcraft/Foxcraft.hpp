@@ -276,16 +276,7 @@ public:
     while (!window->ShouldClose()) {
 
       ProcessInput();
-      visualizer.Update();
 
-      float totalMagnitude = 0.0f;
-      for (int i = 0; i < NUM_BARS; ++i) {
-        totalMagnitude += visualizer.bandMagnitudes[i];
-      }
-      float avgMagnitude = totalMagnitude / NUM_BARS;
-
-      float speed = baseSpeedElapsedTimeBumpy + (avgMagnitude * audioAmplitudeScale * audioSpeedMultiplier);
-      elapsedTimeBumpy += speed;
       elapsedTime += baseSpeedElapsedTime;
 
       float colorR = sin(elapsedTime * bgColorFreq) * 0.5f + 0.5f;
