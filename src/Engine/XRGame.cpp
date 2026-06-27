@@ -14,6 +14,7 @@
 #else
 
 #include <x11/Xlib.h>
+#include <GL/glx.h>
 
 #endif
 
@@ -298,6 +299,8 @@ void XRGame::initOpenXR() {
       } else if (SDL_strcmp(video_driver, "x11") == 0) {
 
 
+        Display *xDisplay = window->GetX11Display();
+
         // --- 3. RETRIEVE THE GLX CONTEXT ---
         // Make sure the SDL context is current, then use standard GLX functions to peel back the wrapper
         GLXContext glxContext = glXGetCurrentContext();
@@ -333,9 +336,11 @@ void XRGame::initOpenXR() {
         XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
         gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
         gfx.next = NULL;
-        gfx.xDisplay = window->GetX11Display();
+        gfx.xDisplay = ;
         gfx.glxDrawable = window->GetGLXDrawable();
-        gfx.visualid = visualId
+        gfx.visualid = visualid;
+        gfx.glxFBConfig = GLXFBConfig;
+        gfx.glxContext = glxContext;;
         initOpenXR(&gfx);
       }
     }
