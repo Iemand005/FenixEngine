@@ -113,8 +113,7 @@ class SDLWindow : public IWindow {
   void* GetWaylandDisplay();
 
   void* GetX11Display();
-  struct GLXDrawable;
-  GLXDrawable GetGLXDrawable();
+  unsigned long GetGLXDrawable();
 #endif
 };
 

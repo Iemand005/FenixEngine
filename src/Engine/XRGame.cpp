@@ -297,12 +297,6 @@ void XRGame::initOpenXR() {
         initOpenXR(&gfx);
       } else if (SDL_strcmp(video_driver, "x11") == 0) {
 
-        SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
-
-        // --- 2. RETRIEVE X11 DISPLAY & DRAWABLE ---
-        // Note: In SDL3, use explicit 'Pointer' or 'Number' property getters
-        Display* xDisplay = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-        GLXDrawable glxDrawable = (GLXDrawable)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 
         // --- 3. RETRIEVE THE GLX CONTEXT ---
         // Make sure the SDL context is current, then use standard GLX functions to peel back the wrapper
@@ -340,6 +334,7 @@ void XRGame::initOpenXR() {
         gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
         gfx.next = NULL;
         gfx.xDisplay = window->GetX11Display();
+        gfx.glxDrawable = window->GetGLXDrawable();
         gfx.visualid = visualId
         initOpenXR(&gfx);
       }
