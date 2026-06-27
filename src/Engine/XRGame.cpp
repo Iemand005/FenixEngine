@@ -13,7 +13,7 @@
 
 #else
 
-#include <x11/Xlib.h>
+#include <X11/Xlib.h>
 #include <GL/glx.h>
 
 #endif
