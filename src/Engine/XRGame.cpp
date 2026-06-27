@@ -322,24 +322,13 @@ void XRGame::initOpenXR() {
         glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
         VisualID visualid = (VisualID)visual_id_val;
 
-        // --- 5. FINALLY, INITIALIZE THE OPENXR STRUCT ---
-        XrGraphicsBindingOpenGLXlibKHR graphicsBinding = {
-          .type        = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
-          .next        = NULL,
-          .xDisplay    = xDisplay,
-          .visualid    = visualid,
-          .glxFBConfig = glxFBConfig,
-          .glxDrawable = glxDrawable,
-          .glxContext  = glxContext
-        };
-
         XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
         gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
         gfx.next = NULL;
-        gfx.xDisplay = ;
+        gfx.xDisplay = xDisplay;
         gfx.glxDrawable = window->GetGLXDrawable();
         gfx.visualid = visualid;
-        gfx.glxFBConfig = GLXFBConfig;
+        gfx.glxFBConfig = glxFBConfig;
         gfx.glxContext = glxContext;;
         initOpenXR(&gfx);
       }
