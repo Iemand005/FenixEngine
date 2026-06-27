@@ -284,7 +284,21 @@ void XRGame::initOpenXR() {
 
     const char *video_driver = SDL_GetCurrentVideoDriver();
 
-
+    if (video_driver != NULL) {
+      std::cout << "Video Driver: " << video_driver << std::endl;
+      if (SDL_strcmp(video_driver, "wayland") == 0) {
+        XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
+        gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
+        gfx.display = (wl_display *)window->GetWaylandDisplay();
+        initOpenXR(&gfx);
+      } else if (SDL_strcmp(video_driver, "x11") == 0) {
+        // Running on X11 (or Xwayland)
+        XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
+        gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
+        gfx.display = (wl_display *)window->GetX11Display();
+        initOpenXR(&gfx);
+      }
+    }
 /*#elif defined(XR_USE_PLATFORM_WAYLAND)
 	XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
