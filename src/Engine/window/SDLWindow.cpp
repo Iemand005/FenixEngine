@@ -5,7 +5,7 @@
 #else
 #include <X11/Xlib.h>
 
-#include <GL/glx.h>
+//#include <GL/glx.h>
 #endif
 
 #include <SDL3/SDL.h>
@@ -453,8 +453,8 @@ void *fe::SDLWindow::GetX11Display() {
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
 }
 
-GLXDrawable fe::SDLWindow::GetGLXDrawable() {
+unsigned long fe::SDLWindow::GetGLXDrawable() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
-	return (GLXDrawable)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+	return SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 }
 #endif
