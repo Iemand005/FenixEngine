@@ -14,6 +14,7 @@
 #endif
 #else
 #define XR_USE_PLATFORM_WAYLAND
+#define XR_USE_PLATFORM_XLIB
 #endif
 // #include <openxr/openxr.h>
 // #include <openxr/openxr_platform.h>
