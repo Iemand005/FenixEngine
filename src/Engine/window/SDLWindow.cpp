@@ -452,4 +452,9 @@ void *fe::SDLWindow::GetX11Display() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
 	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
 }
+
+GLXDrawable fe::SDLWindow::GetGLXDrawable() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
+	return (GLXDrawable)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+}
 #endif
