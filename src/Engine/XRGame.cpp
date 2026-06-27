@@ -11,6 +11,10 @@
 #include <Windows.h>
 #include <unknwn.h>
 
+#else
+
+#include <x11/Xlib.h>
+
 #endif
 
 #ifdef XR_USE_PLATFORM_WAYLAND
@@ -292,10 +296,51 @@ void XRGame::initOpenXR() {
         gfx.display = (wl_display *)window->GetWaylandDisplay();
         initOpenXR(&gfx);
       } else if (SDL_strcmp(video_driver, "x11") == 0) {
-        // Running on X11 (or Xwayland)
+
+        SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+
+        // --- 2. RETRIEVE X11 DISPLAY & DRAWABLE ---
+        // Note: In SDL3, use explicit 'Pointer' or 'Number' property getters
+        Display* xDisplay = (Display*)SDL_GetPointerProperty(window_props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        GLXDrawable glxDrawable = (GLXDrawable)SDL_GetNumberProperty(window_props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+
+        // --- 3. RETRIEVE THE GLX CONTEXT ---
+        // Make sure the SDL context is current, then use standard GLX functions to peel back the wrapper
+        GLXContext glxContext = glXGetCurrentContext();
+
+        // --- 4. RETRIEVE THE FB CONFIG & VISUAL ID ---
+        // Query the active context to find the Framebuffer Configuration ID it was built on
+        int fb_config_id = 0;
+        glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
+
+        // Use the ID to find the matching GLXFBConfig handle from X11
+        int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
+        int num_configs = 0;
+        GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
+        GLXFBConfig glxFBConfig = fb_configs[0];
+        XFree(fb_configs); // Free the array wrapper memory allocated by Xlib
+
+        // Query that FBConfig to extract its corresponding X11 Visual ID
+        int visual_id_val = 0;
+        glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
+        VisualID visualid = (VisualID)visual_id_val;
+
+        // --- 5. FINALLY, INITIALIZE THE OPENXR STRUCT ---
+        XrGraphicsBindingOpenGLXlibKHR graphicsBinding = {
+          .type        = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
+          .next        = NULL,
+          .xDisplay    = xDisplay,
+          .visualid    = visualid,
+          .glxFBConfig = glxFBConfig,
+          .glxDrawable = glxDrawable,
+          .glxContext  = glxContext
+        };
+
         XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
         gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
-        gfx.display = (wl_display *)window->GetX11Display();
+        gfx.next = NULL;
+        gfx.xDisplay = window->GetX11Display();
+        gfx.visualid = visualId
         initOpenXR(&gfx);
       }
     }

@@ -4,6 +4,8 @@
 #include <windows.h>
 #else
 #include <X11/Xlib.h>
+
+#include <GL/glx.h>
 #endif
 
 #include <SDL3/SDL.h>
@@ -444,5 +446,10 @@ void *fe::SDLWindow::GetWaylandDisplay() {
 		SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER,
 		nullptr
 	);
+}
+
+void *fe::SDLWindow::GetX11Display() {
+	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
+	return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
 }
 #endif

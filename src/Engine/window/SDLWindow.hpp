@@ -5,6 +5,8 @@
 #define NOMINMAX
 
 #include <windows.h>
+#else
+//#include <x11/Xlib.h>
 #endif
 
 #include <functional>
@@ -109,6 +111,8 @@ class SDLWindow : public IWindow {
 #else
   void* GetWaylandSurface();
   void* GetWaylandDisplay();
+
+  void* GetX11Display();
 #endif
 };
 
