@@ -79,8 +79,6 @@ public:
     LoadShaders("/home/lasse/Documents/Projects/FenixEngine/src/games/Foxcraft/resources/shaders/VertexShader.glsl", "/home/lasse/Documents/Projects/FenixEngine/src/games/Foxcraft/resources/shaders/FragmentShader.glsl");
 
     LoadModels();
-
-    visualizer.Init();
   }
 
   void LoadModels() {
