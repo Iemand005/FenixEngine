@@ -15,7 +15,7 @@ public:
 
     ~Aura();
 
-    bool IsOpen() const { return dev != NULL; }
+    bool IsOpen() const;
 
     bool SetColor(BYTE r, BYTE g, BYTE b)
     {

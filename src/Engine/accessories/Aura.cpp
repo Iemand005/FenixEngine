@@ -82,3 +82,5 @@ Aura::Aura() {
 Aura::~Aura() {
 	if (impl->dev) CloseHandle(impl->dev);
 }
+
+bool Aura::IsOpen() { return impl->dev != NULL; }
