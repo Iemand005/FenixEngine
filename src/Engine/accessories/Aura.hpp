@@ -11,9 +11,7 @@ class Aura {
 
 public:
 
-    Aura() {
-        this->dev = OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
-    }
+    Aura();
 
     ~Aura() {
         if (dev) CloseHandle(dev);
