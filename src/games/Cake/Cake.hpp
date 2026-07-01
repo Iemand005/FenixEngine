@@ -20,8 +20,9 @@
 #include <EditableGame.hpp>
 #include <Primitives.hpp>
 
-#include <audio/AudioVisualiser.hpp>
 #include <ScreenSaverMode.hpp>
+#include <audio/AudioVisualiser.hpp>
+#include <accessories/aura.h>
 
 class Cake : public fe::EditableGame {
 public:
