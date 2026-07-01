@@ -108,7 +108,7 @@ public:
 	Aura aura;
 
 	Cake() : Cake(1400, 1200) {
-		aura->SetColor
+		aura->SetColor(0,0,255);
 	}
 
 	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
