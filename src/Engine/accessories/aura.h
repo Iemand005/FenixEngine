@@ -36,6 +36,8 @@ static_assert(sizeof(AuraColorReport) == 64, "AuraColorReport must be exactly 64
 
 class Aura {
 
+    HANDLE dev = nullptr;
+
     HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
     {
         GUID guid;
