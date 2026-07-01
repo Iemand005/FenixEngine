@@ -111,7 +111,7 @@ public:
 		aura.SetColor(0,0,255);
 	}
 
-	Cake(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr, false) {
+	Cake(int width, int height) : fe::EditableGame(width, height, false, false) {
 
 		window->SetTitle(isCyanide ? "HAPPY BIRTHDAY CYANIDE!!" : "HAPPY BIRTHDAY FLEXAN!!");
 
