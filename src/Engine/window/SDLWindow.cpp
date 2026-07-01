@@ -278,7 +278,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	);
 
 	RECT r;
-	GetClientRect(parent, &r);
+	GetClientRect((HWND)parent, &r);
 
 	w = r.right - r.left;
 	h = r.bottom - r.top;
