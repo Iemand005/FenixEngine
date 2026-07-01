@@ -1,10 +1,11 @@
 
 
-
+#include <memory>
 
 class Aura {
 
-    struct impl;
+    struct Impl;
+    std::unique_ptr<Impl> impl;
     HANDLE dev = NULL;
 
     HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
