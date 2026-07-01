@@ -13,9 +13,7 @@ public:
 
     Aura();
 
-    ~Aura() {
-        if (dev) CloseHandle(dev);
-    }
+    ~Aura();
 
     bool IsOpen() const { return dev != NULL; }
 
