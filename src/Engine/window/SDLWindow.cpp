@@ -92,6 +92,15 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+	bool tenBit = true;
+
+	if (tenBit) {
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
+	}
+
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
