@@ -94,6 +94,6 @@ bool Aura::SetColor(char r, char g, char b) {
 	report.r = r;
 	report.g = g;
 	report.b = b;
-	HidD_SetFeature(dev, &report, sizeof(report));
+	HidD_SetFeature(impl->dev, &report, sizeof(report));
 	return true; // TODO: might not be successfull but wharever
 }
