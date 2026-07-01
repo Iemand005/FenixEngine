@@ -323,6 +323,10 @@ public:
 		if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
 	}
 
+	void SetBackgroundColor(float r, float g, float b) {
+		SetClearColor(r, g, b);
+		aura.SetColor(0, 0, 255);
+	}
 
 	void Run() {
 		auto window = this->GetWindow<fe::SDLWindow>();
