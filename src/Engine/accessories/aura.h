@@ -36,7 +36,7 @@ static_assert(sizeof(AuraColorReport) == 64, "AuraColorReport must be exactly 64
 
 class Aura {
 
-    HANDLE dev = nullptr;
+    HANDLE dev = NULL;
 
     HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
     {
@@ -75,7 +75,16 @@ class Aura {
     }
 
 public:
-    void SetColor(HANDLE dev, BYTE r, BYTE g, BYTE b)
+
+    Aura() {
+        this->dev = OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);;
+    }
+
+    ~Aura() {
+        CloseHandle(this->dev);
+    }
+
+    void SetColor(BYTE r, BYTE g, BYTE b)
     {
         AuraInitReport init;
         HidD_SetFeature(dev, &init, sizeof(init));
