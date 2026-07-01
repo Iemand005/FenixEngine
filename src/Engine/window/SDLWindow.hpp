@@ -93,7 +93,7 @@ class SDLWindow : public IWindow {
 
   void Destroy() override;
 
-  double GetTime();
+  double GetTime() override;
 
   void GetFramebufferSize(int *width, int *height);
 

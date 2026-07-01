@@ -245,6 +245,8 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	if (!props)
 		return;
 
+	unsigned int w, h;
+
 #ifdef _WIN32
 
 	HWND hwnd = (HWND)SDL_GetPointerProperty(
@@ -274,6 +276,12 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 		SWP_NOACTIVATE |
 		SWP_SHOWWINDOW
 	);
+
+	RECT r;
+	GetClientRect(previewParent, &r);
+
+	w = r.right - r.left;
+	h = r.bottom - r.top;
 #else
 
 
@@ -287,10 +295,24 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 
 	Window parent_window_id = (Window)(uintptr_t)parent;
 	XReparentWindow(display, sdl_xwindow, parent_window_id, 0, 0);
-	XMapWindow(display, sdl_xwindow); // mayb ehtat fills it huh
+
+	Window root;
+	int x, y;
+	unsigned int border_width, depth;
+	XGetGeometry(display, parent_window_id, &root, &x, &y, &w, &h, &border_width, &depth);
+	XSelectInput(display, sdl_xwindow, StructureNotifyMask | ExposureMask);
+	/*int oldWidth, oldHeight;
+	resizeEvent = [&](int width, int height) {
+
+		if (width != oldWidth || height != oldHeight) {
+			oldWidth = width;
+			oldHeight = height;
+			Resize(width, height);
+		}
+	};*/
 	XSync(display, False);
 #endif
-
+	 Resize(w, h);
 }
 
 void fe::SDLWindow::Show() {

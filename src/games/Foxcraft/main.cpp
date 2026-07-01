@@ -1,49 +1,152 @@
+#ifdef _WIN32
+#define _WINSOCKAPI_
+#include <winsock2.h>
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+#endif
+#include <string>
+#include <cstring>
+#include <iostream>
 #include "Foxcraft.hpp"
 
-using namespace std;
-using namespace glm;
+#include <fstream>
+#include <sstream>
+#include <chrono>
+
+void LogToFile(const std::string& message)
+{
+  #ifdef _WIN32
+  std::string logpath = "C:\\Temp\\Cake_screensaver.log";
+  #else
+  std::string logpath = "/tmp/Cake_screensaver.log";
+  #endif
+  try
+  {
+    std::ofstream file(logpath, std::ios::app);
+    if (file.is_open())
+    {
+      auto now = std::chrono::system_clock::now();
+      auto time = std::chrono::system_clock::to_time_t(now);
+      file << "[" << std::ctime(&time) << "] " << message << "\n";
+      file.close();
+    }
+  }
+  catch (...) { }
+}
 
 int main() {
 
-  auto game = make_unique<Foxcraft>(800, 600);
-  
-  auto cameraOffset = vec3(0.0f, 6.5f, 0.0f);
+  std::cout << "Hiii" << std::endl;
 
-  while (!game->ShouldClose()) {
-    glfwPollEvents();
+  Foxcraft game;
 
-    if (game->player->touchedGround) {
-      game->canJump = true;
-    }
-    game->ProcessInput();
-    game->player->rotation.y = -game->yaw + 90.0f;
-    glm::vec3 pos = game->player->position + cameraOffset;
-    game->cameraPos = pos - game->cameraFront * 5.0f;
-    game->camera->SetPos(game->cameraPos);
-
-    // game.playerCamera->setAspect((float)game.width / (float)game.height);
-    // window.playerCamera->setPos(cameraPos);
-
-    game->camera->setFront(glm::normalize(pos - game->cameraPos));
-
-    if (game->isConnectedToServer) game->client->sendPosition(game->player->position, game->player->rotation);
-
-    for (auto& npc : game->npcs) {
-      npc->LookAt(pos * glm::vec3(1.0f, 0.0f, 1.0f));
-      npc->applyVelocity(glm::normalize(pos - npc->position) * glm::vec3(1.0f, 0.0f, 1.0f) * 0.2f * (float)game->getDeltaTime());
-      npc->needsUpdate = true;
-    }
-    for (auto& npc : game->npcs) {
-      if (game->player->intersects(*npc)) {
-        std::cout << "Player intersects with NPC" << std::endl;
-        std::cout << "YOU FUCKING DIED!!!!" << std::endl;
-        // client.sendPing();
-      }
-    }
-    game->update();
-    game->redraw();
-  }
-
-  game->destroy();
+  game.Run();
   return 0;
 }
+
+#ifdef _WIN32
+
+int WINAPI WinMain(
+  HINSTANCE,
+  HINSTANCE,
+  LPSTR lpCmdLine,
+  int
+)
+{
+  LogToFile("=== Screensaver started ===");
+  LogToFile(std::string("Command line: ") + (lpCmdLine ? lpCmdLine : "(null)"));
+
+  ScreenSaverMode mode = ScreenSaverMode::Window;
+  HWND previewHwnd = nullptr;
+
+  std::string cmd = lpCmdLine ? lpCmdLine : "";
+  std::string cur;
+
+  for (char c : cmd)
+  {
+    if (c == ' ')
+    {
+      if (!cur.empty())
+      {
+        if (_stricmp(cur.c_str(), "/s") == 0)
+          mode = ScreenSaverMode::Fullscreen;
+        else if (_stricmp(cur.c_str(), "/c") == 0)
+          mode = ScreenSaverMode::Config;
+        else if (_stricmp(cur.c_str(), "/p") == 0)
+          mode = ScreenSaverMode::Preview;
+        else if (mode == ScreenSaverMode::Preview)
+        {
+          // Parse the window handle safely
+          try
+          {
+            unsigned long long handle = std::stoull(cur);
+            previewHwnd = (HWND)handle;
+          }
+          catch (const std::exception& e)
+          {
+            OutputDebugStringA("Failed to parse preview window handle: ");
+            OutputDebugStringA(e.what());
+            OutputDebugStringA("\n");
+          }
+        }
+        cur.clear();
+      }
+    }
+    else
+    {
+      cur += c;
+    }
+  }
+
+  if (!cur.empty())
+  {
+    if (_stricmp(cur.c_str(), "/s") == 0)
+      mode = ScreenSaverMode::Fullscreen;
+    else if (_stricmp(cur.c_str(), "/c") == 0)
+      mode = ScreenSaverMode::Config;
+    else if (_stricmp(cur.c_str(), "/p") == 0)
+      mode = ScreenSaverMode::Preview;
+    else if (mode == ScreenSaverMode::Preview)
+    {
+      try
+      {
+        unsigned long long handle = std::stoull(cur);
+        previewHwnd = (HWND)handle;
+      }
+      catch (const std::exception& e)
+      {
+        OutputDebugStringA("Failed to parse preview window handle: ");
+        OutputDebugStringA(e.what());
+        OutputDebugStringA("\n");
+      }
+    }
+  }
+
+  try
+  {
+    LogToFile("Creating game instance...");
+    Cake game;
+
+    LogToFile("Activating screensaver mode...");
+    game.ActivateScreenSaverMode(mode, previewHwnd);
+
+    LogToFile("Running game...");
+    game.Run();
+
+    LogToFile("Game exited normally");
+  }
+  catch (const std::exception& e)
+  {
+    LogToFile(std::string("Exception caught: ") + e.what());
+  }
+  catch (...)
+  {
+    LogToFile("Unknown exception caught");
+  }
+
+
+  return 0;
+}
+
+#endif

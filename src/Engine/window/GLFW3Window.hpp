@@ -39,7 +39,7 @@ public:
 	bool ShouldClose();
 	void PrepareClose();
 
-	double GetTime();
+	double GetTime() override;
 
 	void GetFramebufferSize(int *width, int *height);
 
@@ -51,6 +51,7 @@ public:
   	void Show();
 
 	void AttachToNativeParent(void* parent);
+
 	  
 #ifdef _WIN32
 	HWND GetNativeWindow();

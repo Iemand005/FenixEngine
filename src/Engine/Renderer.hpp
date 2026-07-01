@@ -69,6 +69,10 @@ class Renderer {
 
   int mapIndex = 0;
 
+#ifdef USE_VISUALIZER
+  AudioVisualiser visualizer;
+#endif
+
 #ifndef EXCLUDE_NETWORKING
   std::unique_ptr<Networker> client = nullptr;
 #endif
@@ -91,20 +95,14 @@ class Renderer {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 	}
 
-#ifdef _WIN32
 
-  void ActivateScreenSaverMode(ScreenSaverMode mode, HWND previewParent = nullptr) {
+  void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
 		auto window = GetWindow<DefaultWindow>();
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
-				RECT r;
-				GetClientRect(previewParent, &r);
 
-				int w = r.right - r.left;
-				int h = r.bottom - r.top;
 
 				window->AttachToNativeParent(previewParent);
-				window->Resize(w, h);
 				break;
 			}
 
@@ -136,41 +134,6 @@ class Renderer {
 			}
 		}
   }
-#else
-  void ActivateScreenSaverMode(ScreenSaverMode mode, unsigned long long int parent = 0) {
-    auto window = GetWindow<DefaultWindow>();
-    switch (mode) {
-
-      case ScreenSaverMode::Fullscreen: {
-        // window->GoBorderlessFullscreen();
-        window->AttachToNativeParent((void*)parent);
-        //window->SetFullscreen();
-
-        // window->Show();
-
-        // SDL_HideCursor();
-        // SDL_SetCursor(nullptr);
-
-        window->Show();
-
-        window->ActivateScreenSaverMode();
-
-        window->StartMouseCapture();
-
-        break;
-      }
-
-      case ScreenSaverMode::Window: {
-        window->Show();
-        break;
-      }
-
-      case ScreenSaverMode::Config: {
-        break;
-      }
-    }
-  }
-#endif
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
@@ -226,10 +189,18 @@ template<typename WindowT = DefaultWindow>
   }
 
   void Redraw() {
+    auto window = GetWindow<DefaultWindow>();
     if (!scene || !camera || !shader) return;
+    std::cout << "OK: " << std::endl;
 
     if (shader) {
       shader->Use();
+
+      float elapsedTime = (float)window->GetTime();
+      shader->SetFloat("time", elapsedTime);
+
+      std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
+
       int count = scene->GetLightCount();
       auto pointLights = scene->GetLights();
       shader->SetInt("lightCount", count);

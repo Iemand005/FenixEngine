@@ -285,7 +285,13 @@ void XRGame::initOpenXR() {
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
 	gfx.display = (wl_display *)window->GetWaylandDisplay();
 	initOpenXR(&gfx);
+#elif defined(XR_USE_PLATFORM_XLIB)
+        case XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR:
+#elif defined(XR_USE_PLATFORM_XCB)
+        case XR_TYPE_GRAPHICS_BINDING_OPENGL_XCB_KHR:
 #endif
+
+
 }
 
 #ifdef XR_USE_PLATFORM_WIN32
@@ -348,7 +354,8 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->BeginSession();
 
-	XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
+    XrReferenceSpaceCreateInfo	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
+ spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
 	spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
 	spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
@@ -439,7 +446,7 @@ void XRGame::RedrawWindow(GLuint fbo) {
   // if (window && window.get())
   BindFrameBuffer(fbo);
   CheckErrors();
-  Game::Redraw(fbo);
+  Renderer::Redraw(fbo);
 }
 
 void XRGame::EnableXR() {

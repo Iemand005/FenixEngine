@@ -112,7 +112,7 @@ public:
 
 		SetClearColor(1, 1, 0);
 
-		//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 
 		LoadModels();
 

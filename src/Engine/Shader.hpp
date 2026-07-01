@@ -76,10 +76,11 @@ namespace fe {
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 
 			std::string exeDir = GetExecutableDirectorye();
-			std::string path2 = exeDir + "\\" + fileName;
+			std::string path2 = exeDir + "/" + fileName;// TODO: this slash thing not corss latfromr!
 			file.open(path2);
 			if (!file.is_open())
 			{
+              std::cout << "NO LOADY OH NO " << path2 << std::endl;
         return false;
 				// return true;
 			}

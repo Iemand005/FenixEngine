@@ -191,4 +191,201 @@ namespace fe::Primitives {
 		
 		return GenerateCube(directions, uvs, size);
 	}
+
+	inline Mesh GenerateTunnel(float radius = 1.0f, float height = 10.0f,
+							   int segments = 32, int heightSegments = 10) {
+		const float PI = 3.14159265359f;
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		for (int h = 0; h <= heightSegments; h++) {
+			float y = (h / (float)heightSegments) * height - height * 0.5f;
+			float vCoord = h / (float)heightSegments;
+
+			for (int i = 0; i < segments; i++) {
+				float angle = (i / (float)segments) * 2.0f * PI;
+				float uCoord = i / (float)segments;
+
+				float x = radius * cos(angle);
+				float z = radius * sin(angle);
+
+				float nx = cos(angle);
+				float ny = 0.0f;
+				float nz = sin(angle);
+
+				vertices.push_back(Vertex(x, y, z, nx, ny, nz, uCoord, vCoord));
+			}
+		}
+
+		for (int h = 0; h < heightSegments; h++) {
+			for (int i = 0; i < segments; i++) {
+				int current = h * segments + i;
+				int next = h * segments + ((i + 1) % segments);
+				int currentTop = (h + 1) * segments + i;
+				int nextTop = (h + 1) * segments + ((i + 1) % segments);
+
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(currentTop);
+
+				indices.push_back(next);
+				indices.push_back(nextTop);
+				indices.push_back(currentTop);
+			}
+		}
+
+		return Mesh(vertices, indices);
+	}
+
+	glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float t2 = t * t;
+		float t3 = t2 * t;
+		return 0.5f * (
+			(2.0f * p1) +
+			(-p0 + p2) * t +
+			(2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
+			(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
+		);
+	}
+
+	inline glm::vec3 CubicBezier(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float u = 1.0f - t;
+		float u2 = u * u;
+		float t2 = t * t;
+		return u2 * u * p0 + 3.0f * u2 * t * p1 + 3.0f * u * t2 * p2 + t2 * t * p3;
+	}
+
+	inline glm::vec3 CubicBezierTangent(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+		float u = 1.0f - t;
+		float u2 = u * u;
+		float t2 = t * t;
+		return 3.0f * u2 * (p1 - p0) + 6.0f * u * t * (p2 - p1) + 3.0f * t2 * (p3 - p2);
+	}
+
+	inline Mesh GenerateBentTunnel(
+		const std::vector<glm::vec3>& path,
+		float radius = 1.0f,
+		int segments = 32,
+		int subdivisionsPerSegment = 12,
+		bool insideOut = false,
+		glm::vec3* inUp = nullptr,
+		glm::vec3* inRight = nullptr,
+		glm::vec3* outUp = nullptr,
+		glm::vec3* outRight = nullptr,
+		const glm::vec3* firstForward = nullptr,
+		const glm::vec3* endForward = nullptr,
+		float vOffset = 0.0f)
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		std::vector<glm::vec3> smoothPath;
+		const float PI = 3.14159265359f;
+
+		int totalSamples = subdivisionsPerSegment * (int)(path.size() - 1);
+		for (int sub = 0; sub < totalSamples; sub++) {
+			float t = sub / (float)totalSamples;
+			smoothPath.push_back(CubicBezier(path[0], path[1], path[2], path[3], t));
+		}
+		smoothPath.push_back(CubicBezier(path[0], path[1], path[2], path[3], 1.0f));
+
+		glm::vec3 prevForward(0.0f);
+		glm::vec3 right = inRight ? *inRight : glm::vec3(1, 0, 0);
+		glm::vec3 up = inUp ? *inUp : glm::vec3(0, 1, 0);
+
+		for (size_t p = 0; p < smoothPath.size(); p++) {
+			glm::vec3 pos = smoothPath[p];
+			glm::vec3 forward;
+			if (p == 0 && firstForward) {
+				forward = *firstForward;
+			} else if (p == smoothPath.size() - 1) {
+				if (endForward)
+					forward = *endForward;
+				else
+					forward = glm::normalize(smoothPath[p] - smoothPath[p-1]);
+			} else {
+				forward = glm::normalize(smoothPath[p+1] - smoothPath[p]);
+			}
+
+			if (p > 0) {
+				float cosAng = glm::clamp(glm::dot(prevForward, forward), -1.0f, 1.0f);
+				glm::vec3 axis = glm::cross(prevForward, forward);
+				float len = glm::length(axis);
+				if (len > 1e-6f) {
+					axis = axis / len;
+					float angle = acos(cosAng);
+					glm::quat q = glm::angleAxis(angle, axis);
+					right = glm::normalize(q * right);
+					up = glm::normalize(q * up);
+				}
+			} else if (!inRight) {
+				glm::vec3 r = glm::cross(up, forward);
+				if (glm::length(r) < 1e-6f) {
+					up = glm::vec3(0, 0, 1);
+					r = glm::cross(up, forward);
+				}
+				right = glm::normalize(r);
+			}
+			right = glm::normalize(right - glm::dot(right, forward) * forward);
+			up = glm::cross(forward, right);
+			prevForward = forward;
+
+			for (int i = 0; i < segments; i++) {
+				float angle = (i / (float)segments) * 2.0f * PI;
+				float x = cos(angle);
+				float y = sin(angle);
+				glm::vec3 offset = right * x * radius + up * y * radius;
+				glm::vec3 vPos = pos + offset;
+				glm::vec3 normal = glm::normalize(offset);
+				if (insideOut) normal = -normal;
+
+				vertices.push_back(Vertex(vPos.x, vPos.y, vPos.z, normal.x, normal.y, normal.z,
+										  i / (float)segments, vOffset + p / (float)(smoothPath.size()-1)));
+			}
+		}
+
+		for (size_t p = 0; p < smoothPath.size() - 1; p++) {
+			for (int i = 0; i < segments; i++) {
+				int current = p * segments + i;
+				int next = p * segments + ((i + 1) % segments);
+				int currentNext = (p + 1) * segments + i;
+				int nextNext = (p + 1) * segments + ((i + 1) % segments);
+
+				if (insideOut) {
+					indices.push_back(currentNext);
+					indices.push_back(next);
+					indices.push_back(current);
+					indices.push_back(currentNext);
+					indices.push_back(nextNext);
+					indices.push_back(next);
+				} else {
+					indices.push_back(current);
+					indices.push_back(next);
+					indices.push_back(currentNext);
+					indices.push_back(next);
+					indices.push_back(nextNext);
+					indices.push_back(currentNext);
+				}
+			}
+		}
+		if (outUp) *outUp = up;
+		if (outRight) *outRight = right;
+		return Mesh(vertices, indices);
+	}
+
+	inline glm::vec3 GetPositionAlongPath(const std::vector<glm::vec3>& path, float progress) {
+		progress = glm::clamp(progress, 0.0f, 1.0f);
+
+		float scaledProgress = progress * (path.size() - 1);
+		int currentSegment = (int)scaledProgress;
+		int nextSegment = currentSegment + 1;
+
+		if (nextSegment >= path.size()) {
+			nextSegment = path.size() - 1;
+			currentSegment = path.size() - 2;
+		}
+
+		float blend = scaledProgress - currentSegment;
+		return glm::mix(path[currentSegment], path[nextSegment], blend);
+	}
+
 } // namespace fe::Primitives
