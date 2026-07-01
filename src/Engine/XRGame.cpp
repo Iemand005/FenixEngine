@@ -354,8 +354,7 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->BeginSession();
 
-    XrReferenceSpaceCreateInfo	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
- spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
+    XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
 	spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
 	spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
