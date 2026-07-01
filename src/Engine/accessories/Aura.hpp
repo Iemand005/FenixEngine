@@ -4,6 +4,7 @@
 
 class Aura {
 
+    struct impl;
     HANDLE dev = NULL;
 
     HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
