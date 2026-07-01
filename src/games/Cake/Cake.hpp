@@ -323,9 +323,23 @@ public:
 		if (ImGui::GetIO().WantCaptureMouse) window->StopMouseCapture();
 	}
 
-	void SetBackgroundColor(float r, float g, float b) {
+	BYTE lastR = 0, lastG = 0, lastB = 0;
+	bool auraInitialized = false;
+
+	void SetBackgroundColor(float r, float g, float b)
+	{
 		SetClearColor(r, g, b);
-		aura.SetColor(0, 0, 255);
+
+		BYTE ir = (BYTE)(std::clamp(r, 0.0f, 1.0f) * 255.0f + 0.5f);
+		BYTE ig = (BYTE)(std::clamp(g, 0.0f, 1.0f) * 255.0f + 0.5f);
+		BYTE ib = (BYTE)(std::clamp(b, 0.0f, 1.0f) * 255.0f + 0.5f);
+
+		if (auraInitialized && ir == lastR && ig == lastG && ib == lastB)
+			return;
+
+		aura.SetColor(ir, ig, ib);
+		lastR = ir; lastG = ig; lastB = ib;
+		auraInitialized = true;
 	}
 
 	void Run() {
@@ -366,7 +380,7 @@ public:
 			float colorG = sin(elapsedTime * bgColorFreq + 2.094f) * 0.5f + 0.5f;
 			float colorB = sin(elapsedTime * bgColorFreq + 4.189f) * 0.5f + 0.5f;
 
-			SetClearColor(colorR, colorG, colorB);
+			SetBackgroundColor(colorR, colorG, colorB);
 
 			float light1R = sin(elapsedTime * light1RadialColorFreq) * 0.5f + 0.5f;
 			float light1G = sin(elapsedTime * light1RadialColorFreq + 2.094f) * 0.5f + 0.5f;
