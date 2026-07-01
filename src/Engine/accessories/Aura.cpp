@@ -76,9 +76,9 @@ struct Aura::Impl {
 };
 
 Aura::Aura() {
-	this->dev = OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
+	impl->dev = impl->OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
 }
 
 Aura::~Aura() {
-	if (dev) CloseHandle(dev);
+	if (impl->dev) CloseHandle(impl->dev);
 }
