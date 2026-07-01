@@ -1,4 +1,5 @@
-#pragma once
+
+#include "Aura.hpp"
 
 #include <windows.h>
 #include <setupapi.h>
