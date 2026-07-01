@@ -7,8 +7,6 @@ class Aura {
     struct Impl;
     std::unique_ptr<Impl> impl;
 
-
-
 public:
 
     Aura();
@@ -18,5 +16,4 @@ public:
     bool IsOpen() const;
 
     bool SetColor(char r, char g, char b);
-
 };
