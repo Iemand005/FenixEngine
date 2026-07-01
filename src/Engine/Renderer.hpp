@@ -107,7 +107,8 @@ class Renderer {
 			}
 
 			case ScreenSaverMode::Fullscreen: {
-				// window->GoBorderlessFullscreen();
+        bool fullscreen = false;
+				if (fullscreen) window->GoBorderlessFullscreen();
         window->SetFullscreen();
 
         // window->Show();
