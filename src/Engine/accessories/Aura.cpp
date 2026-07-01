@@ -34,3 +34,8 @@ struct AuraColorReport
 
 static_assert(sizeof(AuraInitReport)  == 64, "AuraInitReport must be exactly 64 bytes");
 static_assert(sizeof(AuraColorReport) == 64, "AuraColorReport must be exactly 64 bytes");
+
+struct Aura::Impl {
+    HANDLE dev = NULL;
+
+};
