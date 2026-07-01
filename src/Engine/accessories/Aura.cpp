@@ -83,7 +83,7 @@ Aura::~Aura() {
 	if (impl->dev) CloseHandle(impl->dev);
 }
 
-bool Aura::IsOpen() { return impl->dev != NULL; }
+bool Aura::IsOpen() const { return impl->dev != NULL; }
 
 bool Aura::SetColor(char r, char g, char b) {
 	if (!IsOpen()) return false;
