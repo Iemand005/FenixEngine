@@ -84,3 +84,16 @@ Aura::~Aura() {
 }
 
 bool Aura::IsOpen() { return impl->dev != NULL; }
+
+bool Aura::SetColor(char r, char g, char b) {
+	if (!IsOpen()) return false;
+	AuraInitReport init;
+	HidD_SetFeature(impl->dev, &init, sizeof(init));
+
+	AuraColorReport report;
+	report.r = r;
+	report.g = g;
+	report.b = b;
+	HidD_SetFeature(dev, &report, sizeof(report));
+	return true; // TODO: might not be successfull but wharever
+}
