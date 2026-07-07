@@ -25,9 +25,12 @@
 
 // JPH_SUPPRESS_WARNINGS
 
-using namespace JPH;
-
 using namespace fe;
+
+
+#ifndef EXCLUDE_JOLT
+
+using namespace JPH;
 
 #ifdef JPH_ENABLE_ASSERTS
 
@@ -81,6 +84,8 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
   std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
   return true;
 };
+
+#endif
 
 #endif
 
