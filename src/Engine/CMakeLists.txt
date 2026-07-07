@@ -130,6 +130,7 @@ endif()
 
 
 target_link_libraries(Engine PUBLIC
+    Renderer
     SDL3::SDL3
     OpenXR::openxr_loader
     Jolt
