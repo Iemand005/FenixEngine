@@ -97,8 +97,6 @@ class SDLWindow : public IWindow {
 
   bool HideMouse();
 
-	void ActivateScreenSaverMode();
-
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32
 	HWND GetNativeWindow();

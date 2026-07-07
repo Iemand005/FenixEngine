@@ -239,10 +239,10 @@ void fe::SDLWindow::Resize(int w, int h) {
 	SDL_SetWindowSize(this->impl->window, w, h);
 }
 
-void fe::SDLWindow::ActivateScreenSaverMode() {
-    SDL_GetMouseState(&startX, &startY);
-	_isScreensaving = true;
-}
+// void fe::SDLWindow::ActivateScreenSaverMode() {
+//     SDL_GetMouseState(&startX, &startY);
+// 	_isScreensaving = true;
+// }
 
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
