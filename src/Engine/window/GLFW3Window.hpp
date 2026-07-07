@@ -45,7 +45,9 @@ public:
 
 	bool HideMouse();
 
-  void SetTitle(const char *newTitle) override;
+	void SetFullscreen(bool enabled) override;
+
+	v«oid SetTitle(const char *newTitle) override;
 
 	void Hide();
   	void Show();

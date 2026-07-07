@@ -213,6 +213,10 @@ void fe::GLFW3Window::SetTitle(const char *title) {
 	glfwSetWindowTitle(impl->window, title);
 }
 
+void fe::GLF3Window::SetFullscreen(bool enabled) {
+	
+}
+
 void fe::GLFW3Window::PrepareClose() {
     glfwSetWindowShouldClose(impl->window, true);
 }

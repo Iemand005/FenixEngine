@@ -79,7 +79,7 @@ public:
 		_isScreensaving = true;
 	};
 
-	virtual void SetFullscreen(bool enable) = 0;
+	virtual void SetFullscreen(bool enabled = true) = 0;
 	void ToggleFullscreen() {
     SetFullscreen(!isFullscreen);
   }
