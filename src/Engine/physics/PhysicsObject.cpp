@@ -206,7 +206,11 @@ void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
 }
 
 glm::vec3 PhysicsObject::GetPosition() {
+#ifndef EXCLUDE_JOLT
 	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId));
+#else
+	return {};
+#endif
 }
 
 
