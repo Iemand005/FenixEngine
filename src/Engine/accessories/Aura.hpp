@@ -1,11 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
+
 class Aura {
 
 public:

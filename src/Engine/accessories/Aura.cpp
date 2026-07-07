@@ -1,10 +1,12 @@
 
 #include "Aura.hpp"
 
+#include <vector>
+#include <algorithm>
+
 #include <windows.h>
 #include <setupapi.h>
 #include <hidsdi.h>
-#include <vector>
 
 #pragma comment(lib, "hid.lib")
 #pragma comment(lib, "setupapi.lib")
