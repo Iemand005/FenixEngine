@@ -76,6 +76,7 @@ struct Aura::Impl {
 };
 
 Aura::Aura() {
+	impl = std::make_unique<Aura::Impl>();
 	impl->dev = impl->OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
 }
 
