@@ -51,7 +51,7 @@ class SDLWindow : public IWindow {
   void Move(int x, int y);
 
 	void SetBordered(bool enabled);
-	void SetFullscreen(bool enabled) override;
+	void SetFullscreen(bool enabled = false) override;
   
 
 	void SetBorderless() {
@@ -60,7 +60,7 @@ class SDLWindow : public IWindow {
 
   void SetTitle(const char *newTitle) override;
 
-	void GoBorderlessFullscreen();
+	void GoBorderlessFullscreen() override;
 
   void Hide();
   void Show();

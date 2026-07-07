@@ -84,6 +84,9 @@ public:
 	void ToggleFullscreen() {
     SetFullscreen(!isFullscreen);
   }
+
+	virtual void GoBorderlessFullscreen();
+	// virtual void 
 	
 	virtual void SwapBuffers() = 0;
 
