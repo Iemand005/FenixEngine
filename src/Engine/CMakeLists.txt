@@ -42,6 +42,52 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 )
 
 
+add_library(Renderer STATIC
+    glad/glad.c
+    Renderer.cpp
+    window/SDLWindow.cpp
+    window/GLFW3Window.cpp
+)
+
+target_include_directories(Renderer PRIVATE
+    ../../include
+)
+
+target_include_directories(Renderer PUBLIC
+    ../../external/glm
+)
+
+
+if(WIN32)
+    target_link_libraries(Renderer PRIVATE gdi32 opengl32 shell32 user32)
+elseif(APPLE)
+    target_link_libraries(Renderer PRIVATE "-framework OpenGL")
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(Renderer PRIVATE OpenGL::GL)
+
+    find_package(X11 REQUIRED)
+
+    target_link_libraries(Renderer PRIVATE
+        X11::X11
+    )
+endif()
+
+
+target_link_libraries(Renderer PUBLIC
+    glfw
+    SDL3::SDL3
+)
+
+if(MSVC)
+    target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
+
+    target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+else()
+    target_compile_options(Renderer PRIVATE -g)
+endif()
+
+
 add_library(Engine STATIC ${SOURCE_FILES})
 
 if(FE_EXCLUDE_GLFW)
@@ -108,47 +154,3 @@ else()
 endif()
 
 
-add_library(Renderer STATIC
-    glad/glad.c
-    Renderer.cpp
-    window/SDLWindow.cpp
-    window/GLFW3Window.cpp
-)
-
-target_include_directories(Renderer PRIVATE
-    ../../include
-)
-
-target_include_directories(Renderer PUBLIC
-    ../../external/glm
-)
-
-
-if(WIN32)
-    target_link_libraries(Renderer PRIVATE gdi32 opengl32 shell32 user32)
-elseif(APPLE)
-    target_link_libraries(Renderer PRIVATE "-framework OpenGL")
-else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(Renderer PRIVATE OpenGL::GL)
-
-    find_package(X11 REQUIRED)
-
-    target_link_libraries(Renderer PRIVATE
-        X11::X11
-    )
-endif()
-
-
-target_link_libraries(Renderer PUBLIC
-    glfw
-    SDL3::SDL3
-)
-
-if(MSVC)
-    target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
-
-    target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
-else()
-    target_compile_options(Renderer PRIVATE -g)
-endif()
