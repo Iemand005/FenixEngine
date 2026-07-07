@@ -89,10 +89,10 @@ Aura::~Aura() {
 
 bool Aura::IsOpen() const { return impl->dev != NULL; }
 
-bool Aura::SetColor(char r, char g, char b) {
+bool Aura::SetColor(char r, char g, char b, bool force) {
 	if (!IsOpen()) return false;
 	
-	if (r == impl->lastR && g == impl->lastG && b == impl->lastB)
+	if (!force && r == impl->lastR && g == impl->lastG && b == impl->lastB)
 		return true; // Just preend it's ok the colour is the same hmm? but what if we wanna reset it
 
 	AuraInitReport init;

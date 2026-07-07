@@ -9,7 +9,7 @@ public:
 	~Aura();
 
 	bool IsOpen() const;
-	bool SetColor(char r, char g, char b);
+	bool SetColor(char r, char g, char b, bool force = false);
 
 	bool auraInitialized = false;
 
