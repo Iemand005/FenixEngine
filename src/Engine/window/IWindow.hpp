@@ -35,7 +35,8 @@ public:
 
 	int width, height;
 
-	float startX, startY;
+	bool _isScreensaving = false;
+	double startX, startY;
 
 	ResizeDelegate resizeEvent;
 	MouseMoveDelegate mouseMoveEvent;

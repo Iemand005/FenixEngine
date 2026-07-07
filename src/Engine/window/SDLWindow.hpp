@@ -28,7 +28,6 @@ class SDLWindow : public IWindow {
 	const bool* keyboardState = nullptr;
 
 	bool isFullscreen = false;
-	bool _isScreensaving = false;
 
 
  public:
