@@ -87,13 +87,6 @@ else()
     target_compile_options(Renderer PRIVATE -g)
 endif()
 
-
-add_library(Engine STATIC ${SOURCE_FILES})
-
-# [main] Building folder: j:/ProjectFenix/build Foxcraft
-
-# ShaderSavers/CMakeLists.txt
-
 set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
 
 file(GLOB_RECURSE IMGUI_SOURCE_FILES
@@ -107,6 +100,9 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_demo.cpp
 	${IMGUI_DIR}/imgui_draw.cpp
 )
+
+add_library(Engine STATIC ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+
 
 
 if(FE_EXCLUDE_GLFW)
