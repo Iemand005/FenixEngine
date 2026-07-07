@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#define EXCLUDE_JOLT
-
 #ifndef EXCLUDE_JOLT
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>

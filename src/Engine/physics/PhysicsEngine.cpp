@@ -4,8 +4,6 @@
 #define JPH_OBJECT_STREAM
 #define JPH_CROSS_PLATFORM_DETERMINISTIC
 
-#define EXCLUDE_JOLT
-
 #ifndef EXCLUDE_JOLT
 
 #include <Jolt/Jolt.h>
