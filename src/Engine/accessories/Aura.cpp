@@ -92,9 +92,8 @@ bool Aura::IsOpen() const { return impl->dev != NULL; }
 bool Aura::SetColor(char r, char g, char b) {
 	if (!IsOpen()) return false;
 	
-
-	if (auraInitialized && r == impl->lastR && g == impl->lastG && b == impl->lastB)
-		return;
+	if (r == impl->lastR && g == impl->lastG && b == impl->lastB)
+		return true; // Just preend it's ok the colour is the same hmm? but what if we wanna reset it
 
 	AuraInitReport init;
 	HidD_SetFeature(impl->dev, &init, sizeof(init));
