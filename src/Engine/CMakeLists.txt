@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(Engine LANGUAGES CXX C)
 
 option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
+option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
 
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
