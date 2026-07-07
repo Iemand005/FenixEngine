@@ -20,6 +20,7 @@ using namespace JPH::literals;
 
 using namespace fe;
 
+#ifndef EXCLUDE_JOLT
 namespace Layers {
 static constexpr ObjectLayer NON_MOVING = 0;
 static constexpr ObjectLayer MOVING = 1;
@@ -29,6 +30,7 @@ static constexpr ObjectLayer NUM_LAYERS = 2;
 namespace BroadPhaseLayers {
 static constexpr JPH::BroadPhaseLayer MOVING(0);
 };
+#endif
 
 struct PhysicsObject::Impl {
 #ifndef EXCLUDE_JOLT
