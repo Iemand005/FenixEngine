@@ -114,45 +114,23 @@ namespace fe::Primitives {
 		
 		for(auto direction : directions) {
 			UVRect faceUV = GetUVForDirection(uvs, direction);
-			Mesh plane = GeneratePlane(direction, size, size, faceUV);
-			
-			glm::vec3 planeOffset = glm::vec3(0.0f);
-			bool flipWinding = false;
-			
-			switch(direction) {
-				case PlaneDirection::Front:  
-					planeOffset = glm::vec3(0, 0, -offset); 
-					break;
-				case PlaneDirection::Back:   
-					planeOffset = glm::vec3(0, 0, offset); 
-					break;
-				case PlaneDirection::Right:  
-					planeOffset = glm::vec3(-offset, 0, 0);
-					break;
-				case PlaneDirection::Left:   
-					planeOffset = glm::vec3(offset, 0, 0);
-					break;
-				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
-				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
-			}
+
+			// rotate the base plane to face the requested direction
+			glm::quat rotation = GetRotationFromDirection(direction);
+			Mesh plane = GeneratePlane(size, size, rotation, faceUV);
+
+			// place the face outward along the rotated normal
+			glm::vec3 rotatedNormal = rotation * glm::vec3(0, 1, 0);
+			glm::vec3 planeOffset = rotatedNormal * offset;
 
 			for(auto& vertex : plane.vertices)
-        		vertex.position += planeOffset;
+				vertex.position += planeOffset;
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
-			
-			if(flipWinding) {
-				allIndices.push_back(vertexOffset + 0);
-				allIndices.push_back(vertexOffset + 2);
-				allIndices.push_back(vertexOffset + 1);
-				allIndices.push_back(vertexOffset + 0);
-				allIndices.push_back(vertexOffset + 3);
-				allIndices.push_back(vertexOffset + 2);
-			} else {
-				for(uint32_t idx : plane.indices)
-					allIndices.push_back(idx + vertexOffset);
-			}
+
+			for(uint32_t idx : plane.indices)
+				allIndices.push_back(idx + vertexOffset);
 		}
 		
 		return Mesh(allVertices, allIndices);
