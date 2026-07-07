@@ -33,7 +33,7 @@
 
 #define WAYLAND
 
-#include "Renderer.hpp"
+#include "Graphics/Renderer.hpp"
 
 namespace fe {
 
