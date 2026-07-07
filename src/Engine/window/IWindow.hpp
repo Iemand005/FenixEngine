@@ -72,7 +72,7 @@ public:
 
 	bool CapturingMouse() {return false;};
 
-	viruual void GetMousePosition(double *x, double *y) = 0;
+	virtual void GetMousePosition(double *x, double *y) = 0;
 
 	void ActivateScreenSaverMode() {
 		GetMousePosition(&startX, &startY);
