@@ -214,11 +214,13 @@ void fe::GLFW3Window::SetTitle(const char *title) {
 }
 
 void fe::GLFW3Window::SetFullscreen(bool enabled) {
-	// glfwFocusWindow()
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
 	glfwSetWindowMonitor(impl->window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+}
+
+void fe::GLFW3Window::GoBorderlessFullscreen() {
 
 }
 

@@ -46,6 +46,7 @@ public:
 	bool HideMouse();
 
 	void SetFullscreen(bool enabled = false) override;
+	void GoBorderlessFullscreen() override;
 
 	void SetTitle(const char *newTitle) override;
 
