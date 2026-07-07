@@ -114,42 +114,30 @@ namespace fe::Primitives {
 		
 		for(auto direction : directions) {
 			UVRect faceUV = GetUVForDirection(uvs, direction);
-			glm::quat rotation = GetRotationFromDirection(direction);
-			Mesh plane = GeneratePlane(size, size, rotation, faceUV);
-
+			Mesh plane = GeneratePlane(direction, size, size, faceUV);
+			
 			glm::vec3 planeOffset = glm::vec3(0.0f);
 			bool flipWinding = false;
-
-			// Determine desired outward normal for this face
-			glm::vec3 desiredNormal;
+			
 			switch(direction) {
 				case PlaneDirection::Front:  
 					planeOffset = glm::vec3(0, 0, -offset); 
-					desiredNormal = glm::vec3(0, 0, 1);
 					break;
 				case PlaneDirection::Back:   
 					planeOffset = glm::vec3(0, 0, offset); 
-					desiredNormal = glm::vec3(0, 0, -1);
 					break;
 				case PlaneDirection::Right:  
 					planeOffset = glm::vec3(-offset, 0, 0);
-					desiredNormal = glm::vec3(1, 0, 0);
 					break;
 				case PlaneDirection::Left:   
 					planeOffset = glm::vec3(offset, 0, 0);
-					desiredNormal = glm::vec3(-1, 0, 0);
 					break;
-				case PlaneDirection::Top:    { planeOffset = glm::vec3(0, offset, 0); desiredNormal = glm::vec3(0,1,0); } break;
-				case PlaneDirection::Bottom: { planeOffset = glm::vec3(0, -offset, 0); desiredNormal = glm::vec3(0,-1,0); } break;
+				case PlaneDirection::Top:    planeOffset = glm::vec3(0, offset, 0); break;
+				case PlaneDirection::Bottom: planeOffset = glm::vec3(0, -offset, 0); break;
 			}
 
-			// adjust vertices to final position
 			for(auto& vertex : plane.vertices)
-				vertex.position += planeOffset;
-
-			// compute rotated normal and check winding orientation
-			glm::vec3 rotatedNormal = rotation * glm::vec3(0, 1, 0);
-			if (glm::dot(rotatedNormal, desiredNormal) < 0.0f) flipWinding = true;
+        		vertex.position += planeOffset;
 			
 			uint32_t vertexOffset = allVertices.size();
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
