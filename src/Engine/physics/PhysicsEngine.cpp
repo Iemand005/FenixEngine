@@ -4,6 +4,8 @@
 #define JPH_OBJECT_STREAM
 #define JPH_CROSS_PLATFORM_DETERMINISTIC
 
+#ifndef EXCLUDE_JOLT
+
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -15,6 +17,7 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
+#endif
 
 #include "PhysicsEngine.hpp"
 
@@ -80,12 +83,14 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
 #endif
 
 struct PhysicsEngine::Impl {
+#ifndef EXCLUDE_JOLT
   std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
   std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
   std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
   std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
   std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
   std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+#endif
 };
 
 // PhysicsEngine::PhysicsEngine() {
@@ -96,6 +101,7 @@ struct PhysicsEngine::Impl {
 
 PhysicsEngine::PhysicsEngine() {
   impl = std::make_unique<Impl>();
+#ifndef EXCLUDE_JOLT
 
   RegisterDefaultAllocator();
 
@@ -119,6 +125,7 @@ PhysicsEngine::PhysicsEngine() {
   EnableGravity();
 
   impl->physicsSystem->OptimizeBroadPhase();
+#endif
 
 }
 
@@ -127,46 +134,56 @@ PhysicsEngine::~PhysicsEngine() = default;
 
 
 void PhysicsEngine::Update(double dt) {
-    // Validate input parameters
-    if (dt <= 0.0) {
-      // Log warning or handle invalid delta time
-      std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
-      return;
-    }
+#ifndef EXCLUDE_JOLT
+	// Validate input parameters
+	if (dt <= 0.0) {
+		// Log warning or handle invalid delta time
+		std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
+		return;
+	}
 
-    // Ensure physics system and dependencies are initialized
-    if (!impl || !impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
-      std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
-      return;
-    }
+	// Ensure physics system and dependencies are initialized
+	if (!impl || !impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
+		std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
+		return;
+	}
 
-    // Number of collision steps (configurable, currently set to 1 for simplicity)
-    const int collisionSteps = 1;
+	// Number of collision steps (configurable, currently set to 1 for simplicity)
+	const int collisionSteps = 1;
 
-    // Cast dt to float as required by Jolt Physics
-    float deltaTime = static_cast<float>(dt);
-    
-    impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
-  }
+	// Cast dt to float as required by Jolt Physics
+	float deltaTime = static_cast<float>(dt);
+	
+	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
+#endif
+}
 
-  void PhysicsEngine::EnableGravity() {
-    impl->physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
-  }
+void PhysicsEngine::EnableGravity() {
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+#endif
+}
 
-  void PhysicsEngine::DisableGravity() {
-    impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
-  }
+void PhysicsEngine::DisableGravity() {
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
+#endif
+}
 
-  std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, bool dynamic) {
-    auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
-    obj->BindPhysicsSystem(impl->physicsSystem);
-    obj->InitializeBoxBody(size, dynamic);
-    return obj;
-  }
+std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, bool dynamic) {
+	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
+#ifndef EXCLUDE_JOLT
+	obj->BindPhysicsSystem(impl->physicsSystem);
+	obj->InitializeBoxBody(size, dynamic);
+#endif
+	return obj;
+}
 
-  std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
-    auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
-    obj->BindPhysicsSystem(impl->physicsSystem);
-    obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
-    return obj;
-  }
+std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
+	auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
+#ifndef EXCLUDE_JOLT
+	obj->BindPhysicsSystem(impl->physicsSystem);
+	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
+#endif
+	return obj;
+}
