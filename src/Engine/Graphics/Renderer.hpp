@@ -22,16 +22,16 @@
 #include <unordered_map>
 #include <vector>
 
-#include "engine.h"
+#include "../engine.h"
 #ifndef EXCLUDE_NETWORKING
-#include "networking/networking.hpp"
+#include "../networking/networking.hpp"
 #endif
-#include "physics/PhysicsEngine.hpp"
-#include "bases.h"
-#include "Object.hpp"
-#include "Camera.hpp"
-#include "ShaderProgram.hpp"
-#include "ScreenSaverMode.hpp"
+#include "../physics/PhysicsEngine.hpp"
+#include "../bases.h"
+#include "../Object.hpp"
+#include "../Camera.hpp"
+#include "../ShaderProgram.hpp"
+#include "../ScreenSaverMode.hpp"
 
 #include "window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
