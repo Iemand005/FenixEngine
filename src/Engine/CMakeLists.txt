@@ -90,6 +90,25 @@ endif()
 
 add_library(Engine STATIC ${SOURCE_FILES})
 
+# [main] Building folder: j:/ProjectFenix/build Foxcraft
+
+# ShaderSavers/CMakeLists.txt
+
+set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
+
+file(GLOB_RECURSE IMGUI_SOURCE_FILES
+	${IMGUI_DIR}/imgui.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdlgpu3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui_widgets.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
+)
+
+
 if(FE_EXCLUDE_GLFW)
     target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
 endif()
