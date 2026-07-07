@@ -38,6 +38,8 @@ public:
 	bool _isScreensaving = false;
 	double startX, startY;
 
+	bool isFullscreen = false;
+
 	ResizeDelegate resizeEvent;
 	MouseMoveDelegate mouseMoveEvent;
 
@@ -76,6 +78,11 @@ public:
 		GetMousePosition(&startX, &startY);
 		_isScreensaving = true;
 	};
+
+	virtual void SetFullscreen(bool enable) = 0;
+	void ToggleFullscreen() {
+    SetFullscreen(!isFullscreen);
+  }
 	
 	virtual void SwapBuffers() = 0;
 

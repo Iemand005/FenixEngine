@@ -27,7 +27,6 @@ class SDLWindow : public IWindow {
 
 	const bool* keyboardState = nullptr;
 
-	bool isFullscreen = false;
 
 
  public:
@@ -52,10 +51,8 @@ class SDLWindow : public IWindow {
   void Move(int x, int y);
 
 	void SetBordered(bool enabled);
-	void SetFullscreen(bool enabled = true);
-  void ToggleFullscreen() {
-    SetFullscreen(!isFullscreen);
-  }
+	void SetFullscreen(bool enabled = true) override;
+  
 
 	void SetBorderless() {
 		SetBordered(false);
