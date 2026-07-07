@@ -29,7 +29,6 @@ class SDLWindow : public IWindow {
 
 	bool isFullscreen = false;
 	bool _isScreensaving = false;
-	float startX, startY;
 
 
  public:

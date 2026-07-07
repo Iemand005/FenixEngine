@@ -7,75 +7,81 @@
 namespace fe {
 
 
-  inline bool IsWayland() {
-    const char* session = getenv("XDG_SESSION_TYPE");
-    if (session && strcmp(session, "wayland") == 0)
-      return true;
+	inline bool IsWayland() {
+		const char* session = getenv("XDG_SESSION_TYPE");
+		if (session && strcmp(session, "wayland") == 0)
+			return true;
 
-    const char* wayland_display = getenv("WAYLAND_DISPLAY");
-    if (wayland_display != NULL)
-      return true;
+		const char* wayland_display = getenv("WAYLAND_DISPLAY");
+		if (wayland_display != NULL)
+			return true;
 
-    return false;
-  }
+		return false;
+	}
 
-  struct WindowOptions {
+	struct WindowOptions {
 		long long int x11WindowId;
-  };
+	};
 
 
-  using ResizeDelegate = std::function<void(int, int)>;
-  using MouseMoveDelegate = std::function<void(int, int)>;
+	using ResizeDelegate = std::function<void(int, int)>;
+	using MouseMoveDelegate = std::function<void(int, int)>;
 
-  class IWindow {
+	class IWindow {
 
-    bool shouldClose = false;
+		bool shouldClose = false;
 
 public:
 
-  int width, height;
+	int width, height;
 
-  ResizeDelegate resizeEvent;
-  MouseMoveDelegate mouseMoveEvent;
+	float startX, startY;
 
-  IWindow(int width, int height) : width(width), height(height) {}
+	ResizeDelegate resizeEvent;
+	MouseMoveDelegate mouseMoveEvent;
 
-  virtual bool ShouldClose() { return shouldClose; }
+	IWindow(int width, int height) : width(width), height(height) {}
 
-  virtual void PrepareClose() { shouldClose = true; }
+	virtual bool ShouldClose() { return shouldClose; }
+
+	virtual void PrepareClose() { shouldClose = true; }
 
 	virtual void SetSwapInterval(int interval) = 0;
 
-  void EnableVSync() {
-    SetSwapInterval(1);
-  }
+	void EnableVSync() {
+		SetSwapInterval(1);
+	}
 
-  void DisableVSync() {
-    SetSwapInterval(0);
-  }
+	void DisableVSync() {
+		SetSwapInterval(0);
+	}
 
-  virtual void StartMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  }
+	virtual void StartMouseCapture() {
+		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
 
-  virtual void StopMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	virtual void StopMouseCapture() {
+		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-  }
+	}
 
-  virtual void SetTitle(const char *newTitle) {};
+	virtual void SetTitle(const char *newTitle) {};
 
-  bool CapturingMouse() {return false;};
+	bool CapturingMouse() {return false;};
 
-  	void GetMousePosition(double *x, double *y);
-  
-  virtual void SwapBuffers() = 0;
+	void GetMousePosition(double *x, double *y);
 
-  virtual double GetTime() = 0;
+	void ActivateScreenSaverMode() {
+		_isScreensaving = true;
+	};
+	
+	virtual void SwapBuffers() = 0;
 
-  // virtual void PollEvents() = 0;
+	virtual double GetTime() = 0;
+
+	// virtual void PollEvents() = 0;
 
 	virtual void Destroy() {};
 
-  };
+	};
 }
