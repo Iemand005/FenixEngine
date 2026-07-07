@@ -343,7 +343,7 @@ namespace fe::Primitives {
 			}
 		}
 
-		for (size_t p = 0; p < smoothPath.size() - 1; p++) {
+		for (int p = 0; p < smoothPath.size() - 1; p++) {
 			for (int i = 0; i < segments; i++) {
 				int current = p * segments + i;
 				int next = p * segments + ((i + 1) % segments);

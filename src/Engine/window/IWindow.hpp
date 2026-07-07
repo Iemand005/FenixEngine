@@ -8,11 +8,11 @@ namespace fe {
 
 
 	inline bool IsWayland() {
-		const char* session = getenv("XDG_SESSION_TYPE");
+		const char* session = std::getenv("XDG_SESSION_TYPE");
 		if (session && strcmp(session, "wayland") == 0)
 			return true;
 
-		const char* wayland_display = getenv("WAYLAND_DISPLAY");
+		const char* wayland_display = std::getenv("WAYLAND_DISPLAY");
 		if (wayland_display != NULL)
 			return true;
 
