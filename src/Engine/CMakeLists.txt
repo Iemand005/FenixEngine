@@ -44,7 +44,7 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 
 add_library(Renderer STATIC
     glad/glad.c
-    Renderer.cpp
+    Graphics/Renderer.cpp
     window/SDLWindow.cpp
     window/GLFW3Window.cpp
 )
