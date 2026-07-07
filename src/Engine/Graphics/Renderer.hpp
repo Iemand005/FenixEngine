@@ -52,51 +52,51 @@ using DefaultWindow = fe::GLFW3Window;
 namespace fe {
 
 class Renderer {
- public:
-  std::unique_ptr<IWindow> window = nullptr;
-  std::unique_ptr<Scene> scene;
-  std::unique_ptr<Camera> camera;
-  std::unique_ptr<ShaderProgram> shader;
-  fe::Timer fpsCounter;
+public:
+	std::unique_ptr<IWindow> window = nullptr;
+	std::unique_ptr<Scene> scene;
+	std::unique_ptr<Camera> camera;
+	std::unique_ptr<ShaderProgram> shader;
+	fe::Timer fpsCounter;
 
-  float yaw = -90.0f, pitch = 0.0f;
+	float yaw = -90.0f, pitch = 0.0f;
 
-  int lastX, lastY;
+	int lastX, lastY;
 
-  double lastUpdateTime = 0.0f;
+	double lastUpdateTime = 0.0f;
 
-  bool canJump = true;
+	bool canJump = true;
 
-  int mapIndex = 0;
+	int mapIndex = 0;
 
 #ifdef USE_VISUALIZER
-  AudioVisualiser visualizer;
+	AudioVisualiser visualizer;
 #endif
 
 #ifndef EXCLUDE_NETWORKING
-  std::unique_ptr<Networker> client = nullptr;
+	std::unique_ptr<Networker> client = nullptr;
 #endif
 
-  std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
-      std::unordered_map<unsigned char, std::shared_ptr<Character>>();
+	std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
+			std::unordered_map<unsigned char, std::shared_ptr<Character>>();
 
-  bool isConnectedToServer = false;
+	bool isConnectedToServer = false;
 
-  Renderer() {}
+	Renderer() {}
 
-  template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-  Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-    //Init();
-  }
+	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
+	Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
+		//Init();
+	}
 
-  Renderer(GLADloadproc loadProc);
+	Renderer(GLADloadproc loadProc);
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 	}
 
 
-  void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
+	void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
 		auto window = GetWindow<DefaultWindow>();
 		switch (mode) {
 			case ScreenSaverMode::Preview: {
@@ -107,20 +107,21 @@ class Renderer {
 			}
 
 			case ScreenSaverMode::Fullscreen: {
-        bool fullscreen = false;
-				if (fullscreen) window->GoBorderlessFullscreen();
-        window->SetFullscreen();
+				bool fullscreen = false;
+				if (fullscreen)
+					window->SetFullscreen();
+				else window->GoBorderlessFullscreen();
 
-        // window->Show();
+				// window->Show();
 
 				// SDL_HideCursor();
 				// SDL_SetCursor(nullptr);
 
-        window->Show();
+				window->Show();
 
-        window->ActivateScreenSaverMode();
+				window->ActivateScreenSaverMode();
 
-        window->StartMouseCapture();
+				window->StartMouseCapture();
 
 				break;
 			}
@@ -134,141 +135,141 @@ class Renderer {
 				break;
 			}
 		}
-  }
+	}
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
 	}
 
 template<typename WindowT = DefaultWindow>
-  std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
-    static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-    std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
+	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
+		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
+		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
 
-    window->resizeEvent = [this](int width, int height) {
-      this->Resize(width, height);
-      this->Redraw();
-    };
+		window->resizeEvent = [this](int width, int height) {
+			this->Resize(width, height);
+			this->Redraw();
+		};
 
-    // window->mouseMoveEvent = [this](int x, int y) {
-    //   MouseMove(x, y);
-    // };
-    return std::move(window);
-  }
+		// window->mouseMoveEvent = [this](int x, int y) {
+		//   MouseMove(x, y);
+		// };
+		return std::move(window);
+	}
 
 
-  // void SetShaderProgram(ShaderProgram program) {
-  //   this->shader = std::make_unique
-  // }
+	// void SetShaderProgram(ShaderProgram program) {
+	//   this->shader = std::make_unique
+	// }
 
-  void LoadShaders(Shader vertexShader, Shader fragmentShader) {
-    this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
-  }
+	void LoadShaders(Shader vertexShader, Shader fragmentShader) {
+		this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
+	}
 
-  void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
-    this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
-  }
+	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
+		this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
+	}
 
-  bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
-    this->shader = std::make_unique<fe::ShaderProgram>();
-    return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
-  }
+	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
+		this->shader = std::make_unique<fe::ShaderProgram>();
+		return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
+	}
 
-  double getDeltaTime() { return 1; }
+	double getDeltaTime() { return 1; }
 
-  void SetClearColor(float r, float g, float b, float a = 1);
+	void SetClearColor(float r, float g, float b, float a = 1);
 
-  void Resize() { Resize(this->window->width, this->window->height); }
-  void Resize(int width, int height) {
-    if (this->scene) this->scene->Resize(width, height);
-    this->UpdateAspect(width, height);
-  }
+	void Resize() { Resize(this->window->width, this->window->height); }
+	void Resize(int width, int height) {
+		if (this->scene) this->scene->Resize(width, height);
+		this->UpdateAspect(width, height);
+	}
 
-  void Redraw(GLuint fbo) {
-    BindFrameBuffer(fbo);
-    Redraw();
-  }
+	void Redraw(GLuint fbo) {
+		BindFrameBuffer(fbo);
+		Redraw();
+	}
 
-  void Redraw() {
-    auto window = GetWindow<DefaultWindow>();
-    if (!scene || !camera || !shader) return;
-    std::cout << "OK: " << std::endl;
+	void Redraw() {
+		auto window = GetWindow<DefaultWindow>();
+		if (!scene || !camera || !shader) return;
+		std::cout << "OK: " << std::endl;
 
-    if (shader) {
-      shader->Use();
+		if (shader) {
+			shader->Use();
 
-      float elapsedTime = (float)window->GetTime();
-      shader->SetFloat("time", elapsedTime);
+			float elapsedTime = (float)window->GetTime();
+			shader->SetFloat("time", elapsedTime);
 
-      std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
+			std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
 
-      int count = scene->GetLightCount();
-      auto pointLights = scene->GetLights();
-      shader->SetInt("lightCount", count);
-      for (int i = 0; i < count; ++i) {
-        const auto& l = pointLights[i];
-        shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-        shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-        shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-        shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-      }
-    }
+			int count = scene->GetLightCount();
+			auto pointLights = scene->GetLights();
+			shader->SetInt("lightCount", count);
+			for (int i = 0; i < count; ++i) {
+				const auto& l = pointLights[i];
+				shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+				shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+				shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+				shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+			}
+		}
 
-    scene->Render(*this->shader, *this->camera.get());
+		scene->Render(*this->shader, *this->camera.get());
 
-    OnDraw();
+		OnDraw();
 
-    CheckErrors();
+		CheckErrors();
 
-    glFlush();
-    glFinish();
+		glFlush();
+		glFinish();
 
-    fpsCounter.update();
+		fpsCounter.update();
 
-    DrawUI();
+		DrawUI();
 
-    if (window) window->SwapBuffers();
-  }
+		if (window) window->SwapBuffers();
+	}
 
-  void CheckErrors() {
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-      std::cerr << "OpenGL error: " << err << std::endl;
-    }
-  }
+	void CheckErrors() {
+		GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR) {
+			std::cerr << "OpenGL error: " << err << std::endl;
+		}
+	}
 
-  void Update() {
-    double dt = scene->Update();
-  }
+	void Update() {
+		double dt = scene->Update();
+	}
 
-  virtual void InitUI() {}
-  virtual void DrawUI() {}
-  virtual void OnDraw() {}
+	virtual void InitUI() {}
+	virtual void DrawUI() {}
+	virtual void OnDraw() {}
 
-  void EnableWireframe();
-  void DisableWireframe();
-  void ToggleWireframe(bool enabled = false);
+	void EnableWireframe();
+	void DisableWireframe();
+	void ToggleWireframe(bool enabled = false);
 
-  template<typename WindowT = IWindow>
-  WindowT* GetWindow() {
-    return (WindowT*)this->window.get();
-  }
+	template<typename WindowT = IWindow>
+	WindowT* GetWindow() {
+		return (WindowT*)this->window.get();
+	}
 
-  double GetFPS() {
-    return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
-  }
+	double GetFPS() {
+		return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
+	}
 
-  void BindFrameBuffer(int bufferIndex = 0);
+	void BindFrameBuffer(int bufferIndex = 0);
 
-  void UpdateAspect(int width, int height) {
-    if (this->camera) this->camera->SetAspect(width, height);
-  }
+	void UpdateAspect(int width, int height) {
+		if (this->camera) this->camera->SetAspect(width, height);
+	}
 
-  bool ShouldClose() { return this->window->ShouldClose(); }
+	bool ShouldClose() { return this->window->ShouldClose(); }
 
-  void Destroy() {
-    if (window) window->Destroy();
-  }
+	void Destroy() {
+		if (window) window->Destroy();
+	}
 };
 
 }
