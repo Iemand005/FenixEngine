@@ -72,6 +72,7 @@ public:
 	void GetMousePosition(double *x, double *y);
 
 	void ActivateScreenSaverMode() {
+		GetMousePosition(&startX, &startY);
 		_isScreensaving = true;
 	};
 	
