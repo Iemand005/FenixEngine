@@ -33,12 +33,12 @@
 #include "../ShaderProgram.hpp"
 #include "../ScreenSaverMode.hpp"
 
-#include "window/IWindow.hpp"
+#include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
-#include "window/SDLWindow.hpp"
+#include "../window/SDLWindow.hpp"
 #endif
 #ifndef FE_EXCLUDE_GLFW
-#include "window/GLFW3Window.hpp"
+#include "../window/GLFW3Window.hpp"
 #endif
 
 #ifndef FE_EXCLUDE_SDL
