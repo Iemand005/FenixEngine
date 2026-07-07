@@ -2,7 +2,6 @@
 #include "Aura.hpp"
 
 #include <vector>
-#include <algorithm>
 
 #include <windows.h>
 #include <setupapi.h>

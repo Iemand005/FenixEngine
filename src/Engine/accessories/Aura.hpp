@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <algorithm>
 
 class Aura {
 
@@ -14,9 +15,9 @@ public:
 	bool auraInitialized = false;
 
 	void SetColorFloat(float r, float g, float b, bool force = false) {
-		BYTE ir = (BYTE)(std::clamp(r, 0.0f, 1.0f) * 255.0f + 0.5f);
-		BYTE ig = (BYTE)(std::clamp(g, 0.0f, 1.0f) * 255.0f + 0.5f);
-		BYTE ib = (BYTE)(std::clamp(b, 0.0f, 1.0f) * 255.0f + 0.5f);
+		char ir = (char)(std::clamp(r, 0.0f, 1.0f) * 255.0f + 0.5f);
+		char ig = (char)(std::clamp(g, 0.0f, 1.0f) * 255.0f + 0.5f);
+		char ib = (char)(std::clamp(b, 0.0f, 1.0f) * 255.0f + 0.5f);
 
 		SetColor(ir, ig, ib, force);
 		
