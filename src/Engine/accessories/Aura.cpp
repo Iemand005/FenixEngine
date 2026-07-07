@@ -38,7 +38,9 @@ static_assert(sizeof(AuraColorReport) == 64, "AuraColorReport must be exactly 64
 struct Aura::Impl {
 	HANDLE dev = NULL;
 
-		HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
+	BYTE lastR = 0, lastG = 0, lastB = 0;
+
+	HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
 	{
 		GUID guid;
 		HidD_GetHidGuid(&guid);
@@ -87,6 +89,11 @@ bool Aura::IsOpen() const { return impl->dev != NULL; }
 
 bool Aura::SetColor(char r, char g, char b) {
 	if (!IsOpen()) return false;
+	
+
+	if (auraInitialized && r == impl->lastR && g == impl->lastG && b == impl->lastB)
+		return;
+
 	AuraInitReport init;
 	HidD_SetFeature(impl->dev, &init, sizeof(init));
 

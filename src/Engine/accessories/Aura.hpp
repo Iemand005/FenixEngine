@@ -11,7 +11,6 @@ public:
 	bool IsOpen() const;
 	bool SetColor(char r, char g, char b);
 
-	BYTE lastR = 0, lastG = 0, lastB = 0;
 	bool auraInitialized = false;
 
 	void SetColorFloat(float r, float g, float b) {
@@ -19,11 +18,8 @@ public:
 		BYTE ig = (BYTE)(std::clamp(g, 0.0f, 1.0f) * 255.0f + 0.5f);
 		BYTE ib = (BYTE)(std::clamp(b, 0.0f, 1.0f) * 255.0f + 0.5f);
 
-		if (auraInitialized && ir == lastR && ig == lastG && ib == lastB)
-			return;
-
 		SetColor(ir, ig, ib);
-		lastR = ir; lastG = ig; lastB = ib;
+		
 		auraInitialized = true;
 	}
 
