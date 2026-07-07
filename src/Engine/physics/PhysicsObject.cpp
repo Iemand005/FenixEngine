@@ -29,6 +29,7 @@ static constexpr JPH::BroadPhaseLayer MOVING(0);
 };
 
 struct PhysicsObject::Impl {
+#ifndef EXCLUDE_JOLT
   JPH::BodyID bodyId;
   std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
   JPH::Body* body;
@@ -165,13 +166,16 @@ struct PhysicsObject::Impl {
   JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
 
   glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+#endif
 }; // Impl
 
 PhysicsObject::PhysicsObject() {
+#ifndef EXCLUDE_JOLT
   impl = std::make_unique<Impl>();
   impl->bodyId = JPH::BodyID();
   impl->physicsSystem = nullptr;
   impl->body = nullptr;
+#endif
 }
 
 PhysicsObject::~PhysicsObject() = default;
@@ -193,18 +197,23 @@ PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices,
   (void)isStatic;
 }
 
-  void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
-    this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
-  }
+void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
+#endif
+}
 
   glm::vec3 PhysicsObject::GetPosition() { return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId)); }
 
 
 void PhysicsObject::BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
+#ifndef EXCLUDE_JOLT
   impl->physicsSystem = std::move(physicsSystem);
+#endif
 }
 
 void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
+#ifndef EXCLUDE_JOLT
   if (!impl->physicsSystem) {
     std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
     return;
@@ -234,6 +243,7 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
   this->impl->bodyId = impl->body->GetID();
   bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
   // bodyInterface->SetGravityFactor()
+#endif
 }
 
 void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
@@ -241,6 +251,9 @@ void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
                                        const glm::vec3& position,
                                        float density,
                                        bool isStatic) {
+
+#ifndef EXCLUDE_JOLT
+
   if (!impl->physicsSystem) {
     std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
     return;
@@ -255,23 +268,32 @@ void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
   impl->CreateBodyFromShape(shape, position, 
                       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
                       isStatic ? Layers::NON_MOVING : Layers::MOVING);
+#endif
+
 }
 
 
 void PhysicsObject::SetPosition(glm::vec3 position) {
+#ifndef EXCLUDE_JOLT
   this->impl->physicsSystem->GetBodyInterface().SetPosition(impl->bodyId, impl->VecConv(position), JPH::EActivation::Activate);
+#endif
 }
 
 void PhysicsObject::AddPosition(glm::vec3 position) {
+#ifndef EXCLUDE_JOLT
   SetPosition(position + GetPosition());
+#endif
 }
 
 void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) {
+#ifndef EXCLUDE_JOLT
   this->impl->physicsSystem->GetBodyInterface().SetLinearVelocity(impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+#endif
 }
 
 
 ObjectState PhysicsObject::SyncToRender() {
+#ifndef EXCLUDE_JOLT
   auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
 
   JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
@@ -288,4 +310,7 @@ ObjectState PhysicsObject::SyncToRender() {
   // state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
   state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
   return state;
+#else
+	return {};
+#endif
 }
