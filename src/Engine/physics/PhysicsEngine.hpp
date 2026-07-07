@@ -1,12 +1,4 @@
 
-
-// #include <Jolt/Jolt.h>
-// #include <Jolt/Geometry/IndexedTriangle.h>
-// #include <Jolt/Physics/PhysicsSystem.h>
-// #include <Jolt/Physics/Body/BodyCreationSettings.h>
-// #include <Jolt/Physics/Body/BodyInterface.h>
-// #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
-// #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #pragma once
 #include <cstdarg>
 #include <iostream>
@@ -16,13 +8,6 @@
 
 
 #include "PhysicsObject.hpp"
-
-
-
-// namespace BroadPhaseLayers
-// {
-//   static constexpr BroadPhaseLayer MOVING(0);
-// };
 
 
 namespace fe{

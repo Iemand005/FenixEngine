@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#ifndef EXCLUDE_JOLT
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
@@ -11,9 +12,11 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
-using namespace fe;
 using namespace JPH;
 using namespace JPH::literals;
+#endif
+
+using namespace fe;
 
 namespace Layers {
 static constexpr ObjectLayer NON_MOVING = 0;
