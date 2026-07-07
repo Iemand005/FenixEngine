@@ -133,8 +133,11 @@ target_link_libraries(Engine PUBLIC
     Renderer
     SDL3::SDL3
     OpenXR::openxr_loader
-    Jolt
 )
+
+if(NOT FE_EXCLUDE_JOLT)
+    target_link_libraries(Engine PUBLIC Jolt)
+endif()
 
 # TODO: Make the engine only include kiss if audio visualizer engine is requested
 target_link_libraries(Engine PRIVATE
