@@ -116,7 +116,7 @@ namespace fe {
 			height = image.height;
 			nrChannels = image.channels;
 			data = image.pixels.data();
-			
+			return true;
 		}
 
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Nearest) {
