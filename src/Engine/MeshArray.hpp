@@ -23,7 +23,7 @@ namespace fe {
 		Nearest
 	};
 
-	class Mesh {
+	class MeshArray {
 		unsigned int indexCount;
 
 		unsigned int vao = 0;
@@ -42,9 +42,9 @@ namespace fe {
 
 		bool hasTransparency = false;
 
-		Mesh() {}
+		MeshArray() {}
 
-		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
+		MeshArray(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
 			this->vertices = vertices;
 			this->indices = indices;
 			this->indexCount = indices.size();
@@ -52,7 +52,7 @@ namespace fe {
 			init();
 		}
 
-		Mesh(std::string objFilePath, std::string textureFilePath) {
+		MeshArray(std::string objFilePath, std::string textureFilePath) {
 			modelMatrix = glm::mat4(1.0f);
 
 			if (!loadObj(objFilePath) || !loadTexture(textureFilePath)) {
@@ -63,7 +63,7 @@ namespace fe {
 			init();
 		}
 
-		Mesh& operator=(const Mesh& other) {
+		MeshArray& operator=(const MeshArray& other) {
 					if (this != &other) {
 							indexCount = other.indexCount;
 							vao = other.vao;
@@ -78,10 +78,10 @@ namespace fe {
 					return *this;
 			}
 
-		Mesh(Mesh&&) = default;
-		Mesh& operator=(Mesh&&) = default;
+		MeshArray(MeshArray&&) = default;
+		MeshArray& operator=(MeshArray&&) = default;
 
-		Mesh(const Mesh& other)
+		MeshArray(const MeshArray& other)
 				: indexCount(other.indexCount),
 					vao(other.vao),
 					VBO(other.VBO),
