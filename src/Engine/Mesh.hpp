@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include <stb_image.h>
+// #include <stb_image.h>
 
 #include "ShaderProgram.hpp"
 #include "Vertex.hpp"

@@ -15,6 +15,7 @@
 
 #include "bases.h"
 #include "Mesh.hpp"
+#include "MeshArray.hpp"
 #include "ShaderProgram.hpp"
 #include "physics/PhysicsEngine.hpp"
 
@@ -40,6 +41,7 @@ class Object {
   glm::mat4 modelMatrix;
 
   std::vector<Mesh> meshes;
+  std::vector<MeshArray> meshArrays;
 
   bool isStatic = false;
 
@@ -63,10 +65,15 @@ class Object {
     //acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
     state.scale = glm::vec3(1.0f);
     meshes = std::vector<Mesh>();
+    meshArrays = std::vector<MeshArray>();
   }
 
   Object(Mesh mesh) : Object() {
     meshes.push_back(mesh);
+  }
+
+  Object(MeshArray mesh) : Object() {
+    meshArrays.push_back(mesh);
   }
 
   Object(std::string objFilePath, float scale = 1.0f) : Object() {
@@ -102,6 +109,7 @@ class Object {
 
   void Render(ShaderProgram& shader) {
     for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
+    for (auto& mesh : meshArrays) mesh.Render(shader, this->GetModelMatrix());
     if (boundingBoxVAO && touchedOtherObject) {
       shader.Use();
       shader.SetMat4("model", this->GetModelMatrix());
@@ -114,6 +122,7 @@ class Object {
   std::shared_ptr<Object> Clone() const {
     auto newObj = std::make_shared<Object>();
     newObj->meshes = this->meshes;
+    newObj->meshArrays = this->meshArrays;
     newObj->state.scale = this->state.scale;
     return newObj;
   }

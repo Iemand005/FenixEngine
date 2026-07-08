@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include <stb_image.h>
+// #include <stb_image.h>
 
 #include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
@@ -20,11 +20,6 @@
 
 
 namespace fe {
-
-	enum class TextureScaling {
-		Linear,
-		Nearest
-	};
 
 	class MeshArray {
 		unsigned int indexCount;
