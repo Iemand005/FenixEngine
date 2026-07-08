@@ -10,12 +10,13 @@
 #include <memory>
 #include <string>
 
+#include <stb_image.h>
+
 #include "ShaderProgram.hpp"
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
 
-#include <stb_image.h>
 
 
 namespace fe {
