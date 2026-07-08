@@ -16,6 +16,7 @@
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
+#include "ImageLoader.hpp"
 
 
 namespace fe {
@@ -127,7 +128,7 @@ namespace fe {
 
 		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
 			stbi_set_flip_vertically_on_load(true);
-			data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
+			data = fe:: stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
 			if (!data) {
 				std::cerr << "Failed to load texture" << std::endl;
 
