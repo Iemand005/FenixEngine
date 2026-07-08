@@ -128,7 +128,8 @@ namespace fe {
 
 		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
 			stbi_set_flip_vertically_on_load(true);
-			data = fe:: stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
+			auto image = fe::ImageLoader::Load(textureFilePath);
+			data = 
 			if (!data) {
 				std::cerr << "Failed to load texture" << std::endl;
 
