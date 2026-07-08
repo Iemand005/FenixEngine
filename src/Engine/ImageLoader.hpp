@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-namespace Fenix {
+namespace fe {
 
     struct ImageData {
         int width = 0;
