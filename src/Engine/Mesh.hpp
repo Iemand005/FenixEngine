@@ -126,14 +126,6 @@ namespace fe {
 
 		bool loadObj(std::string objFilePath);
 
-		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
-			auto image = fe::ImageLoader::Load(textureFilePath);
-			width = image.width;
-			height = image.height;
-			nrChannels = image.channels;
-			data = image.pixels.data();
-		}
-
 		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
 			
 			auto image = fe::ImageLoader::Load(textureFilePath);
