@@ -135,14 +135,9 @@ namespace fe {
 		}
 
 		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
-			// if (textureFilePath == NULL)
-			//   return false;
-			int width, height, nrChannels;
-			unsigned char* data;
-			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
-
+			
 			auto image = fe::ImageLoader::Load(textureFilePath);
-			if (image.pixe.size() == 0) return false;
+			if (image.pixels.size() == 0) return false;
 
 			glGenTextures(1, &this->texture);
 			glBindTexture(GL_TEXTURE_2D, this->texture);
@@ -156,11 +151,10 @@ namespace fe {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texScaling);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texScaling);
 
-			GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			GLenum format = ( image.channels == 4) ? GL_RGBA : GL_RGB;
+			glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.pixels.data());
 			glGenerateMipmap(GL_TEXTURE_2D);
 
-			stbi_image_free(data);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			return true;
 		}
