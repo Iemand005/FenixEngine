@@ -13,7 +13,7 @@
 #include <stb_image.h>
 
 #include "ShaderProgram.hpp"
-#include "Vertex.hpp"
+#include "VertexArray.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
 
@@ -35,7 +35,7 @@ namespace fe {
 		unsigned int texture = 0;
 
 	public:
-		std::vector<Vertex> vertices;
+		std::vector<VertexArray> vertices;
 		std::vector<unsigned int> indices;
 		glm::mat4 modelMatrix;
 
@@ -47,7 +47,7 @@ namespace fe {
 
 		MeshArray() {}
 
-		MeshArray(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
+		MeshArray(std::vector<VertexArray> vertices, std::vector<unsigned int> indices) {
 			this->vertices = vertices;
 			this->indices = indices;
 			this->indexCount = indices.size();
@@ -92,7 +92,7 @@ namespace fe {
 
 			glGenBuffers(1, &VBO);
 			glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexArray), vertices.data(), GL_STATIC_DRAW);
 			this->VBO = VBO;
 
 			glGenBuffers(1, &EBO);
@@ -100,7 +100,7 @@ namespace fe {
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
 			this->EBO = EBO;
 
-			int vertexStride = sizeof(Vertex);
+			int vertexStride = sizeof(VertexArray);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)0);
 			glEnableVertexAttribArray(0);
 
@@ -229,7 +229,7 @@ namespace fe {
 
 		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
 
-		std::vector<Vertex> GetVertices() { return vertices; }
+		std::vector<VertexArray> GetVertices() { return vertices; }
 	};
 
 }  // namespace fe
