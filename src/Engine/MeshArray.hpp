@@ -111,6 +111,11 @@ namespace fe {
 		bool loadObj(std::string objFilePath);
 
 		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
+			auto image = fe::ImageLoader::Load(textureFilePath);
+			width = image.width;
+			height = image.height;
+			nrChannels = image.channels;
+			data = &image.pixels.data;
 			stbi_set_flip_vertically_on_load(true);
 			data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
 			if (!data) {

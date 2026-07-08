@@ -10,6 +10,7 @@
 namespace fe {
 
     ImageData ImageLoader::Load(const std::string& filePath, int desiredChannels) {
+		stbi_set_flip_vertically_on_load(true);
         ImageData data;
         
         unsigned char* rawPixels = stbi_load(filePath.c_str(), &data.width, &data.height, &data.channels, desiredChannels);
