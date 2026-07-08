@@ -190,6 +190,51 @@ namespace fe {
 			return true;
 		}
 
+		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Nearest) {
+			if (textureFilePaths.empty()) return false;
+
+			int baseWidth, baseHeight, nrChannels;
+			unsigned char* firstData;
+			if (!loadTextureFile(textureFilePaths[0], baseWidth, baseHeight, nrChannels, firstData)) {
+				return false;
+			}
+			
+			GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+			GLint internalFormat = (nrChannels == 4) ? GL_RGBA8 : GL_RGB8;
+			int layerCount = static_cast<int>(textureFilePaths.size());
+
+			glGenTextures(1, &this->texture);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, this->texture);
+
+			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, baseWidth, baseHeight, layerCount, 0, format, GL_UNSIGNED_BYTE, nullptr);
+
+			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, firstData);
+			stbi_image_free(firstData);
+
+			for (int i = 1; i < layerCount; ++i) {
+				int width, height, channels;
+				unsigned char* data;
+				
+				if (loadTextureFile(textureFilePaths[i], width, height, channels, data)) {
+					if (width == baseWidth && height == baseHeight) {
+						glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, data);
+					}
+					stbi_image_free(data);
+				}
+			}
+
+			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+			GLint texScaling = (newScaling == TextureScaling::Nearest) ? GL_NEAREST : GL_LINEAR;
+			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, texScaling); 
+			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, texScaling);
+
+			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+			return true;
+		}
+
+
 		glm::mat4 getModelMatrix() { return modelMatrix; }
 
 		void Render(ShaderProgram& shader) { Render(shader, this->getModelMatrix()); }
