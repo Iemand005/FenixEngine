@@ -1,0 +1,36 @@
+#include "ImageLoader.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+#include <iostream>
+
+namespace Fenix {
+
+    ImageData ImageLoader::Load(const std::string& filePath, int desiredChannels) {
+        ImageData data;
+        
+        // Load raw data via stb
+        unsigned char* rawPixels = stbi_load(filePath.c_str(), &data.width, &data.height, &data.channels, desiredChannels);
+        
+        if (!rawPixels) {
+            std::cerr << "[Fenix Error] Failed to load image: " << filePath << " -> " << stbi_failure_reason() << "\n";
+            return data; 
+        }
+
+        // Overwrite channels count if we forced a specific format (e.g. RGBA)
+        if (desiredChannels != 0) {
+            data.channels = desiredChannels;
+        }
+
+        // Copy data safely into modern std::vector container
+        size_t totalSize = data.width * data.height * data.channels;
+        data.pixels.assign(rawPixels, rawPixels + totalSize);
+
+        // Free the memory allocated by stb immediately
+        stbi_image_free(rawPixels);
+
+        return data;
+    }
+
+}
