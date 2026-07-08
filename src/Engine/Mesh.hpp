@@ -141,6 +141,9 @@ namespace fe {
 			unsigned char* data;
 			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
 
+			auto image = fe::ImageLoader::Load(textureFilePath);
+			if (image.pixe.size() == 0) return false;
+
 			glGenTextures(1, &this->texture);
 			glBindTexture(GL_TEXTURE_2D, this->texture);
 
