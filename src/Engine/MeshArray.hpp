@@ -15,6 +15,8 @@
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
 
+#include <stb_image.h>
+
 
 namespace fe {
 
@@ -49,17 +51,6 @@ namespace fe {
 			this->indices = indices;
 			this->indexCount = indices.size();
 			modelMatrix = glm::mat4(1.0f);
-			init();
-		}
-
-		MeshArray(std::string objFilePath, std::string textureFilePath) {
-			modelMatrix = glm::mat4(1.0f);
-
-			if (!loadObj(objFilePath) || !loadTexture(textureFilePath)) {
-				std::cerr << "Failed to load model or texture" << std::endl;
-				return;
-			}
-
 			init();
 		}
 
@@ -140,34 +131,6 @@ namespace fe {
 
 				return false;
 			}
-			return true;
-		}
-
-		bool loadTexture(std::string textureFilePath = NULL, TextureScaling newScaling = TextureScaling::Linear) {
-			// if (textureFilePath == NULL)
-			//   return false;
-			int width, height, nrChannels;
-			unsigned char* data;
-			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
-
-			glGenTextures(1, &this->texture);
-			glBindTexture(GL_TEXTURE_2D, this->texture);
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-			GLint texScaling = GL_LINEAR;
-			if (newScaling == TextureScaling::Nearest) texScaling = GL_NEAREST;
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texScaling);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texScaling);
-
-			GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(GL_TEXTURE_2D);
-
-			stbi_image_free(data);
-			glBindTexture(GL_TEXTURE_2D, 0);
 			return true;
 		}
 
