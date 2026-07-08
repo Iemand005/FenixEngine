@@ -185,7 +185,7 @@ namespace fe {
 			glBindVertexArray(vao);
 
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texture);
+			glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 
 			if (hasTransparency) {
 				glEnable(GL_BLEND);
