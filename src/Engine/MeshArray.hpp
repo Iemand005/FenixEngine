@@ -115,24 +115,8 @@ namespace fe {
 			width = image.width;
 			height = image.height;
 			nrChannels = image.channels;
-			data = &image.pixels.data;
-			stbi_set_flip_vertically_on_load(true);
-			data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
-			if (!data) {
-				std::cerr << "Failed to load texture" << std::endl;
-
-				std::string exeDir = GetExecutableDirectorye();
-				std::string path2 = exeDir + "/" + textureFilePath; // TODO WINDOWS BLEH BACKLSAHS DOES IT ACCPET FWND SLSH I THINK TI DOES
-				data = stbi_load(path2.c_str(), &width, &height, &nrChannels, 0);
-				if (data)
-				{
-					std::cout << "Loaded from exe dir: " << path2 << std::endl;
-					return true;
-				}
-
-				return false;
-			}
-			return true;
+			data = image.pixels.data();
+			
 		}
 
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Nearest) {
