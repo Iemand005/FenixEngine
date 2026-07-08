@@ -134,7 +134,7 @@ namespace fe {
 			data = image.pixels.data();
 		}
 
-		bool loadTexture(std::string textureFilePath = NULL, TextureScaling newScaling = TextureScaling::Linear) {
+		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
 			// if (textureFilePath == NULL)
 			//   return false;
 			int width, height, nrChannels;
