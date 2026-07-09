@@ -157,9 +157,7 @@ struct PhysicsObject::Impl {
 		bodyId = body->GetID();
 		bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
 		
-		std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex()
-							<< " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic")
-							<< ", Layer: " << layer << ")" << std::endl;
+		std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex() << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic") << ", Layer: " << layer << ")" << std::endl;
 	}
 
 	JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
