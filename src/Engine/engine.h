@@ -13,7 +13,7 @@
 #include <OBJ_Loader.h>
 #endif
 
-#include <stb_image.h>
+// #include <stb_image.h>
 
 #include "Object.hpp"
 #include "Camera.hpp"
