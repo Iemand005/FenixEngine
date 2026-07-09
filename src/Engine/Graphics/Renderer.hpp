@@ -32,6 +32,8 @@
 #include "../Camera.hpp"
 #include "../ShaderProgram.hpp"
 #include "../ScreenSaverMode.hpp"
+#include "../Timer.hpp"
+#include "../Scene.hpp"
 
 #include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
