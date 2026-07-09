@@ -114,6 +114,18 @@ public:
 		fe::Object* model = this->player.get();
 		if (model) {
 			ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+			if (model->physicsObject) {
+				ImGui::Separator();
+				ImGui::Text("Physics body");
+				glm::vec3 physicsPos = model->physicsObject->GetPosition();
+				if (ImGui::DragFloat3("Physics Position", &physicsPos.x, 0.01f)) {
+					model->physicsObject->SetPosition(physicsPos);
+				}
+				glm::vec3 physicsVel = model->physicsObject->GetLinearVelocity();
+				if (ImGui::DragFloat3("Physics Velocity", &physicsVel.x, 0.01f)) {
+					model->physicsObject->SetLinearVelocity(physicsVel);
+				}
+			}
 			for (size_t i = 0; i < this->npcs.size(); ++i) {
 				ImGui::Text("NPC %zu", i);
 				ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
@@ -156,6 +168,18 @@ public:
 			// ImGui::Text("Object %zu", i);
 			ImGui::Text(object->name.c_str());
 			ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
+			if (object->physicsObject) {
+				std::string physicsPosLabel = "Physics Pos##" + std::to_string(i);
+				glm::vec3 physicsPos = object->physicsObject->GetPosition();
+				if (ImGui::DragFloat3(physicsPosLabel.c_str(), &physicsPos.x, step)) {
+					object->physicsObject->SetPosition(physicsPos);
+				}
+				std::string physicsVelLabel = "Physics Vel##" + std::to_string(i);
+				glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
+				if (ImGui::DragFloat3(physicsVelLabel.c_str(), &physicsVel.x, step)) {
+					object->physicsObject->SetLinearVelocity(physicsVel);
+				}
+			}
 			ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
 			ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
 			if(ImGui::Button(("Focus##" + std::to_string(i)).c_str())) {

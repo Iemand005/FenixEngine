@@ -284,6 +284,14 @@ void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) {
 #endif
 }
 
+glm::vec3 PhysicsObject::GetLinearVelocity() {
+#ifndef EXCLUDE_JOLT
+	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetLinearVelocity(impl->bodyId));
+#else
+	return {};
+#endif
+}
+
 
 ObjectState PhysicsObject::SyncToRender() {
 #ifndef EXCLUDE_JOLT

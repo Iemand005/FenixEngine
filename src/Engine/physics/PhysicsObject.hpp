@@ -44,6 +44,7 @@ public:
 	// BodyInterface* GetBody() { return &this->physicsSystem->GetBodyInterface(); }
 
 	void SetLinearVelocity(glm::vec3 velocity);
+	glm::vec3 GetLinearVelocity();
 
 	void AddLinearVelocity(glm::vec3 velocity);
 
