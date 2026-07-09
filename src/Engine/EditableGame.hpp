@@ -20,6 +20,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 
 #include "EditableGameBase.hpp"
+#include "physics/BasicDebugRenderer.hpp"
 
 namespace fe
 {
@@ -110,6 +111,8 @@ public:
 			if (wireframe) this->EnableWireframe();
 			else this->DisableWireframe();
 		}
+
+		BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
 
 		fe::Object* model = this->player.get();
 		if (model) {
