@@ -34,6 +34,7 @@
 #include "../ScreenSaverMode.hpp"
 #include "../Timer.hpp"
 #include "../Scene.hpp"
+#include "../Character.hpp"
 
 #include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
