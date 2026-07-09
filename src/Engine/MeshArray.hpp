@@ -234,7 +234,7 @@ namespace fe {
 			EndRender();
 		}
 
-		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
+		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
 		std::vector<VertexArray> GetVertices() { return vertices; }
 	};

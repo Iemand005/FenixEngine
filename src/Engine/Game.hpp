@@ -65,7 +65,7 @@ public:
 
 	bool isConnectedToServer = false;
 
-	// std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
+	std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
@@ -89,7 +89,7 @@ public:
 	void Init() {
 		SetClearColor(0.0F, 0.0F, 0.0f);
 
-		// this->physicsEngine = std::make_unique<PhysicsEngine>();
+		this->physicsEngine = std::make_unique<PhysicsEngine>();
 		
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 		
@@ -219,7 +219,7 @@ public:
 	}
 
 	void UpdatePhysics(double deltaTime) {
-		// if (physicsEngine) physicsEngine->Update(deltaTime);
+		if (physicsEngine) physicsEngine->Update(deltaTime);
 	}
 
 	virtual void InitUI() {}
