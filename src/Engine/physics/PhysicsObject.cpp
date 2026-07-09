@@ -184,11 +184,7 @@ PhysicsObject::PhysicsObject(glm::vec3 size, bool dynamic) : PhysicsObject() {
 	(void)dynamic;
 }
 
-PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices,
-														const std::vector<uint32_t>& indices,
-														const glm::vec3& position,
-														float density,
-														bool isStatic) : PhysicsObject() {
+PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic) : PhysicsObject() {
 	(void)vertices;
 	(void)indices;
 	(void)position;
@@ -266,9 +262,7 @@ void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices, c
 		return;
 	}
 	
-	impl->CreateBodyFromShape(shape, position, 
-											isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
-											isStatic ? Layers::NON_MOVING : Layers::MOVING);
+	impl->CreateBodyFromShape(shape, position,  isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic, isStatic ? Layers::NON_MOVING : Layers::MOVING);
 #endif
 
 }
