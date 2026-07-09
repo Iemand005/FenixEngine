@@ -226,6 +226,8 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
 	bodyShapeSettings.mConvexRadius = 0.01;
 	bodyShapeSettings.SetDensity(1000.0);
 	bodyShapeSettings.SetEmbedded();
+	// bodyShapeSettings.mA
+
 	JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
 	JPH::ShapeRefC body_shape = body_shape_result.Get();
 
@@ -234,6 +236,8 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
 	bodySettings.mApplyGyroscopicForce = true;
 	bodySettings.mLinearDamping = 0.0;
 	bodySettings.mAngularDamping = 0.0;
+	bool allowRotation = false;
+	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
 	// this->physicsSystem = physicsSystem;
 
