@@ -10,7 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
 
-class JPH::DebugRendererSimple;
+#include <Jolt/Jolt.h>
+#include <Jolt/Renderer/DebugRendererSimple.h>
 
 class BasicDebugRenderer : public JPH::DebugRendererSimple
 {
