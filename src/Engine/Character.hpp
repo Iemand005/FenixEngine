@@ -1,3 +1,4 @@
+#pragma once
 
 #include "bases.h"
 #include "Object.hpp"
