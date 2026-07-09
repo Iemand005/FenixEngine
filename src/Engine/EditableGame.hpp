@@ -45,6 +45,8 @@ namespace fe
 
     ImGuiIO io;
 
+	bool physicsGravityEnabled = true;
+
     void InitImGUI() {
       // rENDE
       auto renderer = (Renderer*)this;
@@ -121,6 +123,18 @@ public:
 
 		// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
 		ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
+
+		if (ImGui::Button(physicsGravityEnabled ? "Disable Gravity" : "Enable Gravity")) {
+			physicsGravityEnabled = !physicsGravityEnabled;
+			if (this->player) {
+				this->player->gravityEnabled = physicsGravityEnabled;
+			}
+			if (physicsGravityEnabled) {
+				if (physicsEngine) physicsEngine->EnableGravity();
+			} else {
+				if (physicsEngine) physicsEngine->DisableGravity();
+			}
+		}
 
 		fe::Object* model = this->player.get();
 		if (model) {
