@@ -118,6 +118,7 @@ target_include_directories(Engine PRIVATE
 target_include_directories(Engine PUBLIC
     ../../external/glm
     ../../external/imgui
+    ../../external/JoltPhysics
 
     ../../external/glfw/include
 )
@@ -153,7 +154,7 @@ target_link_libraries(Engine PUBLIC
 )
 
 if(NOT FE_EXCLUDE_JOLT)
-    target_link_libraries(Engine PUBLIC Jolt)
+    target_link_libraries(Engine PUBLIC Jolt::Jolt)
 endif()
 
 # TODO: Make the engine only include kiss if audio visualizer engine is requested
