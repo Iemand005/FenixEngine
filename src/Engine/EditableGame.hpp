@@ -1,4 +1,3 @@
-
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -133,6 +132,13 @@ public:
 				if (physicsEngine) physicsEngine->EnableGravity();
 			} else {
 				if (physicsEngine) physicsEngine->DisableGravity();
+			}
+		}
+
+		if (camera) {
+			float fov = camera->GetFOV();
+			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 179.0f, "%.1f deg")) {
+				camera->updateProjection(fov);
 			}
 		}
 
