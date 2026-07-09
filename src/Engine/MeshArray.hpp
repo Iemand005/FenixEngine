@@ -110,20 +110,24 @@ namespace fe {
 
 		bool loadObj(std::string objFilePath);
 
-		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
+		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, std::vector<unsigned char>& data) {
 			auto image = fe::ImageLoader::Load(textureFilePath);
+			if (image.pixels.empty()) {
+				return false;
+			}
+
 			width = image.width;
 			height = image.height;
 			nrChannels = image.channels;
-			data = image.pixels.data();
-			return image.pixels.size() > 0;
+			data = std::move(image.pixels);
+			return true;
 		}
 
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Nearest) {
 			if (textureFilePaths.empty()) return false;
 
 			int baseWidth, baseHeight, nrChannels;
-			unsigned char* firstData;
+			std::vector<unsigned char> firstData;
 			if (!loadTextureFile(textureFilePaths[0], baseWidth, baseHeight, nrChannels, firstData)) {
 				return false;
 			}
@@ -134,21 +138,19 @@ namespace fe {
 
 			glGenTextures(1, &this->texture);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, this->texture);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, baseWidth, baseHeight, layerCount, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
-			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, firstData);
-			// stbi_image_free(firstData);
+			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, firstData.data());
 
 			for (int i = 1; i < layerCount; ++i) {
 				int width, height, channels;
-				unsigned char* data;
-				
+				std::vector<unsigned char> data;
 				if (loadTextureFile(textureFilePaths[i], width, height, channels, data)) {
-					if (width == baseWidth && height == baseHeight) {
-						glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, data);
+					if (width == baseWidth && height == baseHeight && channels == nrChannels) {
+						glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, data.data());
 					}
-					// stbi_image_free(data);
 				}
 			}
 
