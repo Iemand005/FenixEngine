@@ -66,6 +66,7 @@ public:
 			if (pendingJump && isGrounded) {
 				if (gravityEnabled) {
 					this->physicsObject->AddLinearVelocity(glm::vec3(0.0f, jumpSpeed, 0.0f));
+					// this->physicsObject->SetLinearVelocity
 				} else {
 					this->physicsObject->AddPosition(glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f));
 					this->state.position += glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f);
