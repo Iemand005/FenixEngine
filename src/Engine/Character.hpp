@@ -10,7 +10,7 @@ namespace fe {
 class Character : public Object {
 public:
 	float moveSpeed = 5.0f;
-	float jumpSpeed = 0.015f;
+	float jumpSpeed = 0.15f;
 	float jumpHeightWhenGravityDisabled = 0.15f;
 	float groundCheckDistance = 0.15f;
 	glm::vec3 pendingMovement{};
