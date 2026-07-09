@@ -35,11 +35,8 @@ struct PhysicsObject::Impl {
 	JPH::BodyID bodyId;
 	std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
 	JPH::Body* body;
-	// std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
 
-	static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
-																			const std::vector<uint32_t>& indices,
-																			float density = 1000.0f) {
+	static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, float density = 1000.0f) {
 		// Validate vertices
 		if (vertices.empty()) {
 				std::cerr << "Error: No vertices provided!" << std::endl;
@@ -254,11 +251,7 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
 #endif
 }
 
-void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
-																			const std::vector<uint32_t>& indices,
-																			const glm::vec3& position,
-																			float density,
-																			bool isStatic) {
+void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic) {
 
 #ifndef EXCLUDE_JOLT
 
