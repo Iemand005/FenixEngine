@@ -1,6 +1,7 @@
 
 #include "bases.h"
 #include "Object.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 namespace fe {
