@@ -69,11 +69,17 @@ public:
 	}
 
 	Object(Mesh mesh) : Object() {
-		meshes.push_back(mesh);
+		if (mesh.physicsObject) {
+			this->physicsObject = std::move(mesh.physicsObject);
+		}
+		meshes.push_back(std::move(mesh));
 	}
 
 	Object(MeshArray mesh) : Object() {
-		meshArrays.push_back(mesh);
+		if (mesh.physicsObject) {
+			this->physicsObject = std::move(mesh.physicsObject);
+		}
+		meshArrays.push_back(std::move(mesh));
 	}
 
 	Object(std::string objFilePath, float scale = 1.0f) : Object() {
