@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 // #include <stb_image.h>
 
@@ -110,6 +111,11 @@ namespace fe {
 
 		bool loadObj(std::string objFilePath);
 
+		static std::unordered_map<std::string, unsigned int>& GetTextureArrayCache() {
+			static std::unordered_map<std::string, unsigned int> cache;
+			return cache;
+		}
+
 		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, std::vector<unsigned char>& data) {
 			auto image = fe::ImageLoader::Load(textureFilePath);
 			if (image.pixels.empty()) {
@@ -125,6 +131,20 @@ namespace fe {
 
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Nearest) {
 			if (textureFilePaths.empty()) return false;
+
+			std::string cacheKey;
+			for (const auto& texturePath : textureFilePaths) {
+				cacheKey += texturePath;
+				cacheKey += '\0';
+			}
+			cacheKey += std::to_string(static_cast<int>(newScaling));
+
+			auto& cache = GetTextureArrayCache();
+			auto cachedIt = cache.find(cacheKey);
+			if (cachedIt != cache.end()) {
+				this->texture = cachedIt->second;
+				return true;
+			}
 
 			int baseWidth, baseHeight, nrChannels;
 			std::vector<unsigned char> firstData;
@@ -161,6 +181,7 @@ namespace fe {
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, texScaling); 
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, texScaling);
 
+			cache[cacheKey] = this->texture;
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 			return true;
 		}
