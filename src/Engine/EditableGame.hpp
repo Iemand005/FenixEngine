@@ -119,7 +119,8 @@ public:
 			else this->DisableWireframe();
 		}
 
-		BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
+		// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
+		ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
 
 		fe::Object* model = this->player.get();
 		if (model) {

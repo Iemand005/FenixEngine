@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui/imgui.h>
+// #include <imgui/imgui.h>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Renderer/DebugRendererSimple.h>
@@ -274,6 +274,6 @@ private:
 public:
     static void DrawImGuiToggle(const char* label)
     {
-        ImGui::Checkbox(label, &DebugRenderingEnabled());
+        // ImGui::Checkbox(label, &DebugRenderingEnabled());
     }
 };
