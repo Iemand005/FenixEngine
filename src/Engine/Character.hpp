@@ -9,14 +9,20 @@ namespace fe {
 class Character : public Object {
 public:
 	float moveSpeed = 5.0f;
-	float jumpSpeed = 7.0f;
-	float jumpHeightWhenGravityDisabled = 0.25f;
+	float jumpSpeed = 2.5f;
+	float jumpHeightWhenGravityDisabled = 0.15f;
+	float groundCheckDistance = 0.15f;
 	glm::vec3 pendingMovement{};
 	bool pendingJump = false;
 	bool gravityEnabled = true;
+	bool isGrounded = false;
 
 	Character() {
 		this->name = "Character";
+	}
+
+	bool IsGrounded() const {
+		return isGrounded;
 	}
 
 	void Move(Direction direction, Camera* camera) {
@@ -37,8 +43,16 @@ public:
 
 	void Update(double deltaTime) override {
 		Object::Update(deltaTime);
+		isGrounded = false;
 
 		if (this->physicsObject) {
+			glm::vec3 currentPos = this->physicsObject->GetPosition();
+			glm::vec3 down = glm::vec3(0.0f, -1.0f, 0.0f);
+			glm::vec3 probePos = currentPos + down * (1.0f + groundCheckDistance);
+			isGrounded = currentPos.y <= groundCheckDistance + 0.01f;
+			if (!isGrounded) {
+				isGrounded = this->state.position.y <= groundCheckDistance + 0.01f;
+			}
 			glm::vec3 targetVelocity(0.0f);
 			if (glm::length2(pendingMovement) > 0.0001f) {
 				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
@@ -47,7 +61,7 @@ public:
 			this->physicsObject->SetLinearVelocity(targetVelocity);
 			pendingMovement = glm::vec3(0.0f);
 
-			if (pendingJump) {
+			if (pendingJump && isGrounded) {
 				if (gravityEnabled) {
 					this->physicsObject->AddLinearVelocity(glm::vec3(0.0f, jumpSpeed, 0.0f));
 				} else {
@@ -63,8 +77,8 @@ public:
 			this->state.position += glm::normalize(pendingMovement) * moveSpeed * static_cast<float>(deltaTime);
 		}
 		pendingMovement = glm::vec3(0.0f);
-		if (pendingJump) {
-			this->state.position += glm::vec3(0.0f, jumpSpeed * static_cast<float>(deltaTime), 0.0f);
+		if (pendingJump && isGrounded) {
+			this->state.position += glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f);
 			pendingJump = false;
 		}
 	}
