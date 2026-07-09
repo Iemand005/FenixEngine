@@ -54,6 +54,7 @@ public:
 			if (!isGrounded) {
 				isGrounded = this->state.position.y <= groundCheckDistance + 0.01f;
 			}
+			isGrounded = true; // TODO: add JPH contact lsiterner and use that to determine if norma l of conatc t is up
 			glm::vec3 targetVelocity(0.0f);
 			if (glm::length2(pendingMovement) > 0.0001f) {
 				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
