@@ -193,7 +193,7 @@ template<typename WindowT = DefaultWindow>
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
 		if (!scene || !camera || !shader) return;
-		std::cout << "OK: " << std::endl;
+		// std::cout << "OK: " << std::endl;
 
 		if (shader) {
 			shader->Use();
@@ -201,7 +201,7 @@ template<typename WindowT = DefaultWindow>
 			float elapsedTime = (float)window->GetTime();
 			shader->SetFloat("time", elapsedTime);
 
-			std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
+			// std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
 
 			int count = scene->GetLightCount();
 			auto pointLights = scene->GetLights();
