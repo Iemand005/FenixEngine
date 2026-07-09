@@ -106,24 +106,33 @@ class ShaderProgram {
 
   void SetMat4(const std::string& name, const glm::mat4& mat) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
 	}
 	void SetVec3(const std::string& name, const glm::vec3& vec) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform3f(loc, vec.x, vec.y, vec.z);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform3f(loc, vec.x, vec.y, vec.z);
 	}
 	void SetFloat(const std::string& name, float value) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform1f(loc, value);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform1f(loc, value);
 	}
 	void SetInt(const std::string& name, int value) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform1i(loc, value);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform1i(loc, value);
 	}
+
+  void LogUniformIfNotFound(GLint loc, const std::string& name) const {
+    if (loc == -1 && missingUniforms.insert(name).second) {
+      std::cerr << "Uniform not found: " << name << std::endl;
+    }
+  }
+
+ private:
+  mutable std::unordered_set<std::string> missingUniforms;
 };
 }
 
