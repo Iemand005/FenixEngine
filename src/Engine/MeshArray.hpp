@@ -138,7 +138,7 @@ namespace fe {
 			glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, internalFormat, baseWidth, baseHeight, layerCount, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, firstData);
-			stbi_image_free(firstData);
+			// stbi_image_free(firstData);
 
 			for (int i = 1; i < layerCount; ++i) {
 				int width, height, channels;
@@ -148,7 +148,7 @@ namespace fe {
 					if (width == baseWidth && height == baseHeight) {
 						glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, baseWidth, baseHeight, 1, format, GL_UNSIGNED_BYTE, data);
 					}
-					stbi_image_free(data);
+					// stbi_image_free(data);
 				}
 			}
 
