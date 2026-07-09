@@ -5,27 +5,27 @@
 using namespace fe;
 
 void Game::InitGL() {
-  glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE);
 }
 
 void Game::SetClearColor(float r, float g, float b, float a) {
-  glClearColor(r, g, b, a);
+	glClearColor(r, g, b, a);
 }
 
 void Game::EnableWireframe() {
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 void Game::DisableWireframe() {
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void fe::Game::ToggleWireframe(bool enabled) {
-  if (enabled) EnableWireframe();
-  else DisableWireframe();
+	if (enabled) EnableWireframe();
+	else DisableWireframe();
 }
 
 void Game::BindFrameBuffer(int bufferIndex) {
-  glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
 }
 
 void Game::CheckErrors() {
