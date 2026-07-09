@@ -1,6 +1,7 @@
 
 #include "bases.h"
 #include "Object.hpp"
+#include <glm/gtx/norm.hpp>
 
 namespace fe {
 
