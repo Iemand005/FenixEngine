@@ -31,14 +31,6 @@ public:
 		}
 	}
 
-	void Update(double deltaTime) override {
-		if (!this->physicsObject) {
-			Object::Update(deltaTime);
-			return;
-		}
-
-		this->physicsObject->SetPosition(this->state.position);
-	}
 };
 
 }
