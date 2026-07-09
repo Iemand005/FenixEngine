@@ -138,7 +138,7 @@ public:
 		if (camera) {
 			float fov = camera->GetFOV();
 			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 179.0f, "%.1f deg")) {
-				camera->updateProjection(fov);
+				camera->SetFOV(fov);
 			}
 		}
 
