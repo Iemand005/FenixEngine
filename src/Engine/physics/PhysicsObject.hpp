@@ -6,9 +6,6 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
-// #include "PhysicsEngine.hpp"
-
-// 7
 
 namespace JPH { class PhysicsSystem; }
 
@@ -57,10 +54,6 @@ public:
 private:
 	void BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem);
 	void InitializeBoxBody(glm::vec3 size, bool dynamic);
-	void InitializeMeshBody(const std::vector<glm::vec3>& vertices,
-													const std::vector<uint32_t>& indices,
-													const glm::vec3& position,
-													float density,
-													bool isStatic);
+	void InitializeMeshBody(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic);
 };
 }  // namespace fe
