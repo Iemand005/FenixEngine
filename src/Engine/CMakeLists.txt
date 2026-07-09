@@ -31,6 +31,8 @@ if (NOT FE_EXCLUDE_JOLT)
     endif()
     add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 else()
+    add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
+
     # add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
@@ -155,6 +157,7 @@ target_link_libraries(Engine PUBLIC
     Renderer
     SDL3::SDL3
     OpenXR::openxr_loader
+    Jolt::Jolt
 )
 
 if(NOT FE_EXCLUDE_JOLT)
