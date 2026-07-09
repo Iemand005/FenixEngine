@@ -11,6 +11,7 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyManager.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
@@ -20,6 +21,7 @@
 #endif
 
 #include "PhysicsEngine.hpp"
+#include "BasicDebugRenderer.hpp"
 
 // JPH_SUPPRESS_WARNINGS
 
@@ -95,6 +97,7 @@ struct PhysicsEngine::Impl {
   std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
   std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
   std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+  std::unique_ptr<BasicDebugRenderer> debugRenderer;
 #endif
 };
 
@@ -126,6 +129,9 @@ PhysicsEngine::PhysicsEngine() {
   impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
 
   impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
+
+  impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
+  JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
 
   EnableGravity();
 
@@ -160,6 +166,15 @@ void PhysicsEngine::Update(double dt) {
 	float deltaTime = static_cast<float>(dt);
 	
 	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
+
+	if (impl->debugRenderer && BasicDebugRenderer::DebugRenderingEnabled()) {
+		JPH::BodyManager::DrawSettings settings;
+		settings.mDrawShape = true;
+		settings.mDrawShapeWireframe = true;
+		settings.mDrawBoundingBox = true;
+		settings.mDrawWorldTransform = true;
+		impl->physicsSystem->DrawBodies(settings, impl->debugRenderer.get());
+	}
 #endif
 }
 
@@ -172,6 +187,15 @@ void PhysicsEngine::EnableGravity() {
 void PhysicsEngine::DisableGravity() {
 #ifndef EXCLUDE_JOLT
 	impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
+#endif
+}
+
+void PhysicsEngine::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+#ifndef EXCLUDE_JOLT
+	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled()) {
+		return;
+	}
+	impl->debugRenderer->Render(viewMatrix, projectionMatrix);
 #endif
 }
 

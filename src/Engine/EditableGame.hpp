@@ -69,6 +69,13 @@ namespace fe
 
 public:
 
+	void OnDraw() override {
+		EditableGameBase::OnDraw();
+		if (this->physicsEngine) {
+			this->physicsEngine->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+		}
+	}
+
 	void BeginFrame() {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL3_NewFrame();

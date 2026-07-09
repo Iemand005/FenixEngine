@@ -8,7 +8,7 @@
 
 
 #include "PhysicsObject.hpp"
-
+#include "../Graphics/Renderer.hpp"
 
 namespace fe{
 
@@ -35,5 +35,6 @@ class PhysicsEngine {
   
   void EnableGravity();
   void DisableGravity();
+  void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 };
 }
