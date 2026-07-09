@@ -10,8 +10,10 @@ class Character : public Object {
 public:
 	float moveSpeed = 5.0f;
 	float jumpSpeed = 7.0f;
+	float jumpHeightWhenGravityDisabled = 0.25f;
 	glm::vec3 pendingMovement{};
 	bool pendingJump = false;
+	bool gravityEnabled = true;
 
 	Character() {
 		this->name = "Character";
@@ -41,12 +43,17 @@ public:
 			if (glm::length2(pendingMovement) > 0.0001f) {
 				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
 			}
-			targetVelocity.y = this->state.velocity.y;
+			targetVelocity.y = gravityEnabled ? this->state.velocity.y : 0.0f;
 			this->physicsObject->SetLinearVelocity(targetVelocity);
 			pendingMovement = glm::vec3(0.0f);
 
 			if (pendingJump) {
-				this->physicsObject->AddLinearVelocity(glm::vec3(0.0f, jumpSpeed, 0.0f));
+				if (gravityEnabled) {
+					this->physicsObject->AddLinearVelocity(glm::vec3(0.0f, jumpSpeed, 0.0f));
+				} else {
+					this->physicsObject->AddPosition(glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f));
+					this->state.position += glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f);
+				}
 				pendingJump = false;
 			}
 			return;
