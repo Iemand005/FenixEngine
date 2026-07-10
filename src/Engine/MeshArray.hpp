@@ -69,6 +69,11 @@ namespace fe {
 
 		MeshArray(const MeshArray& other) : indexCount(other.indexCount), vao(other.vao), VBO(other.VBO), EBO(other.EBO), texture(other.texture), vertices(other.vertices), indices(other.indices), modelMatrix(other.modelMatrix), physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
 
+		// q``q	1	1		1``			`
+		~MeshArray() {
+			RemoveFromGPU();
+		}
+
 		void CopyToGPU() {
 			unsigned int vao, VBO, EBO;
 			glGenVertexArrays(1, &vao);
