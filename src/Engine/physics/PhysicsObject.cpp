@@ -322,7 +322,7 @@ ObjectState PhysicsObject::SyncToRender() {
 #endif
 }
 
-ObjectState PhysicsObject::Destroy() {
+void PhysicsObject::Destroy() {
 #ifndef EXCLUDE_JOLT
 	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
 
