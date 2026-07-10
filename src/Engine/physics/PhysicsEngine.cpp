@@ -187,9 +187,8 @@ void PhysicsFactory::DisableGravity() {
 
 void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
 #ifndef EXCLUDE_JOLT
-	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled()) {
+	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled())
 		return;
-	}
 	impl->debugRenderer->Render(viewMatrix, projectionMatrix);
 #endif
 }
@@ -210,11 +209,4 @@ std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(const std::vecto
 	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
 #endif
 	return obj;
-}
-
-
-void PhysicsFactory::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
-#ifndef EXCLUDE_JOLT
-	objec->Destroy();
-#endif
 }
