@@ -38,6 +38,6 @@ namespace fe{
 		void DisableGravity();
 		void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 
-		void Bind();
+		void Bind(fe::PhysicsObject &obj);
 	};
 }

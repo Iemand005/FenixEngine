@@ -204,14 +204,13 @@ std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, 
 
 std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
 	auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
-#ifndef EXCLUDE_JOLT
-	obj->BindPhysicsSystem(impl->physicsSystem);
+
+	Bind(obj);
 	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
-#endif
 	return obj;
 }
 
-void PhysicsFactory::Bind() {
+void PhysicsFactory::Bind(fe::PhysicsObject &obj) {
 #ifndef EXCLUDE_JOLT
 	obj->BindPhysicsSystem(impl->physicsSystem);
 #endif
