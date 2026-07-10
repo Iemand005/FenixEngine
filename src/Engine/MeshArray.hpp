@@ -43,12 +43,10 @@ namespace fe {
 
 		MeshArray() {}
 
-		MeshArray(std::vector<VertexArray> vertices, std::vector<unsigned int> indices) {
-			this->vertices = vertices;
-			this->indices = indices;
-			this->indexCount = indices.size();
+		MeshArray(std::vector<VertexArray> vertices, std::vector<unsigned int> indices, bool copyToGPU = true) : vertices(std::move(vertices)), indices(std::move(indices)) {
+			this->indexCount = this->indices.size();
 			modelMatrix = glm::mat4(1.0f);
-			init();
+			if (copyToGPU) CopyToGPU();
 		}
 
 		MeshArray& operator=(const MeshArray& other) {
@@ -80,7 +78,7 @@ namespace fe {
 					modelMatrix(other.modelMatrix),
 					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
 
-		void init() {
+		void CopyToGPU() {
 			unsigned int vao, VBO, EBO;
 			glGenVertexArrays(1, &vao);
 			glBindVertexArray(vao);
@@ -107,6 +105,13 @@ namespace fe {
 			glEnableVertexAttribArray(2);
 
 			glBindVertexArray(0);
+		}
+
+		void FreeCpuData() {
+			vertices.clear();
+			vertices.shrink_to_fit();
+			indices.clear();
+			indices.shrink_to_fit();
 		}
 
 		bool loadObj(std::string objFilePath);
