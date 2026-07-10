@@ -319,3 +319,12 @@ ObjectState PhysicsObject::SyncToRender() {
 	return {};
 #endif
 }
+
+ObjectState PhysicsObject::SyncToRender() {
+#ifndef EXCLUDE_JOLT
+	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+
+	bodyInterface->RemoveBody(impl->bodyId);
+	bodyInterface->DestroyBody(impl->bodyId);
+#endif
+}

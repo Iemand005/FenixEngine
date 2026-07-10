@@ -219,5 +219,7 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector
 
 
 void PhysicsEngine::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
-
+#ifndef EXCLUDE_JOLT
+	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
+#endif
 }
