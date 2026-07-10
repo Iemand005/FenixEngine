@@ -94,7 +94,7 @@ public:
 		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 		
 		this->scene = std::make_unique<fe::Scene>();
-		this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
+		this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 100.0f);
 		// this->level = std::move();
 		
 		this->scene->SetLight();

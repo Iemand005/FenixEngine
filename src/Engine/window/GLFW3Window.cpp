@@ -78,53 +78,11 @@ bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) 
 
 	glfwSetWindowUserPointer(impl->window, this);
 
-	// glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yOffset) {
-	//   auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-	//   ImGuiIO& io = ImGui::GetIO();
-	//   if (io.WantCaptureMouse) return;
-	//   game->fov -= (float)yOffset;
-	//   if (game->fov < 1.0f) game->fov = 1.0f;
-	//   if (game->fov > 45.0f) game->fov = 45.0f;
-	// });
-	// glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-	//   ImGuiIO& io = ImGui::GetIO();
-	//   if (io.WantCaptureMouse) return;
-	// });
 
 	glfwSetCursorPosCallback(impl->window, [](GLFWwindow* window, double xPos, double yPos) {
 		if (!(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)) {
-			// ImGui::SetNextFrameWantCaptureMouse(false);
 			return;
 		}
-
-		// auto game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-		// ImGuiIO& io = ImGui::GetIO();
-		// if (io.WantCaptureMouse) return;
-
-		// float xOffset = xPos - game->lastX;
-		// float yOffset = game->lastY - yPos;
-		// if (game->lastX == 0 && game->lastY == 0) {
-		//   xOffset = 0;
-		//   yOffset = 0;
-		// }
-		// game->lastX = xPos;
-		// game->lastY = yPos;
-
-		// const float sensitivity = 0.1f;
-		// xOffset *= sensitivity;
-		// yOffset *= sensitivity;
-
-		// game->yaw += xOffset;
-		// game->pitch += yOffset;
-
-		// if (game->pitch > 89.0f) game->pitch = 89.0f;
-		// if (game->pitch < -89.0f) game->pitch = -89.0f;
-
-		// glm::vec3 direction;
-		// direction.x = cos(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-		// direction.y = sin(glm::radians(game->pitch));
-		// direction.z = sin(glm::radians(game->yaw)) * cos(glm::radians(game->pitch));
-		// game->camera->front = glm::normalize(direction);
 	});
 
 	glfwSetKeyCallback(impl->window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -151,22 +109,15 @@ bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) 
 	return true;
 }
 
-// void fe::GLFW3Window::GetDisplaySize(int *width, int *height) {
-// 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-// 	*width = mode->width;
-// 	*height = mode->height;
-// }
 
 void *fe::GLFW3Window::GetWindow() { return impl->window; }
 
 void fe::GLFW3Window::StartMouseCapture() {
 	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	// io.WantCaptureMouse = false;
 }
 
 void fe::GLFW3Window::StopMouseCapture() {
 	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	// io.WantCaptureMouse = true;
 }
 
 void fe::GLFW3Window::SwapBuffers() { glfwSwapBuffers(impl->window); }
@@ -233,20 +184,16 @@ void fe::GLFW3Window::AttachToNativeParent(void *parent) {
 #include <Windows.h>
     HWND parentHwnd = (HWND)parent;
 
-    // Get GLFW internal Win32 HWND
     HWND childHwnd = glfwGetWin32Window(impl->window);
 
-    // Change window style to child window
     LONG style = GetWindowLong(childHwnd, GWL_STYLE);
     style &= ~(WS_POPUP | WS_OVERLAPPEDWINDOW);
     style |= WS_CHILD;
 
     SetWindowLong(childHwnd, GWL_STYLE, style);
 
-    // Set parent
     SetParent(childHwnd, parentHwnd);
 
-    // Resize to fit parent
     RECT rect;
     GetClientRect(parentHwnd, &rect);
 
