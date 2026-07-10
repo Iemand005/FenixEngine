@@ -103,8 +103,8 @@ struct PhysicsFactory::Impl {
 
 // MAYBE TODO: uh maybe perhaps uh rename this calss to uh physicsfactory or soemthing? it's a facture more than a engine really
 PhysicsFactory::PhysicsFactory() {
-	impl = std::make_unique<Impl>();
 #ifndef EXCLUDE_JOLT
+	impl = std::make_unique<Impl>();
 
 	RegisterDefaultAllocator();
 
