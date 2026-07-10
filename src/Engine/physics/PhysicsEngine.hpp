@@ -30,9 +30,10 @@ class PhysicsEngine {
   ObjectState SyncToRender();
 
   std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
-
   std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
   
+  void RemoveObject(std::unique_ptr<fe::PhysicsObject> object);
+
   void EnableGravity();
   void DisableGravity();
   void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);

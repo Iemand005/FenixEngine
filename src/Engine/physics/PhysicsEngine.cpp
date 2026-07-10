@@ -205,7 +205,7 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, b
 	obj->BindPhysicsSystem(impl->physicsSystem);
 	obj->InitializeBoxBody(size, dynamic);
 #endif
-	return obj;
+	return obj;/////
 }
 
 std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
@@ -215,4 +215,9 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector
 	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
 #endif
 	return obj;
+}
+
+
+void PhysicsEngine::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
+  
 }
