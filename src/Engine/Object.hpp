@@ -78,7 +78,7 @@ public:
 	Object(MeshArray mesh) : Object() {
 		if (mesh.physicsObject)
 			this->physicsObject = std::move(mesh.physicsObject);
-		meshArrays.push_back(std::move(mesh));
+		meshArrays.emplace_back(std::move(mesh));
 	}
 
 	Object(std::string objFilePath, float scale = 1.0f) : Object() {

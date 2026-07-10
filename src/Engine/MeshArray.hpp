@@ -51,7 +51,13 @@ namespace fe {
 
 		
 
-		MeshArray(MeshArray&&) = default;
+		MeshArray(MeshArray&& other) noexcept : indexCount(other.indexCount), vao(other.vao), VBO(other.VBO), EBO(other.EBO), texture(other.texture), vertices(std::move(other.vertices)), indices(std::move(other.indices)), modelMatrix(other.modelMatrix), physicsObject(std::move(other.physicsObject)), scaling(other.scaling), hasTransparency(other.hasTransparency)
+		{
+			other.vao = 0;
+			other.VBO = 0;
+			other.EBO = 0;
+			other.texture = 0;
+		}
 		MeshArray(const MeshArray&) = delete;
     	MeshArray& operator=(const MeshArray&) = delete;
 		MeshArray& operator=(MeshArray&& other) noexcept {
