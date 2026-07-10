@@ -220,6 +220,6 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector
 
 void PhysicsEngine::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
 #ifndef EXCLUDE_JOLT
-	obj->Destroy();
+	objec->Destroy();
 #endif
 }
