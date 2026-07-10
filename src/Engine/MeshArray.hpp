@@ -49,20 +49,7 @@ namespace fe {
 			if (copyToGPU) CopyToGPU();
 		}
 
-		MeshArray& operator=(const MeshArray& other) {
-					if (this != &other) {
-							indexCount = other.indexCount;
-							vao = other.vao;
-							VBO = other.VBO;
-							EBO = other.EBO;
-							texture = other.texture;
-							vertices = other.vertices;
-							indices = other.indices;
-							modelMatrix = other.modelMatrix;
-							physicsObject = other.physicsObject ? other.physicsObject->Clone() : nullptr;
-					}
-					return *this;
-			}
+		
 
 		MeshArray(MeshArray&&) = default;
 		MeshArray(const MeshArray&) = delete;
