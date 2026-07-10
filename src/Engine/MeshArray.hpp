@@ -124,8 +124,8 @@ namespace fe {
 			MeshArray copy;
 			copy.vertices = vertices;
 			copy.indices = indices;
-			copy.CopyToGPU();        
-			return copy;             
+			copy.CopyToGPU();
+			return copy;
 		}
 
 		bool loadObj(std::string objFilePath);

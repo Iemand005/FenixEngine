@@ -128,7 +128,17 @@ public:
 	std::shared_ptr<Object> Clone() const {
 		auto newObj = std::make_shared<Object>();
 		newObj->meshes = this->meshes;
+		// newObj->meshes.clear();
+		// newObj->meshes.reserve(meshes.size());
+		// for (const auto& m : meshes) {
+		// 	newObj->meshes.push_back(m.Clone());
+		// }
 		newObj->meshArrays = this->meshArrays;
+		newObj->meshArrays.clear();
+		newObj->meshArrays.reserve(meshArrays.size());
+		for (const auto& m : meshArrays) {
+			newObj->meshArrays.push_back(m.Clone());
+		}
 		newObj->state.scale = this->state.scale;
 		return newObj;
 	}
