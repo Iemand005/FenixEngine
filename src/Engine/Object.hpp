@@ -76,9 +76,8 @@ public:
 	}
 
 	Object(MeshArray mesh) : Object() {
-		if (mesh.physicsObject) {
+		if (mesh.physicsObject)
 			this->physicsObject = std::move(mesh.physicsObject);
-		}
 		meshArrays.push_back(std::move(mesh));
 	}
 
