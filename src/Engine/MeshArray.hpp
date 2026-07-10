@@ -120,6 +120,14 @@ namespace fe {
 			indices.shrink_to_fit();
 		}
 
+		MeshArray Clone() const {
+			MeshArray copy;
+			copy.vertices = vertices;
+			copy.indices = indices;
+			copy.CopyToGPU();        
+			return copy;             
+		}
+
 		bool loadObj(std::string objFilePath);
 
 		static std::unordered_map<std::string, unsigned int>& GetTextureArrayCache() {
