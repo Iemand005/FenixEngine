@@ -45,44 +45,44 @@ using namespace JPH;
 // };
 
 static void TraceImpl(const char* inFMT, ...) {
-  va_list list;
-  va_start(list, inFMT);
-  char buffer[1024];
-  vsnprintf(buffer, sizeof(buffer), inFMT, list);
-  va_end(list);
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
 
-  std::cout << buffer << std::endl;
+	std::cout << buffer << std::endl;
 }
 
 #endif  // JPH_ENABLE_ASSERTS
 
 class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter {
- public:
-  virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
+public:
+	virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
 };
 
 class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
- public:
-  virtual uint GetNumBroadPhaseLayers() const override { return 1; }
+public:
+	virtual uint GetNumBroadPhaseLayers() const override { return 1; }
 
-  virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override { return BroadPhaseLayer(0); }
+	virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override { return BroadPhaseLayer(0); }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-  virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override { return "MOVING"; }
+	virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override { return "MOVING"; }
 #endif
 };
 
 class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter {
- public:
-  virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
+public:
+	virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
 };
 
 #ifdef JPH_ENABLE_ASSERTS
 
 // Callback for asserts, connect this to your own assert handler if you have one
 static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine) {
-  std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
-  return true;
+	std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
+	return true;
 };
 
 #endif
@@ -91,13 +91,13 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
 
 struct PhysicsEngine::Impl {
 #ifndef EXCLUDE_JOLT
-  std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
-  std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
-  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-  std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
-  std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
-  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
-  std::unique_ptr<BasicDebugRenderer> debugRenderer;
+	std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
+	std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
+	std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+	std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
+	std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
+	std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+	std::unique_ptr<BasicDebugRenderer> debugRenderer;
 #endif
 };
 
@@ -108,34 +108,34 @@ struct PhysicsEngine::Impl {
 // };
 
 PhysicsEngine::PhysicsEngine() {
-  impl = std::make_unique<Impl>();
+	impl = std::make_unique<Impl>();
 #ifndef EXCLUDE_JOLT
 
-  RegisterDefaultAllocator();
+	RegisterDefaultAllocator();
 
-  JPH_IF_ENABLE_ASSERTS(Trace = TraceImpl);
-  JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
-  Factory::sInstance = new Factory();
-  RegisterTypes();
+	JPH_IF_ENABLE_ASSERTS(Trace = TraceImpl);
+	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
+	Factory::sInstance = new Factory();
+	RegisterTypes();
 
-  // Create heap-allocated members
-  impl->temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-  impl->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+	// Create heap-allocated members
+	impl->temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+	impl->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
-  impl->physicsSystem = std::make_shared<JPH::PhysicsSystem>();
+	impl->physicsSystem = std::make_shared<JPH::PhysicsSystem>();
 
-  impl->broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
-  impl->object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
-  impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
+	impl->broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
+	impl->object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
+	impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
 
-  impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
+	impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
 
-  impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
-  JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
+	impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
+	JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
 
-  EnableGravity();
+	EnableGravity();
 
-  impl->physicsSystem->OptimizeBroadPhase();
+	impl->physicsSystem->OptimizeBroadPhase();
 #endif
 
 }
@@ -202,7 +202,7 @@ void PhysicsEngine::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& pr
 std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, bool dynamic) {
 	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
 #ifndef EXCLUDE_JOLT
-	obj->BindPhysicsSystem(impl->physicsSystem);
+obj->BindPhysicsSystem(impl->physicsSystem);
 	obj->InitializeBoxBody(size, dynamic);
 #endif
 	return obj;/////
@@ -219,5 +219,5 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector
 
 
 void PhysicsEngine::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
-  
+
 }
