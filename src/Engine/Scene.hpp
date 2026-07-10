@@ -326,12 +326,7 @@ public:
 		DrawCircle(position, radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
 	}
 
-	void DrawCircle(
-			const glm::vec3& position,
-			float radius,
-			int segments,
-			const glm::vec3& rotationDegrees,
-			const glm::vec3& color) {
+	void DrawCircle( const glm::vec3& position, float radius, int segments, const glm::vec3& rotationDegrees, const glm::vec3& color) {
 		if (radius <= 0.0f) return;
 		segments = std::max(segments, 3);
 		if (!hasCameraMatrices) return;
@@ -356,12 +351,7 @@ public:
 		DrawGizmoLines(circleVertices, GL_LINE_LOOP, color);
 	}
 
-	void DrawArrow(
-			const glm::vec3& from,
-			const glm::vec3& to,
-			const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f),
-			float headLengthScale = 0.20f,
-			float headRadiusScale = 0.12f) {
+	void DrawArrow( const glm::vec3& from, const glm::vec3& to, const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f), float headLengthScale = 0.20f, float headRadiusScale = 0.12f) {
 		if (!hasCameraMatrices) return;
 
 		glm::vec3 direction = to - from;
@@ -410,24 +400,13 @@ public:
 		DrawGizmoLines(arrowVertices, GL_LINES, color);
 	}
 
-	void DrawArrow(
-			const glm::vec3& origin,
-			const glm::vec3& direction,
-			float length,
-			const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f),
-			float headLengthScale = 0.10f,
-			float headRadiusScale = 0.5f) {
+	void DrawArrow(const glm::vec3& origin, const glm::vec3& direction, float length, const glm::vec3& color = glm::vec3(0.95f, 0.80f, 0.15f), float headLengthScale = 0.10f, float headRadiusScale = 0.5f) {
 		if (length <= 0.0f) return;
 
 		float directionLength = glm::length(direction);
 		if (directionLength <= 0.0001f) return;
 
-		DrawArrow(
-				origin,
-				origin + (direction / directionLength) * length,
-				color,
-				headLengthScale,
-				headRadiusScale);
+		DrawArrow( origin, origin + (direction / directionLength) * length, color, headLengthScale, headRadiusScale);
 	}
 };
 
