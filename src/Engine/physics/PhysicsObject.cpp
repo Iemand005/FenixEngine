@@ -175,7 +175,9 @@ PhysicsObject::PhysicsObject() {
 #endif
 }
 
-PhysicsObject::~PhysicsObject() = default;
+PhysicsObject::~PhysicsObject() {
+	Destroy();
+}
 
 PhysicsObject::PhysicsObject(glm::vec3 size, bool dynamic) : PhysicsObject() {
 	(void)size;
@@ -320,7 +322,7 @@ ObjectState PhysicsObject::SyncToRender() {
 #endif
 }
 
-ObjectState PhysicsObject::SyncToRender() {
+ObjectState PhysicsObject::Destroy() {
 #ifndef EXCLUDE_JOLT
 	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
 
