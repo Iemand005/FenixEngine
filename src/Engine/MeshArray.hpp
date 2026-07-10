@@ -65,6 +65,8 @@ namespace fe {
 			}
 
 		MeshArray(MeshArray&&) = default;
+		MeshArray(const MeshArray&) = delete;
+    	MeshArray& operator=(const MeshArray&) = delete;
 		MeshArray& operator=(MeshArray&& other) noexcept {
 			if (this != &other) {
 				RemoveFromGPU(); // clean up whatever *this* currently owns
