@@ -104,18 +104,9 @@ namespace fe {
 		}
 
 		void RemoveFromGPU() {
-			if (vao) {
-				glDeleteVertexArrays(1, &vao);
-				vao = 0;
-			}
-			if (VBO) {
-				glDeleteBuffers(1, &VBO);
-				VBO = 0;
-			}
-			if (EBO) {
-				glDeleteBuffers(1, &EBO);
-				EBO = 0;
-			}
+			if (vao) { glDeleteVertexArrays(1, &vao); vao = 0; }
+			if (VBO) { glDeleteBuffers(1, &VBO); VBO = 0; }
+			if (EBO) { glDeleteBuffers(1, &EBO); EBO = 0; }
 		}
 
 		void FreeCpuData() {
