@@ -11,10 +11,10 @@ namespace JPH { class PhysicsSystem; }
 
 
 namespace fe {
-class PhysicsEngine;
+class PhysicsFactory;
 
 class PhysicsObject {
-	friend class PhysicsEngine;
+	friend class PhysicsFactory;
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 

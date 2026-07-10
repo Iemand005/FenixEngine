@@ -89,7 +89,7 @@ static bool AssertFailedImpl(const char* inExpression, const char* inMessage, co
 
 #endif
 
-struct PhysicsEngine::Impl {
+struct PhysicsFactory::Impl {
 #ifndef EXCLUDE_JOLT
 	std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
 	std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
@@ -101,13 +101,8 @@ struct PhysicsEngine::Impl {
 #endif
 };
 
-// PhysicsEngine::PhysicsEngine() {
-//   impl->physicsSystem = nullptr;
-//   impl->temp_allocator = nullptr;
-//   impl->jobSystem = nullptr;
-// };
 // MAYBE TODO: uh maybe perhaps uh rename this calss to uh physicsfactory or soemthing? it's a facture more than a engine really
-PhysicsEngine::PhysicsEngine() {
+PhysicsFactory::PhysicsFactory() {
 	impl = std::make_unique<Impl>();
 #ifndef EXCLUDE_JOLT
 
@@ -140,11 +135,11 @@ PhysicsEngine::PhysicsEngine() {
 
 }
 
-PhysicsEngine::~PhysicsEngine() = default;
+PhysicsFactory::~PhysicsFactory() = default;
 
 
 
-void PhysicsEngine::Update(double dt) {
+void PhysicsFactory::Update(double dt) {
 #ifndef EXCLUDE_JOLT
 	// Validate input parameters
 	if (dt <= 0.0) {
@@ -178,19 +173,19 @@ void PhysicsEngine::Update(double dt) {
 #endif
 }
 
-void PhysicsEngine::EnableGravity() {
+void PhysicsFactory::EnableGravity() {
 #ifndef EXCLUDE_JOLT
 	impl->physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 #endif
 }
 
-void PhysicsEngine::DisableGravity() {
+void PhysicsFactory::DisableGravity() {
 #ifndef EXCLUDE_JOLT
 	impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
 #endif
 }
 
-void PhysicsEngine::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
 #ifndef EXCLUDE_JOLT
 	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled()) {
 		return;
@@ -199,7 +194,7 @@ void PhysicsEngine::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& pr
 #endif
 }
 
-std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, bool dynamic) {
+std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool dynamic) {
 	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
 #ifndef EXCLUDE_JOLT
 obj->BindPhysicsSystem(impl->physicsSystem);
@@ -208,7 +203,7 @@ obj->BindPhysicsSystem(impl->physicsSystem);
 	return obj;/////
 }
 
-std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
+std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
 	auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
 #ifndef EXCLUDE_JOLT
 	obj->BindPhysicsSystem(impl->physicsSystem);
@@ -218,7 +213,7 @@ std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector
 }
 
 
-void PhysicsEngine::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
+void PhysicsFactory::RemoveObject(std::unique_ptr<PhysicsObject> objec) {
 #ifndef EXCLUDE_JOLT
 	objec->Destroy();
 #endif

@@ -12,14 +12,14 @@
 
 namespace fe{
 
-class PhysicsEngine {
+class PhysicsFactory {
  public:
 
   struct Impl;
   std::unique_ptr<Impl> impl;
 
-  PhysicsEngine();
-  ~PhysicsEngine();
+  PhysicsFactory();
+  ~PhysicsFactory();
 
 
   std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
