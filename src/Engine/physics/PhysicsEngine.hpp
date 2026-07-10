@@ -12,30 +12,32 @@
 
 namespace fe{
 
-class PhysicsFactory {
- public:
+	class PhysicsFactory {
+	public:
 
-  struct Impl;
-  std::unique_ptr<Impl> impl;
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 
-  PhysicsFactory();
-  ~PhysicsFactory();
-
-
-  std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
+		PhysicsFactory();
+		~PhysicsFactory();
 
 
-  void Update(double dt);
+		std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
 
-  ObjectState SyncToRender();
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
-  std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
-  
-  void RemoveObject(std::unique_ptr<fe::PhysicsObject> object);
+		void Update(double dt);
 
-  void EnableGravity();
-  void DisableGravity();
-  void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
-};
+		ObjectState SyncToRender();
+
+		std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
+		std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
+		
+		void RemoveObject(std::unique_ptr<fe::PhysicsObject> object);
+
+		void EnableGravity();
+		void DisableGravity();
+		void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
+
+		void Bind();
+	};
 }

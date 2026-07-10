@@ -196,7 +196,7 @@ void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& p
 std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool dynamic) {
 	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
 #ifndef EXCLUDE_JOLT
-obj->BindPhysicsSystem(impl->physicsSystem);
+	obj->BindPhysicsSystem(impl->physicsSystem);
 	obj->InitializeBoxBody(size, dynamic);
 #endif
 	return obj;/////
@@ -209,4 +209,10 @@ std::unique_ptr<fe::PhysicsObject> PhysicsFactory::CreateObject(const std::vecto
 	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
 #endif
 	return obj;
+}
+
+void PhysicsFactory::Bind() {
+#ifndef EXCLUDE_JOLT
+	obj->BindPhysicsSystem(impl->physicsSystem);
+#endif
 }
