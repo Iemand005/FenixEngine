@@ -65,7 +65,22 @@ namespace fe {
 			}
 
 		MeshArray(MeshArray&&) = default;
-		MeshArray& operator=(MeshArray&&) = default;
+		MeshArray& operator=(MeshArray&& other) noexcept {
+			if (this != &other) {
+				RemoveFromGPU(); // clean up whatever *this* currently owns
+
+				vertices = std::move(other.vertices);
+				indices  = std::move(other.indices);
+				vao = other.vao;
+				VBO = other.VBO;
+				EBO = other.EBO;
+
+				other.vao = 0;
+				other.VBO = 0;
+				other.EBO = 0;
+			}
+			return *this;
+		}
 
 		MeshArray(const MeshArray& other) : indexCount(other.indexCount), vao(other.vao), VBO(other.VBO), EBO(other.EBO), texture(other.texture), vertices(other.vertices), indices(other.indices), modelMatrix(other.modelMatrix), physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
 
