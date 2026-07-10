@@ -52,6 +52,8 @@ public:
 	void SetPosition(glm::vec3 position);
 	void AddPosition(glm::vec3 position);
 
+	void Destroy();
+
 private:
 	void BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem);
 	void InitializeBoxBody(glm::vec3 size, bool dynamic);
