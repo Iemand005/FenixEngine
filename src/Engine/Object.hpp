@@ -133,7 +133,7 @@ public:
 		// for (const auto& m : meshes) {
 		// 	newObj->meshes.push_back(m.Clone());
 		// }
-		newObj->meshArrays = this->meshArrays;
+		// newObj->meshArrays = this->meshArrays;
 		newObj->meshArrays.clear();
 		newObj->meshArrays.reserve(meshArrays.size());
 		for (const auto& m : meshArrays) {
