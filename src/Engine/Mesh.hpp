@@ -50,7 +50,7 @@ namespace fe {
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
 			this->vertices = vertices;
 			this->indices = indices;
-			this->indexCount = indices.size();
+			this->indexCount = (int)indices.size();
 			modelMatrix = glm::mat4(1.0f);
 			init();
 		}
@@ -178,7 +178,7 @@ namespace fe {
 			}
 		}
 
-		void Draw() { glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); }
+		void Draw() { glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0); }
 
 		void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
 			PrepareRender(shader);

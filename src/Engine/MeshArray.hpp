@@ -46,7 +46,7 @@ namespace fe {
 		MeshArray(std::vector<VertexArray> vertices, std::vector<unsigned int> indices) {
 			this->vertices = vertices;
 			this->indices = indices;
-			this->indexCount = indices.size();
+			this->indexCount = (unsigned int )indices.size();
 			modelMatrix = glm::mat4(1.0f);
 			init();
 		}
