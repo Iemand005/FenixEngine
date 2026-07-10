@@ -161,7 +161,7 @@ private:
 		glm::mat4 model = glm::inverse(viewMatrix);
 		shader.SetMat4("model", model);
 		glBindVertexArray(frustumVAO);
-		glDrawArrays(GL_LINES, 0, frustumVertices.size());
+		glDrawArrays(GL_LINES, 0, reinterpret_cast<GLsizei>(frustumVertices.size()));
 		glBindVertexArray(0);
 	}
 };
