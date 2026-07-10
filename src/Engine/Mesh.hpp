@@ -50,7 +50,7 @@ namespace fe {
 		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
 			this->vertices = vertices;
 			this->indices = indices;
-			this->indexCount = (int)indices.size();
+			this->indexCount = indices.size();
 			modelMatrix = glm::mat4(1.0f);
 			init();
 		}
