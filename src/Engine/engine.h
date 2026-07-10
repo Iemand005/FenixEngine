@@ -13,9 +13,7 @@
 #include <OBJ_Loader.h>
 #endif
 
-// #include <stb_image.h>
-
-#include "Object.hpp"
-#include "Camera.hpp"
-#include "Scene.hpp"
-#include "Character.hpp"
+// #include "Object.hpp"
+// #include "Camera.hpp"
+// #include "Scene.hpp"
+// #include "Character.hpp"
