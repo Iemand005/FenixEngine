@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glad/glad.h>
+
+
 #include "IGPUBuffers.hpp"
 
 class OpenGLGPUBuffers : public IGPUBuffers {
