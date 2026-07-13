@@ -3,8 +3,8 @@
 
 #include "IRenderDevice.hpp"
 
-class VulkanDevice : public IRenderDevice {
-void uploadMesh(Mesh<VertexType>& mesh) {
+class OpenGLRenderDevice : public IRenderDevice {
+	void uploadMesh(Mesh<VertexType>& mesh) {
         auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
 
         glGenVertexArrays(1, &glBuffers->vao);
