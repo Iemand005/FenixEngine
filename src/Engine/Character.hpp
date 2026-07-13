@@ -37,7 +37,12 @@ public:
 			case Backwards: pendingMovement -= horizontalFront; break;
 			case Left: pendingMovement -= right; break;
 			case Right: pendingMovement += right; break;
-			case Up: pendingJump = true; break;
+			case Up: {
+				if (gravityEnabled)
+					pendingJump = true;
+				else pendingMovement += camera->up; break;
+				break;
+			}
 			case Down: pendingMovement -= camera->up; break;
 		}
 	}
