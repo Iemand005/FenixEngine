@@ -84,7 +84,6 @@ public:
 		Init();
 	}
 
-	void InitGL();
 
 	void Init() {
 		SetClearColor(0.0F, 0.0F, 0.0f);
@@ -98,7 +97,7 @@ public:
 		
 		this->scene->SetLight();
 		
-		InitGL();
+		// Renderer::Init();
 		InitUI();
 	}
 
@@ -211,7 +210,6 @@ public:
 		Renderer::Redraw();
 	}
 
-	void CheckErrors();
 
 	void Update() {
 		double dt = scene->Update();
@@ -226,10 +224,6 @@ public:
 	virtual void DrawUI() {}
 	virtual void OnDraw() {}
 
-	void EnableWireframe();
-	void DisableWireframe();
-	void ToggleWireframe(bool enabled = false);
-
 	template<typename WindowT = IWindow>
 	WindowT* GetWindow() {
 		return (WindowT*)this->window.get();
@@ -238,8 +232,6 @@ public:
 	double GetFPS() {
 		return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
 	}
-
-	void BindFrameBuffer(int bufferIndex = 0);
 
 	void UpdateAspect(int width, int height) {
 		if (this->camera) this->camera->SetAspect(width, height);

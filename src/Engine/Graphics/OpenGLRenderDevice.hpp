@@ -67,26 +67,37 @@ class OpenGLRenderDevice : public IRenderDevice {
 	//     }
 	// }
 
-	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
-	if (!buffers) return;
+	void PrepareRender(ShaderProgram shader, Camera const& camera) {
+		// this->Clear();
+		shader.Use();
+		shader.SetMat4("view", camera.GetViewMatrix());
+		shader.SetMat4("projection", camera.GetProjectionMatrix());
 
-	const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
-
-	glBuffers->bind(); 
-
-	// if (texture) {
-	//     const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
-	//     glActiveTexture(GL_TEXTURE0);
-	//     glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
-	// }
-
-	// glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
-
-	glBindVertexArray(0);
-	if (texture) {
-		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+		lastViewMatrix = camera.GetViewMatrix();
+		lastProjectionMatrix = camera.GetProjectionMatrix();
+		hasCameraMatrices = true;
 	}
-}
+
+	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
+		if (!buffers) return;
+
+		const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
+
+		glBuffers->bind(); 
+
+		// if (texture) {
+		//     const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
+		//     glActiveTexture(GL_TEXTURE0);
+		//     glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+		// }
+
+		// glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
+		if (texture) {
+			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+		}
+	}
 
 
 	void SubmitFrame() override {

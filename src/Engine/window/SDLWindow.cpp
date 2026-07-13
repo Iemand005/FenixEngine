@@ -153,7 +153,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
 void fe::SDLWindow::SwapBuffers() {  // TOOD: this 
 	// TODO: return if vulkan or weell do vulkan impl not gl
-	if (true) return;
+	// if (true) return;
 	SDL_GL_SwapWindow(impl->window);
 }
 
