@@ -175,7 +175,7 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 
 }
 
-VulkanExtensions fe::GLFW3Window::GetVulkanExtensions() {
+fe::VulkanExtensions fe::GLFW3Window::GetVulkanExtensions() {
 	VulkanExtensions exts;
 	uint32_t glfwExtensionCount = 0;
 	exts.extensions = glfwGetRequiredInstanceExtensions(&exts.extensionCount);
