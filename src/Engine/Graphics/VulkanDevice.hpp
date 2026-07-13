@@ -593,6 +593,7 @@ private:
 
 		vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue_);
 		vkGetDeviceQueue(device_, indices.presentFamily.value(), 0, &presentQueue_);
+		graphicsQueueFamily_ = indices.graphicsFamily.value();
 	}
 
 	void createSwapChain() {
