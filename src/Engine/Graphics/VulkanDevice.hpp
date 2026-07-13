@@ -216,6 +216,33 @@ public:
 			return;
 		}
 
+		// Update the texture descriptor for this draw
+		VkImageView imageView = defaultImageView_;
+		VkSampler sampler = defaultSampler_;
+		if (texture) {
+			const auto* vkTex = dynamic_cast<const fe::VulkanGPUTexture*>(texture);
+			if (vkTex && vkTex->imageView != VK_NULL_HANDLE) {
+				imageView = vkTex->imageView;
+				sampler = vkTex->sampler;
+			}
+		}
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = imageView;
+		imageInfo.sampler = sampler;
+
+		VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = descriptorSets_[currentFrame_];
+		descriptorWrite.dstBinding = 1;
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(device_, 1, &descriptorWrite, 0, nullptr);
+
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
@@ -1351,16 +1378,30 @@ private:
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 
-			VkWriteDescriptorSet descriptorWrite{};
-			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet = descriptorSets_[i];
-			descriptorWrite.dstBinding = 0;
-			descriptorWrite.dstArrayElement = 0;
-			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite.descriptorCount = 1;
-			descriptorWrite.pBufferInfo = &bufferInfo;
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = defaultImageView_;
+			imageInfo.sampler = defaultSampler_;
 
-			vkUpdateDescriptorSets(device_, 1, &descriptorWrite, 0, nullptr);
+			std::array<VkWriteDescriptorSet, 2> writes{};
+
+			writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writes[0].dstSet = descriptorSets_[i];
+			writes[0].dstBinding = 0;
+			writes[0].dstArrayElement = 0;
+			writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writes[0].descriptorCount = 1;
+			writes[0].pBufferInfo = &bufferInfo;
+
+			writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writes[1].dstSet = descriptorSets_[i];
+			writes[1].dstBinding = 1;
+			writes[1].dstArrayElement = 0;
+			writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writes[1].descriptorCount = 1;
+			writes[1].pImageInfo = &imageInfo;
+
+			vkUpdateDescriptorSets(device_, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 		}
 	}
 
@@ -1451,6 +1492,11 @@ private:
 			vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
 		if (descriptorSetLayout_ != VK_NULL_HANDLE)
 			vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, nullptr);
+
+		if (defaultSampler_ != VK_NULL_HANDLE) vkDestroySampler(device_, defaultSampler_, nullptr);
+		if (defaultImageView_ != VK_NULL_HANDLE) vkDestroyImageView(device_, defaultImageView_, nullptr);
+		if (defaultImage_ != VK_NULL_HANDLE) vkDestroyImage(device_, defaultImage_, nullptr);
+		if (defaultImageMemory_ != VK_NULL_HANDLE) vkFreeMemory(device_, defaultImageMemory_, nullptr);
 
 		if (depthImageView_ != VK_NULL_HANDLE)
 			vkDestroyImageView(device_, depthImageView_, nullptr);
