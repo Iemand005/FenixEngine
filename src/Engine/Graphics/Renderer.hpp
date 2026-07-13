@@ -201,6 +201,14 @@ template<typename WindowT = DefaultWindow>
 	// 	Redraw();
 	// }
 
+	void Clear() { 
+		renderDevice->Clear();
+	 }
+
+	void RenderScene() {
+
+	}
+
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
 		if (!scene || !camera || !shader) return;

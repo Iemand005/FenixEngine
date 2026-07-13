@@ -46,6 +46,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 
     }
 
+    void Clear() override {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
 
 
     // void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
