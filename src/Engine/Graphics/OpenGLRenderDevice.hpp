@@ -34,7 +34,7 @@ class OpenGLRenderDevice : public IRenderDevice {
             glEnableVertexAttribArray(attr.location);
         }
 
-        glBindVertexArray(0); // Unbind
+        glBindVertexArray(0);
 
         mesh.gpuBuffers = std::move(glBuffers);
     }
