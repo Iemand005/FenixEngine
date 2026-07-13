@@ -91,7 +91,7 @@ public:
 
 	bool isConnectedToServer = false;
 
-	bool useVulkan = true;
+	bool useVulkan = false;
 	Renderer() {
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
@@ -219,7 +219,6 @@ template<typename WindowT = DefaultWindow>
 		auto window = GetWindow<DefaultWindow>();
 		if (!scene || !camera || !shader) return;
 
-		SetClearColor(1, 0, 0);
 		Clear();
 
 		if (shader) {
