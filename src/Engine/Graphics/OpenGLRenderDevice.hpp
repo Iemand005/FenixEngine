@@ -2,45 +2,12 @@
 #pragma once
 
 #include "IRenderDevice.hpp"
+#include "OpenGLGPUBuffers.hpp"
 #include "OpenGLGPUTexture.hpp"
 
 namespace fe {
 
 class OpenGLRenderDevice : public IRenderDevice {
-	// void uploadMesh(Mesh<VertexType>& mesh) {
-	//     auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
-
-	//     glGenVertexArrays(1, &glBuffers->vao);
-	//     glGenBuffers(1, &glBuffers->vbo);
-	//     glGenBuffers(1, &glBuffers->ebo);
-
-	//     glBindVertexArray(glBuffers->vao);
-
-	//     glBindBuffer(GL_ARRAY_BUFFER, glBuffers->vbo);
-	//     glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(VertexType), mesh.vertices.data(), GL_STATIC_DRAW);
-
-	//     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffers->ebo);
-	//     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(), GL_STATIC_DRAW);
-
-	//     int vertexStride = sizeof(VertexType);
-	//     auto layout = VertexType::getLayout();
-
-	//     for (const auto& attr : layout) {
-	//         glVertexAttribPointer(
-	//             attr.location, 
-	//             attr.components,
-	//             GL_FLOAT, 
-	//             GL_FALSE, 
-	//             vertexStride, 
-	//             (void*)attr.offset
-	//         );
-	//         glEnableVertexAttribArray(attr.location);
-	//     }
-
-	//     glBindVertexArray(0);
-
-	//     mesh.gpuBuffers = std::move(glBuffers);
-	// }
 
 	void Init(fe::IWindow *window) override {
 
@@ -58,24 +25,35 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glViewport(0, 0, width, height);
 	}
 
+	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
+		return std::make_unique<OpenGLGPUBuffers>();
+	}
 
+	std::unique_ptr<IGPUTexture> CreateGPUTexture() override {
+		return std::make_unique<OpenGLGPUTexture>();
+	}
 
-	// void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
-	//     if (buffers) {
-	//         buffers->bind();
-	//         glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
-	//     }
-	// }
+	void UploadBuffers(IGPUBuffers* buffers,
+		const void* vertices, size_t vertexStride, size_t vertexCount,
+		const uint32_t* indices, uint32_t indexCount) override {
 
-	void PrepareRender(ShaderProgram shader, Camera const& camera) {
-		// this->Clear();
-		shader.Use();
-		shader.SetMat4("view", camera.GetViewMatrix());
-		shader.SetMat4("projection", camera.GetProjectionMatrix());
+		if (!buffers) return;
 
-		// lastViewMatrix = camera.GetViewMatrix();
-		// lastProjectionMatrix = camera.GetProjectionMatrix();
-		// hasCameraMatrices = true;
+		auto* glBuffers = static_cast<OpenGLGPUBuffers*>(buffers);
+		glBuffers->indexCount = static_cast<int>(indexCount);
+
+		glGenVertexArrays(1, &glBuffers->vao);
+		glBindVertexArray(glBuffers->vao);
+
+		glGenBuffers(1, &glBuffers->vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, glBuffers->vbo);
+		glBufferData(GL_ARRAY_BUFFER, vertexStride * vertexCount, vertices, GL_STATIC_DRAW);
+
+		glGenBuffers(1, &glBuffers->ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffers->ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indexCount, indices, GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
