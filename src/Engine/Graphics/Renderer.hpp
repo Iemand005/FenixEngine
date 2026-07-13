@@ -209,8 +209,35 @@ template<typename WindowT = DefaultWindow>
 		renderDevice->Clear();
 	 }
 
-	void RenderScene() {
+	void RenderMesh(Mesh<>& mesh) {
+		renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
+	}
 
+	void RenderObject(Object& object) {
+		if (!shader) return;
+		shader->SetMat4("model", object.GetModelMatrix());
+		for (auto& mesh : object.meshes) {
+			RenderMesh(mesh);
+		}
+	}
+
+	void RenderScene() {
+		if (!shader) return;
+
+		int count = scene->GetLightCount();
+		auto pointLights = scene->GetLights();
+		shader->SetInt("lightCount", count);
+		for (int i = 0; i < count; ++i) {
+			const auto& l = pointLights[i];
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+		}
+
+		for (auto& object : scene->GetObjects()) {
+			RenderObject(*object);
+		}
 	}
 
 	void Redraw() {
@@ -229,23 +256,7 @@ template<typename WindowT = DefaultWindow>
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
 
-			int count = scene->GetLightCount();
-			auto pointLights = scene->GetLights();
-			shader->SetInt("lightCount", count);
-			for (int i = 0; i < count; ++i) {
-				const auto& l = pointLights[i];
-				shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-				shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-				shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-				shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-			}
-
-			for (auto& object : scene->GetObjects()) {
-				shader->SetMat4("model", object->GetModelMatrix());
-				for (auto& mesh : object->meshes) {
-					renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
-				}
-			}
+			RenderScene();
 		}
 
 		OnDraw();
