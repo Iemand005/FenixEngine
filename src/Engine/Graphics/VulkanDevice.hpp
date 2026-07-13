@@ -77,6 +77,42 @@ private:
     VkQueue graphicsQueue_ = VK_NULL_HANDLE;
     VkQueue presentQueue_ = VK_NULL_HANDLE;
 
+	VkSwapchainKHR swapChain_ = VK_NULL_HANDLE;
+    std::vector<VkImage> swapChainImages_;
+    std::vector<VkImageView> swapChainImageViews_;
+    std::vector<VkFramebuffer> swapChainFramebuffers_;
+    VkFormat swapChainImageFormat_ = VK_FORMAT_UNDEFINED;
+    VkExtent2D swapChainExtent_{};
+
+    VkRenderPass renderPass_ = VK_NULL_HANDLE;
+    VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
+    VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
+    VkPipeline graphicsPipeline_ = VK_NULL_HANDLE;
+
+    VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory vertexBufferMemory_ = VK_NULL_HANDLE;
+    VkBuffer indexBuffer_ = VK_NULL_HANDLE;
+    VkDeviceMemory indexBufferMemory_ = VK_NULL_HANDLE;
+
+    std::vector<VkBuffer> uniformBuffers_;
+    std::vector<VkDeviceMemory> uniformBuffersMemory_;
+    std::vector<void*> uniformBuffersMapped_;
+
+    VkDescriptorPool descriptorPool_ = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSet> descriptorSets_;
+
+    VkImage depthImage_ = VK_NULL_HANDLE;
+    VkDeviceMemory depthImageMemory_ = VK_NULL_HANDLE;
+    VkImageView depthImageView_ = VK_NULL_HANDLE;
+
+    VkCommandPool commandPool_ = VK_NULL_HANDLE;
+    std::vector<VkCommandBuffer> commandBuffers_;
+
+    std::vector<VkSemaphore> imageAvailableSemaphores_;
+    std::vector<VkSemaphore> renderFinishedSemaphores_;
+    std::vector<VkFence> inFlightFences_;
+    uint32_t currentFrame_ = 0;
+
 	void createInstance(fe::IWindow *window) {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error(
@@ -344,5 +380,36 @@ private:
 
         swapChainImageFormat_ = surfaceFormat.format;
         swapChainExtent_ = extent;
+    }
+
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats) {
+        for (const auto& fmt : formats) {
+            if (fmt.format == VK_FORMAT_B8G8R8A8_SRGB &&
+                fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                return fmt;
+            }
+        }
+        return formats[0];
+    }
+
+    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes) {
+        for (const auto& mode : modes) {
+            if (mode == VK_PRESENT_MODE_MAILBOX_KHR) return mode;
+        }
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+        if (capabilities.currentExtent.width != UINT32_MAX) {
+            return capabilities.currentExtent;
+        }
+        int width, height;
+        glfwGetFramebufferSize(window_, &width, &height);
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+        actualExtent.width = std::clamp(actualExtent.width,
+            capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height = std::clamp(actualExtent.height,
+            capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+        return actualExtent;
     }
 };
