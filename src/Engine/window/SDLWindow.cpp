@@ -428,7 +428,7 @@ fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
 
 void *fe::SDLWindow::CreateVulkanSurface(void *instance) {
 	VkSurfaceKHR surface;
-	if (SDL_Vulkan_CreateSurface(impl->window, (VkInstance)instance, nullptr, &surface) != VK_SUCCESS) {
+	if (!SDL_Vulkan_CreateSurface(impl->window, (VkInstance)instance, nullptr, &surface)) {
 		throw std::runtime_error("Failed to create window surface.");
 	}
 	return (void*)surface;
