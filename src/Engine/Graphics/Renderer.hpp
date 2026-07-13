@@ -194,7 +194,8 @@ template<typename WindowT = DefaultWindow>
 
 	void Resize() { Resize(this->window->width, this->window->height); }
 	void Resize(int width, int height) {
-		glViewport(0, 0, width, height);
+		// glViewport(0, 0, width, height);
+		renderDevice->Resize(width, height);
 		this->UpdateAspect(width, height);
 	}
 
