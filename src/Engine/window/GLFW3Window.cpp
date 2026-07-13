@@ -182,7 +182,7 @@ fe::VulkanExtensions fe::GLFW3Window::GetVulkanExtensions() {
 	return exts;
 }
 
-void fe::GLFW3Window::CreateVulkanSurface(void *instance) {
+void *fe::GLFW3Window::CreateVulkanSurface(void *instance) {
 	// if (glfwCreateWindowSurface(instance, impl->window, nullptr, &surface_) != VK_SUCCESS) {
 	// 	throw std::runtime_error("Failed to create window surface.");
 	// }
