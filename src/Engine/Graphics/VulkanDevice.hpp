@@ -59,6 +59,9 @@ public:
 	void Init(fe::IWindow *window) override {
 		createInstance(window);
 		createSurface(window);
+		pickPhysicalDevice();
+        createLogicalDevice();
+		createSwapChain();
 	}
     // VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
     //     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
@@ -291,5 +294,55 @@ private:
 
         vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue_);
         vkGetDeviceQueue(device_, indices.presentFamily.value(), 0, &presentQueue_);
+    }
+
+	void createSwapChain() {
+        SwapChainSupportDetails support = querySwapChainSupport(physicalDevice_);
+
+        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
+        VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
+        VkExtent2D extent = chooseSwapExtent(support.capabilities);
+
+        uint32_t imageCount = support.capabilities.minImageCount + 1;
+        if (support.capabilities.maxImageCount > 0 && imageCount > support.capabilities.maxImageCount) {
+            imageCount = support.capabilities.maxImageCount;
+        }
+
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = surface_;
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        if (indices.graphicsFamily != indices.presentFamily) {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+
+        createInfo.preTransform = support.capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+
+        if (vkCreateSwapchainKHR(device_, &createInfo, nullptr, &swapChain_) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create swap chain.");
+        }
+
+        vkGetSwapchainImagesKHR(device_, swapChain_, &imageCount, nullptr);
+        swapChainImages_.resize(imageCount);
+        vkGetSwapchainImagesKHR(device_, swapChain_, &imageCount, swapChainImages_.data());
+
+        swapChainImageFormat_ = surfaceFormat.format;
+        swapChainExtent_ = extent;
     }
 };
