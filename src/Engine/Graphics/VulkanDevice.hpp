@@ -40,6 +40,11 @@ public:
 
 private:
 	VkInstance instance_ = VK_NULL_HANDLE;
+	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
+    VkDevice device_ = VK_NULL_HANDLE;
+    VkQueue graphicsQueue_ = VK_NULL_HANDLE;
+    VkQueue presentQueue_ = VK_NULL_HANDLE;
 
 	void createInstance(fe::IWindow *window) {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
@@ -99,8 +104,9 @@ private:
     }
 
 	void createSurface(fe::IWindow *window) {
-        if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create window surface.");
-        }
+        // if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
+        //     throw std::runtime_error("Failed to create window surface.");
+        // }
+		surfance_ = window->CreateVulkanSurface(instance_);
     }
 };
