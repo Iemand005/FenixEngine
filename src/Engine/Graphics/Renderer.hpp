@@ -268,8 +268,10 @@ template<typename WindowT = DefaultWindow>
 
 		CheckErrors();
 
-		glFlush();
-		glFinish();
+		// glFlush();
+		// glFinish();
+
+		SubmitFrame();
 
 		fpsCounter.update();
 

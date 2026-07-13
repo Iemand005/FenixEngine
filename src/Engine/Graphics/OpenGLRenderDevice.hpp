@@ -86,7 +86,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 
 	void SubmitFrame() override {
-
+		glFlush();
 	}
 };
 
