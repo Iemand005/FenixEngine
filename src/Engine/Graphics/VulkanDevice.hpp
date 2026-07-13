@@ -289,6 +289,7 @@ public:
 
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
