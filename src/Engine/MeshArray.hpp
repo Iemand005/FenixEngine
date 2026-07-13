@@ -14,7 +14,7 @@
 // #include <stb_image.h>
 
 #include "ShaderProgram.hpp"
-#include "VertexArray.hpp"
+#include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
 #include "Graphics/IGPUBuffers.hpp"

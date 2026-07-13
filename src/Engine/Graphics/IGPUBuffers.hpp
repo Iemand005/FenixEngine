@@ -9,4 +9,6 @@
 class IGPUBuffers {
 public:
     virtual ~IGPUBuffers() = default;
+
+	virtual void bind();
 };
