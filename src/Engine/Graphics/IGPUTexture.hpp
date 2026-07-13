@@ -2,6 +2,9 @@
 #include <vector>
 #include <memory>
 
+#include <glad/glad.h>
+
+
 namespace fe {
     enum class TextureScaling { Nearest, Linear };
 
