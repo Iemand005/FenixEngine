@@ -1117,8 +1117,9 @@ private:
 	}
 
 	// ---------------------------------------------------------------
-	// Cleanup
+	// Uniform buffers
 	// ---------------------------------------------------------------
+	void createUniformBuffers() {
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 		uniformBuffers_.resize(kMaxFramesInFlight);
 		uniformBuffersMemory_.resize(kMaxFramesInFlight);
@@ -1235,54 +1236,6 @@ private:
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	}
 
-	void recordDrawCommand(VkCommandBuffer cmd, uint32_t imageIndex) {
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(cmd, &beginInfo);
-
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = m_VulkanClearColor.color;
-		clearValues[1].depthStencil = {1.0f, 0};
-
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = renderPass_;
-		renderPassInfo.framebuffer = swapChainFramebuffers_[imageIndex];
-		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = swapChainExtent_;
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
-
-		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-		VkBuffer vertexBuffers[] = {vertexBuffer_};
-		VkDeviceSize offsets[] = {0};
-		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(cmd, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSets_[currentFrame_], 0, nullptr);
-
-		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(kCubeIndices.size()), 1, 0, 0, 0);
-
-		vkCmdEndRenderPass(cmd);
-		vkEndCommandBuffer(cmd);
-	}
-
 	// ---------------------------------------------------------------
 	// Cleanup
 	// ---------------------------------------------------------------
@@ -1335,16 +1288,6 @@ private:
 			vkDestroyImage(device_, depthImage_, nullptr);
 		if (depthImageMemory_ != VK_NULL_HANDLE)
 			vkFreeMemory(device_, depthImageMemory_, nullptr);
-
-		if (indexBuffer_ != VK_NULL_HANDLE)
-			vkDestroyBuffer(device_, indexBuffer_, nullptr);
-		if (indexBufferMemory_ != VK_NULL_HANDLE)
-			vkFreeMemory(device_, indexBufferMemory_, nullptr);
-
-		if (vertexBuffer_ != VK_NULL_HANDLE)
-			vkDestroyBuffer(device_, vertexBuffer_, nullptr);
-		if (vertexBufferMemory_ != VK_NULL_HANDLE)
-			vkFreeMemory(device_, vertexBufferMemory_, nullptr);
 
 		if (device_ != VK_NULL_HANDLE) vkDestroyDevice(device_, nullptr);
 		if (surface_ != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance_, surface_, nullptr);
