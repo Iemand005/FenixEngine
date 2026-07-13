@@ -7,6 +7,8 @@
 
 #include "RenderDevice.hpp"
 
+#include "../window/IWindow.hpp"
+
 #ifdef NDEBUG
 constexpr bool kEnableValidationLayers = false;
 #else
@@ -15,8 +17,8 @@ constexpr bool kEnableValidationLayers = true;
 
 class VulkanDevice : public RenderDevice {
 public:
-	void Init() override {
-		createInstance();
+	void Init(IWindow *window) override {
+		createInstance(window);
 	}
     // VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
     //     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
@@ -27,7 +29,7 @@ public:
 private:
 	VkInstance instance_ = VK_NULL_HANDLE;
 
-	void createInstance() {
+	void createInstance(IWindow *window) {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error(
                 "Validation layers requested but not available. "
