@@ -55,7 +55,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void Resize(int width, int height) override {
-		glViewport(width, height);
+		glViewport(0, 0, width, height);
 	}
 
 
