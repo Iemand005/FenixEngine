@@ -12,12 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Camera.hpp"
 #include "Timer.hpp"
-#include "Object.hpp"
 #include "Mesh.hpp"
-#include "ShaderProgram.hpp"
-#include "physics/PhysicsEngine.hpp"
 
 namespace fe {
 
@@ -30,7 +26,7 @@ struct PointLight {
 	float radius{10.0f};
 };
 
-// class Object;
+class Object;
 
 class Scene {
 	private:
