@@ -62,13 +62,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 
     glBuffers->bind(); 
 
-    if (texture) {
-        const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
-    }
+    // if (texture) {
+    //     const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
+    //     glActiveTexture(GL_TEXTURE0);
+    //     glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+    // }
 
-    glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);
     if (texture) {
