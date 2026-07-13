@@ -214,16 +214,16 @@ template<typename WindowT = DefaultWindow>
 
 			// std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
 
-			int count = scene->GetLightCount();
-			auto pointLights = scene->GetLights();
-			shader->SetInt("lightCount", count);
-			for (int i = 0; i < count; ++i) {
-				const auto& l = pointLights[i];
-				shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-				shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-				shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-				shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-			}
+			// int count = scene->GetLightCount();
+			// auto pointLights = scene->GetLights();
+			// shader->SetInt("lightCount", count);
+			// for (int i = 0; i < count; ++i) {
+			// 	const auto& l = pointLights[i];
+			// 	shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+			// 	shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+			// 	shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+			// 	shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+			// }
 		}
 
 		// scene->Render(*this->shader, *this->camera.get());
