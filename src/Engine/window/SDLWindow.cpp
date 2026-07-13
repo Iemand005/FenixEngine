@@ -152,6 +152,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 }
 
 void fe::SDLWindow::SwapBuffers() {
+	if (true) return;
 	SDL_GL_SwapWindow(impl->window);
 }
 
