@@ -1,7 +1,16 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 #include <optional>
-
+#include <set>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #include <vulkan/vulkan.h>
 
@@ -153,6 +162,40 @@ private:
         return indices;
     }
 
+	bool checkDeviceExtensionSupport(VkPhysicalDevice dev) {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(dev, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(kDeviceExtensions.begin(), kDeviceExtensions.end());
+        for (const auto& ext : availableExtensions) {
+            requiredExtensions.erase(ext.extensionName);
+        }
+        return requiredExtensions.empty();
+    }
+
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) {
+        SwapChainSupportDetails details;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, surface_, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, nullptr);
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, nullptr);
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, details.presentModes.data());
+        }
+
+        return details;
+    }
+
 	int rateDeviceSuitability(VkPhysicalDevice dev) {
         QueueFamilyIndices indices = findQueueFamilies(dev);
         if (!indices.isComplete()) return -1;
@@ -210,5 +253,43 @@ private:
         VkPhysicalDeviceProperties props;
         vkGetPhysicalDeviceProperties(physicalDevice_, &props);
         std::cout << "Selected GPU: " << props.deviceName << "\n";
+    }
+
+	void createLogicalDevice() {
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+
+        std::set<uint32_t> uniqueQueueFamilies = {
+            indices.graphicsFamily.value(),
+            indices.presentFamily.value()
+        };
+
+        float queuePriority = 1.0f;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        VkPhysicalDeviceFeatures deviceFeatures{};
+        deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(kDeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = kDeviceExtensions.data();
+
+        if (vkCreateDevice(physicalDevice_, &createInfo, nullptr, &device_) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create logical device.");
+        }
+
+        vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue_);
+        vkGetDeviceQueue(device_, indices.presentFamily.value(), 0, &presentQueue_);
     }
 };
