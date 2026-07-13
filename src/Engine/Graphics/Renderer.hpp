@@ -214,6 +214,8 @@ template<typename WindowT = DefaultWindow>
 		if (!scene || !camera || !shader) return;
 		// std::cout << "OK: " << std::endl;
 
+		Clear();
+
 		if (shader) {
 			shader->Use();
 
