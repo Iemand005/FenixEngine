@@ -9,8 +9,6 @@ class OpenGLGPUBuffers : public IGPUBuffers {
 public:
 	unsigned int vao = 0, vbo = 0, ebo = 0;
 
-public:
-
 	OpenGLGPUBuffers() = default;
 
 	~OpenGLGPUBuffers() override {
