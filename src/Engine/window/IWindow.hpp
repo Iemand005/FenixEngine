@@ -11,6 +11,11 @@ namespace fe {
 		unsigned int extensionCount;
 	};
 
+	struct SizeDoesn'tMatter {
+		int width;
+		int height;
+	};
+
 	inline bool IsWayland() {
 		const char* session = std::getenv("XDG_SESSION_TYPE");
 		if (session && strcmp(session, "wayland") == 0)

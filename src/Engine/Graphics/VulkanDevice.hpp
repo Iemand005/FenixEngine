@@ -57,8 +57,9 @@ struct SwapChainSupportDetails {
 class VulkanDevice : public RenderDevice {
 public:
 	void Init(fe::IWindow *window) override {
-		createInstance(window);
-		createSurface(window);
+		this->window = window;
+		createInstance();
+		createSurface();
 		pickPhysicalDevice();
         createLogicalDevice();
 		createSwapChain();
@@ -70,7 +71,7 @@ public:
 	void SubmitFrame() override {}	
 
 private:
-	IWindow *window;
+	fe::IWindow *window;
 
 	VkInstance instance_ = VK_NULL_HANDLE;
 	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
@@ -115,7 +116,7 @@ private:
     std::vector<VkFence> inFlightFences_;
     uint32_t currentFrame_ = 0;
 
-	void createInstance(fe::IWindow *window) {
+	void createInstance() {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error(
                 "Validation layers requested but not available. "
@@ -172,7 +173,7 @@ private:
         return true;
     }
 
-	void createSurface(fe::IWindow *window) {
+	void createSurface() {
         // if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
         //     throw std::runtime_error("Failed to create window surface.");
         // }
@@ -407,6 +408,7 @@ private:
         }
         int width, height;
         // glfwGetFramebufferSize(window_, &width, &height);
+		window->GetFramebufferSize();
         VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
         actualExtent.width = std::clamp(actualExtent.width,
             capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
