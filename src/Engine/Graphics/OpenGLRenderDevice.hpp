@@ -10,7 +10,9 @@ namespace fe {
 class OpenGLRenderDevice : public IRenderDevice {
 
 	void Init(fe::IWindow *window) override {
-
+// 11	
+		EnableDepthTest();
+		EnableFaceCulling();
 	}
 
 	void Clear() override {
