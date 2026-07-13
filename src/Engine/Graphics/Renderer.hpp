@@ -261,6 +261,8 @@ template<typename WindowT = DefaultWindow>
 
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
+			renderDevice->SetMat4("view", camera->GetViewMatrix());
+			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
 			RenderScene();
 		}
