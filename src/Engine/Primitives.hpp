@@ -80,7 +80,7 @@ namespace fe::Primitives {
 	}
 
 	
-	inline Mesh GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0), UVRect uv = {0, 0, 1, 1}) {
+	inline Mesh<VertexType> GeneratePlane(float width = 1.0f, float height = 1.0f, const glm::quat& rotation = glm::quat(1, 0, 0, 0), UVRect uv = {0, 0, 1, 1}) {
 		float w = width * 0.5f;
 		float h = height * 0.5f;
 		
@@ -97,16 +97,16 @@ namespace fe::Primitives {
 		}
 		
 		std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
-		return Mesh(vertices, indices);
+		return Mesh<VertexType>(vertices, indices);
 	}
 	
-	inline Mesh GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f, UVRect uv = {0, 0, 1, 1}) {
-		return GeneratePlane(width, height, GetRotationFromDirection(direction), uv);
+	inline Mesh<VertexType> GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f, UVRect uv = {0, 0, 1, 1}) {
+		return GeneratePlane<VertexType>(width, height, GetRotationFromDirection(direction), uv);
 	}
 
 	
 	// TODO change size to a vec3 and do that shit
-	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, float size = 1.0f, float inset = 0.0f) {
+	inline Mesh<VertexType> GenerateCube(const std::vector<PlaneDirection>& directions, const CubeUVs& uvs, float size = 1.0f, float inset = 0.0f) {
 		std::vector<Vertex> allVertices;
 		std::vector<uint32_t> allIndices;
 		
@@ -133,18 +133,18 @@ namespace fe::Primitives {
 				allIndices.push_back(idx + vertexOffset);
 		}
 		
-		return Mesh(allVertices, allIndices);
+		return Mesh<VertexType>(allVertices, allIndices);
 	}
 
-	inline Mesh GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f) {
+	inline Mesh<VertexType> GenerateCube(const std::vector<PlaneDirection>& directions, float size = 1.0f, float inset = 0.0f) {
 		static const CubeUVs defaultUVs = {
 			{0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1},
 			{0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 1, 1}
 		};
-		return GenerateCube(directions, defaultUVs, size, inset);
+		return GenerateCube<VertexType>(directions, defaultUVs, size, inset);
 	}
 	
-	inline Mesh GenerateCube(float size = 1.0f) {
+	inline Mesh<VertexType> GenerateCube(float size = 1.0f) {
 		std::vector<PlaneDirection> directions = {
 			PlaneDirection::Front,
 			PlaneDirection::Back,
@@ -154,7 +154,7 @@ namespace fe::Primitives {
 			PlaneDirection::Bottom
 		};
 		
-		return GenerateCube(directions, size);
+		return GenerateCube<VertexType>(directions, size);
 	}
 
 	inline Mesh GenerateCube(const CubeUVs& uvs, float size = 1.0f) {
