@@ -18,6 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "IRenderDevice.hpp"
+#include "IGPUBuffers.hpp"
 #include "../Mesh.hpp"
 
 #include "../window/IWindow.hpp"
@@ -177,7 +178,7 @@ public:
 
 	}
 
-	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
+	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
 
 	}
 
@@ -1245,7 +1246,7 @@ private:
 		vkBeginCommandBuffer(cmd, &beginInfo);
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0] = m_VulkanClearColor;
+		clearValues[0].color = m_VulkanClearColor.color;
 		clearValues[1].depthStencil = {1.0f, 0};
 
 		VkRenderPassBeginInfo renderPassInfo{};
