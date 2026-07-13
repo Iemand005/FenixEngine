@@ -95,7 +95,6 @@ public:
 	Renderer() {
 		if (vulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
-		renderDevice->Init(window.get());
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
@@ -107,6 +106,7 @@ public:
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
+		renderDevice->Init(window.get());
 	}
 
 
