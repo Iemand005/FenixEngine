@@ -20,6 +20,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Camera.hpp"
+#include "Object.hpp"
 #include "Timer.hpp"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
