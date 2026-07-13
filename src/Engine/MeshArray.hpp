@@ -19,6 +19,8 @@
 #include "WawaDir.hpp"
 #include "Graphics/IGPUBuffers.hpp"
 
+#include "Graphics/OpenGLGPUBuffers.hpp"
+#include "Graphics/VulkanGPUBuffers.hpp"
 
 
 namespace fe {
