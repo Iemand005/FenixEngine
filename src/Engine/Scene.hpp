@@ -199,10 +199,10 @@ public:
 		if (gizmoProgram) glDeleteProgram(gizmoProgram);
 	}
 
-	void Render(ShaderProgram shader, Camera const& camera, int width, int height) {
-		this->Resize(width, height);
-		this->Render(shader, camera);
-	}
+	// void Render(ShaderProgram shader, Camera const& camera, int width, int height) {
+	// 	this->Resize(width, height);
+	// 	this->Render(shader, camera);
+	// }
 	
 	// void Render(ShaderProgram shader, Camera const& camera) {
 	// 	this->PrepareRender(shader, camera);
