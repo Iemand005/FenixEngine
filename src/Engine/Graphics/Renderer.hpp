@@ -188,7 +188,9 @@ template<typename WindowT = DefaultWindow>
 
 	double getDeltaTime() { return 1; }
 
-	void SetClearColor(float r, float g, float b, float a = 1);
+	void SetClearColor(float r, float g, float b, float a = 1) {
+		renderDevice->SetClearColor(r, g, b, a);
+	}
 
 	void Resize() { Resize(this->window->width, this->window->height); }
 	void Resize(int width, int height) {
@@ -214,6 +216,7 @@ template<typename WindowT = DefaultWindow>
 		if (!scene || !camera || !shader) return;
 		// std::cout << "OK: " << std::endl;
 
+		SetClearColor(1, 0, 0);
 		Clear();
 
 		if (shader) {

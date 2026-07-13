@@ -4,10 +4,6 @@
 
 using namespace fe;
 
-void Renderer::SetClearColor(float r, float g, float b, float a) {
-  glClearColor(r, g, b, a);
-}
-
 void Renderer::EnableWireframe() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
@@ -15,7 +11,7 @@ void Renderer::DisableWireframe() {
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void fe::Renderer::ToggleWireframe(bool enabled) {
+void Renderer::ToggleWireframe(bool enabled) {
   if (enabled) EnableWireframe();
   else DisableWireframe();
 }

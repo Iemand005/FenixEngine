@@ -277,16 +277,16 @@ public:
 		return pointLights;
 	}
 
-	void PrepareRender(ShaderProgram shader, Camera const& camera) {
-		this->Clear();
-		shader.Use();
-		shader.SetMat4("view", camera.GetViewMatrix());
-		shader.SetMat4("projection", camera.GetProjectionMatrix());
+	// void PrepareRender(ShaderProgram shader, Camera const& camera) {
+	// 	// this->Clear();
+	// 	shader.Use();
+	// 	shader.SetMat4("view", camera.GetViewMatrix());
+	// 	shader.SetMat4("projection", camera.GetProjectionMatrix());
 
-		lastViewMatrix = camera.GetViewMatrix();
-		lastProjectionMatrix = camera.GetProjectionMatrix();
-		hasCameraMatrices = true;
-	}
+	// 	lastViewMatrix = camera.GetViewMatrix();
+	// 	lastProjectionMatrix = camera.GetProjectionMatrix();
+	// 	hasCameraMatrices = true;
+	// }
 
 	// void Clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 

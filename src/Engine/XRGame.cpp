@@ -444,8 +444,10 @@ void XRGame::LaunchVR() {
 void XRGame::RedrawWindow(GLuint fbo) {
   // if (window && window.get())
   BindFrameBuffer(fbo);
-  CheckErrors();
-  Renderer::Redraw(fbo);
+  CheckErrors();//??
+  // TODO: This redraw shit is gone it 's also openg l specific
+  // Renderer::Redraw(fbo);
+  Renderer::Redraw();
 }
 
 void XRGame::EnableXR() {
