@@ -88,14 +88,14 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+			glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
 		}
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
 
 		glBindVertexArray(0);
 		if (texture) {
-			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 

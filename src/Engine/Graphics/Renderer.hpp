@@ -92,10 +92,7 @@ public:
 	bool isConnectedToServer = false;
 
 	Renderer() {
-		bool openGL = false;
-		if (openGL)
-			renderDevice = std::make_unique<OpenGLRenderDevice>();
-		else renderDevice = std::make_unique<VulkanDevice>();
+		renderDevice = std::make_unique<OpenGLRenderDevice>();
 		renderDevice->Init(window.get());
 	}
 
@@ -219,7 +216,6 @@ template<typename WindowT = DefaultWindow>
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
 		if (!scene || !camera || !shader) return;
-		// std::cout << "OK: " << std::endl;
 
 		SetClearColor(1, 0, 0);
 		Clear();
@@ -230,22 +226,27 @@ template<typename WindowT = DefaultWindow>
 			float elapsedTime = (float)window->GetTime();
 			shader->SetFloat("time", elapsedTime);
 
-			// std::cout << "Time: " << elapsedTime << " Wobble: " << 2.0f << std::endl;
+			shader->SetMat4("view", camera->GetViewMatrix());
+			shader->SetMat4("projection", camera->GetProjectionMatrix());
 
-			// int count = scene->GetLightCount();
-			// auto pointLights = scene->GetLights();
-			// shader->SetInt("lightCount", count);
-			// for (int i = 0; i < count; ++i) {
-			// 	const auto& l = pointLights[i];
-			// 	shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-			// 	shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-			// 	shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-			// 	shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-			// }
+			int count = scene->GetLightCount();
+			auto pointLights = scene->GetLights();
+			shader->SetInt("lightCount", count);
+			for (int i = 0; i < count; ++i) {
+				const auto& l = pointLights[i];
+				shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+				shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+				shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+				shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+			}
+
+			for (auto& object : scene->GetObjects()) {
+				shader->SetMat4("model", object->GetModelMatrix());
+				for (auto& mesh : object->meshes) {
+					renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
+				}
+			}
 		}
-
-		// scene->Render(*this->shader, *this->camera.get());
-		// renderDevice->DrawMesh()
 
 		OnDraw();
 
