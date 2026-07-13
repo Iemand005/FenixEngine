@@ -2,6 +2,9 @@
 
 #include "IGPUTexture.hpp"
 
-class OpenGLGPUTexture : public IGPUTexture {
+namespace fe {
+	class OpenGLGPUTexture : public IGPUTexture {
 
-};
+	};
+
+}
