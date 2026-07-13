@@ -70,6 +70,8 @@ public:
 	void SubmitFrame() override {}	
 
 private:
+	IWindow *window;
+
 	VkInstance instance_ = VK_NULL_HANDLE;
 	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
     VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
@@ -404,7 +406,7 @@ private:
             return capabilities.currentExtent;
         }
         int width, height;
-        glfwGetFramebufferSize(window_, &width, &height);
+        // glfwGetFramebufferSize(window_, &width, &height);
         VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
         actualExtent.width = std::clamp(actualExtent.width,
             capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
