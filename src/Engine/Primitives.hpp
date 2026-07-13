@@ -101,7 +101,7 @@ namespace fe::Primitives {
 	}
 	
 	inline Mesh<> GeneratePlane(PlaneDirection direction, float width = 1.0f, float height = 1.0f, UVRect uv = {0, 0, 1, 1}) {
-		return GeneratePlane<>(width, height, GetRotationFromDirection(direction), uv);
+		return GeneratePlane(width, height, GetRotationFromDirection(direction), uv);
 	}
 
 	
