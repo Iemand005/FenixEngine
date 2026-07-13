@@ -132,7 +132,7 @@ const std::vector<uint32_t> kCubeIndices = {
 };
 
 
-class VulkanDevice : public IRenderDevice {
+class VulkanDevice : public fe::IRenderDevice {
 public:
 	void Init(fe::IWindow *window) override {
 		this->window = window;
