@@ -2,6 +2,7 @@
 #pragma once
 
 #include "IRenderDevice.hpp"
+namespace fe {
 
 class OpenGLRenderDevice : public IRenderDevice {
 	// void uploadMesh(Mesh<VertexType>& mesh) {
@@ -78,3 +79,5 @@ class OpenGLRenderDevice : public IRenderDevice {
 
     }
 };
+
+}
