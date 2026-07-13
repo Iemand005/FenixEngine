@@ -25,6 +25,8 @@ public:
 	void SubmitFrame() override {}	
 
 private:
+	VkInstance instance_ = VK_NULL_HANDLE;
+
 	void createInstance() {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error(
@@ -60,5 +62,24 @@ private:
         if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create Vulkan instance.");
         }
+    }
+
+	bool checkValidationLayerSupport() {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : kValidationLayers) {
+            bool found = false;
+            for (const auto& layerProps : availableLayers) {
+                if (std::strcmp(layerName, layerProps.layerName) == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
     }
 };

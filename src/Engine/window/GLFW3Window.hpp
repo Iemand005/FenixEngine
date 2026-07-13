@@ -55,6 +55,8 @@ public:
 
 	void AttachToNativeParent(void* parent);
 
+	const char** GetVulkanExtensions() override;
+
 	  
 #ifdef _WIN32
 	HWND GetNativeWindow();
