@@ -21,6 +21,8 @@ set(EXTERNAL_DIR "../../external/")
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 
+find_package(Vulkan REQUIRED)
+
 # if(NOT FE_EXCLUDE_GLFW)
     add_subdirectory(../../external/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 # endif()
