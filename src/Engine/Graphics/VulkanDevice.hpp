@@ -406,10 +406,10 @@ private:
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         }
-        int width, height;
+        // int width, height;
         // glfwGetFramebufferSize(window_, &width, &height);
-		window->GetFramebufferSize();
-        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+		auto fbs = window->GetFramebufferSize();
+        VkExtent2D actualExtent = {static_cast<uint32_t>(fbs.width), static_cast<uint32_t>(fbs.height)};
         actualExtent.width = std::clamp(actualExtent.width,
             capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
         actualExtent.height = std::clamp(actualExtent.height,
