@@ -2,6 +2,8 @@
 #pragma once
 
 #include "IRenderDevice.hpp"
+#include "OpenGLGPUTexture.hpp"
+
 namespace fe {
 
 class OpenGLRenderDevice : public IRenderDevice {
