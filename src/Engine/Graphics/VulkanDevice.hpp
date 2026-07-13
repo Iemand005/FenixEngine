@@ -46,8 +46,8 @@ private:
 
         // uint32_t glfwExtensionCount = 0;
         // const char** glfwExtensions = window(&glfwExtensionCount);
-		fe::VulkanExtensions extensions = window->GetVulkanExtensions();
-        std::vector<const char*> extensions(extensions.extensions, extensions.extensions + extensions.extensionCount);
+		fe::VulkanExtensions vkExts = window->GetVulkanExtensions();
+        std::vector<const char*> extensions(vkExts.extensions, vkExts.extensions + vkExts.extensionCount);
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
