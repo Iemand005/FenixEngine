@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../window/IWindow.hpp"
+#include "IGPUTexture.hpp"
 
 class IRenderDevice {
 public:
