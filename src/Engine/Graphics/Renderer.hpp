@@ -91,8 +91,10 @@ public:
 
 	bool isConnectedToServer = false;
 
+	bool vulkan = true;
 	Renderer() {
-		renderDevice = std::make_unique<OpenGLRenderDevice>();
+		if (vulkan) renderDevice = std::make_unique<VulkanDevice>();
+		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 		renderDevice->Init(window.get());
 	}
 
