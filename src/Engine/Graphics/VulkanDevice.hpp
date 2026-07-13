@@ -63,6 +63,21 @@ public:
 		pickPhysicalDevice();
         createLogicalDevice();
 		createSwapChain();
+
+		 createImageViews();
+        createRenderPass();
+        createDescriptorSetLayout();
+        createGraphicsPipeline();
+        createDepthResources();
+        createFramebuffers();
+        createCommandPool();
+        createVertexBuffer();
+        createIndexBuffer();
+        createUniformBuffers();
+        createDescriptorPool();
+        createDescriptorSets();
+        createCommandBuffers();
+        createSyncObjects();
 	}
     // VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
     //     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
