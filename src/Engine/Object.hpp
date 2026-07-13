@@ -112,11 +112,11 @@ public:
 		return model;
 	}
 
-	void Render(ShaderProgram& shader) {
-		for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
+	// void Render(ShaderProgram& shader) {
+	// 	for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
 		
 		
-	}
+	// }
 
 	std::shared_ptr<Object> Clone() const {
 		auto newObj = std::make_shared<Object>();

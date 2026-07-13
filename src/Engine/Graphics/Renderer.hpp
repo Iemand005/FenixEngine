@@ -36,6 +36,8 @@
 #include "../Scene.hpp"
 #include "../Character.hpp"
 
+#include "IRenderDevice.hpp"
+
 #include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
 #include "../window/SDLWindow.hpp"
