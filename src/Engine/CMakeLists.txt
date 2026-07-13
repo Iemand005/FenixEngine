@@ -85,6 +85,8 @@ endif()
 target_link_libraries(Renderer PUBLIC
     glfw
     SDL3::SDL3
+
+    Vulkan::Vulkan
 )
 
 if(MSVC)
