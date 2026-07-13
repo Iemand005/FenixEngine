@@ -2,9 +2,7 @@
 
 #include "Mesh.hpp"
 
-namespace fe {
-
-bool Mesh<>::loadObj(std::string objFilePath) {
+bool fe::Mesh<>::loadObj(std::string objFilePath) {
   objl::Loader objectLoader;
 
   bool success = objectLoader.LoadFile(objFilePath);
@@ -22,6 +20,4 @@ bool Mesh<>::loadObj(std::string objFilePath) {
   for (size_t i = 0; i < this->indices.size(); i++) this->indices[i] = objectLoader.LoadedIndices[i];
 
   return true;
-}
-
 }
