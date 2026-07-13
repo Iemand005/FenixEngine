@@ -419,6 +419,10 @@ void fe::SDLWindow::SetTitle(const char *title) {
 	SDL_SetWindowTitle(impl->window, title);
 }
 
+const char** fe::SDLWindow::GetVulkanExtensions() {
+	
+}
+
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);

@@ -6,6 +6,10 @@
 
 namespace fe {
 
+	struct VulkanExtensions {
+		char **extensions;
+		unsigned int extensionCount;
+	};
 
 	inline bool IsWayland() {
 		const char* session = std::getenv("XDG_SESSION_TYPE");

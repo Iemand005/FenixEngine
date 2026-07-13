@@ -175,6 +175,11 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 
 }
 
+const char** fe::GLFW3Window::GetVulkanExtensions() {
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+}
+
 void fe::GLFW3Window::PrepareClose() {
     glfwSetWindowShouldClose(impl->window, true);
 }
