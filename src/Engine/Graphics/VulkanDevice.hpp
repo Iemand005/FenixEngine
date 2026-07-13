@@ -110,4 +110,40 @@ private:
         // }
 		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
     }
+
+
+	void pickPhysicalDevice() {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
+        if (deviceCount == 0) {
+            throw std::runtime_error("No GPUs with Vulkan support found.");
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
+
+        int bestScore = -1;
+        VkPhysicalDevice bestDevice = VK_NULL_HANDLE;
+
+        for (const auto& dev : devices) {
+            int score = rateDeviceSuitability(dev);
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(dev, &props);
+            std::cout << "Found GPU: " << props.deviceName << " (score " << score << ")\n";
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestDevice = dev;
+            }
+        }
+
+        if (bestDevice == VK_NULL_HANDLE || bestScore < 0) {
+            throw std::runtime_error("No suitable GPU found.");
+        }
+
+        physicalDevice_ = bestDevice;
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(physicalDevice_, &props);
+        std::cout << "Selected GPU: " << props.deviceName << "\n";
+    }
 };
