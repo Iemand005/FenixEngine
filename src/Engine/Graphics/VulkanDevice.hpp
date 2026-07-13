@@ -303,7 +303,7 @@ public:
 	}
 
 	std::unique_ptr<fe::IGPUTexture> CreateGPUTexture() override {
-		return std::make_unique<VulkanGPUTexture>();
+		return std::make_unique<fe::VulkanGPUTexture>();
 	}
 
 	void UploadBuffers(IGPUBuffers* buffers,
