@@ -269,9 +269,21 @@ public:
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
-		auto cmd = commandBuffers_[currentFrame_];
+		const auto* vkBuffers = dynamic_cast<const VulkanGPUBuffers*>(buffers);
+		if (!vkBuffers) {
+			std::cerr << "[VulkanDevice] DrawMesh: buffers is not a VulkanGPUBuffers" << std::endl;
+			return;
+		}
+		if (vkBuffers->vertexBuffer == VK_NULL_HANDLE || vkBuffers->indexBuffer == VK_NULL_HANDLE) {
+			std::cerr << "[VulkanDevice] DrawMesh: vertexBuffer or indexBuffer is VK_NULL_HANDLE" << std::endl;
+			return;
+		}
 
-		const auto* vkBuffers = static_cast<const VulkanGPUBuffers*>(buffers);
+		auto cmd = commandBuffers_[currentFrame_];
+		if (!cmd) {
+			std::cerr << "[VulkanDevice] DrawMesh: command buffer is null" << std::endl;
+			return;
+		}
 
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
