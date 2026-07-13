@@ -70,6 +70,7 @@ namespace fe {
 							physicsObject = other.physicsObject ? other.physicsObject->Clone() : nullptr;
 							gpuBuffers = nullptr;
 							gpuTexture = nullptr;
+							if (!vertices.empty() && !indices.empty()) init();
 					}
 					return *this;
 			}
@@ -82,7 +83,9 @@ namespace fe {
 					vertices(other.vertices),
 					indices(other.indices),
 					modelMatrix(other.modelMatrix),
-					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
+					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {
+			if (!vertices.empty() && !indices.empty()) init();
+		}
 
 		void init() {
 			auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
