@@ -37,6 +37,7 @@
 #include "../Character.hpp"
 
 #include "IRenderDevice.hpp"
+#include "OpenGLRenderDevice.hpp"
 
 #include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
@@ -90,7 +91,7 @@ public:
 	bool isConnectedToServer = false;
 
 	Renderer() {
-		renderDevice = std::make_unique<IRenderDevice>();
+		renderDevice = std::make_unique<OpenGLRenderDevice>();
 		renderDevice->Init(window.get());
 	}
 
@@ -225,7 +226,8 @@ template<typename WindowT = DefaultWindow>
 			}
 		}
 
-		scene->Render(*this->shader, *this->camera.get());
+		// scene->Render(*this->shader, *this->camera.get());
+		// renderDevice->DrawMesh()
 
 		OnDraw();
 
