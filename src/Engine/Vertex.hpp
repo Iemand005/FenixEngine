@@ -29,9 +29,9 @@ public:
 
 	static std::vector<VertexAttribute> getLayout() {
 			return {
-					{ 0, 3, offsetof(Vertex2D, position) }, // 3 floats voor pos
-					{ 1, 3, offsetof(Vertex2D, normal) },   // 3 floats voor normal
-					{ 2, 2, offsetof(Vertex2D, uv) }        // 2 floats voor UV (2D)
+					{ 0, 3, offsetof(Vertex, position) }, // 3 floats voor pos
+					{ 1, 3, offsetof(Vertex, normal) },   // 3 floats voor normal
+					{ 2, 2, offsetof(Vertex, uv) }        // 2 floats voor UV (2D)
 			};
 	}
 };
@@ -53,9 +53,9 @@ public:
 
 	static std::vector<VertexAttribute> getLayout() {
 			return {
-					{ 0, 3, offsetof(Vertex3D, position) },
-					{ 1, 3, offsetof(Vertex3D, normal) },
-					{ 2, 3, offsetof(Vertex3D, uv) }        // 3 floats voor UV (3D!)
+					{ 0, 3, offsetof(VertexArray, position) },
+					{ 1, 3, offsetof(VertexArray, normal) },
+					{ 2, 3, offsetof(VertexArray, uv) }        // 3 floats voor UV (3D!)
 			};
 	}
 };
