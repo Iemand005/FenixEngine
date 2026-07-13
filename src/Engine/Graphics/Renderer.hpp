@@ -34,7 +34,7 @@
 #include "../ScreenSaverMode.hpp"
 #include "../Timer.hpp"
 #include "../Scene.hpp"
-#include "../Character.hpp"
+class Character;
 
 #include "IRenderDevice.hpp"
 #include "OpenGLRenderDevice.hpp"
