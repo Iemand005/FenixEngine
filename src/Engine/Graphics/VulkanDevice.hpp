@@ -17,7 +17,7 @@ constexpr bool kEnableValidationLayers = true;
 
 class VulkanDevice : public RenderDevice {
 public:
-	void Init(IWindow *window) override {
+	void Init(fe::IWindow *window) override {
 		createInstance(window);
 	}
     // VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
@@ -29,7 +29,7 @@ public:
 private:
 	VkInstance instance_ = VK_NULL_HANDLE;
 
-	void createInstance(IWindow *window) {
+	void createInstance(fe::IWindow *window) {
         if (kEnableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error(
                 "Validation layers requested but not available. "
@@ -44,9 +44,10 @@ private:
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_2;
 
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        // uint32_t glfwExtensionCount = 0;
+        // const char** glfwExtensions = window(&glfwExtensionCount);
+		fe::VulkanExtensions extensions = window->GetVulkanExtensions();
+        std::vector<const char*> extensions(extensions.extensions, extensions.extensions + extensions.extensionCount);
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
