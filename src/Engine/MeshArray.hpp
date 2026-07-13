@@ -17,6 +17,7 @@
 #include "VertexArray.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
+#include "Graphics/IGPUBuffers.hpp"
 
 
 
@@ -38,6 +39,8 @@ namespace fe {
 		std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 
 		TextureScaling scaling = TextureScaling::Linear;
+
+		std::unique_ptr<IGPUBuffers> gpuBuffers = nullptr;
 
 		bool hasTransparency = false;
 
