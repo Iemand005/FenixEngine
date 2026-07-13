@@ -40,7 +40,7 @@ public:
 	ObjectState state{};
 	glm::mat4 modelMatrix;
 
-	std::vector<Mesh> meshes;
+	std::vector<Mesh<>> meshes;
 	std::vector<MeshArray> meshArrays;
 
 	bool isStatic = false;
