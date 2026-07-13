@@ -60,7 +60,6 @@ struct SwapChainSupportDetails {
 
 
 struct UniformBufferObject {
-	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
@@ -278,6 +277,8 @@ public:
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout_, 0, 1, &descriptorSets_[currentFrame_], 0, nullptr);
 
+		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
+
 		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vkBuffers->indexCount), 1, 0, 0, 0);
 	}
 
@@ -325,9 +326,9 @@ public:
 	void SetProjectionMatrix(const glm::mat4& p) { currentProj_ = p; }
 
 	void SetMat4(const char* name, const glm::mat4& value) override {
-		if (strcmp(name, "model") == 0) { currentModel_ = value; updateUniformBuffer(currentFrame_); }
-		else if (strcmp(name, "view") == 0) currentView_ = value;
-		else if (strcmp(name, "projection") == 0) currentProj_ = value;
+		if (strcmp(name, "model") == 0) { currentModel_ = value; }
+		else if (strcmp(name, "view") == 0) { currentView_ = value; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
 	}
 
 private:
@@ -915,7 +916,13 @@ private:
 		colorBlendAttachment.colorWriteMask =
 			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 			VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_FALSE;
+		colorBlendAttachment.blendEnable = VK_TRUE;
+		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -923,10 +930,17 @@ private:
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
+		VkPushConstantRange pushConstantRange{};
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(glm::mat4);
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout_;
+		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
 		if (vkCreatePipelineLayout(device_, &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create pipeline layout.");
@@ -1450,7 +1464,6 @@ private:
 
 	void updateUniformBuffer(uint32_t currentImage) {
 		UniformBufferObject ubo{};
-		ubo.model = currentModel_;
 		ubo.view = currentView_;
 		ubo.proj = currentProj_;
 		ubo.proj[1][1] *= -1;
