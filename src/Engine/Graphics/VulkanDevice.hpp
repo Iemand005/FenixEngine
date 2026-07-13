@@ -317,9 +317,10 @@ public:
 			vertices, vertexStride, vertexCount, indices, indexCount);
 	}
 
-	void UploadTexture(IGPUTexture* texture, const std::string& path, TextureScaling scaling = TextureScaling::Linear) override {
+	void UploadTexture(fe::IGPUTexture* texture,
+		const std::string& path, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
 		if (!texture) return;
-		auto* vkTexture = static_cast<VulkanGPUTexture*>(texture);
+		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
 		vkTexture->upload(device_, physicalDevice_, commandPool_, graphicsQueue_, path, scaling);
 	}
 
