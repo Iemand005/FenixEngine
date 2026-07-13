@@ -316,8 +316,6 @@ public:
 
 	double GetDeltaTime() { return timer.deltaTime; }
 
-	void Resize(int width, int height) { glViewport(0, 0, width, height); }
-
 	void DrawCircle(float radius, int segments) {
 		DrawCircle(glm::vec3(0.0f), radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
 	}

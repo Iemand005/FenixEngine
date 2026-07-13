@@ -54,6 +54,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glClearColor(r, g, b, a);
 	}
 
+	void Resize(int width, int height) override {
+		glViewport(width, height);
+	}
+
 
 
 	// void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
