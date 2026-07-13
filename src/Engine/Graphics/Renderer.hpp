@@ -164,7 +164,6 @@ template<typename WindowT = DefaultWindow>
 
 		window->resizeEvent = [this](int width, int height) {
 			this->Resize(width, height);
-			this->Redraw();
 		};
 
 		// window->mouseMoveEvent = [this](int x, int y) {
