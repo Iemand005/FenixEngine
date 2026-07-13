@@ -13,6 +13,11 @@ struct VertexAttribute {
     size_t offset; 
 };
 
+struct IVertex {
+public:
+	virtual static std::vector<VertexAttribute> getLayout() = 0;
+};
+
 struct Vertex {
 public:
 	glm::vec3 position;
@@ -55,7 +60,7 @@ public:
 			return {
 					{ 0, 3, offsetof(VertexArray, position) },
 					{ 1, 3, offsetof(VertexArray, normal) },
-					{ 2, 3, offsetof(VertexArray, uv) }        // 3 floats voor UV (3D!)
+					{ 2, 3, offsetof(VertexArray, texCoord) }        // 3 floats voor UV (3D!)
 			};
 	}
 };
