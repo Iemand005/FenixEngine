@@ -95,7 +95,7 @@ public:
 		bool openGL = false;
 		if (openGL)
 			renderDevice = std::make_unique<OpenGLRenderDevice>();
-		else renderDevice = std::make_unique<VulkanRenderDevice>();
+		else renderDevice = std::make_unique<VulkanDevice>();
 		renderDevice->Init(window.get());
 	}
 

@@ -73,9 +73,9 @@ class OpenGLRenderDevice : public IRenderDevice {
 		shader.SetMat4("view", camera.GetViewMatrix());
 		shader.SetMat4("projection", camera.GetProjectionMatrix());
 
-		lastViewMatrix = camera.GetViewMatrix();
-		lastProjectionMatrix = camera.GetProjectionMatrix();
-		hasCameraMatrices = true;
+		// lastViewMatrix = camera.GetViewMatrix();
+		// lastProjectionMatrix = camera.GetProjectionMatrix();
+		// hasCameraMatrices = true;
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {

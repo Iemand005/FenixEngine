@@ -161,7 +161,25 @@ public:
     //     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
     // }
 
-	void SubmitFrame() override {}	
+	void SubmitFrame() override {}
+
+    void Clear() override {
+
+    }
+
+    // void SetClearColor()
+    void SetClearColor(float r, float g, float b, float a = 1) override {
+
+    }
+
+    void Resize(int width, int height)override {
+
+    }
+
+    void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
+
+    }
+
 
 	void drawFrame() {
         vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
