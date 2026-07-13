@@ -97,4 +97,10 @@ private:
         }
         return true;
     }
+
+	void createSurface() {
+        if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create window surface.");
+        }
+    }
 };
