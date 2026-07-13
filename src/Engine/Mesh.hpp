@@ -158,48 +158,48 @@ namespace fe {
 
 		glm::mat4 getModelMatrix() { return modelMatrix; }
 
-		void Render(ShaderProgram& shader) { Render(shader, this->getModelMatrix()); }
+		// void Render(ShaderProgram& shader) { Render(shader, this->getModelMatrix()); }
 
-		void PrepareRender(ShaderProgram& shader) {
-			if (vao == 0) return;
-			shader.Use();
-			glBindVertexArray(vao);
+		// void PrepareRender(ShaderProgram& shader) {
+		// 	if (vao == 0) return;
+		// 	shader.Use();
+		// 	glBindVertexArray(vao);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texture);
+		// 	glActiveTexture(GL_TEXTURE0);
+		// 	glBindTexture(GL_TEXTURE_2D, texture);
 
-			if (hasTransparency) {
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// 	if (hasTransparency) {
+		// 		glEnable(GL_BLEND);
+		// 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-				glDepthMask(GL_FALSE); // Don't depth mask transparent objects but might be useful to be able to turn this off?
-			}
-		}
+		// 		glDepthMask(GL_FALSE); // Don't depth mask transparent objects but might be useful to be able to turn this off?
+		// 	}
+		// }
 
-		void EndRender() {
-			if (hasTransparency) {
-				glDepthMask(GL_TRUE);
-				glDisable(GL_BLEND);
-			}
-		}
+		// void EndRender() {
+		// 	if (hasTransparency) {
+		// 		glDepthMask(GL_TRUE);
+		// 		glDisable(GL_BLEND);
+		// 	}
+		// }
 
-		void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
-			PrepareRender(shader);
-			shader.SetMat4("model", modelMatrix);
-			Draw();
-			EndRender();
-		}
+		// void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
+		// 	PrepareRender(shader);
+		// 	shader.SetMat4("model", modelMatrix);
+		// 	Draw();
+		// 	EndRender();
+		// }
 
-		void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
-			PrepareRender(shader);
+		// void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
+		// 	PrepareRender(shader);
 
-			for (const auto& modelMatrix : modelMatrices) {
-				shader.SetMat4("model", modelMatrix);
-				Draw();
-			}
+		// 	for (const auto& modelMatrix : modelMatrices) {
+		// 		shader.SetMat4("model", modelMatrix);
+		// 		Draw();
+		// 	}
 
-			EndRender();
-		}
+		// 	EndRender();
+		// }
 
 		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
 
