@@ -482,7 +482,7 @@ public:
 
 		// Clean modern sizing
 		style.WindowRounding = 4.0f;
-		style.FrameRounding = 3.0f;
+		style.FrameRounding = 5.0f;
 		style.GrabRounding = 3.0f;
 		style.PopupRounding = 4.0f;
 	}
