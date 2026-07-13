@@ -271,7 +271,7 @@ template<typename WindowT = DefaultWindow>
 		// glFlush();
 		// glFinish();
 
-		SubmitFrame();
+		renderDevice->SubmitFrame();
 
 		fpsCounter.update();
 
