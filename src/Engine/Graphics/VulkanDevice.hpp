@@ -27,6 +27,21 @@ constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 600;
 constexpr int kMaxFramesInFlight = 2;
 
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
+    bool isComplete() const {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities{};
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
+
 class VulkanDevice : public RenderDevice {
 public:
 	void Init(fe::IWindow *window) override {
@@ -110,6 +125,53 @@ private:
         // }
 		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
     }
+
+
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) {
+        QueueFamilyIndices indices;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, queueFamilies.data());
+
+        for (uint32_t i = 0; i < queueFamilies.size(); ++i) {
+            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+            }
+            VkBool32 presentSupport = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface_, &presentSupport);
+            if (presentSupport) {
+                indices.presentFamily = i;
+            }
+            if (indices.isComplete()) break;
+        }
+
+        return indices;
+    }
+
+	int rateDeviceSuitability(VkPhysicalDevice dev) {
+        QueueFamilyIndices indices = findQueueFamilies(dev);
+        if (!indices.isComplete()) return -1;
+        if (!checkDeviceExtensionSupport(dev)) return -1;
+
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(dev);
+        if (swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return -1;
+
+        VkPhysicalDeviceFeatures features;
+        vkGetPhysicalDeviceFeatures(dev, &features);
+        if (!features.samplerAnisotropy) return -1;
+
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(dev, &props);
+
+        int score = 0;
+        if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
+        else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 100;
+        score += static_cast<int>(props.limits.maxImageDimension2D);
+        return score;
+    }
+
 
 
 	void pickPhysicalDevice() {
