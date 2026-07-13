@@ -209,55 +209,55 @@ public:
 	}
 
 	void Clear() override {
-		vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+		// vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
-		VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
-			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
+		// VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
+		// 	imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
 
-		if (result != VK_SUCCESS) {
-			throw std::runtime_error("Failed to acquire swap chain image.");
-		}
+		// if (result != VK_SUCCESS) {
+		// 	throw std::runtime_error("Failed to acquire swap chain image.");
+		// }
 
-		updateUniformBuffer(currentFrame_);
+		// updateUniformBuffer(currentFrame_);
 
-		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
-		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+		// vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
+		// vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
 
-		auto cmd = commandBuffers_[currentFrame_];
+		// auto cmd = commandBuffers_[currentFrame_];
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(cmd, &beginInfo);
+		// VkCommandBufferBeginInfo beginInfo{};
+		// beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		// vkBeginCommandBuffer(cmd, &beginInfo);
 
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = m_VulkanClearColor.color;
-		clearValues[1].depthStencil = {1.0f, 0};
+		// std::array<VkClearValue, 2> clearValues{};
+		// clearValues[0].color = m_VulkanClearColor.color;
+		// clearValues[1].depthStencil = {1.0f, 0};
 
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = renderPass_;
-		renderPassInfo.framebuffer = swapChainFramebuffers_[currentImageIndex_];
-		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = swapChainExtent_;
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		// VkRenderPassBeginInfo renderPassInfo{};
+		// renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		// renderPassInfo.renderPass = renderPass_;
+		// renderPassInfo.framebuffer = swapChainFramebuffers_[currentImageIndex_];
+		// renderPassInfo.renderArea.offset = {0, 0};
+		// renderPassInfo.renderArea.extent = swapChainExtent_;
+		// renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		// renderPassInfo.pClearValues = clearValues.data();
 
-		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+		// vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
+		// VkViewport viewport{};
+		// viewport.x = 0.0f;
+		// viewport.y = 0.0f;
+		// viewport.width = static_cast<float>(swapChainExtent_.width);
+		// viewport.height = static_cast<float>(swapChainExtent_.height);
+		// viewport.minDepth = 0.0f;
+		// viewport.maxDepth = 1.0f;
+		// vkCmdSetViewport(cmd, 0, 1, &viewport);
 
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
+		// VkRect2D scissor{};
+		// scissor.offset = {0, 0};
+		// scissor.extent = swapChainExtent_;
+		// vkCmdSetScissor(cmd, 0, 1, &scissor);
 	}
 
 	void SetClearColor(float r, float g, float b, float a = 1) override {
