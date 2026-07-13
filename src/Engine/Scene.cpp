@@ -1,5 +1,5 @@
-#include "Scene.hpp"
 #include "Object.hpp"
+#include "Scene.hpp"
 
 #include <algorithm>
 #include <cmath>
