@@ -7,7 +7,7 @@
 
 namespace fe {
 
-bool Mesh::loadObj(std::string objFilePath) {
+bool Mesh<>::loadObj(std::string objFilePath) {
   objl::Loader objectLoader;
 
   bool success = objectLoader.LoadFile(objFilePath);
