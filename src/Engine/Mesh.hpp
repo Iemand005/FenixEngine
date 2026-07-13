@@ -18,6 +18,8 @@
 #include "WawaDir.hpp"
 #include "ImageLoader.hpp"
 
+#include "Graphics/IGPUBuffers.hpp"
+
 
 namespace fe {
 
@@ -44,7 +46,7 @@ namespace fe {
 
 		TextureScaling scaling = TextureScaling::Linear;
 
-		std::unique_ptr<IGPUBuffers<>> gpuBuffers = nullptr;
+		std::unique_ptr<IGPUBuffers> gpuBuffers = nullptr;
 
 		bool hasTransparency = false;
 
