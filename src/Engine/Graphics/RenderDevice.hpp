@@ -1,3 +1,6 @@
+
+#pragma once
+
 class RenderDevice {
 public:
     virtual ~RenderDevice() = default;
