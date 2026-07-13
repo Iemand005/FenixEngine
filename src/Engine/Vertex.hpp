@@ -1,5 +1,9 @@
 #pragma once
+
+#include <vector>
+
 #include <glm/glm.hpp>
+
 
 namespace fe {
 
@@ -22,6 +26,14 @@ public:
 		this->normal = glm::vec3(nx, ny, nz);
 		this->uv = glm::vec2(u, v);
 	}
+
+	static std::vector<VertexAttribute> getLayout() {
+			return {
+					{ 0, 3, offsetof(Vertex2D, position) }, // 3 floats voor pos
+					{ 1, 3, offsetof(Vertex2D, normal) },   // 3 floats voor normal
+					{ 2, 2, offsetof(Vertex2D, uv) }        // 2 floats voor UV (2D)
+			};
+	}
 };
 
 
@@ -37,6 +49,14 @@ public:
 		this->position = glm::vec3(x, y, z);
 		this->normal = glm::vec3(nx, ny, nz);
 		this->texCoord = glm::vec3(u, v, layer);
+	}
+
+	static std::vector<VertexAttribute> getLayout() {
+			return {
+					{ 0, 3, offsetof(Vertex3D, position) },
+					{ 1, 3, offsetof(Vertex3D, normal) },
+					{ 2, 3, offsetof(Vertex3D, uv) }        // 3 floats voor UV (3D!)
+			};
 	}
 };
 
