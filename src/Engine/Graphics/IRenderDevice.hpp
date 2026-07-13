@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "../window/IWindow.hpp"
+
 class IRenderDevice {
 public:
     virtual ~IRenderDevice() = default;
