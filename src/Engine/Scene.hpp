@@ -211,12 +211,8 @@ public:
 
 	void ClearObjects() { objects.clear(); }
 
-	void AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
-	std::shared_ptr<Object> AddObject(Mesh<> mesh) {
-		auto obj = std::make_shared<Object>(mesh);
-		objects.push_back(obj);
-		return obj;
-	}
+	void AddObject(std::shared_ptr<Object> object);
+	std::shared_ptr<Object> AddObject(Mesh<> mesh);
 
 	bool RemoveObject(std::shared_ptr<Object> object) {
 		auto it = std::find(objects.begin(), objects.end(), object);
