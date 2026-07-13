@@ -776,8 +776,8 @@ private:
 	// Graphics pipeline (vertex input, dynamic viewport, depth test)
 	// ---------------------------------------------------------------
 	void createGraphicsPipeline() {
-		auto vertShaderCode = readFile("J:/ProjectFenix/Atmosphere/shaders/triangle.vert.spv");
-		auto fragShaderCode = readFile("J:/ProjectFenix/Atmosphere/shaders/triangle.frag.spv");
+		auto vertShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/VertexShader.spv");
+		auto fragShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/FragmentShader.spv");
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
