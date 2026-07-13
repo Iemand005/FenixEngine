@@ -87,6 +87,7 @@ public:
 		createCommandPool();
 		createUniformBuffers();
 		createDescriptorPool();
+		createDefaultTexture();
 		createDescriptorSets();
 		createCommandBuffers();
 		createSyncObjects();
@@ -320,6 +321,11 @@ private:
 
 	VkDescriptorPool descriptorPool_ = VK_NULL_HANDLE;
 	std::vector<VkDescriptorSet> descriptorSets_;
+
+	VkImage defaultImage_ = VK_NULL_HANDLE;
+	VkDeviceMemory defaultImageMemory_ = VK_NULL_HANDLE;
+	VkImageView defaultImageView_ = VK_NULL_HANDLE;
+	VkSampler defaultSampler_ = VK_NULL_HANDLE;
 
 	VkImage depthImage_ = VK_NULL_HANDLE;
 	VkDeviceMemory depthImageMemory_ = VK_NULL_HANDLE;
@@ -746,12 +752,20 @@ private:
 		uboBinding.binding = 0;
 		uboBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uboBinding.descriptorCount = 1;
-		uboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		uboBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		VkDescriptorSetLayoutBinding samplerBinding{};
+		samplerBinding.binding = 1;
+		samplerBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		samplerBinding.descriptorCount = 1;
+		samplerBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+		std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboBinding, samplerBinding};
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboBinding;
+		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+		layoutInfo.pBindings = bindings.data();
 
 		if (vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, &descriptorSetLayout_) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create descriptor set layout.");
@@ -1146,14 +1160,16 @@ private:
 	// Descriptors
 	// ---------------------------------------------------------------
 	void createDescriptorPool() {
-		VkDescriptorPoolSize poolSize{};
-		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize.descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+		std::array<VkDescriptorPoolSize, 2> poolSizes{};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = static_cast<uint32_t>(kMaxFramesInFlight);
 
 		if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS) {
