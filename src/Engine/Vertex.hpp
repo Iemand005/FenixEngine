@@ -3,6 +3,12 @@
 
 namespace fe {
 
+struct VertexAttribute {
+    int location;  
+    int components;
+    size_t offset; 
+};
+
 struct Vertex {
 public:
 	glm::vec3 position;
