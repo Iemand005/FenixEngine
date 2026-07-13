@@ -39,7 +39,7 @@ class OpenGLRenderDevice : public IRenderDevice {
     //     mesh.gpuBuffers = std::move(glBuffers);
     // }
 
-    void Init(fe::IWindow *window) {
+    void Init(fe::IWindow *window) override {
 
     }
 
@@ -52,7 +52,7 @@ class OpenGLRenderDevice : public IRenderDevice {
         }
     }
 
-    void SubmitFrame() {
-        
+    void SubmitFrame() override {
+
     }
 };
