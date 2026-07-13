@@ -35,7 +35,8 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void UploadBuffers(IGPUBuffers* buffers,
 		const void* vertices, size_t vertexStride, size_t vertexCount,
-		const uint32_t* indices, uint32_t indexCount) override {
+		const uint32_t* indices, uint32_t indexCount,
+		const std::vector<fe::VertexAttribute>& layout = {}) override {
 
 		if (!buffers) return;
 
@@ -52,6 +53,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glGenBuffers(1, &glBuffers->ebo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glBuffers->ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indexCount, indices, GL_STATIC_DRAW);
+
+		for (const auto& attr : layout) {
+			glVertexAttribPointer(attr.location, attr.components, GL_FLOAT, GL_FALSE,
+				static_cast<GLsizei>(vertexStride), (void*)attr.offset);
+			glEnableVertexAttribArray(attr.location);
+		}
 
 		glBindVertexArray(0);
 	}

@@ -95,7 +95,8 @@ namespace fe {
 				if (gpuBuffers) {
 					fe::g_renderDevice->UploadBuffers(gpuBuffers.get(),
 						vertices.data(), sizeof(VertexType), vertices.size(),
-						indices.data(), static_cast<uint32_t>(indices.size()));
+						indices.data(), static_cast<uint32_t>(indices.size()),
+						VertexType::getLayout());
 				}
 			} else {
 				auto glBuffers = std::make_unique<OpenGLGPUBuffers>();

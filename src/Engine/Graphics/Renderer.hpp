@@ -268,16 +268,13 @@ template<typename WindowT = DefaultWindow>
 
 		CheckErrors();
 
-		// glFlush();
-		// glFinish();
+		DrawUI();
 
 		renderDevice->SubmitFrame();
 
 		fpsCounter.update();
 
-		DrawUI();
-
-		if (window) window->SwapBuffers();
+		if (!useVulkan) window->SwapBuffers();
 	}
 
 	void CheckErrors() {

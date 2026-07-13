@@ -3,10 +3,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "../window/IWindow.hpp"
 #include "IGPUTexture.hpp"
 #include "IGPUBuffers.hpp"
+#include "../Vertex.hpp"
 
 namespace fe {
 
@@ -25,7 +27,8 @@ namespace fe {
 
 		virtual void UploadBuffers(IGPUBuffers* buffers,
 			const void* vertices, size_t vertexStride, size_t vertexCount,
-			const uint32_t* indices, uint32_t indexCount) {}
+			const uint32_t* indices, uint32_t indexCount,
+			const std::vector<VertexAttribute>& layout = {}) {}
 
 		virtual void UploadTexture(IGPUTexture* texture,
 			const std::string& path, TextureScaling scaling = TextureScaling::Linear) {}
