@@ -74,6 +74,8 @@ public:
 
 	virtual void GetMousePosition(double *x, double *y) = 0;
 
+	virtual const char** GetVulkanExtensions() = 0;
+
 	void ActivateScreenSaverMode() {
 		GetMousePosition(&startX, &startY);
 		_isScreensaving = true;
