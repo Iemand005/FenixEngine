@@ -33,6 +33,11 @@ class OpenGLRenderDevice : public IRenderDevice {
 		return std::make_unique<OpenGLGPUTexture>();
 	}
 
+	void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
+	void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
+	void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
+	void DisableFaceCulling() { glDisable(GL_CULL_FACE); }
+
 	void UploadBuffers(IGPUBuffers* buffers,
 		const void* vertices, size_t vertexStride, size_t vertexCount,
 		const uint32_t* indices, uint32_t indexCount,

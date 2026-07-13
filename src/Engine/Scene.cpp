@@ -3,7 +3,7 @@
 
 using namespace fe;
 
-Scene::Scene() Scene() {
+Scene::Scene() {
 	objects = std::vector<std::shared_ptr<Object>>();
 	this->EnableDepthTest();
 	this->EnableFaceCulling();
