@@ -132,7 +132,10 @@ public:
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &currentImageIndex_;
 
-		vkQueuePresentKHR(presentQueue_, &presentInfo);
+		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
+		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+			recreateSwapChain();
+		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	}
@@ -143,8 +146,16 @@ public:
 		VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
 			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
 
-		if (result != VK_SUCCESS) {
-			throw std::runtime_error("Failed to acquire swap chain image.");
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			recreateSwapChain();
+			vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+			result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
+				imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
+			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+				return;
+			}
+		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			return;
 		}
 
 		updateUniformBuffer(currentFrame_);
@@ -194,7 +205,7 @@ public:
 	}
 
 	void Resize(int width, int height) override {
-
+		recreateSwapChain();
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
@@ -1444,7 +1455,40 @@ private:
 		ubo.proj = currentProj_;
 		ubo.proj[1][1] *= -1;
 
+		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
+		ubo.proj[3][2] *= 0.5f;
+
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
+	}
+
+	// ---------------------------------------------------------------
+	// Swapchain recreation (for resize)
+	// ---------------------------------------------------------------
+	void cleanupSwapChain() {
+		for (auto framebuffer : swapChainFramebuffers_)
+			vkDestroyFramebuffer(device_, framebuffer, nullptr);
+		swapChainFramebuffers_.clear();
+
+		for (auto imageView : swapChainImageViews_)
+			vkDestroyImageView(device_, imageView, nullptr);
+		swapChainImageViews_.clear();
+
+		if (depthImageView_ != VK_NULL_HANDLE) { vkDestroyImageView(device_, depthImageView_, nullptr); depthImageView_ = VK_NULL_HANDLE; }
+		if (depthImage_ != VK_NULL_HANDLE) { vkDestroyImage(device_, depthImage_, nullptr); depthImage_ = VK_NULL_HANDLE; }
+		if (depthImageMemory_ != VK_NULL_HANDLE) { vkFreeMemory(device_, depthImageMemory_, nullptr); depthImageMemory_ = VK_NULL_HANDLE; }
+
+		if (swapChain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(device_, swapChain_, nullptr); swapChain_ = VK_NULL_HANDLE; }
+	}
+
+	void recreateSwapChain() {
+		vkDeviceWaitIdle(device_);
+
+		cleanupSwapChain();
+
+		createSwapChain();
+		createImageViews();
+		createDepthResources();
+		createFramebuffers();
 	}
 
 	// ---------------------------------------------------------------

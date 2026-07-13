@@ -52,7 +52,7 @@ public:
 		memcpy(mapped, image.pixels.data(), static_cast<size_t>(imageSize));
 		vkUnmapMemory(device, stagingMemory);
 
-		VkFormat format = (image.channels == 4) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8_UNORM;
+		VkFormat format = (image.channels == 4) ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
 
 		createImage(device, physicalDevice, w, h, format, VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
