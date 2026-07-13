@@ -140,6 +140,22 @@ public:
 		ImGui::Begin("Debug");
 		{
 		ImGui::Text("Hello, World!");
+		const char* rendererName = ImGui::GetIO().BackendRendererName;
+
+		if (rendererName != nullptr) {
+			if (strstr(rendererName, "Vulkan") != nullptr) {
+				ImGui::Text("Grafische API: Vulkan (VK)");
+			} 
+			else if (strstr(rendererName, "OpenGL") != nullptr) {
+				ImGui::Text("Grafische API: OpenGL (GL)");
+			} 
+			else {
+				ImGui::Text("Grafische API: %s", rendererName);
+			}
+		} else {
+			ImGui::Text("Grafische API: Onbekend");
+		}
+		
 		ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
