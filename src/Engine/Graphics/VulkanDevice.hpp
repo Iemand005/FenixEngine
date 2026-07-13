@@ -19,6 +19,7 @@
 
 #include "IRenderDevice.hpp"
 #include "IGPUBuffers.hpp"
+#include "VulkanGPUBuffers.hpp"
 #include "../Mesh.hpp"
 
 #include "../window/IWindow.hpp"
@@ -164,10 +165,97 @@ public:
 	//     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
 	// }
 
-	void SubmitFrame() override {}
+	void SubmitFrame() override {
+		auto cmd = commandBuffers_[currentFrame_];
+
+		vkCmdEndRenderPass(cmd);
+
+		if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to record command buffer.");
+		}
+
+		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_[currentFrame_]};
+		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+		VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_[currentImageIndex_]};
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmd;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to submit draw command buffer.");
+		}
+
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		VkSwapchainKHR swapChains[] = {swapChain_};
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &currentImageIndex_;
+
+		vkQueuePresentKHR(presentQueue_, &presentInfo);
+
+		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+	}
 
 	void Clear() override {
+		vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
+		VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
+			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
+
+		if (result != VK_SUCCESS) {
+			throw std::runtime_error("Failed to acquire swap chain image.");
+		}
+
+		updateUniformBuffer(currentFrame_);
+
+		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
+		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+
+		auto cmd = commandBuffers_[currentFrame_];
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		vkBeginCommandBuffer(cmd, &beginInfo);
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = m_VulkanClearColor.color;
+		clearValues[1].depthStencil = {1.0f, 0};
+
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass_;
+		renderPassInfo.framebuffer = swapChainFramebuffers_[currentImageIndex_];
+		renderPassInfo.renderArea.offset = {0, 0};
+		renderPassInfo.renderArea.extent = swapChainExtent_;
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(swapChainExtent_.width);
+		viewport.height = static_cast<float>(swapChainExtent_.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = {0, 0};
+		scissor.extent = swapChainExtent_;
+		vkCmdSetScissor(cmd, 0, 1, &scissor);
 	}
 
 	void SetClearColor(float r, float g, float b, float a = 1) override {
@@ -179,7 +267,21 @@ public:
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
+		if (!buffers) return;
 
+		auto cmd = commandBuffers_[currentFrame_];
+
+		const auto* vkBuffers = static_cast<const VulkanGPUBuffers*>(buffers);
+
+		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
+		VkDeviceSize offsets[] = {0};
+		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout_, 0, 1, &descriptorSets_[currentFrame_], 0, nullptr);
+
+		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vkBuffers->indexCount), 1, 0, 0, 0);
 	}
 
 
@@ -278,6 +380,7 @@ private:
 	std::vector<VkSemaphore> renderFinishedSemaphores_;
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
+	uint32_t currentImageIndex_ = 0;
 
 	void createInstance() {
 		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
