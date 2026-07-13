@@ -13,10 +13,10 @@ struct VertexAttribute {
     size_t offset; 
 };
 
-struct IVertex {
-public:
-	virtual static std::vector<VertexAttribute> getLayout() = 0;
-};
+// struct IVertex {
+// public:
+// 	virtual static std::vector<VertexAttribute> getLayout() = 0;
+// };
 
 struct Vertex {
 public:
