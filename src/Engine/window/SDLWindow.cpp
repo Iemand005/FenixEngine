@@ -434,6 +434,13 @@ void *fe::SDLWindow::CreateVulkanSurface(void *instance) {
 	return (void*)surface;
 }
 
+fe::SizeDoesntMatter fe::SDLWindow::GetFramebufferSize() {
+	fe::SizeDoesntMatter m;
+	// SDL_Getframeb
+	SDL_GetWindowSizeInPixels(impl->window, &m.width, &m.height);
+	return m;
+}
+
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);

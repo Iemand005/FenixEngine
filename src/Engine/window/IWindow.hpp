@@ -11,7 +11,7 @@ namespace fe {
 		unsigned int extensionCount;
 	};
 
-	struct SizeDoesn'tMatter {
+	struct SizeDoesntMatter {
 		int width;
 		int height;
 	};
@@ -86,6 +86,8 @@ public:
 	virtual VulkanExtensions GetVulkanExtensions() = 0;
 	
 	virtual void *CreateVulkanSurface(void *instance) = 0;
+
+	virtual SizeDoesntMatter GetFramebufferSize() = 0;
 
 	void ActivateScreenSaverMode() {
 		GetMousePosition(&startX, &startY);
