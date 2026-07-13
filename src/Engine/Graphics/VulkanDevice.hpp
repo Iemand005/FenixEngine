@@ -18,6 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "RenderDevice.hpp"
+#include "Mesh.hpp"
 
 #include "../window/IWindow.hpp"
 
@@ -316,9 +317,6 @@ private:
     }
 
 	void createSurface() {
-        // if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
-        //     throw std::runtime_error("Failed to create window surface.");
-        // }
 		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
     }
 
@@ -1068,6 +1066,41 @@ private:
         vkDestroyBuffer(device_, stagingBuffer, nullptr);
         vkFreeMemory(device_, stagingMemory, nullptr);
     }
+
+	template <typename T>
+	void uploadToGPUBuffer(const std::vector<T>& data, VkBufferUsageFlags usage, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+		VkDeviceSize bufferSize = sizeof(T) * data.size();
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer, stagingMemory);
+
+		void* mappedData;
+		vkMapMemory(device_, stagingMemory, 0, bufferSize, 0, &mappedData);
+		memcpy(mappedData, data.data(), static_cast<size_t>(bufferSize));
+		vkUnmapMemory(device_, stagingMemory);
+
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, buffer, bufferMemory);
+
+		copyBuffer(stagingBuffer, buffer, bufferSize);
+
+		vkDestroyBuffer(device_, stagingBuffer, nullptr);
+		vkFreeMemory(device_, stagingMemory, nullptr);
+	}
+
+	void createMeshBuffers(fe::Mesh& mesh) {
+		uploadToGPUBuffer(mesh.vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+						mesh.vertices, mesh.vertexBufferMemory);
+
+		if (!mesh.indices.empty()) {
+			uploadToGPUBuffer(mesh.indices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+							mesh.indexBuffer, mesh.indexBufferMemory);
+		}
+	}
+
 
     void createUniformBuffers() {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
