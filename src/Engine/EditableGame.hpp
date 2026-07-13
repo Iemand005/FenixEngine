@@ -405,66 +405,86 @@ public:
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4* colors = style.Colors;
 
-		// Base background colors (Deep Black)
-		colors[ImGuiCol_WindowBg]             = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
-		colors[ImGuiCol_ChildBg]              = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		colors[ImGuiCol_PopupBg]              = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-		colors[ImGuiCol_Border]               = ImVec4(0.20f, 0.20f, 0.20f, 0.50f);
-		colors[ImGuiCol_BorderShadow]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		// --- COLOR VARIABLES ---
+		// Pure pitch blacks
+		ImVec4 color_pure_black     = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+		ImVec4 color_trans_black    = ImVec4(0.00f, 0.00f, 0.00f, 0.95f); // Slight opacity for popups
+		
+		// Very dark grays for UI separation/depth
+		ImVec4 color_dark_gray_1    = ImVec4(0.07f, 0.07f, 0.07f, 1.00f); 
+		ImVec4 color_dark_gray_2    = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
+		ImVec4 color_border_gray    = ImVec4(0.18f, 0.18f, 0.18f, 0.60f);
+
+		// High-visibility Orange Palette
+		ImVec4 color_orange_main    = ImVec4(1.00f, 0.40f, 0.00f, 1.00f); // Solid primary orange
+		ImVec4 color_orange_hover   = ImVec4(1.00f, 0.50f, 0.10f, 1.00f); // Lighter orange for hover
+		ImVec4 color_orange_active  = ImVec4(1.00f, 0.60f, 0.20f, 1.00f); // Brightest orange for clicks
+		ImVec4 color_orange_low_a   = ImVec4(1.00f, 0.40f, 0.00f, 0.35f); // Low opacity orange for highlights
+
+		// Text colors
+		ImVec4 color_text_white     = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+		ImVec4 color_text_disabled  = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+
+
+		// --- ASSIGNMENTS ---
+		// Base Backgrounds (Actual Black)
+		colors[ImGuiCol_WindowBg]             = color_pure_black;
+		colors[ImGuiCol_ChildBg]              = color_pure_black;
+		colors[ImGuiCol_PopupBg]              = color_trans_black;
+		colors[ImGuiCol_Border]               = color_border_gray;
+		colors[ImGuiCol_BorderShadow]         = color_pure_black;
 
 		// Text & Headers
-		colors[ImGuiCol_Text]                 = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
-		colors[ImGuiCol_TextDisabled]         = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-		colors[ImGuiCol_Header]               = ImVec4(0.85f, 0.40f, 0.00f, 0.70f); // Orange Accent
-		colors[ImGuiCol_HeaderHovered]        = ImVec4(1.00f, 0.45f, 0.00f, 0.85f); // Bright Orange
-		colors[ImGuiCol_HeaderActive]         = ImVec4(1.00f, 0.55f, 0.10f, 1.00f);
+		colors[ImGuiCol_Text]                 = color_text_white;
+		colors[ImGuiCol_TextDisabled]         = color_text_disabled;
+		colors[ImGuiCol_Header]               = ImVec4(color_orange_main.x, color_orange_main.y, color_orange_main.z, 0.65f); 
+		colors[ImGuiCol_HeaderHovered]        = color_orange_hover; 
+		colors[ImGuiCol_HeaderActive]         = color_orange_active;
 
 		// Buttons
-		colors[ImGuiCol_Button]               = ImVec4(0.14f, 0.14f, 0.14f, 1.00f); // Dark button
-		colors[ImGuiCol_ButtonHovered]        = ImVec4(1.00f, 0.45f, 0.00f, 0.85f); // Orange hover
-		colors[ImGuiCol_ButtonActive]         = ImVec4(1.00f, 0.55f, 0.10f, 1.00f);
+		colors[ImGuiCol_Button]               = color_dark_gray_1; 
+		colors[ImGuiCol_ButtonHovered]        = color_orange_main; 
+		colors[ImGuiCol_ButtonActive]         = color_orange_active;
 
 		// Frame Backgrounds (Inputs, Checkboxes, etc.)
-		colors[ImGuiCol_FrameBg]              = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
-		colors[ImGuiCol_FrameBgHovered]       = ImVec4(1.00f, 0.45f, 0.00f, 0.40f);
-		colors[ImGuiCol_FrameBgActive]        = ImVec4(1.00f, 0.45f, 0.00f, 0.67f);
+		colors[ImGuiCol_FrameBg]              = color_dark_gray_2;
+		colors[ImGuiCol_FrameBgHovered]       = color_orange_low_a;
+		colors[ImGuiCol_FrameBgActive]        = color_orange_main;
 
 		// Tabs
-		colors[ImGuiCol_Tab]                  = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
-		colors[ImGuiCol_TabHovered]           = ImVec4(1.00f, 0.45f, 0.00f, 0.80f);
-		colors[ImGuiCol_TabActive]            = ImVec4(0.85f, 0.40f, 0.00f, 1.00f);
-		colors[ImGuiCol_TabUnfocused]         = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
-		colors[ImGuiCol_TabUnfocusedActive]  = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+		colors[ImGuiCol_Tab]                  = color_dark_gray_1;
+		colors[ImGuiCol_TabHovered]           = color_orange_hover;
+		colors[ImGuiCol_TabActive]            = color_orange_main;
+		colors[ImGuiCol_TabUnfocused]         = color_pure_black;
+		colors[ImGuiCol_TabUnfocusedActive]  = color_dark_gray_1;
 
 		// Title Bars
-		colors[ImGuiCol_TitleBg]              = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-		colors[ImGuiCol_TitleBgActive]        = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-		colors[ImGuiCol_TitleBgCollapsed]     = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+		colors[ImGuiCol_TitleBg]              = color_pure_black;
+		colors[ImGuiCol_TitleBgActive]        = color_pure_black;
+		colors[ImGuiCol_TitleBgCollapsed]     = color_pure_black;
 
 		// Scrollbars & Sliders
-		colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-		colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-		colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(1.00f, 0.45f, 0.00f, 0.80f);
-		colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(1.00f, 0.55f, 0.10f, 1.00f);
-		colors[ImGuiCol_SliderGrab]           = ImVec4(0.85f, 0.40f, 0.00f, 1.00f);
-		colors[ImGuiCol_SliderGrabActive]     = ImVec4(1.00f, 0.55f, 0.10f, 1.00f);
+		colors[ImGuiCol_ScrollbarBg]          = color_pure_black;
+		colors[ImGuiCol_ScrollbarGrab]        = color_dark_gray_2;
+		colors[ImGuiCol_ScrollbarGrabHovered] = color_orange_hover;
+		colors[ImGuiCol_ScrollbarGrabActive]  = color_orange_active;
+		colors[ImGuiCol_SliderGrab]           = color_orange_main;
+		colors[ImGuiCol_SliderGrabActive]     = color_orange_active;
 
-		// Miscellaneous
-		colors[ImGuiCol_CheckMark]            = ImVec4(1.00f, 0.45f, 0.00f, 1.00f);
-		colors[ImGuiCol_ResizeGrip]           = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
-		colors[ImGuiCol_ResizeGripHovered]    = ImVec4(1.00f, 0.45f, 0.00f, 0.67f);
-		colors[ImGuiCol_ResizeGripActive]     = ImVec4(1.00f, 0.55f, 0.10f, 0.95f);
-		colors[ImGuiCol_Separator]            = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
-		colors[ImGuiCol_SeparatorHovered]     = ImVec4(1.00f, 0.45f, 0.00f, 0.78f);
-		colors[ImGuiCol_SeparatorActive]      = ImVec4(1.00f, 0.55f, 0.10f, 1.00f);
+		// Widgets & Separators
+		colors[ImGuiCol_CheckMark]            = color_orange_main;
+		colors[ImGuiCol_ResizeGrip]           = color_dark_gray_2;
+		colors[ImGuiCol_ResizeGripHovered]    = color_orange_hover;
+		colors[ImGuiCol_ResizeGripActive]     = color_orange_active;
+		colors[ImGuiCol_Separator]            = color_dark_gray_2;
+		colors[ImGuiCol_SeparatorHovered]     = color_orange_hover;
+		colors[ImGuiCol_SeparatorActive]      = color_orange_active;
 
-		// Optional: Smooth out corners for a modern feel
-		style.WindowRounding = 5.0f;
-		style.FrameRounding = 4.0f;
-		style.GrabRounding = 4.0f;
+		// Clean modern sizing
+		style.WindowRounding = 4.0f;
+		style.FrameRounding = 3.0f;
+		style.GrabRounding = 3.0f;
 		style.PopupRounding = 4.0f;
-		style.ScrollbarRounding = 9.0f;
-		style.TabRounding = 4.0f;
 	}
 
   
