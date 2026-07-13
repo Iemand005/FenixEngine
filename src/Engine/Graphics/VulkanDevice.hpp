@@ -1091,14 +1091,14 @@ private:
 		vkFreeMemory(device_, stagingMemory, nullptr);
 	}
 
-	void createMeshBuffers(fe::Mesh& mesh) {
-		uploadToGPUBuffer(mesh.vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
-						mesh.vertices, mesh.vertexBufferMemory);
+	void createMeshBuffers(fe::Mesh<>& mesh) {
+		// uploadToGPUBuffer(mesh.vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
+		// 				mesh.vertices, mesh.vertexBufferMemory);
 
-		if (!mesh.indices.empty()) {
-			uploadToGPUBuffer(mesh.indices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
-							mesh.indexBuffer, mesh.indexBufferMemory);
-		}
+		// if (!mesh.indices.empty()) {
+		// 	uploadToGPUBuffer(mesh.indices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+		// 					mesh.indexBuffer, mesh.indexBufferMemory);
+		// }
 	}
 
 
