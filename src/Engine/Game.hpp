@@ -197,12 +197,13 @@ public:
 
 	double getDeltaTime() { return 1; }
 
-	void SetClearColor(float r, float g, float b, float a = 1);
+	// void SetClearColor(float r, float g, float b, float a = 1);
 
 	void Resize() { Resize(this->window->width, this->window->height); }
 	void Resize(int width, int height) {
-		if (this->scene) this->scene->Resize(width, height);
-		this->UpdateAspect(width, height);
+		Renderer::Resize(width, height);
+		// if (this->scene) this->scene->Resize(width, height);
+		// this->UpdateAspect(width, height);
 	}
 
 	void Redraw(GLuint fbo) {
