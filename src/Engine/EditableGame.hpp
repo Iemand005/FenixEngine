@@ -90,11 +90,11 @@ namespace fe
 		init_info.DescriptorPool = imguiPool;
 		init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
 		init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
-		init_info.RenderPass = vkDevice->GetRenderPass();
-		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		// init_info.RenderPass = vkDevice->GetRenderPass();
+		// init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		ImGui_ImplVulkan_Init(&init_info);
 
-		ImGui_ImplVulkan_CreateFontsTexture();
+		// ImGui_ImplVulkan_CreateFontsTexture();
 	  }
     }
 

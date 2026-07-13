@@ -304,11 +304,6 @@ private:
 	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
 	VkPipeline graphicsPipeline_ = VK_NULL_HANDLE;
 
-	VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
-	VkDeviceMemory vertexBufferMemory_ = VK_NULL_HANDLE;
-	VkBuffer indexBuffer_ = VK_NULL_HANDLE;
-	VkDeviceMemory indexBufferMemory_ = VK_NULL_HANDLE;
-
 	std::vector<VkBuffer> uniformBuffers_;
 	std::vector<VkDeviceMemory> uniformBuffersMemory_;
 	std::vector<void*> uniformBuffersMapped_;
