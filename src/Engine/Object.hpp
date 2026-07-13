@@ -114,14 +114,8 @@ public:
 
 	void Render(ShaderProgram& shader) {
 		for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
-		for (auto& mesh : meshArrays) mesh.Render(shader, this->GetModelMatrix());
-		if (boundingBoxVAO && touchedOtherObject) {
-			shader.Use();
-			shader.SetMat4("model", this->GetModelMatrix());
-			glBindVertexArray(boundingBoxVAO);
-			glDrawArrays(GL_LINES, 0, boundingBoxVertices.size());
-			glBindVertexArray(0);
-		}
+		
+		
 	}
 
 	std::shared_ptr<Object> Clone() const {

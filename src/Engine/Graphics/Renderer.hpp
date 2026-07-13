@@ -62,6 +62,8 @@ public:
 	std::unique_ptr<ShaderProgram> shader;
 	fe::Timer fpsCounter;
 
+	std::unique_ptr<IRenderDevice> renderDevice = nullptr;
+
 	float yaw = -90.0f, pitch = 0.0f;
 
 	int lastX, lastY;
@@ -85,7 +87,9 @@ public:
 
 	bool isConnectedToServer = false;
 
-	Renderer() {}
+	Renderer() {
+		renderDevice = std::make_unique<IRenderDevice>();
+	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
 	Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
