@@ -181,8 +181,6 @@ namespace fe {
 			}
 		}
 
-		void Draw() { glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0); }
-
 		void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
 			PrepareRender(shader);
 			shader.SetMat4("model", modelMatrix);

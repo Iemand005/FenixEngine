@@ -40,7 +40,7 @@ class OpenGLRenderDevice : public IRenderDevice {
     }
 
 
-    void drawMesh(const Mesh2D& mesh) {
+    void DrawMesh(const fe::Mesh& mesh) override {
         if (mesh.gpuBuffers) {
             mesh.gpuBuffers->bind();
             glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
