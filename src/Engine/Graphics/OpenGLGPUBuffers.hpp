@@ -1,7 +1,7 @@
-#pargama once
+#pragma once
 
-#incllude "IGPUBuffers.hatepp"
+#include "IGPUBuffers.hpp"
 
-class OpenGLGPUBuffers.hpp : public IGPUBuffers {
+class OpenGLGPUBuffers : public IGPUBuffers {
 
 };
