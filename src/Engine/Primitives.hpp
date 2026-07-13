@@ -157,7 +157,7 @@ namespace fe::Primitives {
 		return GenerateCube(directions, size);
 	}
 
-	inline Mesh GenerateCube(const CubeUVs& uvs, float size = 1.0f) {
+	inline Mesh<> GenerateCube(const CubeUVs& uvs, float size = 1.0f) {
 		std::vector<PlaneDirection> directions = {
 			PlaneDirection::Front,
 			PlaneDirection::Back,
@@ -170,7 +170,7 @@ namespace fe::Primitives {
 		return GenerateCube(directions, uvs, size);
 	}
 
-	inline Mesh GenerateTunnel(float radius = 1.0f, float height = 10.0f,
+	inline Mesh<> GenerateTunnel(float radius = 1.0f, float height = 10.0f,
 							   int segments = 32, int heightSegments = 10) {
 		const float PI = 3.14159265359f;
 		std::vector<Vertex> vertices;
