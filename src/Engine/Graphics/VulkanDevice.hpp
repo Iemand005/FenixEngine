@@ -15,6 +15,18 @@ constexpr bool kEnableValidationLayers = false;
 constexpr bool kEnableValidationLayers = true;
 #endif
 
+const std::vector<const char*> kValidationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+const std::vector<const char*> kDeviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+constexpr int kWindowWidth = 800;
+constexpr int kWindowHeight = 600;
+constexpr int kMaxFramesInFlight = 2;
+
 class VulkanDevice : public RenderDevice {
 public:
 	void Init(fe::IWindow *window) override {
