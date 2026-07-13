@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "IRenderDevice.hpp"
-#include "Mesh.hpp"
+#include "../Mesh.hpp"
 
 #include "../window/IWindow.hpp"
 

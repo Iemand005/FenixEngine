@@ -38,6 +38,7 @@
 
 #include "IRenderDevice.hpp"
 #include "OpenGLRenderDevice.hpp"
+#include "VulkanDevice.hpp"
 
 #include "../window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
