@@ -89,6 +89,7 @@ public:
 
 	Renderer() {
 		renderDevice = std::make_unique<IRenderDevice>();
+		renderDevice->Init(window.get());
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
