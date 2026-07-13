@@ -14,6 +14,71 @@
 
 #include "Camera.hpp"
 #include "Timer.hpp"
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(750,9): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(755,5): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(756,5): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(757,5): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(757,26): error C2065: 'FilterMode': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(758,5): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(758,27): error C2065: 'SourceCount': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(759,9): error C2065: 'SourceCount': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(760,9): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(760,9): error C2065: 'SourceList': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(760,9): error C2065: 'SourceCount': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(764,47): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(767,35): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(779,11): error C2061: syntax error: identifier 'MULTICAST_MODE_TYPE' [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(786,5): error C2065: 'PIP_MSFILTER': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(786,18): error C2146: syntax error: missing ';' before identifier 'Filter' [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(786,18): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(788,10): error C2065: 'SourceCount': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(789,40): error C2065: 'Filter': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(789,60): error C2065: 'SourceList': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(794,12): error C2065: 'IP_MSFILTER': undeclared identifier [J:\ProjectFenix\build\FenixEngine\src\Engine\Engine.vcxproj]
+[build]   (compiling source file '../../../../FenixEngine/src/Engine/Scene.cpp')
+[build]   
+[build] C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\WS2tcpip.h(794,12): error C2065
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
 #include "physics/PhysicsEngine.hpp"
@@ -29,7 +94,7 @@ struct PointLight {
 	float radius{10.0f};
 };
 
-class Object;
+// class Object;
 
 class Scene {
 	private:
