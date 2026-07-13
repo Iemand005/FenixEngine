@@ -426,6 +426,12 @@ fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
 	return ext;
 }
 
+void fe::SDLWindow::CreateVulkanSurface(void *instance) {
+	if (SDL_Vulkan_CreateSurface(impl->window, (VkInstance)instance, nullptr, &surface_) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create window surface.");
+	}
+}
+
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);

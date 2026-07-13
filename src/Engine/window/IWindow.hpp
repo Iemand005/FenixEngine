@@ -79,6 +79,8 @@ public:
 	virtual void GetMousePosition(double *x, double *y) = 0;
 
 	virtual VulkanExtensions GetVulkanExtensions() = 0;
+	
+	virtual void CreateVulkanSurface(void *instance) = 0;
 
 	void ActivateScreenSaverMode() {
 		GetMousePosition(&startX, &startY);

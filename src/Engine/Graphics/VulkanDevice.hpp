@@ -98,7 +98,7 @@ private:
         return true;
     }
 
-	void createSurface() {
+	void createSurface(fe::IWindow *window) {
         if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create window surface.");
         }

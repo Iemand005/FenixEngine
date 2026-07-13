@@ -56,7 +56,7 @@ public:
 	void AttachToNativeParent(void* parent);
 
 	VulkanExtensions GetVulkanExtensions() override;
-
+	void CreateVulkanSurface(void *instance) override;
 	  
 #ifdef _WIN32
 	HWND GetNativeWindow();
