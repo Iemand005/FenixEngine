@@ -281,6 +281,16 @@ public:
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout_; }
 
+	void SetModelMatrix(const glm::mat4& m) { currentModel_ = m; updateUniformBuffer(currentFrame_); }
+	void SetViewMatrix(const glm::mat4& v) { currentView_ = v; }
+	void SetProjectionMatrix(const glm::mat4& p) { currentProj_ = p; }
+
+	void SetMat4(const char* name, const glm::mat4& value) override {
+		if (strcmp(name, "model") == 0) { currentModel_ = value; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "view") == 0) currentView_ = value;
+		else if (strcmp(name, "projection") == 0) currentProj_ = value;
+	}
+
 private:
 	fe::IWindow *window;
 
@@ -323,6 +333,10 @@ private:
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
 	uint32_t currentImageIndex_ = 0;
+
+	glm::mat4 currentModel_ = glm::mat4(1.0f);
+	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
+	glm::mat4 currentProj_ = glm::mat4(1.0f);
 
 	void createInstance() {
 		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
@@ -776,8 +790,8 @@ private:
 	// Graphics pipeline (vertex input, dynamic viewport, depth test)
 	// ---------------------------------------------------------------
 	void createGraphicsPipeline() {
-		auto vertShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/VertexShader.spv");
-		auto fragShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/FragmentShader.spv");
+		auto vertShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/VertexShader_vk.spv");
+		auto fragShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/FragmentShader_vk.spv");
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1213,20 +1227,11 @@ private:
 	
 
 	void updateUniformBuffer(uint32_t currentImage) {
-		static auto startTime = std::chrono::high_resolution_clock::now();
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
 		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubo.model = glm::rotate(ubo.model, time * glm::radians(50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
-							glm::vec3(0.0f, 0.0f, 0.0f),
-							glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f),
-			swapChainExtent_.width / static_cast<float>(swapChainExtent_.height),
-			0.1f, 10.0f);
-		ubo.proj[1][1] *= -1;  // flip Y for Vulkan's clip space
+		ubo.model = currentModel_;
+		ubo.view = currentView_;
+		ubo.proj = currentProj_;
+		ubo.proj[1][1] *= -1;
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	}

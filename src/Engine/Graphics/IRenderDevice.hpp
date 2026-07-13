@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <glm/glm.hpp>
+
 #include "../window/IWindow.hpp"
 #include "IGPUTexture.hpp"
 #include "IGPUBuffers.hpp"
@@ -32,5 +34,7 @@ namespace fe {
 
 		virtual void UploadTexture(IGPUTexture* texture,
 			const std::string& path, TextureScaling scaling = TextureScaling::Linear) {}
+
+		virtual void SetMat4(const char* name, const glm::mat4& value) {}
 	};
 }
