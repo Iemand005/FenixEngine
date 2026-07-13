@@ -281,57 +281,6 @@ public:
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout_; }
 
-
-	void drawFrame() {
-		vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
-
-		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
-			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &imageIndex);
-
-		if (result != VK_SUCCESS) {
-			throw std::runtime_error("Failed to acquire swap chain image.");
-		}
-
-		updateUniformBuffer(currentFrame_);
-
-		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
-
-		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
-		recordDrawCommand(commandBuffers_[currentFrame_], imageIndex);
-
-		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_[currentFrame_]};
-		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_[imageIndex]};
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffers_[currentFrame_];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to submit draw command buffer.");
-		}
-
-		VkPresentInfoKHR presentInfo{};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-		VkSwapchainKHR swapChains[] = {swapChain_};
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-
-		vkQueuePresentKHR(presentQueue_, &presentInfo);
-
-		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-	}
-
 private:
 	fe::IWindow *window;
 
@@ -1141,52 +1090,6 @@ private:
 		vkQueueWaitIdle(graphicsQueue_);
 
 		vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
-	}
-
-	void createVertexBuffer() {
-		VkDeviceSize bufferSize = sizeof(Vertex) * kCubeVertices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingMemory;
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingMemory);
-
-		void* data;
-		vkMapMemory(device_, stagingMemory, 0, bufferSize, 0, &data);
-		memcpy(data, kCubeVertices.data(), static_cast<size_t>(bufferSize));
-		vkUnmapMemory(device_, stagingMemory);
-
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer_, vertexBufferMemory_);
-
-		copyBuffer(stagingBuffer, vertexBuffer_, bufferSize);
-
-		vkDestroyBuffer(device_, stagingBuffer, nullptr);
-		vkFreeMemory(device_, stagingMemory, nullptr);
-	}
-
-	void createIndexBuffer() {
-		VkDeviceSize bufferSize = sizeof(uint32_t) * kCubeIndices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingMemory;
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingMemory);
-
-		void* data;
-		vkMapMemory(device_, stagingMemory, 0, bufferSize, 0, &data);
-		memcpy(data, kCubeIndices.data(), static_cast<size_t>(bufferSize));
-		vkUnmapMemory(device_, stagingMemory);
-
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer_, indexBufferMemory_);
-
-		copyBuffer(stagingBuffer, indexBuffer_, bufferSize);
-
-		vkDestroyBuffer(device_, stagingBuffer, nullptr);
-		vkFreeMemory(device_, stagingMemory, nullptr);
 	}
 
 	template <typename T>
