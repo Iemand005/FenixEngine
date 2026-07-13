@@ -60,8 +60,28 @@ namespace fe
       ImGui::StyleColorsDark();
 
       // ImGui_ImplGlfw_InitForOpenGL(window, true);
-      ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
-      ImGui_ImplOpenGL3_Init(glsl_version);
+      if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
+	  else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
+      if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
+	  else {
+		ImGui_ImplVulkan_InitInfo init_info = {};
+    //init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
+    init_info.Instance = g_Instance;
+    init_info.PhysicalDevice = g_PhysicalDevice;
+    init_info.Device = g_Device;
+    init_info.QueueFamily = g_QueueFamily;
+    init_info.Queue = g_Queue;
+    init_info.PipelineCache = g_PipelineCache;
+    init_info.DescriptorPool = g_DescriptorPool;
+    init_info.MinImageCount = g_MinImageCount;
+    init_info.ImageCount = wd->ImageCount;
+    init_info.Allocator = g_Allocator;
+    init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
+    init_info.PipelineInfoMain.Subpass = 0;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.CheckVkResultFn = check_vk_result;
+    ImGui_ImplVulkan_Init(&init_info);
+	  }
     }
 
     // void DrawUI() override {
