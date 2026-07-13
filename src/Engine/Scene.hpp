@@ -20,7 +20,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Camera.hpp"
-#include "Object.hpp"
 #include "Timer.hpp"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
@@ -36,6 +35,9 @@ struct PointLight {
 	float intensity{1.0f};
 	float radius{10.0f};
 };
+
+// Cla
+class Object;
 
 class Scene {
 	private:
@@ -188,11 +190,7 @@ void main() {
 	}
 
 public:
-	Scene() {
-		objects = std::vector<std::shared_ptr<Object>>();
-		this->EnableDepthTest();
-		this->EnableFaceCulling();
-	}
+	Scene();
 
 	~Scene() {
 		if (gizmoVBO) glDeleteBuffers(1, &gizmoVBO);
