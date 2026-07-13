@@ -22,7 +22,7 @@
 #include "IGPUTexture.hpp"
 #include "VulkanGPUBuffers.hpp"
 #include "VulkanGPUTexture.hpp"
-#include "../Mesh.hpp"
+#include "../Vertex.hpp"
 
 #include "../window/IWindow.hpp"
 
@@ -267,6 +267,18 @@ public:
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
 		vkTexture->upload(device_, physicalDevice_, commandPool_, graphicsQueue_, path, scaling);
 	}
+
+	VkInstance GetInstance() const { return instance_; }
+	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
+	VkDevice GetDevice() const { return device_; }
+	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
+	uint32_t GetGraphicsQueueFamily() const { return findQueueFamilies(physicalDevice_).graphicsFamily.value(); }
+	VkRenderPass GetRenderPass() const { return renderPass_; }
+	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
+	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
+	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
+	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
+	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout_; }
 
 
 	void drawFrame() {
