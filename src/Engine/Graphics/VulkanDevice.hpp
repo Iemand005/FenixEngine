@@ -162,6 +162,56 @@ public:
 
 	void SubmitFrame() override {}	
 
+	void drawFrame() {
+        vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+
+        uint32_t imageIndex;
+        VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
+            imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &imageIndex);
+
+        if (result != VK_SUCCESS) {
+            throw std::runtime_error("Failed to acquire swap chain image.");
+        }
+
+        updateUniformBuffer(currentFrame_);
+
+        vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
+
+        vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+        recordDrawCommand(commandBuffers_[currentFrame_], imageIndex);
+
+        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_[currentFrame_]};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_[imageIndex]};
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffers_[currentFrame_];
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to submit draw command buffer.");
+        }
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        VkSwapchainKHR swapChains[] = {swapChain_};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+
+        vkQueuePresentKHR(presentQueue_, &presentInfo);
+
+        currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+    }
+
 private:
 	fe::IWindow *window;
 
@@ -1115,58 +1165,7 @@ private:
         }
     }
 
-    // ---------------------------------------------------------------
-    // Draw loop
-    // ---------------------------------------------------------------
-    void drawFrame() {
-        vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
-
-        uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(device_, swapChain_, UINT64_MAX,
-            imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &imageIndex);
-
-        if (result != VK_SUCCESS) {
-            throw std::runtime_error("Failed to acquire swap chain image.");
-        }
-
-        updateUniformBuffer(currentFrame_);
-
-        vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
-
-        vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
-        recordDrawCommand(commandBuffers_[currentFrame_], imageIndex);
-
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_[currentFrame_]};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_[imageIndex]};
-
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffers_[currentFrame_];
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to submit draw command buffer.");
-        }
-
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-        VkSwapchainKHR swapChains[] = {swapChain_};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &imageIndex;
-
-        vkQueuePresentKHR(presentQueue_, &presentInfo);
-
-        currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-    }
+    
 
     void updateUniformBuffer(uint32_t currentImage) {
         static auto startTime = std::chrono::high_resolution_clock::now();
