@@ -38,4 +38,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 
         mesh.gpuBuffers = std::move(glBuffers);
     }
+
+
+    void drawMesh(const Mesh2D& mesh) {
+        if (mesh.gpuBuffers) {
+            mesh.gpuBuffers->bind();
+            glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+        }
+    }
 };
