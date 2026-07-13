@@ -1,7 +1,11 @@
 #pragma once
-#include "RenderDevice.hpp"
 
 #include <vulkan/vulkan.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "RenderDevice.hpp"
 
 class VulkanDevice : public RenderDevice {
 public:
@@ -12,6 +16,5 @@ public:
     //     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
     // }
 
-	~RenderDevice() override {}
 	void SubmitFrame() override {}	
 };
