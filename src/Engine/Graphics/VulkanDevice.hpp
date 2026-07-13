@@ -107,6 +107,6 @@ private:
         // if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) != VK_SUCCESS) {
         //     throw std::runtime_error("Failed to create window surface.");
         // }
-		surfance_ = window->CreateVulkanSurface(instance_);
+		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
     }
 };
