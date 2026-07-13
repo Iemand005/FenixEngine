@@ -240,7 +240,7 @@ template<typename WindowT = DefaultWindow>
 		}
 	}
 
-	void RenderScene() { RenderScene (scene); }
+	void RenderScene() { RenderScene (scene.get()); }
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
