@@ -81,7 +81,7 @@ namespace fe
 		}
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.ApiVersion = VK_API_VERSION_1_2;
+		init_info.ApiVersion = VK_API_VERSION_1_2; // Of VK_API_VERSION_1_3 afhankelijk van je setup
 		init_info.Instance = vkDevice->GetInstance();
 		init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
 		init_info.Device = vkDevice->GetDevice();
@@ -90,9 +90,13 @@ namespace fe
 		init_info.DescriptorPool = imguiPool;
 		init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
 		init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
-		// init_info.RenderPass = vkDevice->GetRenderPass();
-		// init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+		init_info.PipelineInfoMain.RenderPass = vkDevice->GetRenderPass();
+		init_info.PipelineInfoMain.Subpass = 0; 
+		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT; 
+
 		ImGui_ImplVulkan_Init(&init_info);
+
 
 		// ImGui_ImplVulkan_CreateFontsTexture();
 	  }
