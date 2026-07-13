@@ -7,7 +7,7 @@
 namespace fe {
 
 	struct VulkanExtensions {
-		char **extensions;
+		const char*const*extensions;
 		unsigned int extensionCount;
 	};
 

@@ -419,8 +419,10 @@ void fe::SDLWindow::SetTitle(const char *title) {
 	SDL_SetWindowTitle(impl->window, title);
 }
 
-VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
-
+fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
+	fe::VulkanExtensions ext;
+	ext.extensions = SDL_Vulkan_GetInstanceExtensions(&ext.extensionCount);
+	return ext;
 }
 
 #ifdef _WIN32
