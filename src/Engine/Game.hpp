@@ -27,6 +27,7 @@
 // #include "physics/PhysicsEngine.hpp"
 #include "bases.h"
 #include "Object.hpp"
+#include "Character.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
 #include "saver/Level.hpp"
