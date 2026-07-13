@@ -37,7 +37,6 @@
 #include "../Character.hpp"
 
 #include "IRenderDevice.hpp"
-#include "GraphicsContext.hpp"
 #include "OpenGLRenderDevice.hpp"
 #include "VulkanDevice.hpp"
 
@@ -96,7 +95,6 @@ public:
 	Renderer() {
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
-		fe::g_renderDevice = renderDevice.get();
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
@@ -213,6 +211,7 @@ template<typename WindowT = DefaultWindow>
 	 }
 
 	void RenderMesh(Mesh<>& mesh) {
+		mesh.SetDevice(renderDevice.get());
 		renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
 	}
 

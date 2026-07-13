@@ -16,7 +16,6 @@
 
 #include "Graphics/IGPUBuffers.hpp"
 #include "Graphics/IGPUTexture.hpp"
-#include "Graphics/GraphicsContext.hpp"
 #include "Graphics/IRenderDevice.hpp"
 #include "Graphics/OpenGLGPUBuffers.hpp"
 #include "Graphics/OpenGLGPUTexture.hpp"
@@ -42,6 +41,12 @@ namespace fe {
 
 		bool hasTransparency = false;
 
+		IRenderDevice* device_ = nullptr;
+
+		std::string pendingTexturePath;
+		TextureScaling pendingTextureScaling = TextureScaling::Linear;
+		bool hasPendingTexture = false;
+
 		Mesh() {}
 
 		Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
@@ -49,7 +54,6 @@ namespace fe {
 			this->indices = indices;
 			this->indexCount = indices.size();
 			modelMatrix = glm::mat4(1.0f);
-			init();
 		}
 
 		Mesh(std::string objFilePath, std::string textureFilePath) {
@@ -59,8 +63,6 @@ namespace fe {
 				std::cerr << "Failed to load model or texture" << std::endl;
 				return;
 			}
-
-			init();
 		}
 
 		Mesh& operator=(const Mesh& other) {
@@ -72,7 +74,16 @@ namespace fe {
 							physicsObject = other.physicsObject ? other.physicsObject->Clone() : nullptr;
 							gpuBuffers = nullptr;
 							gpuTexture = nullptr;
-							if (!vertices.empty() && !indices.empty()) init();
+							device_ = other.device_;
+							hasPendingTexture = other.hasPendingTexture;
+							pendingTexturePath = other.pendingTexturePath;
+							pendingTextureScaling = other.pendingTextureScaling;
+							if (device_ && !vertices.empty() && !indices.empty()) init();
+							if (device_ && hasPendingTexture) {
+								gpuTexture = device_->CreateGPUTexture();
+								if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+								hasPendingTexture = false;
+							}
 					}
 					return *this;
 			}
@@ -85,15 +96,39 @@ namespace fe {
 					vertices(other.vertices),
 					indices(other.indices),
 					modelMatrix(other.modelMatrix),
-					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {
-			if (!vertices.empty() && !indices.empty()) init();
+					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr),
+					device_(other.device_),
+					hasPendingTexture(other.hasPendingTexture),
+					pendingTexturePath(other.pendingTexturePath),
+					pendingTextureScaling(other.pendingTextureScaling) {
+			if (device_ && !vertices.empty() && !indices.empty()) init();
+			if (device_ && hasPendingTexture) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+				hasPendingTexture = false;
+			}
+		}
+
+		void SetDevice(IRenderDevice* d) {
+			device_ = d;
+			if (!device_) return;
+
+			if (!gpuBuffers && !vertices.empty() && !indices.empty()) init();
+
+			if (hasPendingTexture) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+				}
+				hasPendingTexture = false;
+			}
 		}
 
 		void init() {
-			if (fe::g_renderDevice) {
-				gpuBuffers = fe::g_renderDevice->CreateGPUBuffers();
+			if (device_) {
+				gpuBuffers = device_->CreateGPUBuffers();
 				if (gpuBuffers) {
-					fe::g_renderDevice->UploadBuffers(gpuBuffers.get(),
+					device_->UploadBuffers(gpuBuffers.get(),
 						vertices.data(), sizeof(VertexType), vertices.size(),
 						indices.data(), static_cast<uint32_t>(indices.size()),
 						VertexType::getLayout());
@@ -108,17 +143,17 @@ namespace fe {
 		bool loadObj(std::string objFilePath);
 
 		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
-			if (fe::g_renderDevice) {
-				gpuTexture = fe::g_renderDevice->CreateGPUTexture();
+			if (device_) {
+				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
-					fe::g_renderDevice->UploadTexture(gpuTexture.get(), textureFilePath, newScaling);
+					device_->UploadTexture(gpuTexture.get(), textureFilePath, newScaling);
 					return true;
 				}
 				return false;
 			}
-			auto glTexture = std::make_unique<OpenGLGPUTexture>();
-			if (!glTexture->load(textureFilePath, newScaling)) return false;
-			gpuTexture = std::move(glTexture);
+			pendingTexturePath = textureFilePath;
+			pendingTextureScaling = newScaling;
+			hasPendingTexture = true;
 			return true;
 		}
 
