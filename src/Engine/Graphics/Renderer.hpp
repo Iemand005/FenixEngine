@@ -221,7 +221,7 @@ template<typename WindowT = DefaultWindow>
 		}
 	}
 
-	void RenderScene() {
+	void RenderScene(Scene *scene) {
 		if (!shader) return;
 
 		int count = scene->GetLightCount();
@@ -239,6 +239,8 @@ template<typename WindowT = DefaultWindow>
 			RenderObject(*object);
 		}
 	}
+
+	void RenderScene() { RenderScene (scene); }
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
