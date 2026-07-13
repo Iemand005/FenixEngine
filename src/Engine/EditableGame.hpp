@@ -30,14 +30,14 @@ namespace fe
     
     public:
     EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
-      // this->physicsEngine->DisableGravity();
-      
-      // SDL_Init(SDL_INIT_VIDEO);
+		// this->physicsEngine->DisableGravity();
 
-      InitImGUI();
-      InitUI();
+		// SDL_Init(SDL_INIT_VIDEO);
+
+		InitImGUI();
+		InitUI();
 		bool themed = true;
-	  if (themed) ApplyBlackAndOrangeTheme();
+		if (themed) ApplyBlackAndOrangeTheme();
     }
 
     // virtual void DrawUI();
@@ -50,58 +50,58 @@ namespace fe
 	bool physicsGravityEnabled = true;
 
     void InitImGUI() {
-      // rENDE
-      auto renderer = (Renderer*)this;
-      fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
-      const char* glsl_version = "#version 330 core";
-      IMGUI_CHECKVERSION();
-      ImGui::CreateContext();
-      io = ImGui::GetIO();
-      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+		// rENDE
+		auto renderer = (Renderer*)this;
+		fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
+		const char* glsl_version = "#version 330 core";
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
-      ImGui::StyleColorsDark();
+		ImGui::StyleColorsDark();
 
-      if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
-	  else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
-      if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
-	  else {
-		auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
-		if (!vkDevice) return;
+		if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
+		else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
+		if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
+		else {
+			auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
+			if (!vkDevice) return;
 
-		VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 1;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &poolSize;
+			VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
+			VkDescriptorPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			poolInfo.maxSets = 1;
+			poolInfo.poolSizeCount = 1;
+			poolInfo.pPoolSizes = &poolSize;
 
-		VkDescriptorPool imguiPool = VK_NULL_HANDLE;
-		if (vkCreateDescriptorPool(vkDevice->GetDevice(), &poolInfo, nullptr, &imguiPool) != VK_SUCCESS) {
-			std::cerr << "[EditableGame] Failed to create ImGui descriptor pool" << std::endl;
-			return;
+			VkDescriptorPool imguiPool = VK_NULL_HANDLE;
+			if (vkCreateDescriptorPool(vkDevice->GetDevice(), &poolInfo, nullptr, &imguiPool) != VK_SUCCESS) {
+				std::cerr << "[EditableGame] Failed to create ImGui descriptor pool" << std::endl;
+				return;
+			}
+
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.ApiVersion = VK_API_VERSION_1_2; // Of VK_API_VERSION_1_3 afhankelijk van je setup
+			init_info.Instance = vkDevice->GetInstance();
+			init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
+			init_info.Device = vkDevice->GetDevice();
+			init_info.QueueFamily = vkDevice->GetGraphicsQueueFamily();
+			init_info.Queue = vkDevice->GetGraphicsQueue();
+			init_info.DescriptorPool = imguiPool;
+			init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+			init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+
+			init_info.PipelineInfoMain.RenderPass = vkDevice->GetRenderPass();
+			init_info.PipelineInfoMain.Subpass = 0; 
+			init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT; 
+
+			ImGui_ImplVulkan_Init(&init_info);
+
+
+			// ImGui_ImplVulkan_CreateFontsTexture();
 		}
-
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.ApiVersion = VK_API_VERSION_1_2; // Of VK_API_VERSION_1_3 afhankelijk van je setup
-		init_info.Instance = vkDevice->GetInstance();
-		init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
-		init_info.Device = vkDevice->GetDevice();
-		init_info.QueueFamily = vkDevice->GetGraphicsQueueFamily();
-		init_info.Queue = vkDevice->GetGraphicsQueue();
-		init_info.DescriptorPool = imguiPool;
-		init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
-		init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
-
-		init_info.PipelineInfoMain.RenderPass = vkDevice->GetRenderPass();
-		init_info.PipelineInfoMain.Subpass = 0; 
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT; 
-
-		ImGui_ImplVulkan_Init(&init_info);
-
-
-		// ImGui_ImplVulkan_CreateFontsTexture();
-	  }
     }
 
     // void DrawUI() override {
@@ -298,72 +298,72 @@ public:
     }
 
     void DrawNetworkDebugUI() {
-ImGui::Begin("Multiplayer");
-    {
-      static char usernameBuffer[32] = "Bill\0";
-      static char addressBuffer[256] = "127.0.0.1\0";
-      int port = 2130;
+		ImGui::Begin("Multiplayer");
+		{
+			static char usernameBuffer[32] = "Bill\0";
+			static char addressBuffer[256] = "127.0.0.1\0";
+			int port = 2130;
 
-      ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputInt("Port", &port);
+			ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputInt("Port", &port);
 
-      if (ImGui::Button("Join", ImVec2(60, 0))) {
-        std::cout << "Connecting to server... " << addressBuffer << std::endl;
-        this->connectToServer(addressBuffer, port, usernameBuffer);
-      }
+			if (ImGui::Button("Join", ImVec2(60, 0))) {
+				std::cout << "Connecting to server... " << addressBuffer << std::endl;
+				this->connectToServer(addressBuffer, port, usernameBuffer);
+			}
 
-      fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+			fe::Object* model = this->player.get();
+			ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
-      ImGui::Text("Players:");
-      for (auto& [id, client] : this->client->clientClients) {
-        ImGui::Text("Player #%i username: %s", id, client.username.c_str());
-      }
-    }
-    ImGui::End();
+			ImGui::Text("Players:");
+			for (auto& [id, client] : this->client->clientClients) {
+				ImGui::Text("Player #%i username: %s", id, client.username.c_str());
+			}
+		}
+    	ImGui::End();
 
     
 
-    ImGui::Begin("Chat");
-    {
-      static char inputBuffer[256] = "";
-      ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::Begin("Chat");
+		{
+			static char inputBuffer[256] = "";
+			ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
 
-      for (const auto& msg : messages) {
-        ImGui::TextWrapped("%s", msg.c_str());
-      }
+			for (const auto& msg : messages) {
+				ImGui::TextWrapped("%s", msg.c_str());
+			}
 
-      // Auto-scroll to bottom if new messages
-      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(1.0f);
-      }
+			// Auto-scroll to bottom if new messages
+			if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+				ImGui::SetScrollHereY(1.0f);
+			}
 
-      ImGui::EndChild();
+			ImGui::EndChild();
 
-      ImGui::Separator();
+			ImGui::Separator();
 
-      ImGui::PushItemWidth(-70);
-      bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::PopItemWidth();
+			ImGui::PushItemWidth(-70);
+			bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::PopItemWidth();
 
-      ImGui::SameLine();
+			ImGui::SameLine();
 
-      bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
+			bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
 
-      if (send_clicked || enter_pressed) {
-        if (inputBuffer[0] != '\0') {
-          messages.push_back(std::string("You: ") + inputBuffer);
+			if (send_clicked || enter_pressed) {
+				if (inputBuffer[0] != '\0') {
+				messages.push_back(std::string("You: ") + inputBuffer);
 
-#ifdef FE_WIN32
+	#ifdef FE_WIN32
 
-          client->sendMessage(inputBuffer);
-          #endif
+			client->sendMessage(inputBuffer);
+			#endif
 
-          inputBuffer[0] = '\0';
-          ImGui::SetKeyboardFocusHere(-1);
-        }
-      }
+			inputBuffer[0] = '\0';
+			ImGui::SetKeyboardFocusHere(-1);
+			}
+		}
     }
     ImGui::End();
     }
