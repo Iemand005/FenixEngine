@@ -1245,7 +1245,7 @@ private:
 		vkBeginCommandBuffer(cmd, &beginInfo);
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = m_VulkanClearColor;
+		clearValues[0] = m_VulkanClearColor;
 		clearValues[1].depthStencil = {1.0f, 0};
 
 		VkRenderPassBeginInfo renderPassInfo{};
