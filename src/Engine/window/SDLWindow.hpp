@@ -67,7 +67,7 @@ class SDLWindow : public IWindow {
 
   void SwapBuffers() override;
 
-  const char** GetVulkanExtensions() override;
+  VulkanExtensions GetVulkanExtensions() override;
 
 
 // struct SDL_Window;

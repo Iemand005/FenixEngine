@@ -175,9 +175,11 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 
 }
 
-const char** fe::GLFW3Window::GetVulkanExtensions() {
+VulkanExtensions fe::GLFW3Window::GetVulkanExtensions() {
+	VulkanExtensions exts;
 	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	exts.extensions = glfwGetRequiredInstanceExtensions(&exts.extensionCount);
+	return exts;
 }
 
 void fe::GLFW3Window::PrepareClose() {

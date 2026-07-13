@@ -55,7 +55,7 @@ public:
 
 	void AttachToNativeParent(void* parent);
 
-	const char** GetVulkanExtensions() override;
+	VulkanExtensions GetVulkanExtensions() override;
 
 	  
 #ifdef _WIN32
