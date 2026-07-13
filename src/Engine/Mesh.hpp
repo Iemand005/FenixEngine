@@ -19,14 +19,15 @@
 #include "ImageLoader.hpp"
 
 #include "Graphics/IGPUBuffers.hpp"
+#include "Graphics/IGPUTexture.hpp"
 
 
 namespace fe {
 
-	enum class TextureScaling {
-		Linear,
-		Nearest
-	};
+	// enum class TextureScaling {
+	// 	Linear,
+	// 	Nearest
+	// };
 
 	template <typename VertexType = Vertex>
 	class Mesh {
