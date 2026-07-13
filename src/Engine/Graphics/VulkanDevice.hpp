@@ -20,6 +20,7 @@
 #include "IRenderDevice.hpp"
 #include "IGPUBuffers.hpp"
 #include "VulkanGPUBuffers.hpp"
+#include "VulkanGPUTexture.hpp"
 #include "../Mesh.hpp"
 
 #include "../window/IWindow.hpp"
@@ -294,6 +295,25 @@ public:
 			pipelineLayout_, 0, 1, &descriptorSets_[currentFrame_], 0, nullptr);
 
 		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vkBuffers->indexCount), 1, 0, 0, 0);
+	}
+
+	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
+		return std::make_unique<VulkanGPUBuffers>();
+	}
+
+	std::unique_ptr<fe::IGPUTexture> CreateGPUTexture() override {
+		return std::make_unique<VulkanGPUTexture>();
+	}
+
+	void UploadBuffers(IGPUBuffers* buffers,
+		const void* vertices, size_t vertexStride, size_t vertexCount,
+		const uint32_t* indices, uint32_t indexCount) override {
+
+		if (!buffers) return;
+
+		auto* vkBuffers = static_cast<VulkanGPUBuffers*>(buffers);
+		vkBuffers->upload(device_, physicalDevice_, commandPool_, graphicsQueue_,
+			vertices, vertexStride, vertexCount, indices, indexCount);
 	}
 
 

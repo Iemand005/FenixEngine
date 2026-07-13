@@ -16,6 +16,8 @@
 
 #include "Graphics/IGPUBuffers.hpp"
 #include "Graphics/IGPUTexture.hpp"
+#include "Graphics/GraphicsContext.hpp"
+#include "Graphics/IRenderDevice.hpp"
 #include "Graphics/OpenGLGPUBuffers.hpp"
 #include "Graphics/OpenGLGPUTexture.hpp"
 
@@ -88,14 +90,31 @@ namespace fe {
 		}
 
 		void init() {
-			auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
-			glBuffers->upload(vertices, indices);
-			gpuBuffers = std::move(glBuffers);
+			if (fe::g_renderDevice) {
+				gpuBuffers = fe::g_renderDevice->CreateGPUBuffers();
+				if (gpuBuffers) {
+					fe::g_renderDevice->UploadBuffers(gpuBuffers.get(),
+						vertices.data(), sizeof(VertexType), vertices.size(),
+						indices.data(), static_cast<uint32_t>(indices.size()));
+				}
+			} else {
+				auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
+				glBuffers->upload(vertices, indices);
+				gpuBuffers = std::move(glBuffers);
+			}
 		}
 
 		bool loadObj(std::string objFilePath);
 
 		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
+			if (fe::g_renderDevice) {
+				gpuTexture = fe::g_renderDevice->CreateGPUTexture();
+				if (gpuTexture) {
+					gpuTexture->load(textureFilePath, newScaling);
+					return true;
+				}
+				return false;
+			}
 			auto glTexture = std::make_unique<OpenGLGPUTexture>();
 			if (!glTexture->load(textureFilePath, newScaling)) return false;
 			gpuTexture = std::move(glTexture);
