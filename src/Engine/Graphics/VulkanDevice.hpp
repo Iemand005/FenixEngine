@@ -272,7 +272,7 @@ public:
 	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
 	VkDevice GetDevice() const { return device_; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
-	uint32_t GetGraphicsQueueFamily() const { return findQueueFamilies(physicalDevice_).graphicsFamily.value(); }
+	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
 	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
@@ -340,6 +340,7 @@ private:
 	VkDevice device_ = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
 	VkQueue presentQueue_ = VK_NULL_HANDLE;
+	uint32_t graphicsQueueFamily_ = 0;
 
 	VkSwapchainKHR swapChain_ = VK_NULL_HANDLE;
 	std::vector<VkImage> swapChainImages_;
