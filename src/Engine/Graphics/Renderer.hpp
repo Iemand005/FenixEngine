@@ -210,40 +210,10 @@ template<typename WindowT = DefaultWindow>
 		renderDevice->Clear();
 	 }
 
-	void RenderMesh(Mesh<>& mesh) {
-		mesh.SetDevice(renderDevice.get());
-		renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
-	}
-
-	void RenderObject(Object& object) {
-		if (!shader) return;
-		shader->SetMat4("model", object.GetModelMatrix());
-		renderDevice->SetMat4("model", object.GetModelMatrix());
-		for (auto& mesh : object.meshes) {
-			RenderMesh(mesh);
-		}
-	}
-
-	void RenderScene(Scene *scene) {
-		if (!shader) return;
-
-		int count = scene->GetLightCount();
-		auto pointLights = scene->GetLights();
-		shader->SetInt("lightCount", count);
-		for (int i = 0; i < count; ++i) {
-			const auto& l = pointLights[i];
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-		}
-
-		for (auto& object : scene->GetObjects()) {
-			RenderObject(*object);
-		}
-	}
-
-	void RenderScene() { RenderScene (scene.get()); }
+	void RenderMesh(Mesh<>& mesh);
+	void RenderObject(Object& object);
+	void RenderScene(Scene *scene);
+	void RenderScene() { RenderScene(scene.get()); }
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
