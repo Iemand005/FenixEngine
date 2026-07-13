@@ -110,7 +110,7 @@ namespace fe {
 			if (fe::g_renderDevice) {
 				gpuTexture = fe::g_renderDevice->CreateGPUTexture();
 				if (gpuTexture) {
-					gpuTexture->load(textureFilePath, newScaling);
+					fe::g_renderDevice->UploadTexture(gpuTexture.get(), textureFilePath, newScaling);
 					return true;
 				}
 				return false;

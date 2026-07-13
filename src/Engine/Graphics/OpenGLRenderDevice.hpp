@@ -77,6 +77,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 		}
 	}
 
+	void UploadTexture(IGPUTexture* texture,
+		const std::string& path, TextureScaling scaling = TextureScaling::Linear) override {
+		if (!texture) return;
+		auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
+		glTexture->load(path, scaling);
+	}
+
 
 	void SubmitFrame() override {
 

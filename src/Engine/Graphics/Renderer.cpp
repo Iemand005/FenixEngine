@@ -18,6 +18,7 @@ void Renderer::ToggleWireframe(bool enabled) {
 
 Renderer::Renderer(GLADloadproc loadProc) {
   renderDevice = std::make_unique<OpenGLRenderDevice>();
+  fe::g_renderDevice = renderDevice.get();
   if (!gladLoadGLLoader(loadProc)) {
     std::cerr << "Failed to load OpenGL functions (GLAD)";
   }

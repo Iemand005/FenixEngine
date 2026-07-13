@@ -37,6 +37,7 @@
 #include "../Character.hpp"
 
 #include "IRenderDevice.hpp"
+#include "GraphicsContext.hpp"
 #include "OpenGLRenderDevice.hpp"
 #include "VulkanDevice.hpp"
 
@@ -95,6 +96,7 @@ public:
 	Renderer() {
 		if (vulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+		fe::g_renderDevice = renderDevice.get();
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>

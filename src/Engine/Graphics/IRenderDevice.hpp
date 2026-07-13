@@ -8,8 +8,6 @@
 #include "IGPUTexture.hpp"
 #include "IGPUBuffers.hpp"
 
-#include "../Mesh.hpp"
-
 namespace fe {
 
 	class IRenderDevice {
@@ -28,5 +26,8 @@ namespace fe {
 		virtual void UploadBuffers(IGPUBuffers* buffers,
 			const void* vertices, size_t vertexStride, size_t vertexCount,
 			const uint32_t* indices, uint32_t indexCount) {}
+
+		virtual void UploadTexture(IGPUTexture* texture,
+			const std::string& path, TextureScaling scaling = TextureScaling::Linear) {}
 	};
 }
