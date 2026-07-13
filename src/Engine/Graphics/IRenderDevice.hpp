@@ -13,6 +13,6 @@ public:
     // virtual VertexBuffer* CreateVertexBuffer(void* data, size_t size) = 0;
     // virtual Texture* CreateTexture(const std::string& path) = 0;
     // virtual void DrawIndexed(uint32_t indexCount) = 0;
-    virtual void DrawMesh(const fe::Mesh<>& mesh);
+    virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
     virtual void SubmitFrame() = 0;
 };
