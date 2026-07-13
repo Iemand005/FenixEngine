@@ -1,9 +1,9 @@
 
 #pragma once
 
-class RenderDevice {
+class IRenderDevice {
 public:
-    virtual ~RenderDevice() = default;
+    virtual ~IRenderDevice() = default;
 	virtual void Init(fe::IWindow *window) = 0;
     // virtual VertexBuffer* CreateVertexBuffer(void* data, size_t size) = 0;
     // virtual Texture* CreateTexture(const std::string& path) = 0;
