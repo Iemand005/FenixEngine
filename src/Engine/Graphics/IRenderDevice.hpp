@@ -4,6 +4,8 @@
 #include "../window/IWindow.hpp"
 #include "IGPUTexture.hpp"
 
+#include "../Mesh.hpp"
+
 class IRenderDevice {
 public:
     virtual ~IRenderDevice() = default;
