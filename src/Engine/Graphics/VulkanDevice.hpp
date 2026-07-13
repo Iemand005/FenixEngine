@@ -252,7 +252,8 @@ public:
 
 	void UploadBuffers(IGPUBuffers* buffers,
 		const void* vertices, size_t vertexStride, size_t vertexCount,
-		const uint32_t* indices, uint32_t indexCount) override {
+		const uint32_t* indices, uint32_t indexCount,
+		const std::vector<fe::VertexAttribute>& layout = {}) override {
 
 		if (!buffers) return;
 

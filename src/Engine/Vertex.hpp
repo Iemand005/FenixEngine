@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
