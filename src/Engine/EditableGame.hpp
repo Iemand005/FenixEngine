@@ -59,28 +59,42 @@ namespace fe
 
       ImGui::StyleColorsDark();
 
-      // ImGui_ImplGlfw_InitForOpenGL(window, true);
       if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
 	  else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
       if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
 	  else {
+		auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
+		if (!vkDevice) return;
+
+		VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		poolInfo.maxSets = 1;
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &poolSize;
+
+		VkDescriptorPool imguiPool = VK_NULL_HANDLE;
+		if (vkCreateDescriptorPool(vkDevice->GetDevice(), &poolInfo, nullptr, &imguiPool) != VK_SUCCESS) {
+			std::cerr << "[EditableGame] Failed to create ImGui descriptor pool" << std::endl;
+			return;
+		}
+
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		//init_info.ApiVersion = VK_API_VERSION_1_3;              // Pass in your value of VkApplicationInfo::apiVersion, otherwise will default to header version.
-		init_info.Instance = g_Instance;
-		init_info.PhysicalDevice = g_PhysicalDevice;
-		init_info.Device = g_Device;
-		init_info.QueueFamily = g_QueueFamily;
-		init_info.Queue = g_Queue;
-		init_info.PipelineCache = g_PipelineCache;
-		init_info.DescriptorPool = g_DescriptorPool;
-		init_info.MinImageCount = g_MinImageCount;
-		init_info.ImageCount = wd->ImageCount;
-		init_info.Allocator = g_Allocator;
-		init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
-		init_info.PipelineInfoMain.Subpass = 0;
-		init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		init_info.CheckVkResultFn = check_vk_result;
+		init_info.ApiVersion = VK_API_VERSION_1_2;
+		init_info.Instance = vkDevice->GetInstance();
+		init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
+		init_info.Device = vkDevice->GetDevice();
+		init_info.QueueFamily = vkDevice->GetGraphicsQueueFamily();
+		init_info.Queue = vkDevice->GetGraphicsQueue();
+		init_info.DescriptorPool = imguiPool;
+		init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+		init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+		init_info.RenderPass = vkDevice->GetRenderPass();
+		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		ImGui_ImplVulkan_Init(&init_info);
+
+		ImGui_ImplVulkan_CreateFontsTexture();
 	  }
     }
 
@@ -107,8 +121,12 @@ public:
 
 	void EndFrame() {
 		ImGui::Render();
-		if (useVulkan) 
-			ImGui_ImplVulkan_RenderDrawData(draw_data, fd->CommandBuffer);
+		if (useVulkan) {
+			auto renderer = (Renderer*)this;
+			auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
+			if (vkDevice)
+				ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkDevice->GetCurrentCommandBuffer());
+		}
 		else ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
