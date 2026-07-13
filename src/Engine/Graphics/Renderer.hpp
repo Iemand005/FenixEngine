@@ -196,10 +196,10 @@ template<typename WindowT = DefaultWindow>
 		this->UpdateAspect(width, height);
 	}
 
-	void Redraw(GLuint fbo) {
-		BindFrameBuffer(fbo);
-		Redraw();
-	}
+	// void Redraw(GLuint fbo) {
+	// 	BindFrameBuffer(fbo);
+	// 	Redraw();
+	// }
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
