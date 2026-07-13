@@ -156,7 +156,10 @@ void fe::SDLWindow::SwapBuffers() {
 }
 
 void fe::SDLWindow::SetSwapInterval(int interval) {
+	if (false)
 	SDL_GL_SetSwapInterval(interval);
+	// else SDL_Vulkan_Get
+	// else SDL_Vulkan_Set
 }
 
 void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
