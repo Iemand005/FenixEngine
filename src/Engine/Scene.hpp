@@ -204,17 +204,17 @@ public:
 		this->Render(shader, camera);
 	}
 	
-	void Render(ShaderProgram shader, Camera const& camera) {
-		this->PrepareRender(shader, camera);
+	// void Render(ShaderProgram shader, Camera const& camera) {
+	// 	this->PrepareRender(shader, camera);
 
-		for (auto& model : objects) {
-			if (model->shader)
-				model->Render(*(model->shader.get()));
-			else model->Render(shader);
-		}
+	// 	for (auto& model : objects) {
+	// 		if (model->shader)
+	// 			model->Render(*(model->shader.get()));
+	// 		else model->Render(shader);
+	// 	}
 
-		this->EndRender();
-	}
+	// 	this->EndRender();
+	// }
 
 	void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 	void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
