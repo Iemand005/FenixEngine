@@ -75,12 +75,6 @@ public:
 		meshes.push_back(std::move(mesh));
 	}
 
-	Object(MeshArray mesh) : Object() {
-		if (mesh.physicsObject)
-			this->physicsObject = std::move(mesh.physicsObject);
-		meshArrays.emplace_back(std::move(mesh));
-	}
-
 	Object(std::string objFilePath, float scale = 1.0f) : Object() {
 		LoadObj(objFilePath, scale);
 		std::filesystem::path path(objFilePath);
