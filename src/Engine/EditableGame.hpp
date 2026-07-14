@@ -168,7 +168,7 @@ public:
 		}
 
 		// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
-#ifndef FE_EXCLUDE_JOLT
+#ifndef EXCLUDE_JOLT
 		ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
 #endif
 
@@ -289,11 +289,12 @@ public:
 
 
 		if (this->client) DrawNetworkDebugUI();
+	}
 
 #ifdef USE_VISUALIZER
 		void DrawAudioVisualizerUI() {
+		}
 #endif
-    }
 
     void DrawNetworkDebugUI() {
 		ImGui::Begin("Multiplayer");
