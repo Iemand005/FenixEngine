@@ -5,8 +5,9 @@
 using namespace fe;
 
 struct Game::Impl {
+#ifndef EXCLUDE_JOLT
 	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
-
+#endif
 };
 
 Game::~Game() = default;
