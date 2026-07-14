@@ -20,6 +20,10 @@ Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(wid
 	Init();
 }
 
+PhysicsFactory *Game::GetPhysicsEngine() {
+	return impl->physicsEngine.get();
+}
+
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
 
