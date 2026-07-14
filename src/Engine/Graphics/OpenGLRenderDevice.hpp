@@ -98,6 +98,11 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
 
+		GLenum err = glGetError();
+		if (err != GL_NO_ERROR) {
+			std::cerr << "[GL ERROR] DrawMesh: 0x" << std::hex << err << std::dec << " indexCount=" << glBuffers->indexCount << std::endl;
+		}
+
 		glBindVertexArray(0);
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
