@@ -7,7 +7,7 @@ using namespace fe;
 struct Game::Impl {
 	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
 
-}
+};
 
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
