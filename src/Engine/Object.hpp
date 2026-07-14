@@ -106,6 +106,13 @@ public:
 		return total;
 	}
 
+	void Render(IRenderDevice* device) override {
+		for (auto& mesh : meshes) {
+			mesh.SetDevice(device);
+			device->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
+		}
+	}
+
 	bool LoadObj(std::string path, float scale = 1.0f);
 
 	std::shared_ptr<Object> Clone() const {

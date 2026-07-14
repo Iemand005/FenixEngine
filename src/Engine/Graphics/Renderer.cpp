@@ -42,9 +42,7 @@ void Renderer::RenderObject(ObjectBase& object) {
 	if (!shader) return;
 	shader->SetMat4("model", object.GetModelMatrix());
 	renderDevice->SetMat4("model", object.GetModelMatrix());
-	for (auto& mesh : object.meshes) {
-		RenderMesh(mesh);
-	}
+	object.Render(renderDevice.get());
 }
 
 void Renderer::RenderScene(Scene *scene) {
