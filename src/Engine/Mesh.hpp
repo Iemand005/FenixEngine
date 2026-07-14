@@ -139,18 +139,12 @@ namespace fe {
 			device_ = d;
 			if (!device_) return;
 
-			if (!gpuBuffers && !vertices.empty() && !indices.empty()) {
-				std::cerr << "[DEBUG Mesh] Uploading " << vertices.size() << " vertices, " << indices.size() << " indices to GPU" << std::endl;
-				init();
-			}
+			if (!gpuBuffers && !vertices.empty() && !indices.empty()) init();
 
 			if (hasPendingTexture) {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
-					std::cerr << "[DEBUG Mesh] Uploading texture: " << pendingTexturePath << std::endl;
 					device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
-				} else {
-					std::cerr << "[DEBUG Mesh] FAILED to create GPU texture" << std::endl;
 				}
 				hasPendingTexture = false;
 			}
@@ -158,10 +152,7 @@ namespace fe {
 			if (hasPendingTextureArray) {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
-					std::cerr << "[DEBUG Mesh] Uploading texture array (" << pendingTextureArrayPaths.size() << " layers)" << std::endl;
 					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
-				} else {
-					std::cerr << "[DEBUG Mesh] FAILED to create GPU texture array" << std::endl;
 				}
 				hasPendingTextureArray = false;
 			}
