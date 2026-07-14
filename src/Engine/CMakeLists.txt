@@ -16,9 +16,6 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
-set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
-
 set(EXTERNAL_DIR "../../external/")
 
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
@@ -30,15 +27,15 @@ find_package(Vulkan REQUIRED)
     add_subdirectory(../../external/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 # endif()
 if (NOT FE_EXCLUDE_JOLT)
+    set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
+    set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
     if(MSVC)
         # Disable precompiled headers for external Jolt to avoid /FI empty-argument issues
         set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE BOOL "Disable precompiled headers for subprojects" FORCE)
     endif()
     add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 else()
-    add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
-
-    # add_compile_definitions(EXCLUDE_JOLT)
+    add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
@@ -132,10 +129,15 @@ target_include_directories(Engine PRIVATE
 target_include_directories(Engine PUBLIC
     ../../external/glm
     ../../external/imgui
-    ../../external/JoltPhysics
 
     ../../external/glfw/include
 )
+
+if(NOT FE_EXCLUDE_JOLT)
+    target_include_directories(Engine PUBLIC
+        ../../external/JoltPhysics
+    )
+endif()
 
 # target_link_libraries(Engine PRIVATE
 #     gdi32
@@ -145,7 +147,9 @@ target_include_directories(Engine PUBLIC
 #     gdi32
 # )
 
-add_compile_definitions(JPH_DEBUG_RENDERER)
+if(NOT FE_EXCLUDE_JOLT)
+    add_compile_definitions(JPH_DEBUG_RENDERER)
+endif()
 
 if(WIN32)
     target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
@@ -174,7 +178,6 @@ target_link_libraries(Engine PUBLIC
     Renderer
     SDL3::SDL3
     OpenXR::openxr_loader
-    Jolt::Jolt
 )
 
 if(NOT FE_EXCLUDE_JOLT)
