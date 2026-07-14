@@ -2,7 +2,7 @@
 #include "Aura.hpp"
 
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -46,6 +46,7 @@ struct Aura::Impl {
 
 	uint8_t lastR = 0, lastG = 0, lastB = 0;
 
+#ifdef _WIN32
 	HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
 	{
 		GUID guid;
@@ -81,14 +82,46 @@ struct Aura::Impl {
 		}
 		return nullptr;
 	}
+#else
+	hid_device* OpenAura(uint16_t vid, uint16_t pid, uint16_t page, uint16_t usage)
+    {
+        struct hid_device_info* devs = hid_enumerate(vid, pid);
+        struct hid_device_info* cur_dev = devs;
+        const char* path_to_open = nullptr;
+
+        while (cur_dev) {
+            if (cur_dev->usage_page == page && cur_dev->usage == usage) {
+                path_to_open = cur_dev->path;
+                break;
+            }
+            cur_dev = cur_dev->next;
+        }
+
+        hid_device* handle = nullptr;
+        if (path_to_open) {
+            handle = hid_open_path(path_to_open);
+        }
+
+        hid_free_enumeration(devs);
+        return handle;
+    }
+};
+#endif
 };
 
 Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {
-	impl->dev = impl->OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
+	impl->dev = (void*)impl->OpenAura(0x0B05, 0x19B6, 0xFF31, 0x76);
 }
 
 Aura::~Aura() {
+#ifdef _WIN32
 	if (impl->dev) CloseHandle(impl->dev);
+#else
+	if (impl->dev) {
+        hid_close((hid_device*)impl->dev);
+    }
+    hid_exit();
+#endif
 }
 
 bool Aura::IsOpen() const { return impl->dev != NULL; }
