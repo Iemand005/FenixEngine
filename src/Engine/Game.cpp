@@ -4,7 +4,7 @@
 
 using namespace fe;
 
-Gstruct ame::Impl {
+struct Game::Impl {
 	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
 
 }
