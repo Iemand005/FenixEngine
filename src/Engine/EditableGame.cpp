@@ -52,7 +52,6 @@ void fe::EditableGame::DrawDebugUI() {
 	// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
 #ifndef EXCLUDE_JOLT
 	ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
-#endif
 
 	if (ImGui::Button(physicsGravityEnabled ? "Disable Gravity" : "Enable Gravity")) {
 		physicsGravityEnabled = !physicsGravityEnabled;
@@ -65,6 +64,11 @@ void fe::EditableGame::DrawDebugUI() {
 			if (physicsEngine) physicsEngine->DisableGravity();
 		}
 	}
+
+#else
+	ImGui::Text("Jolt disabled.")
+#endif
+
 
 	if (camera) {
 		float fov = camera->GetFOV();
