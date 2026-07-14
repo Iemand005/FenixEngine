@@ -77,7 +77,7 @@ public:
 
 	Game(GLADloadproc loadProc);
 
-	Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow);
+	Game(int width, int height, bool skipInit = false, bool showWindow = true);
 
 
 	void Init();
