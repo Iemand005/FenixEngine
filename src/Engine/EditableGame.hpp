@@ -4,10 +4,7 @@
 #define FE_EXCLUDE_GLFW
 
 #include <cstdio>
-#include <fstream>
 #include <iostream>
-#include <map>
-#include <string>
 
 
 #include <glm/glm.hpp>
@@ -20,7 +17,6 @@
 #include <imgui/backends/imgui_impl_vulkan.h>
 
 #include "EditableGameBase.hpp"
-#include "physics/BasicDebugRenderer.hpp"
 
 namespace fe
 {
