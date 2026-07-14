@@ -183,22 +183,22 @@ void fe::SDLWindow::StopMouseCapture() {
 void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 
 
-  void fe::SDLWindow::Destroy() {
-    if (!impl) return;
+void fe::SDLWindow::Destroy() {
+	if (!impl) return;
 
-    if (impl->gl_context) {
+	if (impl->gl_context) {
 		SDL_GL_MakeCurrent(impl->window, nullptr); 
 		SDL_GL_DestroyContext(impl->gl_context);
 		impl->gl_context = nullptr;
-    }
+	}
 
-    if (impl->window) {
+	if (impl->window) {
 		SDL_DestroyWindow(impl->window);
 		impl->window = nullptr;
-    }
+	}
 
-    SDL_Quit();
-  }
+	SDL_Quit();
+}
 
 SDL_Window* fe::SDLWindow::GetWindow() { return impl->window; }
 
