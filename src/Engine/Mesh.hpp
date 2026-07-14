@@ -139,7 +139,21 @@ namespace fe {
 			device_ = d;
 			if (!device_) return;
 
-			if (!gpuBuffers && !vertices.empty() && !indices.empty()) init();
+			if (!gpuBuffers && !vertices.empty() && !indices.empty()) {
+				init();
+				std::cerr << "[Mesh] Init buffers: " << vertices.size() << " verts, " << indices.size() << " indices" << std::endl;
+			}
+
+			if (hasPendingTextureArray) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+					std::cerr << "[Mesh] Uploaded texture array (" << pendingTextureArrayPaths.size() << " layers)" << std::endl;
+				} else {
+					std::cerr << "[Mesh] FAILED to create GPU texture for array" << std::endl;
+				}
+				hasPendingTextureArray = false;
+			}
 
 			if (hasPendingTexture) {
 				gpuTexture = device_->CreateGPUTexture();
@@ -147,14 +161,6 @@ namespace fe {
 					device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
 				}
 				hasPendingTexture = false;
-			}
-
-			if (hasPendingTextureArray) {
-				gpuTexture = device_->CreateGPUTexture();
-				if (gpuTexture) {
-					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
-				}
-				hasPendingTextureArray = false;
 			}
 		}
 

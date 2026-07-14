@@ -107,6 +107,18 @@ public:
 	}
 
 	void Render(IRenderDevice* device) override {
+		static bool loggedOnce = false;
+		if (!loggedOnce) {
+			std::cerr << "[Render] Object '" << name << "' meshes=" << meshes.size() << std::endl;
+			for (size_t i = 0; i < meshes.size(); ++i) {
+				auto& m = meshes[i];
+				std::cerr << "  mesh[" << i << "] vertices=" << m.vertices.size()
+						  << " indices=" << m.indices.size()
+						  << " hasTexArray=" << m.hasPendingTextureArray
+						  << " texPaths=" << m.pendingTextureArrayPaths.size() << std::endl;
+			}
+			loggedOnce = true;
+		}
 		for (size_t i = 0; i < meshes.size(); ++i) {
 			auto& mesh = meshes[i];
 			mesh.SetDevice(device);

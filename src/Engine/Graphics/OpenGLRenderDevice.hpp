@@ -85,6 +85,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 			glActiveTexture(GL_TEXTURE0);
 			if (glTexture->isTextureArray()) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+				static bool loggedTex = false;
+				if (!loggedTex) {
+					std::cerr << "[GL] DrawMesh: binding GL_TEXTURE_2D_ARRAY id=" << glTexture->textureId
+							  << " layers=" << glTexture->getLayerCount() << std::endl;
+					loggedTex = true;
+				}
 			} else {
 				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
 			}
