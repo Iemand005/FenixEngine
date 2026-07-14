@@ -217,9 +217,7 @@ public:
 		UpdatePhysics(dt);
 	}
 
-	void UpdatePhysics(double deltaTime) {
-		if (physicsEngine) physicsEngine->Update(deltaTime);
-	}
+	void UpdatePhysics(double deltaTime);
 
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
