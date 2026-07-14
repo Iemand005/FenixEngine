@@ -28,8 +28,7 @@ void fe::EditableGame::DrawDebugUI() {
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 	ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
 	size_t totalVertices = 0;
-	for (auto& obj : this->scene->GetObjects())
-		for (auto& mesh : obj->meshes) totalVertices += mesh.vertices.size();
+	for (auto& obj : this->scene->GetObjects()) totalVertices += obj->GetTotalVertexCount();
 	ImGui::Text("Vertices: %zu", totalVertices);
 
 	if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {

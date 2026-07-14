@@ -54,6 +54,8 @@ public:
 		}
 	}
 
+	virtual void Render(IRenderDevice* device) {}
+
 	virtual size_t GetMeshCount() const { return 0; }
 	virtual size_t GetTotalVertexCount() const { return 0; }
 

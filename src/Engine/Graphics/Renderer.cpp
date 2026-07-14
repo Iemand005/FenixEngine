@@ -38,7 +38,7 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 	renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
 }
 
-void Renderer::RenderObject(Object<>& object) {
+void Renderer::RenderObject(ObjectBase& object) {
 	if (!shader) return;
 	shader->SetMat4("model", object.GetModelMatrix());
 	renderDevice->SetMat4("model", object.GetModelMatrix());
