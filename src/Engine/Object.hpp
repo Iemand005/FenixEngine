@@ -30,72 +30,32 @@
 
 namespace fe {
 
-		/*struct ObjectState {
-
-};*/
-
-template <typename VertexType = Vertex>
-class Object {
-private:
+class ObjectBase {
 public:
 	ObjectState state{};
-	glm::mat4 modelMatrix;
-
-	std::vector<Mesh<VertexType>> meshes;
+	glm::mat4 modelMatrix{1.0f};
 
 	bool isStatic = false;
-
 	bool touchedGround = false;
-
 	bool touchedOtherObject = false;
 
-	unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
-
-	std::vector<glm::vec3> boundingBoxVertices;
-
-	std::unique_ptr<fe::PhysicsObject> physicsObject = nullptr;
-
+	std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 	std::string sourcePath;
-
 	std::string name = "unkle";
-
 	std::shared_ptr<ShaderProgram> shader = nullptr;
 
-	Object() {
-		//acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
-		state.scale = glm::vec3(1.0f);
-		meshes = std::vector<Mesh<VertexType>>();
-	}
-
-	Object(Mesh<VertexType> mesh) : Object() {
-		if (mesh.physicsObject) {
-			this->physicsObject = std::move(mesh.physicsObject);
-		}
-		meshes.push_back(std::move(mesh));
-	}
-
-	Object(std::string objFilePath, float scale = 1.0f) : Object() {
-		LoadObj(objFilePath, scale);
-		std::filesystem::path path(objFilePath);
-		name = path.filename().string();
-		sourcePath = objFilePath;
-	}
-
-	Object(std::string objFilePath, ObjectState state) : Object() { LoadObj(objFilePath);
-		this->state = state;
-		sourcePath = objFilePath;
-	}
-
-	bool LoadObj(std::string path, float scale = 1.0f);
-
-	void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { this->physicsObject = std::move(physicsObject); }
+	ObjectBase() { state.scale = glm::vec3(1.0f); }
+	virtual ~ObjectBase() = default;
 
 	virtual void Update(double deltaTime) {
 		if (this->physicsObject) {
-			auto state = this->physicsObject->SyncToRender();
-			this->state = state;
+			auto s = this->physicsObject->SyncToRender();
+			this->state = s;
 		}
 	}
+
+	virtual size_t GetMeshCount() const { return 0; }
+	virtual size_t GetTotalVertexCount() const { return 0; }
 
 	glm::mat4 GetModelMatrix() {
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position);
@@ -105,11 +65,46 @@ public:
 		return model;
 	}
 
-	// void Render(ShaderProgram& shader) {
-	// 	for (auto& mesh : meshes) mesh.Render(shader, this->GetModelMatrix());
-		
-		
-	// }
+	void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
+};
+
+template <typename VertexType = Vertex>
+class Object : public ObjectBase {
+public:
+	std::vector<Mesh<VertexType>> meshes;
+
+	unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
+	std::vector<glm::vec3> boundingBoxVertices;
+
+	Object() : ObjectBase() {}
+
+	Object(Mesh<VertexType> mesh) : ObjectBase() {
+		if (mesh.physicsObject) {
+			this->physicsObject = std::move(mesh.physicsObject);
+		}
+		meshes.push_back(std::move(mesh));
+	}
+
+	Object(std::string objFilePath, float scale = 1.0f) : ObjectBase() {
+		LoadObj(objFilePath, scale);
+		std::filesystem::path path(objFilePath);
+		name = path.filename().string();
+		sourcePath = objFilePath;
+	}
+
+	Object(std::string objFilePath, ObjectState state) : ObjectBase() { LoadObj(objFilePath);
+		this->state = state;
+		sourcePath = objFilePath;
+	}
+
+	size_t GetMeshCount() const override { return meshes.size(); }
+	size_t GetTotalVertexCount() const override {
+		size_t total = 0;
+		for (const auto& m : meshes) total += m.vertices.size();
+		return total;
+	}
+
+	bool LoadObj(std::string path, float scale = 1.0f);
 
 	std::shared_ptr<Object> Clone() const {
 		auto newObj = std::make_shared<Object>();
@@ -126,7 +121,7 @@ public:
 		return newObj;
 	}
 
-		void LookAt(const glm::vec3& target) {
+	void LookAt(const glm::vec3& target) {
 		glm::vec3 direction = glm::normalize(target - this->state.position);
 		float pitch = glm::degrees(asin(direction.y));
 		float yaw = glm::degrees(atan2(direction.x, direction.z));

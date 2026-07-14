@@ -211,7 +211,7 @@ template<typename WindowT = DefaultWindow>
 	 }
 
 	void RenderMesh(Mesh<>& mesh);
-	void RenderObject(Object& object);
+	void RenderObject(Object<>& object);
 	void RenderScene(Scene *scene);
 	void RenderScene() { RenderScene(scene.get()); }
 

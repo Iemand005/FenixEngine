@@ -10,7 +10,7 @@
 
 namespace fe {
 
-class Character : public Object {
+class Character : public Object<> {
 public:
 	float moveSpeed = 5.0f;
 	float jumpSpeed = 0.15f;

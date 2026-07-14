@@ -26,11 +26,12 @@ struct PointLight {
 	float radius{10.0f};
 };
 
-class Object;
+template<typename V> class Object;
+class ObjectBase;
 
 class Scene {
 	private:
-	std::vector<std::shared_ptr<Object>> objects;
+	std::vector<std::shared_ptr<ObjectBase>> objects;
 	glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	Timer timer;
 
@@ -60,13 +61,13 @@ public:
 	Scene();
 	~Scene();
 
-	std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
-	std::vector<std::shared_ptr<Object>> GetFilteredObjects(std::shared_ptr<Object> exclude) const;
+	std::vector<std::shared_ptr<ObjectBase>>& GetObjects() { return objects; }
+	std::vector<std::shared_ptr<ObjectBase>> GetFilteredObjects(std::shared_ptr<ObjectBase> exclude) const;
 	void ClearObjects() { objects.clear(); }
 
-	void AddObject(std::shared_ptr<Object> object);
-	std::shared_ptr<Object> AddObject(Mesh<> mesh);
-	bool RemoveObject(std::shared_ptr<Object> object);
+	void AddObject(std::shared_ptr<ObjectBase> object);
+	std::shared_ptr<Object<>> AddObject(Mesh<> mesh);
+	bool RemoveObject(std::shared_ptr<ObjectBase> object);
 
 	void AddLight() { ++lightCount; }
 	void RemoveLight() { --lightCount; }

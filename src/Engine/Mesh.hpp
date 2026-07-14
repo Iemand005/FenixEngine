@@ -268,4 +268,10 @@ namespace fe {
 
 		glm::mat4 getModelMatrix() { return modelMatrix; }
 
-		void SetPhysicsObject(std::unique_ptr<Physi
+		const std::vector<VertexType>& GetVertices() const { return vertices; }
+		const std::vector<unsigned int>& GetIndices() const { return indices; }
+
+		void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
+	};
+
+}

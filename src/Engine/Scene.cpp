@@ -8,7 +8,7 @@
 using namespace fe;
 
 Scene::Scene() {
-	objects = std::vector<std::shared_ptr<Object>>();
+	objects = std::vector<std::shared_ptr<ObjectBase>>();
 	// this->EnableDepthTest();
 	// this->EnableFaceCulling();
 }
@@ -19,23 +19,23 @@ Scene::~Scene() {
 	if (gizmoProgram) glDeleteProgram(gizmoProgram);
 }
 
-void Scene::AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
+void Scene::AddObject(std::shared_ptr<ObjectBase> object) { objects.push_back(object); }
 
-std::shared_ptr<Object> Scene::AddObject(Mesh<> mesh) {
-	auto obj = std::make_shared<Object>(mesh);
+std::shared_ptr<Object<>> Scene::AddObject(Mesh<> mesh) {
+	auto obj = std::make_shared<Object<>>(mesh);
 	objects.push_back(obj);
 	return obj;
 }
 
-std::vector<std::shared_ptr<Object>> Scene::GetFilteredObjects(std::shared_ptr<Object> exclude) const {
-	std::vector<std::shared_ptr<Object>> filtered;
-	std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [exclude](const std::shared_ptr<Object>& obj) {
+std::vector<std::shared_ptr<ObjectBase>> Scene::GetFilteredObjects(std::shared_ptr<ObjectBase> exclude) const {
+	std::vector<std::shared_ptr<ObjectBase>> filtered;
+	std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [exclude](const std::shared_ptr<ObjectBase>& obj) {
 		return obj != exclude;
 	});
 	return filtered;
 }
 
-bool Scene::RemoveObject(std::shared_ptr<Object> object) {
+bool Scene::RemoveObject(std::shared_ptr<ObjectBase> object) {
 	auto it = std::find(objects.begin(), objects.end(), object);
 	if (it != objects.end()) {
 		objects.erase(it);

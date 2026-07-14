@@ -29,7 +29,7 @@ void fe::EditableGame::DrawDebugUI() {
 	ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
 	size_t totalVertices = 0;
 	for (auto& obj : this->scene->GetObjects())
-		for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
+		for (auto& mesh : obj->meshes) totalVertices += mesh.vertices.size();
 	ImGui::Text("Vertices: %zu", totalVertices);
 
 	if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
@@ -78,7 +78,7 @@ void fe::EditableGame::DrawDebugUI() {
 		}
 	}
 
-	fe::Object* model = this->player.get();
+	fe::Object<>* model = this->player.get();
 	if (model) {
 		ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 		if (model->physicsObject) {

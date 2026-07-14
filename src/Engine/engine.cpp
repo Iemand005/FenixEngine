@@ -9,7 +9,8 @@
 
 namespace fe {
 
-bool Object::LoadObj(std::string path, float scale) {
+template<typename T>
+bool Object<T>::LoadObj(std::string path, float scale) {
   objl::Loader objectLoader;
 
   bool success = objectLoader.LoadFile(path);
@@ -47,5 +48,7 @@ bool Object::LoadObj(std::string path, float scale) {
 
   return true;
 }
+
+template class Object<Vertex>;
 
 }  // namespace fe

@@ -118,6 +118,7 @@ public:
 		vkUnmapMemory(device, stagingMemory);
 
 		createImageArray(device, physicalDevice, w, h, layers, format,
+			VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			this->image, this->imageMemory);
 

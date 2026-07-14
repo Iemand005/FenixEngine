@@ -43,7 +43,7 @@ public:
 
 	std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
 
-	std::vector<std::shared_ptr<Object>> maps = std::vector<std::shared_ptr<Object>>();
+	std::vector<std::shared_ptr<Object<>>> maps = std::vector<std::shared_ptr<Object<>>>();
 
 	std::vector<std::string> messages;
 
@@ -162,18 +162,18 @@ public:
 		this->scene->AddObject(newPlayer);
 	}
 
-	std::shared_ptr<fe::Object> LoadObj(std::string path, float scale = 1.0f) {
-		std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> LoadObj(std::string path, float scale = 1.0f) {
+		std::shared_ptr<fe::Object<>> model = std::make_shared<fe::Object<>>(path, scale);
 		this->scene->AddObject(model);
 		return model;
 	}
 
-	std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
-		return std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
+		return std::make_shared<fe::Object<>>(path, scale);
 	}
 
-	std::shared_ptr<fe::Object> LoadStaticOBJ(std::string path, float scale = 1.0f) {
-		std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> LoadStaticOBJ(std::string path, float scale = 1.0f) {
+		std::shared_ptr<fe::Object<>> model = std::make_shared<fe::Object<>>(path, scale);
 		model->isStatic = true;
 		return model;
 	}
