@@ -5,6 +5,8 @@
 
 #include "OBJ_Loader.h"
 
+#include "Object.hpp"
+
 namespace fe {
 
 bool Object::LoadObj(std::string path, float scale) {

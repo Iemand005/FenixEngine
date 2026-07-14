@@ -1,5 +1,6 @@
-#include "Game.hpp"
 #include <memory>
+
+#include "Game.hpp"
 
 using namespace fe;
 
@@ -10,7 +11,7 @@ Gstruct ame::Impl {
 
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
-	
+
 	SetClearColor(0.0F, 0.0F, 0.0f);
 
 #ifndef EXCLUDE_JOLT
