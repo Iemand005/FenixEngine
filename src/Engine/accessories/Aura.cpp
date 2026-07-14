@@ -105,8 +105,15 @@ struct Aura::Impl {
         hid_free_enumeration(devs);
         return handle;
     }
-};
 #endif
+
+	bool SetFeature(void* dev, void* data, size_t size) {
+#ifdef _WIN32
+		return HidD_SetFeature((HANDLE)dev, data, (ULONG)size);
+#else
+		return hid_send_feature_report((hid_device*)dev, (unsigned char*)data, size) >= 0;
+#endif
+	}
 };
 
 Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {
@@ -133,11 +140,11 @@ bool Aura::SetColor(char r, char g, char b, bool force) {
 		return true; // Just preend it's ok the colour is the same hmm? but what if we wanna reset it
 
 	AuraInitReport init;
-	HidD_SetFeature(impl->dev, &init, sizeof(init));
+	impl->SetFeature(impl->dev, &init, sizeof(init));
 
 	AuraColorReport report;
 	report.r = r;
 	report.g = g;
 	report.b = b;
-	return HidD_SetFeature(impl->dev, &report, sizeof(report));
+	return impl->SetFeature(impl->dev, &report, sizeof(report));
 }
