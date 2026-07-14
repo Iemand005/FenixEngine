@@ -80,6 +80,67 @@ public:
 		this->sampler = createSampler(device, vkFilter);
 	}
 
+	void uploadTextureArray(VkDevice device, VkPhysicalDevice physicalDevice,
+				VkCommandPool commandPool, VkQueue graphicsQueue,
+				const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) {
+
+		if (textureFilePaths.empty()) return;
+
+		auto firstImage = fe::ImageLoader::Load(textureFilePaths[0]);
+		if (firstImage.pixels.empty()) return;
+
+		uint32_t w = static_cast<uint32_t>(firstImage.width);
+		uint32_t h = static_cast<uint32_t>(firstImage.height);
+		int nrChannels = firstImage.channels;
+		VkFormat format = (nrChannels == 4) ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
+		uint32_t layers = static_cast<uint32_t>(textureFilePaths.size());
+		VkDeviceSize layerSize = w * h * nrChannels;
+		VkDeviceSize totalSize = layerSize * layers;
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		createBuffer(device, physicalDevice, totalSize,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer, stagingMemory);
+
+		void* mapped;
+		vkMapMemory(device, stagingMemory, 0, totalSize, 0, &mapped);
+		auto* dst = static_cast<uint8_t*>(mapped);
+		memcpy(dst, firstImage.pixels.data(), static_cast<size_t>(layerSize));
+
+		for (uint32_t i = 1; i < layers; ++i) {
+			auto img = fe::ImageLoader::Load(textureFilePaths[i]);
+			if (!img.pixels.empty() && img.width == firstImage.width && img.height == firstImage.height && img.channels == nrChannels) {
+				memcpy(dst + i * layerSize, img.pixels.data(), static_cast<size_t>(layerSize));
+			}
+		}
+		vkUnmapMemory(device, stagingMemory);
+
+		createImageArray(device, physicalDevice, w, h, layers, format,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			this->image, this->imageMemory);
+
+		transitionImageLayout(device, commandPool, graphicsQueue, this->image, format,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layers);
+
+		copyBufferToImageLayers(device, commandPool, graphicsQueue, stagingBuffer, this->image, w, h, layers);
+
+		transitionImageLayout(device, commandPool, graphicsQueue, this->image, format,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, layers);
+
+		vkDestroyBuffer(device, stagingBuffer, nullptr);
+		vkFreeMemory(device, stagingMemory, nullptr);
+
+		this->imageView = createImageViewArray(device, this->image, format, layers);
+
+		VkFilter vkFilter = (scaling == TextureScaling::Nearest) ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
+		this->sampler = createSampler(device, vkFilter);
+
+		this->arrayTexture = true;
+		this->layerCount_ = static_cast<int>(layers);
+	}
+
 	bool load(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) override {
 		return true;
 	}
@@ -127,7 +188,7 @@ private:
 	static void createImage(VkDevice device, VkPhysicalDevice physicalDevice,
 		uint32_t width, uint32_t height, VkFormat format,
 		VkImageTiling tiling, VkImageUsageFlags usage,
-		VkImage& image, VkDeviceMemory& imageMemory) {
+		VkImage& image, VkDeviceMemory& imageMemory, uint32_t layers = 1) {
 
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -136,7 +197,7 @@ private:
 		imageInfo.extent.height = height;
 		imageInfo.extent.depth = 1;
 		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
+		imageInfo.arrayLayers = layers;
 		imageInfo.format = format;
 		imageInfo.tiling = tiling;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -163,8 +224,16 @@ private:
 		vkBindImageMemory(device, image, imageMemory, 0);
 	}
 
+	static void createImageArray(VkDevice device, VkPhysicalDevice physicalDevice,
+		uint32_t width, uint32_t height, uint32_t layers, VkFormat format,
+		VkImageTiling tiling, VkImageUsageFlags usage,
+		VkImage& image, VkDeviceMemory& imageMemory) {
+
+		createImage(device, physicalDevice, width, height, format, tiling, usage, image, imageMemory, layers);
+	}
+
 	static void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
-		VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+		VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount = 1) {
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -190,7 +259,7 @@ private:
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = 1;
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.layerCount = layerCount;
 
 		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -275,23 +344,73 @@ private:
 		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 	}
 
-	static VkImageView createImageView(VkDevice device, VkImage img, VkFormat format) {
+	static void copyBufferToImageLayers(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue,
+		VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layers) {
+
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandPool = commandPool;
+		allocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		VkDeviceSize layerSize = width * height * 4;
+		for (uint32_t i = 0; i < layers; ++i) {
+			VkBufferImageCopy region{};
+			region.bufferOffset = i * layerSize;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = i;
+			region.imageSubresource.layerCount = 1;
+			region.imageOffset = {0, 0, 0};
+			region.imageExtent = {width, height, 1};
+
+			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		}
+
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(graphicsQueue);
+
+		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+	}
+
+	static VkImageView createImageView(VkDevice device, VkImage img, VkFormat format, uint32_t layers = 1) {
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = img;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.viewType = (layers > 1) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
 		viewInfo.format = format;
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		viewInfo.subresourceRange.baseMipLevel = 0;
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
+		viewInfo.subresourceRange.layerCount = layers;
 
 		VkImageView imageView;
 		if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create Vulkan image view.");
 		}
 		return imageView;
+	}
+
+	static VkImageView createImageViewArray(VkDevice device, VkImage img, VkFormat format, uint32_t layers) {
+		return createImageView(device, img, format, layers);
 	}
 
 	static VkSampler createSampler(VkDevice device, VkFilter filter) {
