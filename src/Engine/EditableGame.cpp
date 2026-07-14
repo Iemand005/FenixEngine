@@ -66,7 +66,7 @@ void fe::EditableGame::DrawDebugUI() {
 	}
 
 #else
-	ImGui::Text("Jolt disabled.")
+	ImGui::Text("Jolt disabled.");
 #endif
 
 
