@@ -46,7 +46,24 @@ void Renderer::RenderObject(ObjectBase& object) {
 }
 
 void Renderer::RenderScene(Scene *scene) {
-	if (!shader) return;
+	if (!shader) {
+		std::cerr << "[DEBUG Renderer] RenderScene: shader is null!" << std::endl;
+		return;
+	}
+
+	static bool loggedSceneInfo = false;
+	if (!loggedSceneInfo) {
+		std::cerr << "[DEBUG Renderer] RenderScene: scene=" << scene
+				  << " objects=" << scene->GetObjects().size()
+				  << " lights=" << scene->GetLightCount() << std::endl;
+		for (auto& obj : scene->GetObjects()) {
+			std::cerr << "[DEBUG Renderer]   object: '" << obj->name
+					  << "' pos=(" << obj->state.position.x << "," << obj->state.position.y << "," << obj->state.position.z << ")"
+					  << " meshCount=" << obj->GetMeshCount()
+					  << " vertexCount=" << obj->GetTotalVertexCount() << std::endl;
+		}
+		loggedSceneInfo = true;
+	}
 
 	int count = scene->GetLightCount();
 	auto pointLights = scene->GetLights();

@@ -251,6 +251,14 @@ public:
 			if (vkTex && vkTex->imageView != VK_NULL_HANDLE) {
 				imageView = vkTex->imageView;
 				sampler = vkTex->sampler;
+			} else {
+				static int fallbackCount = 0;
+				if (++fallbackCount <= 5) {
+					std::cerr << "[DEBUG Vulkan] DrawMesh: texture exists but imageView="
+							  << (vkTex ? "valid cast" : "dynamic_cast failed")
+							  << " imageView=" << (vkTex ? vkTex->imageView : VK_NULL_HANDLE)
+							  << " -> using default white texture" << std::endl;
+				}
 			}
 		}
 
@@ -335,16 +343,26 @@ public:
 
 	void UploadTexture(fe::IGPUTexture* texture,
 		const std::string& path, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
-		if (!texture) return;
+		if (!texture) {
+			std::cerr << "[DEBUG Vulkan] UploadTexture: texture is null!" << std::endl;
+			return;
+		}
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
+		std::cerr << "[DEBUG Vulkan] UploadTexture: " << path << std::endl;
 		vkTexture->upload(device_, physicalDevice_, commandPool_, graphicsQueue_, path, scaling);
+		std::cerr << "[DEBUG Vulkan] UploadTexture: imageView=" << vkTexture->imageView << " sampler=" << vkTexture->sampler << std::endl;
 	}
 
 	void UploadTextureArray(fe::IGPUTexture* texture,
 		const std::vector<std::string>& paths, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
-		if (!texture) return;
+		if (!texture) {
+			std::cerr << "[DEBUG Vulkan] UploadTextureArray: texture is null!" << std::endl;
+			return;
+		}
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
+		std::cerr << "[DEBUG Vulkan] UploadTextureArray: " << paths.size() << " layers" << std::endl;
 		vkTexture->uploadTextureArray(device_, physicalDevice_, commandPool_, graphicsQueue_, paths, scaling);
+		std::cerr << "[DEBUG Vulkan] UploadTextureArray: imageView=" << vkTexture->imageView << " sampler=" << vkTexture->sampler << std::endl;
 	}
 
 	VkInstance GetInstance() const { return instance_; }
