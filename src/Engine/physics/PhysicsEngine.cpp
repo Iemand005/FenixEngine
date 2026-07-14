@@ -1,4 +1,6 @@
+#define EXCLUDE_JOLT
 
+#ifndef EXCLUDE_JOLT
 #define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 #define JPH_DEBUG_RENDERER
 #define JPH_OBJECT_STREAM
@@ -212,3 +214,5 @@ void PhysicsFactory::Bind(PhysicsObject *obj) {
 	obj->BindPhysicsSystem(impl->physicsSystem);
 #endif
 }
+
+#endif

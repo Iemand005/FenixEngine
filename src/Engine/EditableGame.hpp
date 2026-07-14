@@ -168,7 +168,9 @@ public:
 		}
 
 		// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
+#ifndef FE_EXCLUDE_JOLT
 		ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
+#endif
 
 		if (ImGui::Button(physicsGravityEnabled ? "Disable Gravity" : "Enable Gravity")) {
 			physicsGravityEnabled = !physicsGravityEnabled;
