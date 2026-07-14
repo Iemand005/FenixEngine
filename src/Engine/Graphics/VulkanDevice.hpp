@@ -43,6 +43,7 @@ const std::vector<const char*> kDeviceExtensions = {
 constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 600;
 constexpr int kMaxFramesInFlight = 2;
+constexpr int kMaxDrawsPerFrame = 256;
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
@@ -162,6 +163,8 @@ public:
 			return;
 		}
 
+		drawCallCount_ = 0;
+
 		updateUniformBuffer(currentFrame_);
 
 		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
@@ -231,7 +234,16 @@ public:
 			return;
 		}
 
-		// Update the texture descriptor for this draw
+		if (drawCallCount_ >= kMaxDrawsPerFrame) {
+			std::cerr << "[VulkanDevice] DrawMesh: exceeded max draws per frame (" << kMaxDrawsPerFrame << ")" << std::endl;
+			return;
+		}
+
+		uint32_t setIndex = currentFrame_ * kMaxDrawsPerFrame + drawCallCount_;
+		drawCallCount_++;
+
+		VkDescriptorSet descriptorSet = descriptorSets_[setIndex];
+
 		VkImageView imageView = defaultImageView_;
 		VkSampler sampler = defaultSampler_;
 		if (texture) {
@@ -242,21 +254,35 @@ public:
 			}
 		}
 
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = uniformBuffers_[currentFrame_];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = imageView;
 		imageInfo.sampler = sampler;
 
-		VkWriteDescriptorSet descriptorWrite{};
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = descriptorSets_[currentFrame_];
-		descriptorWrite.dstBinding = 1;
-		descriptorWrite.dstArrayElement = 0;
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorWrite.descriptorCount = 1;
-		descriptorWrite.pImageInfo = &imageInfo;
+		std::array<VkWriteDescriptorSet, 2> writes{};
 
-		vkUpdateDescriptorSets(device_, 1, &descriptorWrite, 0, nullptr);
+		writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writes[0].dstSet = descriptorSet;
+		writes[0].dstBinding = 0;
+		writes[0].dstArrayElement = 0;
+		writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writes[0].descriptorCount = 1;
+		writes[0].pBufferInfo = &bufferInfo;
+
+		writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writes[1].dstSet = descriptorSet;
+		writes[1].dstBinding = 1;
+		writes[1].dstArrayElement = 0;
+		writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writes[1].descriptorCount = 1;
+		writes[1].pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(device_, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
@@ -280,7 +306,7 @@ public:
 		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSets_[currentFrame_], 0, nullptr);
+			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
 		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
 
@@ -386,6 +412,7 @@ private:
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
 	uint32_t currentImageIndex_ = 0;
+	uint32_t drawCallCount_ = 0;
 
 	glm::mat4 currentModel_ = glm::mat4(1.0f);
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
@@ -1376,15 +1403,16 @@ private:
 	void createDescriptorPool() {
 		std::array<VkDescriptorPoolSize, 2> poolSizes{};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(kMaxFramesInFlight);
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(kMaxFramesInFlight);
+		poolInfo.maxSets = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
 
 		if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create descriptor pool.");
@@ -1392,22 +1420,25 @@ private:
 	}
 
 	void createDescriptorSets() {
-		std::vector<VkDescriptorSetLayout> layouts(kMaxFramesInFlight, descriptorSetLayout_);
+		int totalSets = kMaxDrawsPerFrame * kMaxFramesInFlight;
+		std::vector<VkDescriptorSetLayout> layouts(totalSets, descriptorSetLayout_);
 
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool_;
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(kMaxFramesInFlight);
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(totalSets);
 		allocInfo.pSetLayouts = layouts.data();
 
-		descriptorSets_.resize(kMaxFramesInFlight);
+		descriptorSets_.resize(totalSets);
 		if (vkAllocateDescriptorSets(device_, &allocInfo, descriptorSets_.data()) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to allocate descriptor sets.");
 		}
 
-		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+		for (int i = 0; i < totalSets; i++) {
+			int frameIndex = i / kMaxDrawsPerFrame;
+
 			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = uniformBuffers_[i];
+			bufferInfo.buffer = uniformBuffers_[frameIndex];
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 
