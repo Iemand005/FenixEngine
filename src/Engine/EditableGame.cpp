@@ -7,9 +7,11 @@
 
 void fe::EditableGame::OnDraw() {
 	EditableGameBase::OnDraw();
+#ifndef EXCLUDE_JOLT
 	if (this->physicsEngine) {
 		this->physicsEngine->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
+#endif
 }
 
 
