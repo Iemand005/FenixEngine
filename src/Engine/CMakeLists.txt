@@ -187,4 +187,6 @@ else()
     target_compile_options(Engine PRIVATE -g)
 endif()
 
+target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)
+
 
