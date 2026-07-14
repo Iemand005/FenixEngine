@@ -69,6 +69,11 @@ class VulkanDevice : public fe::IRenderDevice {
 public:
 	VkClearValue m_VulkanClearColor{};
 
+	void SetShaderPaths(const std::string& vertPath, const std::string& fragPath) {
+		vertShaderPath_ = vertPath;
+		fragShaderPath_ = fragPath;
+	}
+
 	void Init(fe::IWindow *window) override {
 		this->window = window;
 		createInstance();
@@ -333,6 +338,9 @@ public:
 
 private:
 	fe::IWindow *window;
+
+	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
+	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
 
 	VkInstance instance_ = VK_NULL_HANDLE;
 	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
@@ -843,8 +851,8 @@ private:
 	// Graphics pipeline (vertex input, dynamic viewport, depth test)
 	// ---------------------------------------------------------------
 	void createGraphicsPipeline() {
-		auto vertShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/VertexShader_vk.spv");
-		auto fragShaderCode = readFile("J:/ProjectFenix/build/Atmosphere/resources/shaders/FragmentShader_vk.spv");
+		auto vertShaderCode = readFile(vertShaderPath_);
+		auto fragShaderCode = readFile(fragShaderPath_);
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
