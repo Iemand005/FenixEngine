@@ -19,6 +19,7 @@ namespace fe {
 
 class ShaderProgram {
   unsigned int id;
+  bool linked = false;
 
   int modelLoc;
   int viewLoc;
@@ -75,7 +76,10 @@ class ShaderProgram {
       std::string log(logLength, '\0');
       glGetProgramInfoLog(id, logLength, nullptr, log.data());
       std::cerr << "ShaderProgram: link failed (program " << id << "): " << log << std::endl;
+      linked = false;
+      return;
     }
+    linked = true;
 
     modelLoc = glGetUniformLocation(id, "model");
     viewLoc = glGetUniformLocation(id, "view");
@@ -95,11 +99,13 @@ class ShaderProgram {
     }
   }
 
+  bool IsLinked() const { return linked; }
+
   bool ErrorCheck() {
     GLint ok = 0, length = 0;
     glGetProgramiv(id, GL_LINK_STATUS, &ok);
     glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
-    if (!ok || length > 1) {
+    if (!ok) {
         std::string log(length, '\0');
         glGetProgramInfoLog(id, length, nullptr, log.data());
         fprintf(stderr, "Program link log:\n%s\n", log.c_str());
@@ -110,6 +116,14 @@ class ShaderProgram {
   }
 
   void Use() {
+    if (!linked) {
+      static bool logged = false;
+      if (!logged) {
+        std::cerr << "ShaderProgram::Use() called on unlinked program " << id << std::endl;
+        logged = true;
+      }
+      return;
+    }
     glUseProgram(id);
   }
 

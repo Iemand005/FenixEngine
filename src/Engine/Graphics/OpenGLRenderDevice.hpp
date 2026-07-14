@@ -76,6 +76,17 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
+		GLint currentProgram = 0;
+		glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
+		if (currentProgram == 0) {
+			static bool logged = false;
+			if (!logged) {
+				std::cerr << "[GL] DrawMesh: no shader program bound, skipping draw" << std::endl;
+				logged = true;
+			}
+			return;
+		}
+
 		const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
 
 		glBuffers->bind(); 
