@@ -86,21 +86,7 @@ public:
 	}
 
 
-	void Init() {
-		SetClearColor(0.0F, 0.0F, 0.0f);
-
-		this->physicsEngine = std::make_unique<PhysicsFactory>();
-		
-		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
-		
-		this->scene = std::make_unique<fe::Scene>();
-		this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 100.0f);
-		
-		this->scene->SetLight();
-		
-		// Renderer::Init();
-		InitUI();
-	}
+	void Init();
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
 
