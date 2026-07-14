@@ -107,8 +107,12 @@ public:
 	}
 
 	void Render(IRenderDevice* device) override {
-		for (auto& mesh : meshes) {
+		for (size_t i = 0; i < meshes.size(); ++i) {
+			auto& mesh = meshes[i];
 			mesh.SetDevice(device);
+			if (!mesh.gpuBuffers) {
+				std::cerr << "[DEBUG Object] '" << name << "' mesh[" << i << "] gpuBuffers is null after SetDevice!" << std::endl;
+			}
 			device->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
 		}
 	}
