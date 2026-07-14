@@ -68,6 +68,8 @@ public:
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
+	~Game();
+
 	Game();
 
 	typedef void* (* GLADloadproc)(const char *name);

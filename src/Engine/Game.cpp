@@ -9,11 +9,13 @@ struct Game::Impl {
 
 };
 
+Game::~Game() = default;
+
 Game::Game() : Renderer() {}
 
 Game::Game(GLADloadproc loadProc) : Renderer(loadProc) {};
 
-Game::Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(width, height, skipInit, !showWindow) {
+Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(width, height, skipInit, !showWindow) {
 	Init();
 }
 
