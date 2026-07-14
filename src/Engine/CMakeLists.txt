@@ -142,6 +142,8 @@ target_include_directories(Engine PUBLIC
 #     gdi32
 # )
 
+add_compile_definitions(JPH_DEBUG_RENDERER)
+
 if(WIN32)
     target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
 elseif(APPLE)
@@ -155,6 +157,13 @@ else()
     target_link_libraries(Engine PRIVATE
         X11::X11
     )
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
+
+    target_link_libraries(Engine INTERFACE ${HIDAPI_LIBRARIES})
+    target_include_directories(Engine PUBLIC ${HIDAPI_INCLUDE_DIRS})
+
 endif()
 
 
