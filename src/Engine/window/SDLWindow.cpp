@@ -147,10 +147,6 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 		return;
 	}
 
-	std::cerr << "[DEBUG Window] GLAD loaded. glCreateProgram=" << (void*)glCreateProgram
-			  << " glUseProgram=" << (void*)glUseProgram
-			  << " glCreateShader=" << (void*)glCreateShader << std::endl;
-
     keyboardState = SDL_GetKeyboardState(NULL);
 
     // SDL_AddEventWatch(EventWatch, this);

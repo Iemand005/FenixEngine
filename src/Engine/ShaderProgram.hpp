@@ -32,7 +32,6 @@ class ShaderProgram {
 
   ShaderProgram() {
     id = glCreateProgram();
-    std::cerr << "[DEBUG Shader] Created program id=" << id << std::endl;
   }
 
   ShaderProgram(Shader vertexShader, Shader fragmentShader) : ShaderProgram() {
@@ -75,9 +74,7 @@ class ShaderProgram {
     if (!linkStatus) {
       std::string log(logLength, '\0');
       glGetProgramInfoLog(id, logLength, nullptr, log.data());
-      std::cerr << "[DEBUG Shader] LINK FAILED for program " << id << ": " << log << std::endl;
-    } else {
-      std::cerr << "[DEBUG Shader] Linked program " << id << " OK" << std::endl;
+      std::cerr << "ShaderProgram: link failed (program " << id << "): " << log << std::endl;
     }
 
     modelLoc = glGetUniformLocation(id, "model");
@@ -114,11 +111,6 @@ class ShaderProgram {
 
   void Use() {
     glUseProgram(id);
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR) {
-      std::cerr << "[DEBUG Shader] glUseProgram(" << id << ") failed: 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
-      std::cerr << "[DEBUG Shader] glIsProgram=" << glIsProgram(id) << std::endl;
-    }
   }
 
 

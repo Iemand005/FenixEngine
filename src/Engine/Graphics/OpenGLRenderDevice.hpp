@@ -74,11 +74,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
-		if (!buffers) {
-			static int nullBufCount = 0;
-			if (++nullBufCount <= 5) std::cerr << "[DEBUG GL] DrawMesh: buffers is null, skipping" << std::endl;
-			return;
-		}
+		if (!buffers) return;
 
 		const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
 
@@ -109,17 +105,11 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void UploadTexture(IGPUTexture* texture,
 		const std::string& path, TextureScaling scaling = TextureScaling::Linear) override {
-		if (!texture) {
-			std::cerr << "[DEBUG GL] UploadTexture: texture is null!" << std::endl;
-			return;
-		}
+		if (!texture) return;
 		auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
-		std::cerr << "[DEBUG GL] UploadTexture: " << path << " (scaling=" << (int)scaling << ")" << std::endl;
 		bool ok = glTexture->load(path, scaling);
 		if (!ok) {
-			std::cerr << "[DEBUG GL] UploadTexture: FAILED to load " << path << std::endl;
-		} else {
-			std::cerr << "[DEBUG GL] UploadTexture: OK id=" << glTexture->textureId << std::endl;
+			std::cerr << "UploadTexture: failed to load " << path << std::endl;
 		}
 	}
 

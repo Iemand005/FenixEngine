@@ -217,16 +217,7 @@ template<typename WindowT = DefaultWindow>
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
-		if (!scene || !camera || !shader) {
-			static bool logged = false;
-			if (!logged) {
-				std::cerr << "[DEBUG Renderer] Redraw bailed: scene=" << (scene ? "ok" : "null")
-						  << " camera=" << (camera ? "ok" : "null")
-						  << " shader=" << (shader ? "ok" : "null") << std::endl;
-				logged = true;
-			}
-			return;
-		}
+		if (!scene || !camera || !shader) return;
 
 		Clear();
 		CheckGLError("Redraw:after-Clear");
