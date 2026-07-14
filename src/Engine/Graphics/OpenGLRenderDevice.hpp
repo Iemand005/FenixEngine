@@ -1,11 +1,31 @@
 
 #pragma once
 
+#include <iostream>
+
 #include "IRenderDevice.hpp"
 #include "OpenGLGPUBuffers.hpp"
 #include "OpenGLGPUTexture.hpp"
 
 namespace fe {
+
+
+	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
+									GLenum severity, GLsizei length,
+									const GLchar* message, const void* userParam) {
+		if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+
+		std::cerr << "---------------" << std::endl;
+		std::cerr << "Debug message (" << id << "): " << message << std::endl;
+
+		// switch (severity) {
+		//     case GL_DEBUG_SEVERITY_HIGH:         std::cerr << "Severity: HIGH" << std::endl; break;
+		//     case GL_DEBUG_SEVERITY_MEDIUM:       std::cerr << "Severity: MEDIUM" << std::endl; break;
+		//     case GL_DEBUG_SEVERITY_LOW:          std::cerr << "Severity: LOW" << std::endl; break;
+		//     case GL_DEBUG_SEVERITY_NOTIFICATION: std::cerr << "Severity: NOTIFICATION" << std::endl; break;
+		// }
+		std::cerr << std::endl;
+	}
 
 class OpenGLRenderDevice : public IRenderDevice {
 
@@ -13,6 +33,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 // 11	
 		EnableDepthTest();
 		EnableFaceCulling();
+
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); 
+		glDebugMessageCallback(MessageCallback, nullptr);
 	}
 
 	void Clear() override {
