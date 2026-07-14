@@ -80,14 +80,23 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
+			if (glTexture->isTextureArray()) {
+				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+			} else {
+				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
+			}
 		}
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
 
 		glBindVertexArray(0);
 		if (texture) {
-			glBindTexture(GL_TEXTURE_2D, 0);
+			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
+			if (glTexture->isTextureArray()) {
+				glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+			} else {
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
 		}
 	}
 
@@ -96,6 +105,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (!texture) return;
 		auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
 		glTexture->load(path, scaling);
+	}
+
+	void UploadTextureArray(IGPUTexture* texture,
+		const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) override {
+		if (!texture) return;
+		auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
+		glTexture->loadTextureArray(paths, scaling);
 	}
 
 

@@ -13,6 +13,9 @@ namespace fe {
         virtual ~IGPUTexture() = default;
 
         virtual bool load(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) = 0;
+
+        virtual bool isTextureArray() const { return false; }
+        virtual int getLayerCount() const { return 0; }
     };
 
     class Texture {

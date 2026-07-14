@@ -15,8 +15,13 @@ public:
 	VkDeviceMemory imageMemory = VK_NULL_HANDLE;
 	VkImageView imageView = VK_NULL_HANDLE;
 	VkSampler sampler = VK_NULL_HANDLE;
+	bool arrayTexture = false;
+	int layerCount_ = 0;
 
 	~VulkanGPUTexture() override {}
+
+	bool isTextureArray() const override { return arrayTexture; }
+	int getLayerCount() const override { return layerCount_; }
 
 	void destroy(VkDevice device) {
 		if (sampler != VK_NULL_HANDLE) vkDestroySampler(device, sampler, nullptr);
