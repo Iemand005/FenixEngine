@@ -35,14 +35,14 @@ namespace fe {
 
 };*/
 
+template <typename VertexType = Vertex>
 class Object {
 private:
 public:
 	ObjectState state{};
 	glm::mat4 modelMatrix;
 
-	std::vector<Mesh<>> meshes;
-	std::vector<MeshArray> meshArrays;
+	std::vector<Mesh<VertexType>> meshes;
 
 	bool isStatic = false;
 
@@ -65,11 +65,10 @@ public:
 	Object() {
 		//acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
 		state.scale = glm::vec3(1.0f);
-		meshes = std::vector<Mesh<>>();
-		meshArrays = std::vector<MeshArray>();
+		meshes = std::vector<Mesh<VertexType>>();
 	}
 
-	Object(Mesh<> mesh) : Object() {
+	Object(Mesh<VertexType> mesh) : Object() {
 		if (mesh.physicsObject) {
 			this->physicsObject = std::move(mesh.physicsObject);
 		}
