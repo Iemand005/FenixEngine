@@ -1,14 +1,9 @@
 
 #pragma once
-#include <cstdarg>
-#include <iostream>
+
 #include <memory>
-#include <thread>
-
-
 
 #include "PhysicsObject.hpp"
-#include "../Graphics/Renderer.hpp"
 
 namespace fe{
 
