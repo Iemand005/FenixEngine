@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Mesh.hpp"
+#include "Vertex	.hpp"
 
-bool fe::Mesh<>::loadObj(std::string objFilePath) {
+bool fe::Mesh<Vertex>::loadObj(std::string objFilePath) {
 //   objl::Loader objectLoader;
 
 //   bool success = objectLoader.LoadFile(objFilePath);
