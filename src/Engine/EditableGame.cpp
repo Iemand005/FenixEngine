@@ -3,7 +3,7 @@
 #include <imgui.h>
 
 #include "EditableGame.hpp"
-#include "BasicDebugRenderer.hpp"
+#include "physics/BasicDebugRenderer.hpp"
 
 
 void fe::EditableGame::OnDraw() {

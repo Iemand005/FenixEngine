@@ -1,7 +1,7 @@
 #ifndef EXCLUDE_JOLT
 
 #include <iostream>
-
+#include <cstdarg>
 
 #define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 #define JPH_DEBUG_RENDERER

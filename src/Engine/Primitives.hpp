@@ -215,7 +215,7 @@ namespace fe::Primitives {
 		return Mesh<>(vertices, indices);
 	}
 
-	glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
+	inline glm::vec3 CatmullRom(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, float t) {
 		float t2 = t * t;
 		float t3 = t2 * t;
 		return 0.5f * (

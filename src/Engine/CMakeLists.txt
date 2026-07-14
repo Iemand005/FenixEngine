@@ -17,6 +17,7 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
 set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
+set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
 
 set(EXTERNAL_DIR "../../external/")
 
