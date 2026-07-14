@@ -75,6 +75,11 @@ public:
 		fragShaderPath_ = fragPath;
 	}
 
+	void SetArrayShaderPaths(const std::string& vertPath, const std::string& fragPath) {
+		vertShaderArrayPath_ = vertPath;
+		fragShaderArrayPath_ = fragPath;
+	}
+
 	void Init(fe::IWindow *window) override {
 		this->window = window;
 		createInstance();
@@ -86,7 +91,8 @@ public:
 		createImageViews();
 		createRenderPass();
 		createDescriptorSetLayout();
-		createGraphicsPipeline();
+		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
+		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArray_);
 		createDepthResources();
 		createFramebuffers();
 		createCommandPool();
@@ -286,7 +292,10 @@ public:
 
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+		VkPipeline activePipeline = (vkBuffers->vertexFormat == VertexFormat::Array)
+			? graphicsPipelineArray_ : graphicsPipeline_;
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, activePipeline);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -374,6 +383,8 @@ private:
 
 	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
 	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
+	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
+	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
 
 	VkInstance instance_ = VK_NULL_HANDLE;
 	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
@@ -394,6 +405,7 @@ private:
 	VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
 	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
 	VkPipeline graphicsPipeline_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineArray_ = VK_NULL_HANDLE;
 
 	std::vector<VkBuffer> uniformBuffers_;
 	std::vector<VkDeviceMemory> uniformBuffersMemory_;
@@ -884,9 +896,10 @@ private:
 	// ---------------------------------------------------------------
 	// Graphics pipeline (vertex input, dynamic viewport, depth test)
 	// ---------------------------------------------------------------
-	void createGraphicsPipeline() {
-		auto vertShaderCode = readFile(vertShaderPath_);
-		auto fragShaderCode = readFile(fragShaderPath_);
+	void createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath,
+								VertexFormat format, VkPipeline& outPipeline) {
+		auto vertShaderCode = readFile(vertPath);
+		auto fragShaderCode = readFile(fragPath);
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -905,8 +918,23 @@ private:
 
 		VkPipelineShaderStageCreateInfo shaderStages[] = {vertStageInfo, fragStageInfo};
 
-		auto bindingDesc = fe::Vertex::getBindingDescription();
-		auto attributeDescs = fe::Vertex::getAttributeDescriptions();
+		VkVertexInputBindingDescription bindingDesc{};
+		std::vector<VkVertexInputAttributeDescription> attributeDescs;
+
+		if (format == VertexFormat::Array) {
+			bindingDesc.binding = 0;
+			bindingDesc.stride = sizeof(fe::VertexArray);
+			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+			attributeDescs.resize(3);
+			attributeDescs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, position)};
+			attributeDescs[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, normal)};
+			attributeDescs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, texCoord)};
+		} else {
+			bindingDesc = fe::Vertex::getBindingDescription();
+			auto stdAttrs = fe::Vertex::getAttributeDescriptions();
+			attributeDescs.assign(stdAttrs.begin(), stdAttrs.end());
+		}
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -977,15 +1005,17 @@ private:
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(glm::mat4);
 
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout_;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+		if (pipelineLayout_ == VK_NULL_HANDLE) {
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			pipelineLayoutInfo.setLayoutCount = 1;
+			pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout_;
+			pipelineLayoutInfo.pushConstantRangeCount = 1;
+			pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-		if (vkCreatePipelineLayout(device_, &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create pipeline layout.");
+			if (vkCreatePipelineLayout(device_, &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to create pipeline layout.");
+			}
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -1005,7 +1035,7 @@ private:
 		pipelineInfo.subpass = 0;
 
 		if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-									&graphicsPipeline_) != VK_SUCCESS) {
+									&outPipeline) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create graphics pipeline.");
 		}
 

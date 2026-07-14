@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "Vertex.hpp"
@@ -164,21 +165,30 @@ namespace fe {
 			}
 		}
 
-		void init() {
-			if (device_) {
-				gpuBuffers = device_->CreateGPUBuffers();
-				if (gpuBuffers) {
-					device_->UploadBuffers(gpuBuffers.get(),
-						vertices.data(), sizeof(VertexType), vertices.size(),
-						indices.data(), static_cast<uint32_t>(indices.size()),
-						VertexType::getLayout());
-				}
-			} else {
-				auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
-				glBuffers->upload(vertices, indices);
-				gpuBuffers = std::move(glBuffers);
+	void init() {
+		if (device_) {
+			gpuBuffers = device_->CreateGPUBuffers();
+			if (gpuBuffers) {
+				if constexpr (std::is_same_v<VertexType, VertexArray>)
+					gpuBuffers->vertexFormat = VertexFormat::Array;
+				else
+					gpuBuffers->vertexFormat = VertexFormat::Standard;
+
+				device_->UploadBuffers(gpuBuffers.get(),
+					vertices.data(), sizeof(VertexType), vertices.size(),
+					indices.data(), static_cast<uint32_t>(indices.size()),
+					VertexType::getLayout());
 			}
+		} else {
+			auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
+			glBuffers->upload(vertices, indices);
+			if constexpr (std::is_same_v<VertexType, VertexArray>)
+				glBuffers->vertexFormat = VertexFormat::Array;
+			else
+				glBuffers->vertexFormat = VertexFormat::Standard;
+			gpuBuffers = std::move(glBuffers);
 		}
+	}
 
 		bool loadObj(std::string objFilePath);
 
