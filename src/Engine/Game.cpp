@@ -2,12 +2,16 @@
 
 using namespace fe;
 
+Gstruct ame::Impl {
+	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
+
+}
 
 void Game::Init() {
 	SetClearColor(0.0F, 0.0F, 0.0f);
 
 #ifndef EXCLUDE_JOLT
-	this->physicsEngine = std::make_unique<PhysicsFactory>();
+	impl->physicsEngine = std::make_unique<PhysicsFactory>();
 #endif
 	
 	LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
@@ -23,6 +27,6 @@ void Game::Init() {
 
 void Game::UpdatePhysics(double deltaTime) {
 #ifndef EXCLUDE_JOLT
-	if (physicsEngine) physicsEngine->Update(deltaTime);
+	if (impl->physicsEngine) impl->physicsEngine->Update(deltaTime);
 #endif
 }

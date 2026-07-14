@@ -21,7 +21,6 @@
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
-// #include "physics/PhysicsEngine.hpp"
 #include "bases.h"
 #include "Object.hpp"
 #include "Character.hpp"
@@ -63,7 +62,8 @@ public:
 
 	bool isConnectedToServer = false;
 
-	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
+	struct Impl;
+	std::unique_ptr<Impl>;
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
