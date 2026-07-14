@@ -16,6 +16,8 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
+set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
+
 set(EXTERNAL_DIR "../../external/")
 
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
