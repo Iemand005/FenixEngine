@@ -85,7 +85,7 @@ public:
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
 
-	PhysicsEngine *GetPhysicsEngine();
+	PhysicsFactory *GetPhysicsEngine();
 
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
