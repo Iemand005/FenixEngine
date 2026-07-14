@@ -2,10 +2,15 @@
 #include "Aura.hpp"
 
 #include <vector>
+#include <stdint.h>
 
+#ifdef _WIN32
 #include <windows.h>
 #include <setupapi.h>
 #include <hidsdi.h>
+#else
+#include <hidapi/hidapi.h>
+#endif
 
 #pragma comment(lib, "hid.lib")
 #pragma comment(lib, "setupapi.lib")
@@ -13,23 +18,23 @@
 #pragma pack(push, 1)
 struct AuraInitReport
 {
-	BYTE reportId = 0x5A;
-	BYTE cmd      = 0xBC;
-	BYTE mode     = 0x01;
-	BYTE reserved[61] = { 0 };
+	uint8_t reportId = 0x5A;
+	uint8_t cmd      = 0xBC;
+	uint8_t mode     = 0x01;
+	uint8_t reserved[61] = { 0 };
 };
 
 struct AuraColorReport
 {
-	BYTE reportId     = 0x5A;
-	BYTE cmd          = 0xBC;
-	BYTE mode         = 0x01;
-	BYTE apply        = 0x01;
-	BYTE reserved1[5] = { 0 };   // bytes 4-8
-	BYTE r            = 0;
-	BYTE g            = 0;
-	BYTE b            = 0;
-	BYTE reserved2[52] = { 0 };  // pad out to 64 total
+	uint8_t reportId     = 0x5A;
+	uint8_t cmd          = 0xBC;
+	uint8_t mode         = 0x01;
+	uint8_t apply        = 0x01;
+	uint8_t reserved1[5] = { 0 };   // bytes 4-8
+	uint8_t r            = 0;
+	uint8_t g            = 0;
+	uint8_t b            = 0;
+	uint8_t reserved2[52] = { 0 };  // pad out to 64 total
 };
 #pragma pack(pop)
 
@@ -37,9 +42,9 @@ static_assert(sizeof(AuraInitReport)  == 64, "AuraInitReport must be exactly 64 
 static_assert(sizeof(AuraColorReport) == 64, "AuraColorReport must be exactly 64 bytes");
 
 struct Aura::Impl {
-	HANDLE dev = NULL;
+	void *dev = NULL;
 
-	BYTE lastR = 0, lastG = 0, lastB = 0;
+	uint8_t lastR = 0, lastG = 0, lastB = 0;
 
 	HANDLE OpenAura(USHORT vid, USHORT pid, USHORT page, USHORT usage)
 	{

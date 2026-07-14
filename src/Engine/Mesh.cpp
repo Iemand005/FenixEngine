@@ -3,7 +3,7 @@
 #include "Mesh.hpp"
 #include "Vertex.hpp"
 
-bool fe::Mesh<Vertex>::loadObj(std::string objFilePath) {
+bool fe::Mesh<fe::Vertex>::loadObj(std::string objFilePath) {
 //   objl::Loader objectLoader;
 
 //   bool success = objectLoader.LoadFile(objFilePath);
