@@ -8,8 +8,8 @@
 void fe::EditableGame::OnDraw() {
 	EditableGameBase::OnDraw();
 #ifndef EXCLUDE_JOLT
-	if (impl->physicsEngine) {
-		impl->physicsEngine->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+	if (GetPhysicsEngine()) {
+		GetPhysicsEngine()->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 #endif
 }
@@ -59,9 +59,9 @@ void fe::EditableGame::DrawDebugUI() {
 			this->player->gravityEnabled = physicsGravityEnabled;
 		}
 		if (physicsGravityEnabled) {
-			if (impl->physicsEngine) impl->physicsEngine->EnableGravity();
+			if (GetPhysicsEngine()) GetPhysicsEngine()->EnableGravity();
 		} else {
-			if (impl->physicsEngine) impl->physicsEngine->DisableGravity();
+			if (GetPhysicsEngine()) GetPhysicsEngine()->DisableGravity();
 		}
 	}
 
