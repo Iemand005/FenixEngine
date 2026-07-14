@@ -37,7 +37,7 @@ if (NOT FE_EXCLUDE_JOLT)
 else()
     add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 
-    # add_compile_definitions(EXCLUDE_JOLT)
+    add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
