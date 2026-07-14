@@ -68,20 +68,16 @@ public:
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
-	Game() : Renderer() {}
+	Game();
 
 	typedef void* (* GLADloadproc)(const char *name);
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-	Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-		Init();
-	}
+    Game(F loadProc) : Game(reinterpret_cast<GLADloadproc>(loadProc)) {}
 
-	Game(GLADloadproc loadProc) : Renderer(loadProc) {};
+	Game(GLADloadproc loadProc);
 
-	Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow) {
-		Init();
-	}
+	Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow);
 
 
 	void Init();

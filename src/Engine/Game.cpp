@@ -9,6 +9,14 @@ struct Game::Impl {
 
 };
 
+Game::Game() : Renderer() {}
+
+Game::Game(GLADloadproc loadProc) : Renderer(loadProc) {};
+
+Game::Game::Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow) {
+	Init();
+}
+
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
 
