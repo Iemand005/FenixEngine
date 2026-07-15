@@ -70,7 +70,28 @@ class OpenGLRenderDevice : public IRenderDevice {
 			glEnableVertexAttribArray(attr.location);
 		}
 
+		GLint eboAfterBind = 0;
+		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboAfterBind);
+
 		glBindVertexArray(0);
+
+		GLint eboAfterUnbind = 0;
+		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboAfterUnbind);
+
+		std::cerr << "[UploadBuffers] vao=" << glBuffers->vao
+				  << " vbo=" << glBuffers->vbo
+				  << " ebo=" << glBuffers->ebo
+				  << " verts=" << vertexCount
+				  << " indices=" << indexCount
+				  << " stride=" << vertexStride
+				  << " eboWhileVAO=" << eboAfterBind
+				  << " eboAfterUnbind=" << eboAfterUnbind
+				  << std::endl;
+
+		GLenum err = glGetError();
+		if (err != GL_NO_ERROR) {
+			std::cerr << "[GL ERROR] UploadBuffers: 0x" << std::hex << err << std::dec << std::endl;
+		}
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
@@ -89,19 +110,42 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 		const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
 
+		if (glBuffers->vao == 0) {
+			std::cerr << "[GL] DrawMesh: vao is 0! indexCount=" << glBuffers->indexCount << std::endl;
+			return;
+		}
+
+		while (glGetError() != GL_NO_ERROR) {}
+
 		glBuffers->bind(); 
+
+		GLint boundVAO = 0;
+		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &boundVAO);
+
+		GLint eboBound = 0;
+		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboBound);
+
+		GLint programLinked = 0;
+		glGetProgramiv(currentProgram, GL_LINK_STATUS, &programLinked);
+
+		GLboolean vaoValid = glIsVertexArray(static_cast<GLuint>(glBuffers->vao));
+
+		if (boundVAO != static_cast<GLint>(glBuffers->vao) || eboBound == 0 || !programLinked || !vaoValid) {
+			std::cerr << "[GL] DrawMesh STATE: vao=" << glBuffers->vao
+					  << " boundVAO=" << boundVAO
+					  << " ebo=" << eboBound
+					  << " program=" << currentProgram
+					  << " linked=" << programLinked
+					  << " vaoValid=" << vaoValid
+					  << " indexCount=" << glBuffers->indexCount
+					  << std::endl;
+		}
 
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
 			glActiveTexture(GL_TEXTURE0);
 			if (glTexture->isTextureArray()) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
-				static bool loggedTex = false;
-				if (!loggedTex) {
-					std::cerr << "[GL] DrawMesh: binding GL_TEXTURE_2D_ARRAY id=" << glTexture->textureId
-							  << " layers=" << glTexture->getLayerCount() << std::endl;
-					loggedTex = true;
-				}
 			} else {
 				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
 			}
@@ -111,7 +155,16 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 		GLenum err = glGetError();
 		if (err != GL_NO_ERROR) {
-			std::cerr << "[GL ERROR] DrawMesh: 0x" << std::hex << err << std::dec << " indexCount=" << glBuffers->indexCount << std::endl;
+			std::cerr << "[GL ERROR] DrawMesh: 0x" << std::hex << err << std::dec
+					  << " indexCount=" << glBuffers->indexCount
+					  << " vao=" << glBuffers->vao
+					  << " boundVAO=" << boundVAO
+					  << " ebo=" << eboBound
+					  << " program=" << currentProgram
+					  << " linked=" << programLinked
+					  << " vaoValid=" << vaoValid
+					  << " texArray=" << (texture && static_cast<const OpenGLGPUTexture*>(texture)->isTextureArray() ? "yes" : "no")
+					  << std::endl;
 		}
 
 		glBindVertexArray(0);
