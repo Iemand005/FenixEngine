@@ -43,13 +43,6 @@ void Renderer::RenderObject(ObjectBase& object) {
 	glm::mat4 model = object.GetModelMatrix();
 	shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
-	static int objCount = 0;
-	if (objCount < 50) {
-		std::cerr << "[RenderObject] '" << object.name << "' pos=("
-				  << object.state.position.x << "," << object.state.position.y << "," << object.state.position.z
-				  << ") meshes=" << object.GetMeshCount() << " verts=" << object.GetTotalVertexCount() << std::endl;
-		objCount++;
-	}
 	object.Render(renderDevice.get());
 }
 

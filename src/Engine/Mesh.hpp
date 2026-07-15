@@ -56,9 +56,9 @@ namespace fe {
 		Mesh() {}
 
 		Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
-			this->vertices = vertices;
-			this->indices = indices;
-			this->indexCount = indices.size();
+			this->vertices = std::move(vertices);
+			this->indices = std::move(indices);
+			this->indexCount = this->indices.size();
 			modelMatrix = glm::mat4(1.0f);
 		}
 
@@ -106,8 +106,45 @@ namespace fe {
 					return *this;
 			}
 
-		Mesh(Mesh&&) = default;
-		Mesh& operator=(Mesh&&) = default;
+		Mesh(Mesh&& other) noexcept
+			: indexCount(other.indexCount),
+			  vertices(std::move(other.vertices)),
+			  indices(std::move(other.indices)),
+			  modelMatrix(other.modelMatrix),
+			  physicsObject(std::move(other.physicsObject)),
+			  scaling(other.scaling),
+			  gpuBuffers(std::move(other.gpuBuffers)),
+			  gpuTexture(std::move(other.gpuTexture)),
+			  hasTransparency(other.hasTransparency),
+			  device_(other.device_),
+			  pendingTexturePath(std::move(other.pendingTexturePath)),
+			  pendingTextureScaling(other.pendingTextureScaling),
+			  hasPendingTexture(other.hasPendingTexture),
+			  pendingTextureArrayPaths(std::move(other.pendingTextureArrayPaths)),
+			  pendingTextureArrayScaling(other.pendingTextureArrayScaling),
+			  hasPendingTextureArray(other.hasPendingTextureArray) {}
+
+		Mesh& operator=(Mesh&& other) noexcept {
+			if (this != &other) {
+				indexCount = other.indexCount;
+				vertices = std::move(other.vertices);
+				indices = std::move(other.indices);
+				modelMatrix = other.modelMatrix;
+				physicsObject = std::move(other.physicsObject);
+				scaling = other.scaling;
+				gpuBuffers = std::move(other.gpuBuffers);
+				gpuTexture = std::move(other.gpuTexture);
+				hasTransparency = other.hasTransparency;
+				device_ = other.device_;
+				pendingTexturePath = std::move(other.pendingTexturePath);
+				pendingTextureScaling = other.pendingTextureScaling;
+				hasPendingTexture = other.hasPendingTexture;
+				pendingTextureArrayPaths = std::move(other.pendingTextureArrayPaths);
+				pendingTextureArrayScaling = other.pendingTextureArrayScaling;
+				hasPendingTextureArray = other.hasPendingTextureArray;
+			}
+			return *this;
+		}
 
 		Mesh(const Mesh& other)
 				: indexCount(other.indexCount),
@@ -142,16 +179,12 @@ namespace fe {
 
 			if (!gpuBuffers && !vertices.empty() && !indices.empty()) {
 				init();
-				std::cerr << "[Mesh] Init buffers: " << vertices.size() << " verts, " << indices.size() << " indices" << std::endl;
 			}
 
 			if (hasPendingTextureArray) {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
 					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
-					std::cerr << "[Mesh] Uploaded texture array (" << pendingTextureArrayPaths.size() << " layers)" << std::endl;
-				} else {
-					std::cerr << "[Mesh] FAILED to create GPU texture for array" << std::endl;
 				}
 				hasPendingTextureArray = false;
 			}

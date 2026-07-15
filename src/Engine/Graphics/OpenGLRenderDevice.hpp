@@ -70,34 +70,11 @@ class OpenGLRenderDevice : public IRenderDevice {
 			glEnableVertexAttribArray(attr.location);
 		}
 
-		GLint eboAfterBind = 0;
-		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboAfterBind);
-
 		glBindVertexArray(0);
-
-		GLint eboAfterUnbind = 0;
-		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboAfterUnbind);
-
-		std::cerr << "[UploadBuffers] vao=" << glBuffers->vao
-				  << " vbo=" << glBuffers->vbo
-				  << " ebo=" << glBuffers->ebo
-				  << " verts=" << vertexCount
-				  << " indices=" << indexCount
-				  << " stride=" << vertexStride
-				  << " eboWhileVAO=" << eboAfterBind
-				  << " eboAfterUnbind=" << eboAfterUnbind
-				  << std::endl;
 
 		GLenum err = glGetError();
 		if (err != GL_NO_ERROR) {
 			std::cerr << "[GL ERROR] UploadBuffers: 0x" << std::hex << err << std::dec << std::endl;
-		}
-	}
-
-	static void CheckAndLog(const char* label) {
-		GLenum e;
-		while ((e = glGetError()) != GL_NO_ERROR) {
-			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << e << std::dec << std::endl;
 		}
 	}
 
@@ -107,63 +84,28 @@ class OpenGLRenderDevice : public IRenderDevice {
 		GLint currentProgram = 0;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
 		if (currentProgram == 0) {
-			static bool logged = false;
-			if (!logged) {
-				std::cerr << "[GL] DrawMesh: no shader program bound, skipping draw" << std::endl;
-				logged = true;
-			}
 			return;
 		}
 
 		const auto* glBuffers = static_cast<const OpenGLGPUBuffers*>(buffers);
 
 		if (glBuffers->vao == 0) {
-			std::cerr << "[GL] DrawMesh: vao is 0! indexCount=" << glBuffers->indexCount << std::endl;
 			return;
 		}
 
-		while (glGetError() != GL_NO_ERROR) {}
-
 		glBuffers->bind(); 
-		CheckAndLog("after glBindVertexArray");
-
-		GLint boundVAO = 0;
-		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &boundVAO);
-
-		GLint eboBound = 0;
-		glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &eboBound);
-
-		GLint programLinked = 0;
-		glGetProgramiv(currentProgram, GL_LINK_STATUS, &programLinked);
-
-		GLint vaoValid = (int)glIsVertexArray(static_cast<GLuint>(glBuffers->vao));
-
-		if (boundVAO != static_cast<GLint>(glBuffers->vao) || eboBound == 0 || !programLinked || !vaoValid) {
-			std::cerr << "[GL] DrawMesh STATE: vao=" << glBuffers->vao
-					  << " boundVAO=" << boundVAO
-					  << " ebo=" << eboBound
-					  << " program=" << currentProgram
-					  << " linked=" << programLinked
-					  << " vaoValid=" << vaoValid
-					  << " indexCount=" << glBuffers->indexCount
-					  << std::endl;
-		}
 
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
 			glActiveTexture(GL_TEXTURE0);
-			CheckAndLog("after glActiveTexture");
 			if (glTexture->isTextureArray()) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
-				CheckAndLog(("after glBindTexture(GL_TEXTURE_2D_ARRAY, " + std::to_string(glTexture->textureId) + ")").c_str());
 			} else {
 				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
-				CheckAndLog(("after glBindTexture(GL_TEXTURE_2D, " + std::to_string(glTexture->textureId) + ")").c_str());
 			}
 		}
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
-		CheckAndLog("after glDrawElements");
 
 		glBindVertexArray(0);
 		if (texture) {

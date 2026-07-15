@@ -107,20 +107,6 @@ public:
 	}
 
 	void Render(IRenderDevice* device) override {
-		static int renderCallCount = 0;
-		if (renderCallCount < 50) {
-			std::cerr << "[Render] Object '" << name << "' meshes=" << meshes.size() << std::endl;
-			for (size_t i = 0; i < meshes.size(); ++i) {
-				auto& m = meshes[i];
-				std::cerr << "  mesh[" << i << "] vertices=" << m.vertices.size()
-						  << " indices=" << m.indices.size()
-						  << " indexCount=" << (m.gpuBuffers ? "yes" : "no")
-						  << " gpuTex=" << (m.gpuTexture ? "yes" : "no")
-						  << " hasTexArray=" << m.hasPendingTextureArray
-						  << " texPaths=" << m.pendingTextureArrayPaths.size() << std::endl;
-			}
-			renderCallCount++;
-		}
 		for (size_t i = 0; i < meshes.size(); ++i) {
 			auto& mesh = meshes[i];
 			mesh.SetDevice(device);
