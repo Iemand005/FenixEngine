@@ -94,6 +94,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 		}
 	}
 
+	static void CheckAndLog(const char* label) {
+		GLenum e;
+		while ((e = glGetError()) != GL_NO_ERROR) {
+			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << e << std::dec << std::endl;
+		}
+	}
+
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
@@ -118,6 +125,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 		while (glGetError() != GL_NO_ERROR) {}
 
 		glBuffers->bind(); 
+		CheckAndLog("after glBindVertexArray");
 
 		GLint boundVAO = 0;
 		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &boundVAO);
@@ -128,7 +136,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 		GLint programLinked = 0;
 		glGetProgramiv(currentProgram, GL_LINK_STATUS, &programLinked);
 
-		GLboolean vaoValid = glIsVertexArray(static_cast<GLuint>(glBuffers->vao));
+		GLint vaoValid = (int)glIsVertexArray(static_cast<GLuint>(glBuffers->vao));
 
 		if (boundVAO != static_cast<GLint>(glBuffers->vao) || eboBound == 0 || !programLinked || !vaoValid) {
 			std::cerr << "[GL] DrawMesh STATE: vao=" << glBuffers->vao
@@ -144,28 +152,18 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
 			glActiveTexture(GL_TEXTURE0);
+			CheckAndLog("after glActiveTexture");
 			if (glTexture->isTextureArray()) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
+				CheckAndLog(("after glBindTexture(GL_TEXTURE_2D_ARRAY, " + std::to_string(glTexture->textureId) + ")").c_str());
 			} else {
 				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
+				CheckAndLog(("after glBindTexture(GL_TEXTURE_2D, " + std::to_string(glTexture->textureId) + ")").c_str());
 			}
 		}
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
-
-		GLenum err = glGetError();
-		if (err != GL_NO_ERROR) {
-			std::cerr << "[GL ERROR] DrawMesh: 0x" << std::hex << err << std::dec
-					  << " indexCount=" << glBuffers->indexCount
-					  << " vao=" << glBuffers->vao
-					  << " boundVAO=" << boundVAO
-					  << " ebo=" << eboBound
-					  << " program=" << currentProgram
-					  << " linked=" << programLinked
-					  << " vaoValid=" << vaoValid
-					  << " texArray=" << (texture && static_cast<const OpenGLGPUTexture*>(texture)->isTextureArray() ? "yes" : "no")
-					  << std::endl;
-		}
+		CheckAndLog("after glDrawElements");
 
 		glBindVertexArray(0);
 		if (texture) {
