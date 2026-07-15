@@ -14,7 +14,7 @@ namespace fe {
 		int layerCount = 0;
 
 		~OpenGLGPUTexture() override {
-			if (textureId != 0) glDeleteTextures(1, &textureId);
+			if (textureId != 0 && !isCached) glDeleteTextures(1, &textureId);
 		}
 
 		bool isTextureArray() const override { return arrayTexture; }
@@ -45,7 +45,19 @@ namespace fe {
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) {
 			if (textureFilePaths.empty()) return false;
 
-			if (textureId != 0) glDeleteTextures(1, &textureId);
+			auto& cache = GetTextureArrayCache();
+			std::string cacheKey;
+			for (const auto& path : textureFilePaths) { cacheKey += path; cacheKey += '\0'; }
+			cacheKey += std::to_string(static_cast<int>(scaling));
+
+			auto cachedIt = cache.find(cacheKey);
+			if (cachedIt != cache.end()) {
+				textureId = cachedIt->second;
+				isCached = true;
+				arrayTexture = true;
+				layerCount = static_cast<int>(textureFilePaths.size());
+				return true;
+			}
 
 			auto firstImage = fe::ImageLoader::Load(textureFilePaths[0]);
 			if (firstImage.pixels.empty()) return false;
@@ -80,9 +92,18 @@ namespace fe {
 
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
+			cache[cacheKey] = textureId;
 			arrayTexture = true;
 			layerCount = layers;
 			return true;
 		}
+
+		static std::unordered_map<std::string, unsigned int>& GetTextureArrayCache() {
+			static std::unordered_map<std::string, unsigned int> cache;
+			return cache;
+		}
+
+	private:
+		bool isCached = false;
 	};
 }
