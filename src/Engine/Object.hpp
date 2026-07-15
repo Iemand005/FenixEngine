@@ -48,7 +48,7 @@ public:
 	virtual ~ObjectBase() = default;
 
 	virtual void Update(double deltaTime) {
-		if (this->physicsObject) {
+		if (this->physicsObject && !this->isStatic) {
 			auto s = this->physicsObject->SyncToRender();
 			this->state = s;
 		}

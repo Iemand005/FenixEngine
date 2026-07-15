@@ -93,6 +93,7 @@ namespace fe {
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
 			cache[cacheKey] = textureId;
+			isCached = true;
 			arrayTexture = true;
 			layerCount = layers;
 			return true;
