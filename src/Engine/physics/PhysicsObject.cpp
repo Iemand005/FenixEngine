@@ -313,7 +313,8 @@ ObjectState PhysicsObject::SyncToRender() {
 	ObjectState state;
 	state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
 	state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
-	// state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
+	state.scale = glm::vec3(1.0f);
+	// state.rotationY = glm::vec3(x.GetY(), y.GetY(), y.GetY());
 	// state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
 	state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
 	return state;
