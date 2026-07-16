@@ -5,7 +5,7 @@
 
 using namespace fe;
 
-OpenVR::Init() {
+void OpenVR::Init() {
 	std::cout << "Initializing OpenVR..." << std::endl;
 
 	vr::EVRInitError initError = vr::VRInitError_None;
@@ -22,6 +22,6 @@ OpenVR::Init() {
     std::cout << "Successfully connected to SteamVR!" << std::endl;
 }
 
-OpenVR::Shutdown() {
+void OpenVR::Shutdown() {
 	vr::VR_Shutdown();
 }
