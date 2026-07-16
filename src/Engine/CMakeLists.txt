@@ -16,7 +16,7 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-set(EXTERNAL_DIR "../../external/")
+set(EXTERNAL_DIR "../../external")
 
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
@@ -24,7 +24,7 @@ set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 find_package(Vulkan REQUIRED)
 
 # if(NOT FE_EXCLUDE_GLFW)
-    add_subdirectory(../../external/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
+    add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 # endif()
 if (NOT FE_EXCLUDE_JOLT)
     set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
@@ -33,13 +33,15 @@ if (NOT FE_EXCLUDE_JOLT)
         # Disable precompiled headers for external Jolt to avoid /FI empty-argument issues
         set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE BOOL "Disable precompiled headers for subprojects" FORCE)
     endif()
-    add_subdirectory(../../external/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
+    add_subdirectory(${EXTERNAL_DIR}/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 else()
     add_compile_definitions(EXCLUDE_JOLT)
 endif()
-add_subdirectory(../../external/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
-add_subdirectory(../../external/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
-add_subdirectory(../../external/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
+add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
+add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
+add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
+
+add_subdirectory(${EXTERNAL_DIR}/openvr) 
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
 if(MSVC AND TARGET Jolt)
