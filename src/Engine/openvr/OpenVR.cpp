@@ -43,10 +43,20 @@ void OpenVR::InitOverlay() {
         return;
     }
 
-    vrOverlay->SetOverlayWidthInMeters(handle, 1.5f);
+    vrOverlay->SetOverlayWidthInMeters(handle, 2.0f);
+
+    vr::HmdMatrix34_t transform = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, -0.5f,
+        0.0f, 0.0f, 1.0f, -3.0f
+    };
+    vrOverlay->SetOverlayTransformTrackedDeviceRelative(handle, vr::TrackedDeviceIndex_Hmd, &transform);
+
+    vrOverlay->SetOverlayFlag(handle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
+
     vrOverlay->ShowOverlay(handle);
 
-    std::cout << "Overlay successfully registered and visible in SteamVR!" << std::endl;
+    std::cout << "Overlay registered — 3m in front of HMD, 0.5m below eye level." << std::endl;
 }
 
 void OpenVR::CreateOverlayTexture(int width, int height) {
