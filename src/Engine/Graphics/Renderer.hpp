@@ -244,6 +244,8 @@ template<typename WindowT = DefaultWindow>
 
 		DrawUI();
 
+		OnPreSwap();
+
 		renderDevice->SubmitFrame();
 
 		fpsCounter.update();
@@ -272,6 +274,7 @@ template<typename WindowT = DefaultWindow>
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
 	virtual void OnDraw() {}
+	virtual void OnPreSwap() {}
 
 	void EnableWireframe();
 	void DisableWireframe();
