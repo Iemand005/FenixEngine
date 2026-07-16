@@ -41,7 +41,7 @@ add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
 add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
 
-add_subdirectory(${EXTERNAL_DIR}/openvr) 
+add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr) 
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
 if(MSVC AND TARGET Jolt)
