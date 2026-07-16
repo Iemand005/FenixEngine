@@ -5,6 +5,7 @@
 
 using namespace fe;
 
+void LogError(initError)
 
 OpenVR::Init() {
 	std::cout << "Initializing OpenVR..." << std::endl;
