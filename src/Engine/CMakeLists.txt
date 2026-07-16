@@ -144,13 +144,6 @@ if(NOT FE_EXCLUDE_JOLT)
     )
 endif()
 
-# target_link_libraries(Engine PRIVATE
-#     gdi32
-#     opengl32
-#     shell32
-#     user32
-#     gdi32
-# )
 
 if(NOT FE_EXCLUDE_JOLT)
     add_compile_definitions(JPH_DEBUG_RENDERER)
@@ -192,6 +185,11 @@ endif()
 # TODO: Make the engine only include kiss if audio visualizer engine is requested
 target_link_libraries(Engine PRIVATE
     kissfft::kissfft-float
+)
+
+# TODO: same for openVR
+target_link_libraries(Engine PRIVATE
+    OpenVR
 )
 
 if(NOT FE_EXCLUDE_GLFW)
