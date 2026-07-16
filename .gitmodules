@@ -22,3 +22,6 @@
 [submodule "external/kissfft"]
 	path = external/kissfft
 	url = https://github.com/Iemand005/kissfft.git
+[submodule "external/openvr"]
+	path = external/openvr
+	url = https://github.com/valvesoftware/openvr
