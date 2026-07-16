@@ -350,6 +350,49 @@ namespace fe::Primitives {
 		return Mesh<>(vertices, indices);
 	}
 
+	inline Mesh<> GenerateSphere(float radius = 1.0f, int sectorCount = 36, int stackCount = 18) {
+		const float PI = 3.14159265359f;
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		for (int stack = 0; stack <= stackCount; stack++) {
+			float phi = PI * stack / stackCount;
+			float v = (float)stack / stackCount;
+
+			for (int sector = 0; sector <= sectorCount; sector++) {
+				float theta = 2.0f * PI * sector / sectorCount;
+				float u = (float)sector / sectorCount;
+
+				float x = radius * sin(phi) * cos(theta);
+				float y = radius * cos(phi);
+				float z = radius * sin(phi) * sin(theta);
+
+				float nx = sin(phi) * cos(theta);
+				float ny = cos(phi);
+				float nz = sin(phi) * sin(theta);
+
+				vertices.push_back(Vertex(x, y, z, nx, ny, nz, u, v));
+			}
+		}
+
+		for (int stack = 0; stack < stackCount; stack++) {
+			for (int sector = 0; sector < sectorCount; sector++) {
+				int current = stack * (sectorCount + 1) + sector;
+				int next = current + sectorCount + 1;
+
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
+
+		return Mesh<>(vertices, indices);
+	}
+
 	inline glm::vec3 GetPositionAlongPath(const std::vector<glm::vec3>& path, float progress) {
 		progress = glm::clamp(progress, 0.0f, 1.0f);
 
