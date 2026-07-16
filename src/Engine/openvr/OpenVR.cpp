@@ -8,11 +8,9 @@ const char* OVERLAY_NAME = "Fenix Engine Overlay";
 
 using namespace fe;
 
-void OpenVR::Init() {
-	std::cout << "Initializing OpenVR..." << std::endl;
-
-	vr::EVRInitError initError = vr::VRInitError_None;
-    vr::IVRSystem* vrSystem = vr::VR_Init(&initError, vr::VRApplication_Overlay);
+void InitAs(vr::EVRApplicationType type) {
+    vr::EVRInitError initError = vr::VRInitError_None;
+    vr::IVRSystem* vrSystem = vr::VR_Init(&initError, type);
 
 	if (initError != vr::VRInitError_None) {
         std::cout << "OpenVR Init Failed! Error code: " 
@@ -25,7 +23,16 @@ void OpenVR::Init() {
     std::cout << "Successfully connected to SteamVR!" << std::endl;
 }
 
+void OpenVR::Init() {
+	std::cout << "Initializing OpenVR..." << std::endl;
+
+	// InitAs(vr::VRApplication_Overlay);
+}
+
 void OpenVR::InitOverlay() {
+
+    InitAs(vr::VRApplication_Overlay);
+
 	vr::IVROverlay* vrOverlay = vr::VROverlay();
     if (!vrOverlay) {
         std::cout << "Could not get IVROverlay interface!" << std::endl;
