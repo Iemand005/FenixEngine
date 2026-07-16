@@ -134,6 +134,8 @@ target_include_directories(Engine PUBLIC
     ../../external/imgui
 
     ../../external/glfw/include
+
+    ${EXTERNAL_DIR}/openvr/headers
 )
 
 if(NOT FE_EXCLUDE_JOLT)
