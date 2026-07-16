@@ -189,7 +189,7 @@ target_link_libraries(Engine PRIVATE
 
 # TODO: same for openVR
 target_link_libraries(Engine PRIVATE
-    OpenVR
+    openvr_api
 )
 
 if(NOT FE_EXCLUDE_GLFW)
