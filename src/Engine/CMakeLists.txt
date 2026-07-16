@@ -116,7 +116,8 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_draw.cpp
 )
 
-add_library(Engine STATIC ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+add_library(Engine STATIC ${SOURCE_FILES} ${IMGUI_SOURCE_FILES}
+  openvr/OpenVR.cpp)
 
 
 
