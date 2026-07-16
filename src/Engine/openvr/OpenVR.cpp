@@ -16,7 +16,7 @@ void OpenVR::Init() {
                   << vr::VR_GetVRInitErrorAsEnglishDescription(initError) 
                   << std::endl;
         std::cout << "Note: Make sure SteamVR is installed and running." << std::endl;
-        return 1;
+        return;
     }
 
     std::cout << "Successfully connected to SteamVR!" << std::endl;
