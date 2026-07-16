@@ -24,18 +24,18 @@ set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 find_package(Vulkan REQUIRED)
 
 # if(NOT FE_EXCLUDE_GLFW)
-    add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
+	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 # endif()
 if (NOT FE_EXCLUDE_JOLT)
-    set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
-    set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
-    if(MSVC)
-        # Disable precompiled headers for external Jolt to avoid /FI empty-argument issues
-        set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE BOOL "Disable precompiled headers for subprojects" FORCE)
-    endif()
-    add_subdirectory(${EXTERNAL_DIR}/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
+	set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
+	set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
+	if(MSVC)
+		# Disable precompiled headers for external Jolt to avoid /FI empty-argument issues
+		set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON CACHE BOOL "Disable precompiled headers for subprojects" FORCE)
+	endif()
+	add_subdirectory(${EXTERNAL_DIR}/JoltPhysics/Build ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/jolt)
 else()
-    add_compile_definitions(EXCLUDE_JOLT)
+	add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
@@ -45,60 +45,60 @@ add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
 if(MSVC AND TARGET Jolt)
-  set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.c
+	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/*.c
 )
 
 
 add_library(Renderer STATIC
-    glad/glad.c
-    Graphics/Renderer.cpp
-    window/SDLWindow.cpp
-    window/GLFW3Window.cpp
+	glad/glad.c
+	Graphics/Renderer.cpp
+	window/SDLWindow.cpp
+	window/GLFW3Window.cpp
 )
 
 target_include_directories(Renderer PRIVATE
-    ../../include
+	../../include
 )
 
 target_include_directories(Renderer PUBLIC
-    ../../external/glm
+	../../external/glm
 )
 
 
 if(WIN32)
-    target_link_libraries(Renderer PRIVATE gdi32 opengl32 shell32 user32)
+	target_link_libraries(Renderer PRIVATE gdi32 opengl32 shell32 user32)
 elseif(APPLE)
-    target_link_libraries(Renderer PRIVATE "-framework OpenGL")
+	target_link_libraries(Renderer PRIVATE "-framework OpenGL")
 else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(Renderer PRIVATE OpenGL::GL)
+	find_package(OpenGL REQUIRED)
+	target_link_libraries(Renderer PRIVATE OpenGL::GL)
 
-    find_package(X11 REQUIRED)
+	find_package(X11 REQUIRED)
 
-    target_link_libraries(Renderer PRIVATE
-        X11::X11
-    )
+	target_link_libraries(Renderer PRIVATE
+		X11::X11
+	)
 endif()
 
 
 target_link_libraries(Renderer PUBLIC
-    glfw
-    SDL3::SDL3
+	glfw
+	SDL3::SDL3
 
-    Vulkan::Vulkan
+	Vulkan::Vulkan
 )
 
 if(MSVC)
-    target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
+	target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-    target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+	target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 else()
-    target_compile_options(Renderer PRIVATE -g)
+	target_compile_options(Renderer PRIVATE -g)
 endif()
 
 set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
@@ -117,74 +117,74 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 )
 
 add_library(Engine STATIC ${SOURCE_FILES} ${IMGUI_SOURCE_FILES}
-  openvr/OpenVR.cpp)
+openvr/OpenVR.cpp)
 
 
 
 if(FE_EXCLUDE_GLFW)
-    target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
+	target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
 endif()
 
 target_include_directories(Engine PRIVATE
-    ../../include
+	../../include
 )
 
 target_include_directories(Engine PUBLIC
-    ../../external/glm
-    ../../external/imgui
+	../../external/glm
+	../../external/imgui
 
-    ../../external/glfw/include
+	../../external/glfw/include
 
-    ${EXTERNAL_DIR}/openvr/headers
+	${EXTERNAL_DIR}/openvr/headers
 )
 
 if(NOT FE_EXCLUDE_JOLT)
-    target_include_directories(Engine PUBLIC
-        ../../external/JoltPhysics
-    )
+	target_include_directories(Engine PUBLIC
+		../../external/JoltPhysics
+	)
 endif()
 
 
 if(NOT FE_EXCLUDE_JOLT)
-    add_compile_definitions(JPH_DEBUG_RENDERER)
+	add_compile_definitions(JPH_DEBUG_RENDERER)
 endif()
 
 if(WIN32)
-    target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
+	target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
 elseif(APPLE)
-    target_link_libraries(Engine PRIVATE "-framework OpenGL")
+	target_link_libraries(Engine PRIVATE "-framework OpenGL")
 else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(Engine PRIVATE OpenGL::GL)
+	find_package(OpenGL REQUIRED)
+	target_link_libraries(Engine PRIVATE OpenGL::GL)
 
-    find_package(X11 REQUIRED)
+	find_package(X11 REQUIRED)
 
-    target_link_libraries(Engine PRIVATE
-        X11::X11
-    )
+	target_link_libraries(Engine PRIVATE
+		X11::X11
+	)
 
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
 
-    target_link_libraries(Engine INTERFACE ${HIDAPI_LIBRARIES})
-    target_include_directories(Engine PUBLIC ${HIDAPI_INCLUDE_DIRS})
+	target_link_libraries(Engine INTERFACE ${HIDAPI_LIBRARIES})
+	target_include_directories(Engine PUBLIC ${HIDAPI_INCLUDE_DIRS})
 
 endif()
 
 
 target_link_libraries(Engine PUBLIC
-    Renderer
-    SDL3::SDL3
-    OpenXR::openxr_loader
+	Renderer
+	SDL3::SDL3
+	OpenXR::openxr_loader
 )
 
 if(NOT FE_EXCLUDE_JOLT)
-    target_link_libraries(Engine PUBLIC Jolt::Jolt)
+	target_link_libraries(Engine PUBLIC Jolt::Jolt)
 endif()
 
 # TODO: Make the engine only include kiss if audio visualizer engine is requested
 target_link_libraries(Engine PRIVATE
-    kissfft::kissfft-float
+	kissfft::kissfft-float
 )
 
 # TODO: same for openVR
@@ -194,32 +194,33 @@ target_link_libraries(Engine PRIVATE
 target_include_directories(Engine PRIVATE "${EXTERNAL_DIR}/openvr/headers")
 
 if(WIN32)
-    target_link_libraries(Engine PRIVATE openvr_api)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
-    else()
-        set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
-    endif()
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+		target_link_libraries(Engine PRIVATE openvr_api64)
+		set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
+	else()
+		target_link_libraries(Engine PRIVATE openvr_api)
+		set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
+	endif()
 
-    # add_custom_command(TARGET Engine POST_BUILD
-    #     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    #     "${OPENVR_DLL}"
-    #     "$<TARGET_FILE_DIR:Engine>"
-    # )
+	# add_custom_command(TARGET Engine POST_BUILD
+	#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	#     "${OPENVR_DLL}"
+	#     "$<TARGET_FILE_DIR:Engine>"
+	# )
 endif()
 # END OPENV
 
 if(NOT FE_EXCLUDE_GLFW)
-    target_link_libraries(Engine PUBLIC glfw)
+	target_link_libraries(Engine PUBLIC glfw)
 endif()
 
 
 if(MSVC)
-    target_compile_options(Engine PRIVATE $<$<CONFIG:Debug>:/Zi>)
+	target_compile_options(Engine PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
-    target_link_options(Engine PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+	target_link_options(Engine PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 else()
-    target_compile_options(Engine PRIVATE -g)
+	target_compile_options(Engine PRIVATE -g)
 endif()
 
 target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)
