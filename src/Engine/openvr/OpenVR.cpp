@@ -22,6 +22,33 @@ void OpenVR::Init() {
     std::cout << "Successfully connected to SteamVR!" << std::endl;
 }
 
+void OpenVR::InitOverlay() {
+	vr::IVROverlay* vrOverlay = vr::VROverlay();
+    if (!vrOverlay) {
+        std::cout << "Could not get IVROverlay interface!" << std::endl;
+        vr::VR_Shutdown();
+        return;
+    }
+
+    vr::VROverlayHandle_t overlayHandle;
+    vr::EVROverlayError overlayError = vr::VROverlay()->CreateOverlay(OVERLAY_KEY, OVERLAY_NAME, &overlayHandle);
+    
+    if (overlayError != vr::VROverlayError_None) {
+        std::cout << "Failed to create overlay handle!" << std::endl;
+        vr::VR_Shutdown();
+        return;
+    }
+
+    vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
+    vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
+    
+    vrOverlay->SetOverlayWidthInMeters(overlayHandle, 1.5f);
+
+    vrOverlay->ShowOverlay(overlayHandle);
+
+    std::cout << "Overlay successfully registered and visible in SteamVR!" << std::endl;
+}
+
 void OpenVR::Shutdown() {
 	vr::VR_Shutdown();
 }
