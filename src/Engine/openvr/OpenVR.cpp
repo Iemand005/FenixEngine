@@ -9,7 +9,7 @@ void OpenVR::Init() {
 	std::cout << "Initializing OpenVR..." << std::endl;
 
 	vr::EVRInitError initError = vr::VRInitError_None;
-    vr::IVRSystem* vrSystem = vr::VR_Init(&initError, vr::VRApplication_Scene);
+    vr::IVRSystem* vrSystem = vr::VR_Init(&initError, vr::VRApplication_Overlay);
 
 	if (initError != vr::VRInitError_None) {
         std::cout << "OpenVR Init Failed! Error code: " 
