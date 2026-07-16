@@ -1,16 +1,12 @@
 #pragma once
 
 #include <glad/glad.h>
-
-namespace vr {
-	struct VROverlayHandle_t_;
-	typedef uint64_t VROverlayHandle_t;
-}
+#include <cstdint>
 
 namespace fe {
 	class OpenVR {
 	public:
-		vr::VROverlayHandle_t overlayHandle;
+		uint64_t overlayHandle = 0;
 		GLuint overlayFbo = 0;
 		GLuint overlayTexture = 0;
 		GLuint overlayDepth = 0;

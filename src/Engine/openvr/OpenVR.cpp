@@ -45,6 +45,8 @@ void OpenVR::InitOverlay() {
 
     // vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
     // vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
+
+	// vr::VROverlay()->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_SideBySide_Parallel, true);
     
     vrOverlay->SetOverlayWidthInMeters(overlayHandle, 1.5f);
 
