@@ -194,12 +194,11 @@ target_link_libraries(Engine PRIVATE
 target_include_directories(Engine PRIVATE "${EXTERNAL_DIR}/openvr/headers")
 
 if(WIN32)
+    target_link_libraries(Engine PRIVATE openvr_api)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        target_link_libraries(Engine PRIVATE "${EXTERNAL_DIR}/openvr/lib/win64/openvr_api")
-        set(OPENVR_DLL "${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
+        set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
     else()
-        target_link_libraries(Engine PRIVATE "${EXTERNAL_DIR}/openvr/lib/win32/openvr_api")
-        set(OPENVR_DLL "${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
+        set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
     endif()
 
     # add_custom_command(TARGET Engine POST_BUILD
