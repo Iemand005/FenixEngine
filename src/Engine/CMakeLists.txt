@@ -191,28 +191,24 @@ target_link_libraries(Engine PRIVATE
 # target_link_libraries(Engine PRIVATE
 #     openvr_api
 # )
-target_include_directories(MyVRExe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/headers")
+target_include_directories(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/headers")
 
-# 2. Link naar de juiste voorgecompileerde .lib op basis van je architectuur (Windows)
 if(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        # 64-bit Windows
-        target_link_libraries(MyVRExe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/lib/win64/openvr_api.lib")
+        target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/lib/win64/openvr_api.lib")
         set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/bin/win64/openvr_api.dll")
     else()
-        # 32-bit Windows
-        target_link_libraries(MyVRExe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/lib/win32/openvr_api.lib")
+        target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/lib/win32/openvr_api.lib")
         set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/external/openvr/bin/win32/openvr_api.dll")
     endif()
 
-    # 3. Kopieer de DLL automatisch naar de executable folder na het bouwen
-    add_custom_command(TARGET MyVRExe POST_BUILD
+    add_custom_command(TARGET Engine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${OPENVR_DLL}"
-        "$<TARGET_FILE_DIR:MyVRExe>"
+        "$<TARGET_FILE_DIR:Engine>"
     )
 endif()
-# END OPENXR
+# END OPENV
 
 if(NOT FE_EXCLUDE_GLFW)
     target_link_libraries(Engine PUBLIC glfw)
