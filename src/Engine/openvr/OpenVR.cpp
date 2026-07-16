@@ -50,9 +50,14 @@ void OpenVR::InitOverlay() {
         0.0f, 1.0f, 0.0f, -0.5f,
         0.0f, 0.0f, 1.0f, -3.0f
     };
-    vrOverlay->SetOverlayTransformTrackedDeviceRelative(handle, vr::TrackedDeviceIndex_Hmd, &transform);
+    vrOverlay->SetOverlayTransformTrackedDeviceRelative(handle, vr::k_unTrackedDeviceIndex_Hmd, &transform);
 
-    vrOverlay->SetOverlayFlag(handle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
+    vrOverlay->SetOverlayFlag(handle, vr::VROverlayFlags_VisibleInDashboard, true);
+
+    if (overlayTexture) {
+        vr::Texture_t vrTex = {(void*)(uintptr_t)overlayTexture, vr::TextureType_OpenGL, vr::ColorSpace_Gamma};
+        vr::VROverlay()->SetOverlayTexture(handle, &vrTex);
+    }
 
     vrOverlay->ShowOverlay(handle);
 
