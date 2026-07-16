@@ -3,7 +3,11 @@
 
 #include "OpenVR.hpp"
 
+const char* OVERLAY_KEY = "be.lasse.fenixoverlay";
+const char* OVERLAY_NAME = "Fenix Engine Overlay";
+
 using namespace fe;
+
 
 void OpenVR::Init() {
 	std::cout << "Initializing OpenVR..." << std::endl;
@@ -39,8 +43,8 @@ void OpenVR::InitOverlay() {
         return;
     }
 
-    vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
-    vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
+    // vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_MakeVisibleToDashboard, true);
+    // vrOverlay->SetOverlayFlag(overlayHandle, vr::VROverlayFlags_SendVRDiscreteScrollEvents, true);
     
     vrOverlay->SetOverlayWidthInMeters(overlayHandle, 1.5f);
 
