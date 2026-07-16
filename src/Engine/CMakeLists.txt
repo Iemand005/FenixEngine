@@ -202,11 +202,11 @@ if(WIN32)
         set(OPENVR_DLL "${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
     endif()
 
-    add_custom_command(TARGET Engine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${OPENVR_DLL}"
-        "$<TARGET_FILE_DIR:Engine>"
-    )
+    # add_custom_command(TARGET Engine POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #     "${OPENVR_DLL}"
+    #     "$<TARGET_FILE_DIR:Engine>"
+    # )
 endif()
 # END OPENV
 
