@@ -126,7 +126,7 @@ PhysicsFactory::PhysicsFactory(bool enableDebugRenderer) {
 	impl->object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
 	impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
 
-	impl->physicsSystem->Init(65536, 0, 65536, 65536, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
+	impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
 
 	if (enableDebugRenderer) {
 		impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
