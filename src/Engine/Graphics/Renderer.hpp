@@ -60,7 +60,7 @@ namespace fe {
 
 	struct RendererOptions : WindowOptions {
 		bool useVulkan = true;
-		
+
 		RendererOptions() = default; 
 
 		RendererOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen) {}
@@ -112,13 +112,14 @@ public:
 	Renderer(GLADloadproc loadProc);
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
+		CreateRenderDevice(false);
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 		
 	}
 
 	Renderer(RendererOptions options) {
-		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
 		CreateRenderDevice(options.useVulkan);
+		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
 	}
 
 	void CreateRenderDevice(bool useVulkan = false) {
