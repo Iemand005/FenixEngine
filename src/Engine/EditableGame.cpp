@@ -26,6 +26,12 @@ void fe::EditableGame::DrawDebugUI() {
 
 	ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+	glm::vec3 cp = camera->GetPos();
+	float p[3] = {cp.x, cp.y, cp.z};
+	if (ImGui::DragFloat3("Camera Pos", p))
+		camera->SetPos(glm::vec3(p[0], p[1], p[2]));
+
 	ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
 	size_t totalVertices = 0;
 	for (auto& obj : this->scene->GetObjects()) totalVertices += obj->GetTotalVertexCount();
