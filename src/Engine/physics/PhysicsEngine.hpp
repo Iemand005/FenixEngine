@@ -13,7 +13,7 @@ namespace fe{
 		struct Impl;
 		std::unique_ptr<Impl> impl;
 
-		PhysicsFactory();
+		PhysicsFactory(bool enableDebugRenderer = true);
 		~PhysicsFactory();
 
 

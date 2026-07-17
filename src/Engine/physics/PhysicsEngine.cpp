@@ -106,7 +106,7 @@ struct PhysicsFactory::Impl {
 };
 
 // MAYBE TODO: uh maybe perhaps uh rename this calss to uh physicsfactory or soemthing? it's a facture more than a engine really
-PhysicsFactory::PhysicsFactory() {
+PhysicsFactory::PhysicsFactory(bool enableDebugRenderer) {
 #ifndef EXCLUDE_JOLT
 	impl = std::make_unique<Impl>();
 
@@ -117,7 +117,6 @@ PhysicsFactory::PhysicsFactory() {
 	Factory::sInstance = new Factory();
 	RegisterTypes();
 
-	// Create heap-allocated members
 	impl->temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
 	impl->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
@@ -129,8 +128,10 @@ PhysicsFactory::PhysicsFactory() {
 
 	impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
 
-	impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
-	JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
+	if (enableDebugRenderer) {
+		impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
+		JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
+	}
 
 	EnableGravity();
 
