@@ -1,8 +1,0 @@
-  File: /home/lasse/Documents/Archivel et me see your boty do the hubuhbubuh base down low!.7z
-  Size: 53935992  	Blocks: 105352     IO Block: 4096   regular file
-Device: 259,4	Inode: 4588207     Links: 1
-Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
-Access: 2026-07-17 12:18:08.640464395 +0200
-Modify: 2026-06-25 23:37:18.088685500 +0200
-Change: 2026-07-17 12:13:19.749406311 +0200
- Birth: 2026-06-25 23:35:25.995491062 +0200

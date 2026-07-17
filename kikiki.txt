@@ -1,8 +1,0 @@
-  File: /home/lasse/Downloads/steam_latest(1).deb
-  Size: 20297688  	Blocks: 39648      IO Block: 4096   regular file
-Device: 259,4	Inode: 3991684     Links: 1
-Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
-Access: 2026-07-17 12:17:51.756461923 +0200
-Modify: 2026-06-23 18:52:40.382069824 +0200
-Change: 2026-06-23 18:52:41.218073750 +0200
- Birth: 2026-06-23 18:52:39.239064468 +0200
