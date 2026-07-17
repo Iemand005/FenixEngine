@@ -58,8 +58,8 @@ using DefaultWindow = fe::GLFW3Window;
 
 namespace fe {
 
-	struct RendeerOptions {
-		useVulkan;
+	struct RendererOptions {
+		bool useVulkan = true;
 	};
 
 class Renderer {
@@ -113,6 +113,8 @@ public:
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
 		renderDevice->Init(window.get());
 	}
+
+	Renderer(RendererOptions options) : jo {}
 
 
 	void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
