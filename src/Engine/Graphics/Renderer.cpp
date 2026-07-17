@@ -40,25 +40,24 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 }
 
 void Renderer::RenderObject(ObjectBase& object) {
-	if (!shader) return;
 	glm::mat4 model = object.GetModelMatrix();
-	shader->SetMat4("model", model);
+	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
 	object.Render(renderDevice.get());
 }
 
 void Renderer::RenderScene(Scene *scene) {
-	if (!shader) return;
-
-	int count = scene->GetLightCount();
-	auto pointLights = scene->GetLights();
-	shader->SetInt("lightCount", count);
-	for (int i = 0; i < count; ++i) {
-		const auto& l = pointLights[i];
-		shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-		shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-		shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-		shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+	if (shader) {
+		int count = scene->GetLightCount();
+		auto pointLights = scene->GetLights();
+		shader->SetInt("lightCount", count);
+		for (int i = 0; i < count; ++i) {
+			const auto& l = pointLights[i];
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+		}
 	}
 
 	renderDevice->BeginFrame();

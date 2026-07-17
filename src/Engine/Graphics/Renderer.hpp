@@ -236,27 +236,21 @@ template<typename WindowT = DefaultWindow>
 		if (!useVulkan && !shader) return;
 
 		Clear();
-		CheckErrors("Redraw:after-Clear");
 
 		if (shader) {
 			shader->Use();
-			CheckErrors("Redraw:after-Use");
-
 			float elapsedTime = (float)window->GetTime();
 			shader->SetFloat("time", elapsedTime);
-
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
-			renderDevice->SetMat4("view", camera->GetViewMatrix());
-			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
-			CheckErrors("Redraw:after-Uniforms");
-
-			RenderScene();
-			CheckErrors("Redraw:after-RenderScene");
 		}
 
+		renderDevice->SetMat4("view", camera->GetViewMatrix());
+		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+
+		RenderScene();
+
 		OnDraw();
-		CheckErrors("Redraw:after-OnDraw");
 
 		DrawUI();
 
