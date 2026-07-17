@@ -97,7 +97,9 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
-	if (!IsWayland())
+	bool forceX11 = true;
+
+	if (!IsWayland() || forceX11)
 		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		std::cout << "Failed to initialize video driver uhm" << std::endl;

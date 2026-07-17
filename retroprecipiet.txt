@@ -1,0 +1,40 @@
+  File: /home/lasse/Downloads/SmartLauncher_latest.apk
+  Size: 21052011  	Blocks: 41120      IO Block: 4096   regular file
+Device: 259,4	Inode: 4030295     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
+Access: 2026-07-17 12:17:52.239462063 +0200
+Modify: 2025-09-12 03:24:11.480685128 +0200
+Change: 2025-09-12 03:24:11.693687236 +0200
+ Birth: 2025-09-12 03:24:02.230579969 +0200
+  File: /home/lasse/Downloads/discord.com_Archive [25-05-13 03-18-16] feel those feelings again.har
+  Size: 18435081  	Blocks: 36008      IO Block: 4096   regular file
+Device: 259,4	Inode: 3967013     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
+Access: 2026-07-17 13:37:22.088044691 +0200
+Modify: 2025-05-13 03:18:22.052285164 +0200
+Change: 2025-05-13 03:18:22.067285304 +0200
+ Birth: 2025-05-13 03:18:22.052285164 +0200
+  File: /home/lasse/Downloads/discord.com_Archive [25-07-03 00-12-39] balzi.har
+  Size: 18230296  	Blocks: 35608      IO Block: 4096   regular file
+Device: 259,4	Inode: 4022085     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
+Access: 2026-07-17 12:17:50.992461695 +0200
+Modify: 2025-07-03 00:12:44.228805859 +0200
+Change: 2025-07-03 00:12:44.235472633 +0200
+ Birth: 2025-07-03 00:12:44.228805859 +0200
+  File: /home/lasse/Downloads/discord.com_Archive [25-05-13 03-45-16] I see your mistakes.har
+  Size: 17842899  	Blocks: 34856      IO Block: 4096   regular file
+Device: 259,4	Inode: 3967745     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
+Access: 2026-07-17 12:17:53.515462413 +0200
+Modify: 2025-05-13 03:45:23.245067277 +0200
+Change: 2025-05-13 03:45:23.260067397 +0200
+ Birth: 2025-05-13 03:45:23.244067269 +0200
+  File: /home/lasse/Downloads/discord.com_Archive [25-05-13 03-15-37] lalalal like you used to have.har
+  Size: 16056019  	Blocks: 31360      IO Block: 4096   regular file
+Device: 259,4	Inode: 3966922     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/   lasse)   Gid: ( 1000/   lasse)
+Access: 2026-07-17 13:36:53.254859627 +0200
+Modify: 2025-05-13 03:15:44.455810250 +0200
+Change: 2025-05-13 03:15:44.465810344 +0200
+ Birth: 2025-05-13 03:15:44.455810250 +0200
