@@ -281,7 +281,10 @@ XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow, bool showW
 
 XRGame::XRGame(GLADloadproc loadProc) : Game(loadProc), impl(std::make_unique<Impl>()) {}
 
-XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options) {}
+XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options) {
+  this->drawWindow = drawWindow;
+  if (launchVR) LaunchVR();
+}
 
 XRGame::~XRGame() {
   Destroy();
