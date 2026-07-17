@@ -117,7 +117,8 @@ public:
 	}
 
 	void CreateRenderDevice(bool useVulkan = false) {
-		if () return;
+		if (renderDevice) return; // TODO: throwerror?kaykay
+		
 		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
