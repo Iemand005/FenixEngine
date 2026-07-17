@@ -41,6 +41,9 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 
 void Renderer::RenderObject(ObjectBase& object) {
 	glm::mat4 model = object.GetModelMatrix();
+	glm::vec3 objPos = glm::vec3(model[3]);
+	if (glm::dot(objPos - camera->GetPos(), camera->front) < 0.0f)
+		return;
 	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
 	object.Render(renderDevice.get());
