@@ -60,6 +60,7 @@ void Renderer::RenderScene(Scene *scene) {
 		shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
 	}
 
+	renderDevice->BeginFrame();
 	for (auto& object : scene->GetObjects()) {
 		RenderObject(*object);
 	}
