@@ -1,6 +1,5 @@
 
 #pragma once
-#include <glad/glad.h>
 
 #include <cstdio>
 #include <glm/glm.hpp>
@@ -9,30 +8,29 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <vector>
 
-#include "ShaderProgram.hpp"
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "WawaDir.hpp"
+#include "ImageLoader.hpp"
+
+#include "Graphics/IGPUBuffers.hpp"
+#include "Graphics/IGPUTexture.hpp"
+#include "Graphics/IRenderDevice.hpp"
+#include "Graphics/OpenGLGPUBuffers.hpp"
+#include "Graphics/OpenGLGPUTexture.hpp"
 
 
 namespace fe {
 
-	enum class TextureScaling {
-		Linear,
-		Nearest
-	};
-
+	template <typename VertexType = Vertex>
 	class Mesh {
 		unsigned int indexCount;
 
-		unsigned int vao = 0;
-		unsigned int VBO = 0;
-		unsigned int EBO = 0;
-		unsigned int texture = 0;
-
 	public:
-		std::vector<Vertex> vertices;
+		std::vector<VertexType> vertices;
 		std::vector<unsigned int> indices;
 		glm::mat4 modelMatrix;
 
@@ -40,16 +38,28 @@ namespace fe {
 
 		TextureScaling scaling = TextureScaling::Linear;
 
+		std::unique_ptr<IGPUBuffers> gpuBuffers = nullptr;
+		std::unique_ptr<IGPUTexture> gpuTexture = nullptr;
+
 		bool hasTransparency = false;
+
+		IRenderDevice* device_ = nullptr;
+
+		std::string pendingTexturePath;
+		TextureScaling pendingTextureScaling = TextureScaling::Linear;
+		bool hasPendingTexture = false;
+
+		std::vector<std::string> pendingTextureArrayPaths;
+		TextureScaling pendingTextureArrayScaling = TextureScaling::Linear;
+		bool hasPendingTextureArray = false;
 
 		Mesh() {}
 
-		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
-			this->vertices = vertices;
-			this->indices = indices;
-			this->indexCount = indices.size();
+		Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
+			this->vertices = std::move(vertices);
+			this->indices = std::move(indices);
+			this->indexCount = this->indices.size();
 			modelMatrix = glm::mat4(1.0f);
-			init();
 		}
 
 		Mesh(std::string objFilePath, std::string textureFilePath) {
@@ -59,187 +69,258 @@ namespace fe {
 				std::cerr << "Failed to load model or texture" << std::endl;
 				return;
 			}
-
-			init();
 		}
 
 		Mesh& operator=(const Mesh& other) {
 					if (this != &other) {
 							indexCount = other.indexCount;
-							vao = other.vao;
-							VBO = other.VBO;
-							EBO = other.EBO;
-							texture = other.texture;
 							vertices = other.vertices;
 							indices = other.indices;
 							modelMatrix = other.modelMatrix;
 							physicsObject = other.physicsObject ? other.physicsObject->Clone() : nullptr;
+							gpuBuffers = nullptr;
+							gpuTexture = nullptr;
+							device_ = other.device_;
+							hasTransparency = other.hasTransparency;
+
+							hasPendingTexture = other.hasPendingTexture;
+							pendingTexturePath = other.pendingTexturePath;
+							pendingTextureScaling = other.pendingTextureScaling;
+
+							hasPendingTextureArray = other.hasPendingTextureArray;
+							pendingTextureArrayPaths = other.pendingTextureArrayPaths;
+							pendingTextureArrayScaling = other.pendingTextureArrayScaling;
+
+							if (device_ && !vertices.empty() && !indices.empty()) init();
+							if (device_ && hasPendingTexture) {
+								gpuTexture = device_->CreateGPUTexture();
+								if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+								hasPendingTexture = false;
+							}
+							if (device_ && hasPendingTextureArray) {
+								gpuTexture = device_->CreateGPUTexture();
+								if (gpuTexture) device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+								hasPendingTextureArray = false;
+							}
 					}
 					return *this;
 			}
 
-		Mesh(Mesh&&) = default;
-		Mesh& operator=(Mesh&&) = default;
+		Mesh(Mesh&& other) noexcept
+			: indexCount(other.indexCount),
+			  vertices(std::move(other.vertices)),
+			  indices(std::move(other.indices)),
+			  modelMatrix(other.modelMatrix),
+			  physicsObject(std::move(other.physicsObject)),
+			  scaling(other.scaling),
+			  gpuBuffers(std::move(other.gpuBuffers)),
+			  gpuTexture(std::move(other.gpuTexture)),
+			  hasTransparency(other.hasTransparency),
+			  device_(other.device_),
+			  pendingTexturePath(std::move(other.pendingTexturePath)),
+			  pendingTextureScaling(other.pendingTextureScaling),
+			  hasPendingTexture(other.hasPendingTexture),
+			  pendingTextureArrayPaths(std::move(other.pendingTextureArrayPaths)),
+			  pendingTextureArrayScaling(other.pendingTextureArrayScaling),
+			  hasPendingTextureArray(other.hasPendingTextureArray) {}
+
+		Mesh& operator=(Mesh&& other) noexcept {
+			if (this != &other) {
+				indexCount = other.indexCount;
+				vertices = std::move(other.vertices);
+				indices = std::move(other.indices);
+				modelMatrix = other.modelMatrix;
+				physicsObject = std::move(other.physicsObject);
+				scaling = other.scaling;
+				gpuBuffers = std::move(other.gpuBuffers);
+				gpuTexture = std::move(other.gpuTexture);
+				hasTransparency = other.hasTransparency;
+				device_ = other.device_;
+				pendingTexturePath = std::move(other.pendingTexturePath);
+				pendingTextureScaling = other.pendingTextureScaling;
+				hasPendingTexture = other.hasPendingTexture;
+				pendingTextureArrayPaths = std::move(other.pendingTextureArrayPaths);
+				pendingTextureArrayScaling = other.pendingTextureArrayScaling;
+				hasPendingTextureArray = other.hasPendingTextureArray;
+			}
+			return *this;
+		}
 
 		Mesh(const Mesh& other)
 				: indexCount(other.indexCount),
-					vao(other.vao),
-					VBO(other.VBO),
-					EBO(other.EBO),
-					texture(other.texture),
 					vertices(other.vertices),
 					indices(other.indices),
 					modelMatrix(other.modelMatrix),
-					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr) {}
-
-		void init() {
-			unsigned int vao, VBO, EBO;
-			glGenVertexArrays(1, &vao);
-			glBindVertexArray(vao);
-			this->vao = vao;
-
-			glGenBuffers(1, &VBO);
-			glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-			this->VBO = VBO;
-
-			glGenBuffers(1, &EBO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), indices.data(), GL_STATIC_DRAW);
-			this->EBO = EBO;
-
-			int vertexStride = sizeof(Vertex);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)0);
-			glEnableVertexAttribArray(0);
-
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexStride, (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(1);
-
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexStride, (void*)(6 * sizeof(float)));
-			glEnableVertexAttribArray(2);
-
-			glBindVertexArray(0);
+					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr),
+					device_(other.device_),
+					hasTransparency(other.hasTransparency),
+					hasPendingTexture(other.hasPendingTexture),
+					pendingTexturePath(other.pendingTexturePath),
+					pendingTextureScaling(other.pendingTextureScaling),
+					hasPendingTextureArray(other.hasPendingTextureArray),
+					pendingTextureArrayPaths(other.pendingTextureArrayPaths),
+					pendingTextureArrayScaling(other.pendingTextureArrayScaling) {
+			if (device_ && !vertices.empty() && !indices.empty()) init();
+			if (device_ && hasPendingTexture) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+				hasPendingTexture = false;
+			}
+			if (device_ && hasPendingTextureArray) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+				hasPendingTextureArray = false;
+			}
 		}
 
-		bool loadObj(std::string objFilePath)
-		/*{
-			objl::Loader objectLoader;
+		void SetDevice(IRenderDevice* d) {
+			device_ = d;
+			if (!device_) return;
 
-			bool success = objectLoader.LoadFile(objFilePath);
-			if (!success) return false;
-
-			this->vertices = std::vector<Vertex>(objectLoader.LoadedVertices.size());
-
-			for (int i = 0; i < this->vertices.size(); i++) {
-				objl::Vertex v = objectLoader.LoadedVertices[i];
-				this->vertices[i] = Vertex(v.Position.X, v.Position.Y, v.Position.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.uv.X, v.uv.Y);
+			if (!gpuBuffers && !vertices.empty() && !indices.empty()) {
+				init();
 			}
 
-			this->indices = std::vector<unsigned int>(objectLoader.LoadedIndices.size());
+			if (hasPendingTextureArray) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+				}
+				hasPendingTextureArray = false;
+			}
 
-			for (size_t i = 0; i < this->indices.size(); i++) this->indices[i] = objectLoader.LoadedIndices[i];
+			if (hasPendingTexture) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+				}
+				hasPendingTexture = false;
+			}
+		}
 
-			return true;
-		}*/;
+	void init() {
+		if (device_) {
+			gpuBuffers = device_->CreateGPUBuffers();
+			if (gpuBuffers) {
+				if constexpr (std::is_same_v<VertexType, VertexArray>)
+					gpuBuffers->vertexFormat = VertexFormat::Array;
+				else
+					gpuBuffers->vertexFormat = VertexFormat::Standard;
 
-		bool loadTextureFile(std::string textureFilePath, int& width, int& height, int& nrChannels, unsigned char*& data) {
-			stbi_set_flip_vertically_on_load(true);
-			data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
-			if (!data) {
-				std::cerr << "Failed to load texture" << std::endl;
+				device_->UploadBuffers(gpuBuffers.get(),
+					vertices.data(), sizeof(VertexType), vertices.size(),
+					indices.data(), static_cast<uint32_t>(indices.size()),
+					VertexType::getLayout());
+			}
+		} else {
+			auto glBuffers = std::make_unique<OpenGLGPUBuffers>();
+			glBuffers->upload(vertices, indices);
+			if constexpr (std::is_same_v<VertexType, VertexArray>)
+				glBuffers->vertexFormat = VertexFormat::Array;
+			else
+				glBuffers->vertexFormat = VertexFormat::Standard;
+			gpuBuffers = std::move(glBuffers);
+		}
+	}
 
-				std::string exeDir = GetExecutableDirectorye();
-				std::string path2 = exeDir + "/" + textureFilePath; // TODO WINDOWS BLEH BACKLSAHS DOES IT ACCPET FWND SLSH I THINK TI DOES
-				data = stbi_load(path2.c_str(), &width, &height, &nrChannels, 0);
-				if (data)
-				{
-					std::cout << "Loaded from exe dir: " << path2 << std::endl;
+		bool loadObj(std::string objFilePath);
+
+		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
+			if (device_) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTexture(gpuTexture.get(), textureFilePath, newScaling);
 					return true;
 				}
-
 				return false;
 			}
+			pendingTexturePath = textureFilePath;
+			pendingTextureScaling = newScaling;
+			hasPendingTexture = true;
 			return true;
 		}
 
-		bool loadTexture(std::string textureFilePath = NULL, TextureScaling newScaling = TextureScaling::Linear) {
-			// if (textureFilePath == NULL)
-			//   return false;
-			int width, height, nrChannels;
-			unsigned char* data;
-			if (!loadTextureFile(textureFilePath, width, height, nrChannels, data)) return false;
+		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Linear) {
+			if (textureFilePaths.empty()) return false;
 
-			glGenTextures(1, &this->texture);
-			glBindTexture(GL_TEXTURE_2D, this->texture);
+			if (device_) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTextureArray(gpuTexture.get(), textureFilePaths, newScaling);
+					return true;
+				}
+				return false;
+			}
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-			GLint texScaling = GL_LINEAR;
-			if (newScaling == TextureScaling::Nearest) texScaling = GL_NEAREST;
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texScaling);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texScaling);
-
-			GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(GL_TEXTURE_2D);
-
-			stbi_image_free(data);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			pendingTextureArrayPaths = textureFilePaths;
+			pendingTextureArrayScaling = newScaling;
+			hasPendingTextureArray = true;
 			return true;
+		}
+
+		void CopyToGPU() {
+			init();
+		}
+
+		void RemoveFromGPU() {
+			gpuBuffers.reset();
+			gpuTexture.reset();
+		}
+
+		void FreeCpuData() {
+			vertices.clear();
+			vertices.shrink_to_fit();
+			indices.clear();
+			indices.shrink_to_fit();
+		}
+
+		Mesh Clone() const {
+			Mesh copy;
+			copy.vertices = vertices;
+			copy.indices = indices;
+			copy.indexCount = indexCount;
+			copy.modelMatrix = modelMatrix;
+			copy.hasTransparency = hasTransparency;
+			copy.scaling = scaling;
+			copy.device_ = device_;
+
+			if (device_ && !vertices.empty() && !indices.empty()) {
+				copy.init();
+			}
+
+			if (hasPendingTextureArray) {
+				copy.pendingTextureArrayPaths = pendingTextureArrayPaths;
+				copy.pendingTextureArrayScaling = pendingTextureArrayScaling;
+				copy.hasPendingTextureArray = true;
+				if (device_) {
+					copy.gpuTexture = device_->CreateGPUTexture();
+					if (copy.gpuTexture) {
+						device_->UploadTextureArray(copy.gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+						copy.hasPendingTextureArray = false;
+					}
+				}
+			} else if (hasPendingTexture) {
+				copy.pendingTexturePath = pendingTexturePath;
+				copy.pendingTextureScaling = pendingTextureScaling;
+				copy.hasPendingTexture = true;
+				if (device_) {
+					copy.gpuTexture = device_->CreateGPUTexture();
+					if (copy.gpuTexture) {
+						device_->UploadTexture(copy.gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+						copy.hasPendingTexture = false;
+					}
+				}
+			}
+
+			return copy;
 		}
 
 		glm::mat4 getModelMatrix() { return modelMatrix; }
 
-		void Render(ShaderProgram& shader) { Render(shader, this->getModelMatrix()); }
+		const std::vector<VertexType>& GetVertices() const { return vertices; }
+		const std::vector<unsigned int>& GetIndices() const { return indices; }
 
-		void PrepareRender(ShaderProgram& shader) {
-			if (vao == 0) return;
-			shader.Use();
-			glBindVertexArray(vao);
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texture);
-
-			if (hasTransparency) {
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-				glDepthMask(GL_FALSE); // Don't depth mask transparent objects but might be useful to be able to turn this off?
-			}
-		}
-
-		void EndRender() {
-			if (hasTransparency) {
-				glDepthMask(GL_TRUE);
-				glDisable(GL_BLEND);
-			}
-		}
-
-		void Draw() { glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); }
-
-		void Render(ShaderProgram& shader, glm::mat4 modelMatrix) {
-			PrepareRender(shader);
-			shader.SetMat4("model", modelMatrix);
-			Draw();
-			EndRender();
-		}
-
-		void RenderInstanced(ShaderProgram& shader, const std::vector<glm::mat4>& modelMatrices) {
-			PrepareRender(shader);
-
-			for (const auto& modelMatrix : modelMatrices) {
-				shader.SetMat4("model", modelMatrix);
-				Draw();
-			}
-
-			EndRender();
-		}
-
-		void SetPhysicsObject(std::unique_ptr<PhysicsObject> physicsObject) { physicsObject = std::move(physicsObject); }
-
-		std::vector<Vertex> GetVertices() { return vertices; }
+		void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
 	};
 
-}  // namespace fe
+}

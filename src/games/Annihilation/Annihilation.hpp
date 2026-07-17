@@ -198,15 +198,14 @@ class Annihilation : public fe::EditableGame {
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
       ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
       size_t totalVertices = 0;
-      for (auto& obj : this->scene->GetObjects())
-        for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
+      for (auto& obj : this->scene->GetObjects()) totalVertices += obj->GetTotalVertexCount();
       ImGui::Text("Vertices: %zu", totalVertices);
 
       if (ImGui::Button("Enable AA", ImVec2(50, 20))) {
         std::cout << "Button clicked!" << std::endl;
       }
 
-      fe::Object* model = this->player.get();
+      fe::Object<>* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
@@ -233,7 +232,7 @@ class Annihilation : public fe::EditableGame {
         this->connectToServer(addressBuffer, port, usernameBuffer);
       }
 
-      fe::Object* model = this->player.get();
+      fe::Object<>* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
       ImGui::Text("Players:");

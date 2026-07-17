@@ -6,76 +6,110 @@
 
 namespace fe {
 
+	struct VulkanExtensions {
+		const char*const*extensions;
+		unsigned int extensionCount;
+	};
 
-  inline bool IsWayland() {
-    const char* session = getenv("XDG_SESSION_TYPE");
-    if (session && strcmp(session, "wayland") == 0)
-      return true;
+	struct SizeDoesntMatter {
+		int width;
+		int height;
+	};
 
-    const char* wayland_display = getenv("WAYLAND_DISPLAY");
-    if (wayland_display != NULL)
-      return true;
+	inline bool IsWayland() {
+		const char* session = std::getenv("XDG_SESSION_TYPE");
+		if (session && strcmp(session, "wayland") == 0)
+			return true;
 
-    return false;
-  }
+		const char* wayland_display = std::getenv("WAYLAND_DISPLAY");
+		if (wayland_display != NULL)
+			return true;
 
-  struct WindowOptions {
+		return false;
+	}
+
+	struct WindowOptions {
 		long long int x11WindowId;
-  };
+	};
 
 
-  using ResizeDelegate = std::function<void(int, int)>;
-  using MouseMoveDelegate = std::function<void(int, int)>;
+	using ResizeDelegate = std::function<void(int, int)>;
+	using MouseMoveDelegate = std::function<void(int, int)>;
 
-  class IWindow {
+	class IWindow {
 
-    bool shouldClose = false;
+		bool shouldClose = false;
 
 public:
 
-  int width, height;
+	int width, height;
 
-  ResizeDelegate resizeEvent;
-  MouseMoveDelegate mouseMoveEvent;
+	bool _isScreensaving = false;
+	double startX, startY;
 
-  IWindow(int width, int height) : width(width), height(height) {}
+	bool isFullscreen = false;
 
-  virtual bool ShouldClose() { return shouldClose; }
+	ResizeDelegate resizeEvent;
+	MouseMoveDelegate mouseMoveEvent;
 
-  virtual void PrepareClose() { shouldClose = true; }
+	IWindow(int width, int height) : width(width), height(height) {}
+
+	virtual bool ShouldClose() { return shouldClose; }
+
+	virtual void PrepareClose() { shouldClose = true; }
 
 	virtual void SetSwapInterval(int interval) = 0;
 
-  void EnableVSync() {
-    SetSwapInterval(1);
+	void EnableVSync() {
+		SetSwapInterval(1);
+	}
+
+	void DisableVSync() {
+		SetSwapInterval(0);
+	}
+
+	virtual void StartMouseCapture() {
+		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	virtual void StopMouseCapture() {
+		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	}
+
+	virtual void SetTitle(const char *newTitle) {};
+
+	bool CapturingMouse() {return false;};
+
+	virtual void GetMousePosition(double *x, double *y) = 0;
+
+	virtual VulkanExtensions GetVulkanExtensions() = 0;
+	
+	virtual void *CreateVulkanSurface(void *instance) = 0;
+
+	virtual SizeDoesntMatter GetFramebufferSize() = 0;
+
+	void ActivateScreenSaverMode() {
+		GetMousePosition(&startX, &startY);
+		_isScreensaving = true;
+	};
+
+	virtual void SetFullscreen(bool enabled) = 0;
+	void SetFullscreen() { SetFullscreen(true); }
+	void ToggleFullscreen() {
+    SetFullscreen(!isFullscreen);
   }
 
-  void DisableVSync() {
-    SetSwapInterval(0);
-  }
+	virtual void GoBorderlessFullscreen() = 0;
+	// virtual void 
+	
+	virtual void SwapBuffers() = 0;
 
-  virtual void StartMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  }
+	virtual double GetTime() = 0;
 
-  virtual void StopMouseCapture() {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-  }
-
-  virtual void SetTitle(const char *newTitle) {};
-
-  bool CapturingMouse() {return false;};
-
-  	void GetMousePosition(double *x, double *y);
-  
-  virtual void SwapBuffers() = 0;
-
-  virtual double GetTime() = 0;
-
-  // virtual void PollEvents() = 0;
+	// virtual void PollEvents() = 0;
 
 	virtual void Destroy() {};
 
-  };
+	};
 }

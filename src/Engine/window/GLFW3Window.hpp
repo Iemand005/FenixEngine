@@ -45,13 +45,18 @@ public:
 
 	bool HideMouse();
 
-  void SetTitle(const char *newTitle) override;
+	void SetFullscreen(bool enabled = false) override;
+	void GoBorderlessFullscreen() override;
+
+	void SetTitle(const char *newTitle) override;
 
 	void Hide();
   	void Show();
 
 	void AttachToNativeParent(void* parent);
 
+	VulkanExtensions GetVulkanExtensions() override;
+	void *CreateVulkanSurface(void *instance) override;
 	  
 #ifdef _WIN32
 	HWND GetNativeWindow();

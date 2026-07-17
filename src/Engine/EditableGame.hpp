@@ -1,23 +1,20 @@
-
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define FE_EXCLUDE_GLFW
 
 #include <cstdio>
-#include <fstream>
 #include <iostream>
-#include <map>
-#include <string>
 
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <imgui/imgui.h>
-#include <imgui/backends/imgui_impl_sdl3.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui.h>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_vulkan.h>
 
 #include "EditableGameBase.hpp"
 
@@ -29,12 +26,14 @@ namespace fe
     
     public:
     EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
-      // this->physicsEngine->DisableGravity();
-      
-      // SDL_Init(SDL_INIT_VIDEO);
+		// this->physicsEngine->DisableGravity();
 
-      InitImGUI();
-      InitUI();
+		// SDL_Init(SDL_INIT_VIDEO);
+
+		InitImGUI();
+		InitUI();
+		bool themed = true;
+		if (themed) ApplyBlackAndOrangeTheme();
     }
 
     // virtual void DrawUI();
@@ -44,21 +43,61 @@ namespace fe
 
     ImGuiIO io;
 
+	bool physicsGravityEnabled = true;
+
     void InitImGUI() {
-      // rENDE
-      auto renderer = (Renderer*)this;
-      fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
-      const char* glsl_version = "#version 330 core";
-      IMGUI_CHECKVERSION();
-      ImGui::CreateContext();
-      io = ImGui::GetIO();
-      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+		// rENDE
+		auto renderer = (Renderer*)this;
+		fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
+		const char* glsl_version = "#version 330 core";
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
-      ImGui::StyleColorsDark();
+		ImGui::StyleColorsDark();
 
-      // ImGui_ImplGlfw_InitForOpenGL(window, true);
-      ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
-      ImGui_ImplOpenGL3_Init(glsl_version);
+		if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
+		else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
+		if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
+		else {
+			auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
+			if (!vkDevice) return;
+
+			VkDescriptorPoolSize poolSize = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
+			VkDescriptorPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			poolInfo.maxSets = 1;
+			poolInfo.poolSizeCount = 1;
+			poolInfo.pPoolSizes = &poolSize;
+
+			VkDescriptorPool imguiPool = VK_NULL_HANDLE;
+			if (vkCreateDescriptorPool(vkDevice->GetDevice(), &poolInfo, nullptr, &imguiPool) != VK_SUCCESS) {
+				std::cerr << "[EditableGame] Failed to create ImGui descriptor pool" << std::endl;
+				return;
+			}
+
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.ApiVersion = VK_API_VERSION_1_2; // Of VK_API_VERSION_1_3 afhankelijk van je setup
+			init_info.Instance = vkDevice->GetInstance();
+			init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
+			init_info.Device = vkDevice->GetDevice();
+			init_info.QueueFamily = vkDevice->GetGraphicsQueueFamily();
+			init_info.Queue = vkDevice->GetGraphicsQueue();
+			init_info.DescriptorPool = imguiPool;
+			init_info.MinImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+			init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
+
+			init_info.PipelineInfoMain.RenderPass = vkDevice->GetRenderPass();
+			init_info.PipelineInfoMain.Subpass = 0; 
+			init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT; 
+
+			ImGui_ImplVulkan_Init(&init_info);
+
+
+			// ImGui_ImplVulkan_CreateFontsTexture();
+		}
     }
 
     // void DrawUI() override {
@@ -68,196 +107,100 @@ namespace fe
 
 public:
 
+	void OnDraw() override;
+
 	void BeginFrame() {
-		ImGui_ImplOpenGL3_NewFrame();
+		if (!useVulkan) ImGui_ImplOpenGL3_NewFrame();
+		else ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
 	}
 
 	void EndFrame() {
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (useVulkan) {
+			auto renderer = (Renderer*)this;
+			auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
+			if (vkDevice)
+				ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkDevice->GetCurrentCommandBuffer());
+		}
+		else ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
-	void DrawDebugUI() {
-
-
-		ImGui::Begin("Debug");
-		{
-		ImGui::Text("Hello, World!");
-		ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-		ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
-		size_t totalVertices = 0;
-		for (auto& obj : this->scene->GetObjects())
-			for (auto& mesh : obj->meshes) totalVertices += mesh.GetVertices().size();
-		ImGui::Text("Vertices: %zu", totalVertices);
-
-		if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
-			this->EnableXR ();
-		}
-
-		if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
-			this->DestroyXR();
-		}
-
-		if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
-			std::cout << "Button clicked!" << std::endl;
-		}
-
-		static bool wireframe = false;
-		if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
-			if (wireframe) this->EnableWireframe();
-			else this->DisableWireframe();
-		}
-
-		fe::Object* model = this->player.get();
-		if (model) {
-			ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
-			for (size_t i = 0; i < this->npcs.size(); ++i) {
-				ImGui::Text("NPC %zu", i);
-				ImGui::SliderFloat3(("Position##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.position.x, -10.0f, 10.0f);
-				ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
-			}
-		}
-		ImGui::End();
-		}
-
-		ImGui::Begin("Objects");
-		{
-		static char filenameBuffer[512] = "\0";
-		static float newObjectScale = 1.0f;
-
-		ImGui::InputText("Model file (.obj)", filenameBuffer, IM_ARRAYSIZE(filenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-		ImGui::DragFloat3("Scale##newObj", &newObjectScale, 0.001f);
-		if (ImGui::Button("Load model")) {
-			LoadObj(filenameBuffer, newObjectScale);
-		}
-
-
-		static char mapNameBuffer[512] = "level.fes\0";
-		ImGui::InputText("Map file", mapNameBuffer, IM_ARRAYSIZE(mapNameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-
-		if (ImGui::Button("Save map!"))
-			this->SaveLevel();
-
-		if (ImGui::Button("Load map!"))
-			this->LoadLevel();
-
-		if (ImGui::Button("Clear objects"))
-			this->scene->ClearObjects();
-
-		static bool snapToGrid = true;
-		ImGui::Checkbox("Snap to grid", &snapToGrid);
-		float step = snapToGrid ? 0.1f : 0.0001f;
-
-		size_t i = 0;
-		for (auto &object : scene->GetObjects()) {
-			// ImGui::Text("Object %zu", i);
-			ImGui::Text(object->name.c_str());
-			ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
-			ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
-			ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
-			if(ImGui::Button(("Focus##" + std::to_string(i)).c_str())) {
-				glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
-				camera->SetPos(object->state.position + offset);
-				camera->LookAt(object->state.position);
-			}
-
-			ImGui::Separator();
-
-			++i;
-		}
-
-		if (ImGui::Button("Add light"))
-			this->scene->AddLight();
-
-		auto lights = scene->GetLights();
-		for (int i = 0; i < scene->GetLightCount(); ++i) {
-			ImGui::Text("Light %zu", i);
-			ImGui::DragFloat3(("Position##light" + std::to_string(i)).c_str(), &lights[i].position.x, step);
-			ImGui::DragFloat3(("Colour##light" + std::to_string(i)).c_str(), &lights[i].color.x, step);
-			ImGui::DragFloat(("Radius##light" + std::to_string(i)).c_str(), &lights[i].radius, step);
-			ImGui::DragFloat(("Intensity##light" + std::to_string(i)).c_str(), &lights[i].intensity, step);
-		}
-		}
-		ImGui::End();
-
-
-		if (this->client) DrawNetworkDebugUI();
+	void DrawDebugUI();
 
 #ifdef USE_VISUALIZER
 		void DrawAudioVisualizerUI() {
+		}
 #endif
-    }
 
     void DrawNetworkDebugUI() {
-ImGui::Begin("Multiplayer");
-    {
-      static char usernameBuffer[32] = "Bill\0";
-      static char addressBuffer[256] = "127.0.0.1\0";
-      int port = 2130;
+		ImGui::Begin("Multiplayer");
+		{
+			static char usernameBuffer[32] = "Bill\0";
+			static char addressBuffer[256] = "127.0.0.1\0";
+			int port = 2130;
 
-      ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::InputInt("Port", &port);
+			ImGui::InputText("Username", usernameBuffer, IM_ARRAYSIZE(usernameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputText("Address", addressBuffer, IM_ARRAYSIZE(addressBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputInt("Port", &port);
 
-      if (ImGui::Button("Join", ImVec2(60, 0))) {
-        std::cout << "Connecting to server... " << addressBuffer << std::endl;
-        this->connectToServer(addressBuffer, port, usernameBuffer);
-      }
+			if (ImGui::Button("Join", ImVec2(60, 0))) {
+				std::cout << "Connecting to server... " << addressBuffer << std::endl;
+				this->connectToServer(addressBuffer, port, usernameBuffer);
+			}
 
-      fe::Object* model = this->player.get();
-      ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
+			fe::Object<>* model = this->player.get();
+			ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
-      ImGui::Text("Players:");
-      for (auto& [id, client] : this->client->clientClients) {
-        ImGui::Text("Player #%i username: %s", id, client.username.c_str());
-      }
-    }
-    ImGui::End();
+			ImGui::Text("Players:");
+			for (auto& [id, client] : this->client->clientClients) {
+				ImGui::Text("Player #%i username: %s", id, client.username.c_str());
+			}
+		}
+    	ImGui::End();
 
     
 
-    ImGui::Begin("Chat");
-    {
-      static char inputBuffer[256] = "";
-      ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::Begin("Chat");
+		{
+			static char inputBuffer[256] = "";
+			ImGui::BeginChild("ChatHistory", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - 10), true, ImGuiWindowFlags_HorizontalScrollbar);
 
-      for (const auto& msg : messages) {
-        ImGui::TextWrapped("%s", msg.c_str());
-      }
+			for (const auto& msg : messages) {
+				ImGui::TextWrapped("%s", msg.c_str());
+			}
 
-      // Auto-scroll to bottom if new messages
-      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(1.0f);
-      }
+			// Auto-scroll to bottom if new messages
+			if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+				ImGui::SetScrollHereY(1.0f);
+			}
 
-      ImGui::EndChild();
+			ImGui::EndChild();
 
-      ImGui::Separator();
+			ImGui::Separator();
 
-      ImGui::PushItemWidth(-70);
-      bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-      ImGui::PopItemWidth();
+			ImGui::PushItemWidth(-70);
+			bool enter_pressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::PopItemWidth();
 
-      ImGui::SameLine();
+			ImGui::SameLine();
 
-      bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
+			bool send_clicked = ImGui::Button("Send", ImVec2(60, 0));
 
-      if (send_clicked || enter_pressed) {
-        if (inputBuffer[0] != '\0') {
-          messages.push_back(std::string("You: ") + inputBuffer);
+			if (send_clicked || enter_pressed) {
+				if (inputBuffer[0] != '\0') {
+				messages.push_back(std::string("You: ") + inputBuffer);
 
-#ifdef FE_WIN32
+	#ifdef FE_WIN32
 
-          client->sendMessage(inputBuffer);
-          #endif
+			client->sendMessage(inputBuffer);
+			#endif
 
-          inputBuffer[0] = '\0';
-          ImGui::SetKeyboardFocusHere(-1);
-        }
-      }
+			inputBuffer[0] = '\0';
+			ImGui::SetKeyboardFocusHere(-1);
+			}
+		}
     }
     ImGui::End();
     }
@@ -294,6 +237,93 @@ ImGui::Begin("Multiplayer");
 		ImGui::End();
 	}
 #endif
+
+	void ApplyBlackAndOrangeTheme() {
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImVec4* colors = style.Colors;
+
+		// --- COLOR VARIABLES ---
+		// Pure pitch blacks
+		ImVec4 color_pure_black     = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+		ImVec4 color_trans_black    = ImVec4(0.00f, 0.00f, 0.00f, 0.95f); // Slight opacity for popups
+		
+		// Very dark grays for UI separation/depth
+		ImVec4 color_dark_gray_1    = ImVec4(0.07f, 0.07f, 0.07f, 1.00f); 
+		ImVec4 color_dark_gray_2    = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
+		ImVec4 color_border_gray    = ImVec4(0.18f, 0.18f, 0.18f, 0.60f);
+
+		// High-visibility Orange Palette
+		ImVec4 color_orange_main    = ImVec4(1.00f, 0.40f, 0.00f, 1.00f); // Solid primary orange
+		ImVec4 color_orange_hover   = ImVec4(1.00f, 0.50f, 0.10f, 1.00f); // Lighter orange for hover
+		ImVec4 color_orange_active  = ImVec4(1.00f, 0.60f, 0.20f, 1.00f); // Brightest orange for clicks
+		ImVec4 color_orange_low_a   = ImVec4(1.00f, 0.40f, 0.00f, 0.35f); // Low opacity orange for highlights
+
+		// Text colors
+		ImVec4 color_text_white     = ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+		ImVec4 color_text_disabled  = ImVec4(0.45f, 0.45f, 0.45f, 1.00f);
+
+
+		// --- ASSIGNMENTS ---
+		// Base Backgrounds (Actual Black)
+		colors[ImGuiCol_WindowBg]             = color_pure_black;
+		colors[ImGuiCol_ChildBg]              = color_pure_black;
+		colors[ImGuiCol_PopupBg]              = color_trans_black;
+		colors[ImGuiCol_Border]               = color_border_gray;
+		colors[ImGuiCol_BorderShadow]         = color_pure_black;
+
+		// Text & Headers
+		colors[ImGuiCol_Text]                 = color_text_white;
+		colors[ImGuiCol_TextDisabled]         = color_text_disabled;
+		colors[ImGuiCol_Header]               = ImVec4(color_orange_main.x, color_orange_main.y, color_orange_main.z, 0.65f); 
+		colors[ImGuiCol_HeaderHovered]        = color_orange_hover; 
+		colors[ImGuiCol_HeaderActive]         = color_orange_active;
+
+		// Buttons
+		colors[ImGuiCol_Button]               = color_dark_gray_1; 
+		colors[ImGuiCol_ButtonHovered]        = color_orange_main; 
+		colors[ImGuiCol_ButtonActive]         = color_orange_active;
+
+		// Frame Backgrounds (Inputs, Checkboxes, etc.)
+		colors[ImGuiCol_FrameBg]              = color_dark_gray_2;
+		colors[ImGuiCol_FrameBgHovered]       = color_orange_low_a;
+		colors[ImGuiCol_FrameBgActive]        = color_orange_main;
+
+		// Tabs
+		colors[ImGuiCol_Tab]                  = color_dark_gray_1;
+		colors[ImGuiCol_TabHovered]           = color_orange_hover;
+		colors[ImGuiCol_TabActive]            = color_orange_main;
+		colors[ImGuiCol_TabUnfocused]         = color_pure_black;
+		colors[ImGuiCol_TabUnfocusedActive]  = color_dark_gray_1;
+
+		// Title Bars
+		colors[ImGuiCol_TitleBg]              = color_pure_black;
+		colors[ImGuiCol_TitleBgActive]        = color_pure_black;
+		colors[ImGuiCol_TitleBgCollapsed]     = color_pure_black;
+
+		// Scrollbars & Sliders
+		colors[ImGuiCol_ScrollbarBg]          = color_pure_black;
+		colors[ImGuiCol_ScrollbarGrab]        = color_dark_gray_2;
+		colors[ImGuiCol_ScrollbarGrabHovered] = color_orange_hover;
+		colors[ImGuiCol_ScrollbarGrabActive]  = color_orange_active;
+		colors[ImGuiCol_SliderGrab]           = color_orange_main;
+		colors[ImGuiCol_SliderGrabActive]     = color_orange_active;
+
+		// Widgets & Separators
+		colors[ImGuiCol_CheckMark]            = color_orange_main;
+		colors[ImGuiCol_ResizeGrip]           = color_dark_gray_2;
+		colors[ImGuiCol_ResizeGripHovered]    = color_orange_hover;
+		colors[ImGuiCol_ResizeGripActive]     = color_orange_active;
+		colors[ImGuiCol_Separator]            = color_dark_gray_2;
+		colors[ImGuiCol_SeparatorHovered]     = color_orange_hover;
+		colors[ImGuiCol_SeparatorActive]      = color_orange_active;
+
+		// Clean modern sizing
+		style.WindowRounding = 4.0f;
+		style.FrameRounding = 5.0f;
+		style.GrabRounding = 3.0f;
+		style.PopupRounding = 4.0f;
+	}
+
   
   };
   

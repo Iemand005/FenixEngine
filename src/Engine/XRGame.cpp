@@ -503,8 +503,10 @@ void XRGame::LaunchVR() {
 void XRGame::RedrawWindow(GLuint fbo) {
   // if (window && window.get())
   BindFrameBuffer(fbo);
-  CheckErrors();
-  Renderer::Redraw(fbo);
+  CheckErrors();//??
+  // TODO: This redraw shit is gone it 's also openg l specific
+  // Renderer::Redraw(fbo);
+  Renderer::Redraw();
 }
 
 void XRGame::EnableXR() {
@@ -577,7 +579,10 @@ void XRGame::RedrawVR() {
         // glScissor(0, 0, swapchainWidth, swapchainHeight);
 
         camera->update(position + positionOffset, orientation, fov);
-        scene->Render(*shader, *camera, impl->swapchainWidth, impl->swapchainHeight);
+
+        // TODO: Bring thsi scener endering func back in renderdevice!!
+        // renderDevice-.Render...
+        // scene->Render(*shader, *camera, impl->swapchainWidth, impl->swapchainHeight);
       } else {
         glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImages[swapchainImageIndex].image);
         glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY,  // Target is a texture array

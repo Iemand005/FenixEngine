@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#ifndef EXCLUDE_JOLT
 #include <Jolt/Jolt.h>
 #include <Jolt/Geometry/IndexedTriangle.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
@@ -11,10 +12,13 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
-using namespace fe;
 using namespace JPH;
 using namespace JPH::literals;
+#endif
 
+using namespace fe;
+
+#ifndef EXCLUDE_JOLT
 namespace Layers {
 static constexpr ObjectLayer NON_MOVING = 0;
 static constexpr ObjectLayer MOVING = 1;
@@ -24,265 +28,308 @@ static constexpr ObjectLayer NUM_LAYERS = 2;
 namespace BroadPhaseLayers {
 static constexpr JPH::BroadPhaseLayer MOVING(0);
 };
+#endif
 
 struct PhysicsObject::Impl {
-  JPH::BodyID bodyId;
-  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-  JPH::Body* body;
-  // std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+#ifndef EXCLUDE_JOLT
+	JPH::BodyID bodyId;
+	std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+	JPH::Body* body;
 
-   static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices,
-                                      const std::vector<uint32_t>& indices,
-                                      float density = 1000.0f) {
-    // Validate vertices
-    if (vertices.empty()) {
-        std::cerr << "Error: No vertices provided!" << std::endl;
-        return nullptr;
-    }
-    
-    // Validate indices
-    if (indices.empty()) {
-        std::cerr << "Error: No indices provided!" << std::endl;
-        return nullptr;
-    }
-    
-    if (indices.size() % 3 != 0) {
-        std::cerr << "Error: Index count must be divisible by 3! Got " 
-                  << indices.size() << " indices." << std::endl;
-        return nullptr;
-    }
-    
-    size_t triangleCount = indices.size() / 3;
-    if (triangleCount == 0) {
-        std::cerr << "Error: Need at least one triangle!" << std::endl;
-        return nullptr;
-    }
-    
-    std::cout << "Creating mesh with " << vertices.size() 
-              << " vertices and " << triangleCount << " triangles." << std::endl;
-    
-    // Check for valid index ranges
-    for (uint32_t index : indices) {
-        if (index >= vertices.size()) {
-            std::cerr << "Error: Index " << index 
-                      << " out of bounds (max: " << vertices.size() - 1 << ")" << std::endl;
-            return nullptr;
-        }
-    }
-    
-    // Convert glm::vec3 to JPH::Float3
-    JPH::VertexList vertexList;
-    // vertexList.reserve(vertices.size());
-    for (const auto& v : vertices) {
-        vertexList.emplace_back(v.x, v.y, v.z);
-    }
-    
-    // Create triangle list from indices
-    JPH::IndexedTriangleList triangleList;
-    triangleList.reserve(triangleCount);
-    
-    for (size_t i = 0; i < indices.size(); i += 3) {
-        JPH::IndexedTriangle triangle(
-            indices[i], 
-            indices[i + 1], 
-            indices[i + 2], 
-            0  // Default material
-        );
-        triangleList.push_back(triangle);
-    }
-    
-    // Create mesh shape settings
-    JPH::MeshShapeSettings meshSettings(vertexList, triangleList);
-    
-    // IMPORTANT: Set Sanitize = true to clean up the mesh
-    // meshSettings.Sanitize();
-    // meshSettings.
-    // Create the shape
-    JPH::ShapeSettings::ShapeResult result = meshSettings.Create();
+	static JPH::ShapeRefC CreateMeshShape(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, float density = 1000.0f) {
+		// Validate vertices
+		if (vertices.empty()) {
+				std::cerr << "Error: No vertices provided!" << std::endl;
+				return nullptr;
+		}
+		
+		// Validate indices
+		if (indices.empty()) {
+				std::cerr << "Error: No indices provided!" << std::endl;
+				return nullptr;
+		}
+		
+		if (indices.size() % 3 != 0) {
+				std::cerr << "Error: Index count must be divisible by 3! Got " 
+									<< indices.size() << " indices." << std::endl;
+				return nullptr;
+		}
+		
+		size_t triangleCount = indices.size() / 3;
+		if (triangleCount == 0) {
+				std::cerr << "Error: Need at least one triangle!" << std::endl;
+				return nullptr;
+		}
+		
+		std::cout << "Creating mesh with " << vertices.size() 
+							<< " vertices and " << triangleCount << " triangles." << std::endl;
+		
+		// Check for valid index ranges
+		for (uint32_t index : indices) {
+				if (index >= vertices.size()) {
+						std::cerr << "Error: Index " << index 
+											<< " out of bounds (max: " << vertices.size() - 1 << ")" << std::endl;
+						return nullptr;
+				}
+		}
+		
+		// Convert glm::vec3 to JPH::Float3
+		JPH::VertexList vertexList;
+		// vertexList.reserve(vertices.size());
+		for (const auto& v : vertices) {
+				vertexList.emplace_back(v.x, v.y, v.z);
+		}
+		
+		// Create triangle list from indices
+		JPH::IndexedTriangleList triangleList;
+		triangleList.reserve(triangleCount);
+		
+		for (size_t i = 0; i < indices.size(); i += 3) {
+				JPH::IndexedTriangle triangle(
+						indices[i], 
+						indices[i + 1], 
+						indices[i + 2], 
+						0  // Default material
+				);
+				triangleList.push_back(triangle);
+		}
+		
+		// Create mesh shape settings
+		JPH::MeshShapeSettings meshSettings(vertexList, triangleList);
+		
+		// IMPORTANT: Set Sanitize = true to clean up the mesh
+		// meshSettings.Sanitize();
+		// meshSettings.
+		// Create the shape
+		JPH::ShapeSettings::ShapeResult result = meshSettings.Create();
 
-    
-    if (result.HasError()) {
-        std::cerr << "Error creating mesh shape: " << result.GetError() << std::endl;
-        return nullptr;
-    }
-    
-    return result.Get();
+		
+		if (result.HasError()) {
+				std::cerr << "Error creating mesh shape: " << result.GetError() << std::endl;
+				return nullptr;
+		}
+		
+		return result.Get();
 }
 
-  void CreateBodyFromShape(JPH::ShapeRefC shape,
-                          const glm::vec3& position,
-                          JPH::EMotionType motionType,
-                          JPH::ObjectLayer layer) {
-    if (!shape) {
-      std::cerr << "Error: Cannot create body with null shape!" << std::endl;
-      return;
-    }
-    
-    // Create body settings
-    JPH::BodyCreationSettings bodySettings(
-      shape,
-      JPH::RVec3(position.x, position.y, position.z),
-      JPH::Quat::sIdentity(),
-      motionType,
-      layer
-    );
-    
-    // Configure body properties
-    bodySettings.mFriction = 0.5f;
-    bodySettings.mRestitution = 0.1f;
-    bodySettings.mLinearDamping = 0.05f;
-    bodySettings.mAngularDamping = 0.05f;
-    bodySettings.mMaxLinearVelocity = 100.0f;
-    bodySettings.mAllowSleeping = true;
-    
-    if (motionType == JPH::EMotionType::Dynamic) {
-      bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
-      JPH::MassProperties massProperties;
-      massProperties.mMass = 1.0f;
-      bodySettings.mMassPropertiesOverride = massProperties;
-    }
-    
-    // Get body interface and create body
-    auto& bodyInterface = physicsSystem->GetBodyInterface();
-    JPH::Body* body = bodyInterface.CreateBody(bodySettings);
-    
-    if (!body) {
-      std::cerr << "Failed to create physics body!" << std::endl;
-      return;
-    }
-    
-    bodyId = body->GetID();
-    bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
-    
-    std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex()
-              << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic")
-              << ", Layer: " << layer << ")" << std::endl;
-  }
+	void CreateBodyFromShape(JPH::ShapeRefC shape,
+													const glm::vec3& position,
+													JPH::EMotionType motionType,
+													JPH::ObjectLayer layer) {
+		if (!shape) {
+			std::cerr << "Error: Cannot create body with null shape!" << std::endl;
+			return;
+		}
+		
+		// Create body settings
+		JPH::BodyCreationSettings bodySettings(
+			shape,
+			JPH::RVec3(position.x, position.y, position.z),
+			JPH::Quat::sIdentity(),
+			motionType,
+			layer
+		);
+		
+		// Configure body properties
+		bodySettings.mFriction = 0.5f;
+		bodySettings.mRestitution = 0.1f;
+		bodySettings.mLinearDamping = 0.05f;
+		bodySettings.mAngularDamping = 0.05f;
+		bodySettings.mMaxLinearVelocity = 100.0f;
+		bodySettings.mAllowSleeping = true;
+		
+		if (motionType == JPH::EMotionType::Dynamic) {
+			bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+			JPH::MassProperties massProperties;
+			massProperties.mMass = 1.0f;
+			bodySettings.mMassPropertiesOverride = massProperties;
+		}
+		
+		// Get body interface and create body
+		auto& bodyInterface = physicsSystem->GetBodyInterface();
+		JPH::Body* body = bodyInterface.CreateBody(bodySettings);
+		
+		if (!body) {
+			std::cerr << "Failed to create physics body!" << std::endl;
+			return;
+		}
+		
+		bodyId = body->GetID();
+		bodyInterface.AddBody(bodyId, JPH::EActivation::Activate);
+		
+		std::cout << "Created PhysicsObject with BodyID: " << bodyId.GetIndex() << " (MotionType: " << (motionType == JPH::EMotionType::Static ? "Static" : "Dynamic") << ", Layer: " << layer << ")" << std::endl;
+	}
 
-  JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
+	JPH::Vec3 VecConv(glm::vec3 vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
 
-  glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+	glm::vec3 ParseVec3(JPH::Vec3 vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+#endif
 }; // Impl
 
 PhysicsObject::PhysicsObject() {
-  impl = std::make_unique<Impl>();
-  impl->bodyId = JPH::BodyID();
-  impl->physicsSystem = nullptr;
-  impl->body = nullptr;
+#ifndef EXCLUDE_JOLT
+	impl = std::make_unique<Impl>();
+	impl->bodyId = JPH::BodyID();
+	impl->physicsSystem = nullptr;
+	impl->body = nullptr;
+#endif
 }
 
-PhysicsObject::~PhysicsObject() = default;
+PhysicsObject::~PhysicsObject() {
+	Destroy();
+}
 
 PhysicsObject::PhysicsObject(glm::vec3 size, bool dynamic) : PhysicsObject() {
-  (void)size;
-  (void)dynamic;
+	(void)size;
+	(void)dynamic;
 }
 
-PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices,
-                             const std::vector<uint32_t>& indices,
-                             const glm::vec3& position,
-                             float density,
-                             bool isStatic) : PhysicsObject() {
-  (void)vertices;
-  (void)indices;
-  (void)position;
-  (void)density;
-  (void)isStatic;
+PhysicsObject::PhysicsObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic) : PhysicsObject() {
+	(void)vertices;
+	(void)indices;
+	(void)position;
+	(void)density;
+	(void)isStatic;
 }
 
-  void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
-    this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
-  }
+void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().AddLinearVelocity(impl->bodyId, impl->VecConv(velocity));
+#endif
+}
 
-  glm::vec3 PhysicsObject::GetPosition() { return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId)); }
+glm::vec3 PhysicsObject::GetPosition() {
+#ifndef EXCLUDE_JOLT
+	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId));
+#else
+	return {};
+#endif
+}
 
 
 void PhysicsObject::BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem) {
-  impl->physicsSystem = std::move(physicsSystem);
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem = std::move(physicsSystem);
+#endif
 }
 
 void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
-  if (!impl->physicsSystem) {
-    std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
-    return;
-  }
+#ifndef EXCLUDE_JOLT
+	if (!impl->physicsSystem) {
+		std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
+		return;
+	}
 
-  float a = size.x;
-  float b = size.y;
-  float c = size.z;
+	float a = size.x;
+	float b = size.y;
+	float c = size.z;
 
-  JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
-  bodyShapeSettings.mConvexRadius = 0.01;
-  bodyShapeSettings.SetDensity(1000.0);
-  bodyShapeSettings.SetEmbedded();
-  JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
-  JPH::ShapeRefC body_shape = body_shape_result.Get();
+	JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
+	bodyShapeSettings.mConvexRadius = 0.01;
+	bodyShapeSettings.SetDensity(1000.0);
+	bodyShapeSettings.SetEmbedded();
+	// bodyShapeSettings.mA
 
-  JPH::BodyCreationSettings bodySettings(body_shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(), dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static, Layers::MOVING);
-  bodySettings.mMaxLinearVelocity = 10000.0;
-  bodySettings.mApplyGyroscopicForce = true;
-  bodySettings.mLinearDamping = 0.0;
-  bodySettings.mAngularDamping = 0.0;
+	JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
+	JPH::ShapeRefC body_shape = body_shape_result.Get();
 
-  // this->physicsSystem = physicsSystem;
+	JPH::BodyCreationSettings bodySettings(body_shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(), dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static, Layers::MOVING);
+	bodySettings.mMaxLinearVelocity = 10000.0;
+	bodySettings.mApplyGyroscopicForce = true;
+	bodySettings.mLinearDamping = 0.0;
+	bodySettings.mAngularDamping = 0.0;
+	bool allowRotation = false;
+	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
-  auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
-  this->impl->body = bodyInterface->CreateBody(bodySettings);
-  this->impl->bodyId = impl->body->GetID();
-  bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
-  // bodyInterface->SetGravityFactor()
+	// this->physicsSystem = physicsSystem;
+
+	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+	this->impl->body = bodyInterface->CreateBody(bodySettings);
+	this->impl->bodyId = impl->body->GetID();
+	bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
+	// bodyInterface->SetGravityFactor()
+#endif
 }
 
-void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices,
-                                       const std::vector<uint32_t>& indices,
-                                       const glm::vec3& position,
-                                       float density,
-                                       bool isStatic) {
-  if (!impl->physicsSystem) {
-    std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
-    return;
-  }
-  
-  JPH::ShapeRefC shape = impl->CreateMeshShape(vertices, indices, density);
-  if (!shape) {
-    std::cerr << "Failed to create mesh shape!" << std::endl;
-    return;
-  }
-  
-  impl->CreateBodyFromShape(shape, position, 
-                      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
-                      isStatic ? Layers::NON_MOVING : Layers::MOVING);
+void PhysicsObject::InitializeMeshBody(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic) {
+
+#ifndef EXCLUDE_JOLT
+
+	if (!impl->physicsSystem) {
+		std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
+		return;
+	}
+	
+	JPH::ShapeRefC shape = impl->CreateMeshShape(vertices, indices, density);
+	if (!shape) {
+		std::cerr << "Failed to create mesh shape!" << std::endl;
+		return;
+	}
+	
+	impl->CreateBodyFromShape(shape, position,  isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic, isStatic ? Layers::NON_MOVING : Layers::MOVING);
+#endif
+
 }
 
 
 void PhysicsObject::SetPosition(glm::vec3 position) {
-  this->impl->physicsSystem->GetBodyInterface().SetPosition(impl->bodyId, impl->VecConv(position), JPH::EActivation::Activate);
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().SetPosition(impl->bodyId, impl->VecConv(position), JPH::EActivation::Activate);
+#endif
 }
 
 void PhysicsObject::AddPosition(glm::vec3 position) {
-  SetPosition(position + GetPosition());
+#ifndef EXCLUDE_JOLT
+	SetPosition(position + GetPosition());
+#endif
 }
 
 void PhysicsObject::SetLinearVelocity(glm::vec3 velocity) {
-  this->impl->physicsSystem->GetBodyInterface().SetLinearVelocity(impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().SetLinearVelocity(impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+#endif
+}
+
+glm::vec3 PhysicsObject::GetLinearVelocity() {
+#ifndef EXCLUDE_JOLT
+	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetLinearVelocity(impl->bodyId));
+#else
+	return {};
+#endif
 }
 
 
 ObjectState PhysicsObject::SyncToRender() {
-  auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+#ifndef EXCLUDE_JOLT
+	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
 
-  JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
-  JPH::RVec3 position = transform.GetTranslation();
-  JPH::Vec3 x = transform.GetAxisX();
-  JPH::Vec3 y = transform.GetAxisY();
-  JPH::Vec3 z = transform.GetAxisZ();
-  float translation[3] = {(float)position.GetX(), (float)position.GetY(), (float)position.GetZ()};
-  float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
-  ObjectState state;
-  state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
-  state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
-  // state.rotationY = glm::vec3(x.GetY(), y.GetY(), z.GetY());
-  // state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
-  state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
-  return state;
+	JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
+	JPH::RVec3 position = transform.GetTranslation();
+	JPH::Vec3 x = transform.GetAxisX();
+	JPH::Vec3 y = transform.GetAxisY();
+	JPH::Vec3 z = transform.GetAxisZ();
+	float translation[3] = {(float)position.GetX(), (float)position.GetY(), (float)position.GetZ()};
+	float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
+	ObjectState state;
+	state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
+	state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
+	state.scale = glm::vec3(1.0f);
+	// state.rotationY = glm::vec3(x.GetY(), y.GetY(), y.GetY());
+	// state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
+	state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
+	return state;
+#else
+	return {};
+#endif
+}
+
+void PhysicsObject::Destroy() {
+#ifndef EXCLUDE_JOLT
+	if (!impl || !impl->physicsSystem) return;
+	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+
+	bodyInterface->RemoveBody(impl->bodyId);
+	bodyInterface->DestroyBody(impl->bodyId);
+	impl->physicsSystem = nullptr;
+#endif
 }

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,6 +19,7 @@ namespace fe {
 
 class ShaderProgram {
   unsigned int id;
+  bool linked = false;
 
   int modelLoc;
   int viewLoc;
@@ -66,6 +68,18 @@ class ShaderProgram {
 
   void LinkShaders() {
     glLinkProgram(id);
+    GLint linkStatus = 0;
+    glGetProgramiv(id, GL_LINK_STATUS, &linkStatus);
+    GLint logLength = 0;
+    glGetProgramiv(id, GL_INFO_LOG_LENGTH, &logLength);
+    if (!linkStatus) {
+      std::string log(logLength, '\0');
+      glGetProgramInfoLog(id, logLength, nullptr, log.data());
+      std::cerr << "ShaderProgram: link failed (program " << id << "): " << log << std::endl;
+      linked = false;
+      return;
+    }
+    linked = true;
 
     modelLoc = glGetUniformLocation(id, "model");
     viewLoc = glGetUniformLocation(id, "view");
@@ -85,11 +99,13 @@ class ShaderProgram {
     }
   }
 
+  bool IsLinked() const { return linked; }
+
   bool ErrorCheck() {
     GLint ok = 0, length = 0;
     glGetProgramiv(id, GL_LINK_STATUS, &ok);
     glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
-    if (!ok || length > 1) {
+    if (!ok) {
         std::string log(length, '\0');
         glGetProgramInfoLog(id, length, nullptr, log.data());
         fprintf(stderr, "Program link log:\n%s\n", log.c_str());
@@ -99,30 +115,49 @@ class ShaderProgram {
     return true;
   }
 
-  void Use() { glUseProgram(id); }
+  void Use() {
+    if (!linked) {
+      static bool logged = false;
+      if (!logged) {
+        std::cerr << "ShaderProgram::Use() called on unlinked program " << id << std::endl;
+        logged = true;
+      }
+      return;
+    }
+    glUseProgram(id);
+  }
 
 
 
   void SetMat4(const std::string& name, const glm::mat4& mat) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
 	}
 	void SetVec3(const std::string& name, const glm::vec3& vec) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform3f(loc, vec.x, vec.y, vec.z);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform3f(loc, vec.x, vec.y, vec.z);
 	}
 	void SetFloat(const std::string& name, float value) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform1f(loc, value);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform1f(loc, value);
 	}
 	void SetInt(const std::string& name, int value) const {
 		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		if (loc == -1) std::cerr << "Uniform not found: " << name << std::endl;
-		glUniform1i(loc, value);
+		LogUniformIfNotFound(loc, name);
+		if (loc != -1) glUniform1i(loc, value);
 	}
+
+  void LogUniformIfNotFound(GLint loc, const std::string& name) const {
+    if (loc == -1 && missingUniforms.insert(name).second) {
+      std::cerr << "Uniform not found: " << name << std::endl;
+    }
+  }
+
+ private:
+  mutable std::unordered_set<std::string> missingUniforms;
 };
 }
 

@@ -26,7 +26,7 @@ struct ObjectData {
 	class Level {
 		public:
 
-		bool Save(std::vector<std::shared_ptr<fe::Object>> objects, std::string fileName) {
+		bool Save(std::vector<std::shared_ptr<fe::ObjectBase>> objects, std::string fileName) {
 			// std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
 			size_t size = sizeof(LevelData) + sizeof(ObjectData) * objects.size();
 
@@ -56,7 +56,7 @@ struct ObjectData {
 			return true;
 		}
 
-		std::vector<std::shared_ptr<fe::Object>> Load(std::string fileName) {
+		std::vector<std::shared_ptr<fe::Object<>>> Load(std::string fileName) {
 
 			// std::ifstream saveFile("");
 
@@ -72,12 +72,12 @@ struct ObjectData {
 
 			LevelData *level = (LevelData *)buf;
 
-			auto objects = std::vector<std::shared_ptr<fe::Object>>();
+			auto objects = std::vector<std::shared_ptr<fe::Object<>>>();
 
 			for (size_t i = 0; i < level->objectCount; ++i) {
 				auto objData = level->objects[i];
 				auto objFileName = std::string((char *)objData.modelFile.data, (int)objData.modelFile.size);
-				auto obj = std::make_shared<fe::Object>(objFileName, objData.state);
+				auto obj = std::make_shared<fe::Object<>>(objFileName, objData.state);
 				objects.push_back(obj);
 			}
 			delete[] buf;

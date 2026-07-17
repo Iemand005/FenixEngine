@@ -1,11 +1,9 @@
 
 #include <glad/glad.h>
 
-#include <chrono>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <filesystem>
 
@@ -50,7 +48,7 @@ namespace fe {
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
     glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
 
-    if (!success || length > 1) {
+    if (!success) {
       std::string log(length, '\0');
       glGetShaderInfoLog(id, length, NULL, log.data());
       std::cout << "SHADER COMPILE ERROR:\n" << log << std::endl;

@@ -138,40 +138,40 @@ target_include_directories(pool PRIVATE
     src/Engine
 )
 
-add_executable(ShaderSaver
-    WIN32
-    src/games/ShaderSavers/main.cpp
-)
+# add_executable(ShaderSaver
+#     WIN32
+#     src/games/ShaderSavers/main.cpp
+# )
 
-target_include_directories(ShaderSaver PRIVATE
-    include
-    src
-    external
-    external/imgui
-    external/glfw/include
-    src/Engine
-)
+# target_include_directories(ShaderSaver PRIVATE
+#     include
+#     src
+#     external
+#     external/imgui
+#     external/glfw/include
+#     src/Engine
+# )
 
-target_link_libraries(ShaderSaver PRIVATE Renderer)
+# target_link_libraries(ShaderSaver PRIVATE Renderer)
 
-set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+# set_property(TARGET ShaderSaver PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_executable(ShaderSaverSDL
-    WIN32
-    src/games/ShaderSavers/mainSDL.cpp
-)
+# add_executable(ShaderSaverSDL
+#     WIN32
+#     src/games/ShaderSavers/mainSDL.cpp
+# )
 
-target_include_directories(ShaderSaverSDL PRIVATE
-    include
-    src
-    external
-    external/imgui
-    src/Engine
-)
+# target_include_directories(ShaderSaverSDL PRIVATE
+#     include
+#     src
+#     external
+#     external/imgui
+#     src/Engine
+# )
 
-target_link_libraries(ShaderSaverSDL PRIVATE Renderer)
+# target_link_libraries(ShaderSaverSDL PRIVATE Renderer)
 
-set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+# set_property(TARGET ShaderSaverSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # target_compile_options(ShaderSaverSDL PRIVATE /Zi)
 # target_link_options(ShaderSaverSDL PRIVATE /DEBUG)

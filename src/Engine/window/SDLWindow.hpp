@@ -29,9 +29,6 @@ class SDLWindow : public IWindow {
 
 	const bool* keyboardState = nullptr;
 
-	bool isFullscreen = false;
-	bool _isScreensaving = false;
-	float startX, startY;
 
 
  public:
@@ -56,10 +53,8 @@ class SDLWindow : public IWindow {
   void Move(int x, int y);
 
 	void SetBordered(bool enabled);
-	void SetFullscreen(bool enabled = true);
-  void ToggleFullscreen() {
-    SetFullscreen(!isFullscreen);
-  }
+	void SetFullscreen(bool enabled = false) override;
+  
 
 	void SetBorderless() {
 		SetBordered(false);
@@ -67,12 +62,17 @@ class SDLWindow : public IWindow {
 
   void SetTitle(const char *newTitle) override;
 
-	void GoBorderlessFullscreen();
+	void GoBorderlessFullscreen() override;
 
   void Hide();
   void Show();
 
   void SwapBuffers() override;
+
+  VulkanExtensions GetVulkanExtensions() override;
+  void *CreateVulkanSurface(void *instance) override;
+
+  SizeDoesntMatter GetFramebufferSize() override;
 
 
 // struct SDL_Window;
@@ -100,8 +100,6 @@ class SDLWindow : public IWindow {
   void GetFramebufferSize(int *width, int *height);
 
   bool HideMouse();
-
-	void ActivateScreenSaverMode();
 
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32

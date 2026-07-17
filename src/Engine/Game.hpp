@@ -5,35 +5,32 @@
 #define NOMINMAX
 #endif
 
-// #include <glad/glad.h>
 #include "../stdafx.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <type_traits>
-#include <array>
-#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "engine.h"
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
 // #include "physics/PhysicsEngine.hpp"
 #include "bases.h"
 #include "Object.hpp"
+#include "Character.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
 #include "saver/Level.hpp"
 
 #define WAYLAND
 
-#include "Renderer.hpp"
+#include "Graphics/Renderer.hpp"
 
 namespace fe {
 
@@ -46,7 +43,7 @@ public:
 
 	std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
 
-	std::vector<std::shared_ptr<Object>> maps = std::vector<std::shared_ptr<Object>>();
+	std::vector<std::shared_ptr<Object<>>> maps = std::vector<std::shared_ptr<Object<>>>();
 
 	std::vector<std::string> messages;
 
@@ -65,45 +62,30 @@ public:
 
 	bool isConnectedToServer = false;
 
-	// std::unique_ptr<PhysicsEngine> physicsEngine = nullptr;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 
 	std::unique_ptr<fe::Level> level = std::make_unique<fe::Level>();
 
-	Game() : Renderer() {}
+	~Game();
+
+	Game();
 
 	typedef void* (* GLADloadproc)(const char *name);
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-	Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-		Init();
-	}
+    Game(F loadProc) : Game(reinterpret_cast<GLADloadproc>(loadProc)) {}
 
-	Game(GLADloadproc loadProc) : Renderer(loadProc) {};
+	Game(GLADloadproc loadProc);
 
-	Game(int width, int height, bool skipInit = false, bool showWindow = true) : Renderer(width, height, skipInit, !showWindow) {
-		Init();
-	}
+	Game(int width, int height, bool skipInit = false, bool showWindow = true);
 
-	void InitGL();
 
-	void Init() {
-		SetClearColor(0.0F, 0.0F, 0.0f);
-
-		// this->physicsEngine = std::make_unique<PhysicsEngine>();
-		
-		LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
-		
-		this->scene = std::make_unique<fe::Scene>();
-		this->camera = std::make_unique<fe::Camera>(45.0f, 0.1f, 100.0f);
-		// this->level = std::move();
-		
-		this->scene->SetLight();
-		
-		InitGL();
-		InitUI();
-	}
+	void Init();
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
+
+	PhysicsFactory *GetPhysicsEngine();
 
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
@@ -180,30 +162,31 @@ public:
 		this->scene->AddObject(newPlayer);
 	}
 
-	std::shared_ptr<fe::Object> LoadObj(std::string path, float scale = 1.0f) {
-		std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> LoadObj(std::string path, float scale = 1.0f) {
+		std::shared_ptr<fe::Object<>> model = std::make_shared<fe::Object<>>(path, scale);
 		this->scene->AddObject(model);
 		return model;
 	}
 
-	std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
-		return std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
+		return std::make_shared<fe::Object<>>(path, scale);
 	}
 
-	std::shared_ptr<fe::Object> LoadStaticOBJ(std::string path, float scale = 1.0f) {
-		std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
+	std::shared_ptr<fe::Object<>> LoadStaticOBJ(std::string path, float scale = 1.0f) {
+		std::shared_ptr<fe::Object<>> model = std::make_shared<fe::Object<>>(path, scale);
 		model->isStatic = true;
 		return model;
 	}
 
 	double getDeltaTime() { return 1; }
 
-	void SetClearColor(float r, float g, float b, float a = 1);
+	// void SetClearColor(float r, float g, float b, float a = 1);
 
 	void Resize() { Resize(this->window->width, this->window->height); }
 	void Resize(int width, int height) {
-		if (this->scene) this->scene->Resize(width, height);
-		this->UpdateAspect(width, height);
+		Renderer::Resize(width, height);
+		// if (this->scene) this->scene->Resize(width, height);
+		// this->UpdateAspect(width, height);
 	}
 
 	void Redraw(GLuint fbo) {
@@ -211,24 +194,17 @@ public:
 		Renderer::Redraw();
 	}
 
-	void CheckErrors();
 
 	void Update() {
 		double dt = scene->Update();
 		UpdatePhysics(dt);
 	}
 
-	void UpdatePhysics(double deltaTime) {
-		// if (physicsEngine) physicsEngine->Update(deltaTime);
-	}
+	void UpdatePhysics(double deltaTime);
 
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
 	virtual void OnDraw() {}
-
-	void EnableWireframe();
-	void DisableWireframe();
-	void ToggleWireframe(bool enabled = false);
 
 	template<typename WindowT = IWindow>
 	WindowT* GetWindow() {
@@ -238,8 +214,6 @@ public:
 	double GetFPS() {
 		return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
 	}
-
-	void BindFrameBuffer(int bufferIndex = 0);
 
 	void UpdateAspect(int width, int height) {
 		if (this->camera) this->camera->SetAspect(width, height);

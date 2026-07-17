@@ -9,6 +9,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <glad/glad.h>
 
 #include "SDLWindow.hpp"
@@ -93,6 +94,16 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+	bool tenBit = true;
+
+	if (tenBit) {
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
+	}
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
@@ -145,12 +156,17 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
     // SDL_AddEventWatch(EventWatch, this);
 }
 
-void fe::SDLWindow::SwapBuffers() {
+void fe::SDLWindow::SwapBuffers() {  // TOOD: this 
+	// TODO: return if vulkan or weell do vulkan impl not gl
+	// if (true) return;
 	SDL_GL_SwapWindow(impl->window);
 }
 
 void fe::SDLWindow::SetSwapInterval(int interval) {
+	if (false)
 	SDL_GL_SetSwapInterval(interval);
+	// else SDL_Vulkan_Get
+	// else SDL_Vulkan_Set
 }
 
 void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
@@ -172,21 +188,22 @@ void fe::SDLWindow::StopMouseCapture() {
 void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 
 
-  void fe::SDLWindow::Destroy() {
-    if (!impl) return;
+void fe::SDLWindow::Destroy() {
+	if (!impl) return;
 
-    if (impl->gl_context) {
-      SDL_GL_DestroyContext(impl->gl_context);
-      impl->gl_context = nullptr;
-    }
+	if (impl->gl_context) {
+		SDL_GL_MakeCurrent(impl->window, nullptr); 
+		SDL_GL_DestroyContext(impl->gl_context);
+		impl->gl_context = nullptr;
+	}
 
-    if (impl->window) {
-      SDL_DestroyWindow(impl->window);
-      impl->window = nullptr;
-    }
+	if (impl->window) {
+		SDL_DestroyWindow(impl->window);
+		impl->window = nullptr;
+	}
 
-    SDL_Quit();
-  }
+	SDL_Quit();
+}
 
 SDL_Window* fe::SDLWindow::GetWindow() { return impl->window; }
 
@@ -234,10 +251,10 @@ void fe::SDLWindow::Resize(int w, int h) {
 	SDL_SetWindowSize(this->impl->window, w, h);
 }
 
-void fe::SDLWindow::ActivateScreenSaverMode() {
-    SDL_GetMouseState(&startX, &startY);
-	_isScreensaving = true;
-}
+// void fe::SDLWindow::ActivateScreenSaverMode() {
+//     SDL_GetMouseState(&startX, &startY);
+// 	_isScreensaving = true;
+// }
 
 
 void fe::SDLWindow::AttachToNativeParent(void* parent)
@@ -282,7 +299,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	);
 
 	RECT r;
-	GetClientRect(previewParent, &r);
+	GetClientRect((HWND)parent, &r);
 
 	w = r.right - r.left;
 	h = r.bottom - r.top;
@@ -412,6 +429,27 @@ bool fe::SDLWindow::HideMouse() {
 
 void fe::SDLWindow::SetTitle(const char *title) {
 	SDL_SetWindowTitle(impl->window, title);
+}
+
+fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
+	fe::VulkanExtensions ext;
+	ext.extensions = SDL_Vulkan_GetInstanceExtensions(&ext.extensionCount);
+	return ext;
+}
+
+void *fe::SDLWindow::CreateVulkanSurface(void *instance) {
+	VkSurfaceKHR surface;
+	if (!SDL_Vulkan_CreateSurface(impl->window, (VkInstance)instance, nullptr, &surface)) {
+		throw std::runtime_error("Failed to create window surface.");
+	}
+	return (void*)surface;
+}
+
+fe::SizeDoesntMatter fe::SDLWindow::GetFramebufferSize() {
+	fe::SizeDoesntMatter m;
+	// SDL_Getframeb
+	SDL_GetWindowSizeInPixels(impl->window, &m.width, &m.height);
+	return m;
 }
 
 #ifdef _WIN32

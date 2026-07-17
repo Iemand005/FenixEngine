@@ -1,28 +1,40 @@
+#ifndef EXCLUDE_JOLT
 
-#define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
+#include <iostream>
+#include <cstdarg>
+
+// #define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 #define JPH_DEBUG_RENDERER
 #define JPH_OBJECT_STREAM
-#define JPH_CROSS_PLATFORM_DETERMINISTIC
+// #define JPH_CROSS_PLATFORM_DETERMINISTIC
+
+#ifndef EXCLUDE_JOLT
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyManager.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
+#endif
 
 #include "PhysicsEngine.hpp"
+#include "BasicDebugRenderer.hpp"
 
 // JPH_SUPPRESS_WARNINGS
 
-using namespace JPH;
-
 using namespace fe;
+
+
+#ifndef EXCLUDE_JOLT
+
+using namespace JPH;
 
 #ifdef JPH_ENABLE_ASSERTS
 
@@ -37,136 +49,172 @@ using namespace fe;
 // };
 
 static void TraceImpl(const char* inFMT, ...) {
-  va_list list;
-  va_start(list, inFMT);
-  char buffer[1024];
-  vsnprintf(buffer, sizeof(buffer), inFMT, list);
-  va_end(list);
+	va_list list;
+	va_start(list, inFMT);
+	char buffer[1024];
+	vsnprintf(buffer, sizeof(buffer), inFMT, list);
+	va_end(list);
 
-  std::cout << buffer << std::endl;
+	std::cout << buffer << std::endl;
 }
 
 #endif  // JPH_ENABLE_ASSERTS
 
 class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter {
- public:
-  virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
+public:
+	virtual bool ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override { return true; }
 };
 
 class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
- public:
-  virtual uint GetNumBroadPhaseLayers() const override { return 1; }
+public:
+	virtual uint GetNumBroadPhaseLayers() const override { return 1; }
 
-  virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override { return BroadPhaseLayer(0); }
+	virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override { return BroadPhaseLayer(0); }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-  virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override { return "MOVING"; }
+	virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override { return "MOVING"; }
 #endif
 };
 
 class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter {
- public:
-  virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
+public:
+	virtual bool ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override { return true; }
 };
 
 #ifdef JPH_ENABLE_ASSERTS
 
 // Callback for asserts, connect this to your own assert handler if you have one
 static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, uint inLine) {
-  std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
-  return true;
+	std::cerr << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr ? inMessage : "") << std::endl;
+	return true;
 };
 
 #endif
 
-struct PhysicsEngine::Impl {
-  std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
-  std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
-  std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-  std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
-  std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
-  std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+#endif
+
+struct PhysicsFactory::Impl {
+#ifndef EXCLUDE_JOLT
+	std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
+	std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
+	std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+	std::shared_ptr<BPLayerInterfaceImpl> broad_phase_layer_interface;
+	std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
+	std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
+	std::unique_ptr<BasicDebugRenderer> debugRenderer;
+#endif
 };
 
-// PhysicsEngine::PhysicsEngine() {
-//   impl->physicsSystem = nullptr;
-//   impl->temp_allocator = nullptr;
-//   impl->jobSystem = nullptr;
-// };
+// MAYBE TODO: uh maybe perhaps uh rename this calss to uh physicsfactory or soemthing? it's a facture more than a engine really
+PhysicsFactory::PhysicsFactory() {
+#ifndef EXCLUDE_JOLT
+	impl = std::make_unique<Impl>();
 
-PhysicsEngine::PhysicsEngine() {
-  impl = std::make_unique<Impl>();
+	RegisterDefaultAllocator();
 
-  RegisterDefaultAllocator();
+	JPH_IF_ENABLE_ASSERTS(Trace = TraceImpl);
+	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
+	Factory::sInstance = new Factory();
+	RegisterTypes();
 
-  JPH_IF_ENABLE_ASSERTS(Trace = TraceImpl);
-  JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
-  Factory::sInstance = new Factory();
-  RegisterTypes();
+	// Create heap-allocated members
+	impl->temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+	impl->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
-  // Create heap-allocated members
-  impl->temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-  impl->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+	impl->physicsSystem = std::make_shared<JPH::PhysicsSystem>();
 
-  impl->physicsSystem = std::make_shared<JPH::PhysicsSystem>();
+	impl->broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
+	impl->object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
+	impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
 
-  impl->broad_phase_layer_interface = std::make_shared<BPLayerInterfaceImpl>();
-  impl->object_vs_object_layer_filter = std::make_shared<ObjectLayerPairFilterImpl>();
-  impl->objectVsBroadphaseLayerFilter = std::make_shared<ObjectVsBroadPhaseLayerFilterImpl>();
+	impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
 
-  impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
+	impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
+	JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
 
-  EnableGravity();
+	EnableGravity();
 
-  impl->physicsSystem->OptimizeBroadPhase();
+	impl->physicsSystem->OptimizeBroadPhase();
+#endif
 
 }
 
-PhysicsEngine::~PhysicsEngine() = default;
+PhysicsFactory::~PhysicsFactory() = default;
 
 
 
-void PhysicsEngine::Update(double dt) {
-    // Validate input parameters
-    if (dt <= 0.0) {
-      // Log warning or handle invalid delta time
-      std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
-      return;
-    }
+void PhysicsFactory::Update(double dt) {
+#ifndef EXCLUDE_JOLT
+	// Validate input parameters
+	if (dt <= 0.0) {
+		// Log warning or handle invalid delta time
+		std::cerr << "Warning: Invalid delta time " << dt << ", skipping physics update." << std::endl;
+		return;
+	}
 
-    // Ensure physics system and dependencies are initialized
-    if (!impl || !impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
-      std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
-      return;
-    }
+	// Ensure physics system and dependencies are initialized
+	if (!impl || !impl->physicsSystem || !impl->temp_allocator || !impl->jobSystem) {
+		std::cerr << "Error: Physics system or dependencies not initialized." << std::endl;
+		return;
+	}
 
-    // Number of collision steps (configurable, currently set to 1 for simplicity)
-    const int collisionSteps = 1;
+	// Number of collision steps (configurable, currently set to 1 for simplicity)
+	const int collisionSteps = 1;
 
-    // Cast dt to float as required by Jolt Physics
-    float deltaTime = static_cast<float>(dt);
-    
-    impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
-  }
+	// Cast dt to float as required by Jolt Physics
+	float deltaTime = static_cast<float>(dt);
+	
+	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
 
-  void PhysicsEngine::EnableGravity() {
-    impl->physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
-  }
+	if (impl->debugRenderer && BasicDebugRenderer::DebugRenderingEnabled()) {
+		JPH::BodyManager::DrawSettings settings;
+		settings.mDrawShape = true;
+		settings.mDrawShapeWireframe = true;
+		settings.mDrawBoundingBox = true;
+		settings.mDrawWorldTransform = true;
+		impl->physicsSystem->DrawBodies(settings, impl->debugRenderer.get());
+	}
+#endif
+}
 
-  void PhysicsEngine::DisableGravity() {
-    impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
-  }
+void PhysicsFactory::EnableGravity() {
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem->SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
+#endif
+}
 
-  std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(glm::vec3 size, bool dynamic) {
-    auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
-    obj->BindPhysicsSystem(impl->physicsSystem);
-    obj->InitializeBoxBody(size, dynamic);
-    return obj;
-  }
+void PhysicsFactory::DisableGravity() {
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem->SetGravity(JPH::Vec3(0, 0, 0));
+#endif
+}
 
-  std::unique_ptr<fe::PhysicsObject> PhysicsEngine::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
-    auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
-    obj->BindPhysicsSystem(impl->physicsSystem);
-    obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
-    return obj;
-  }
+void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+#ifndef EXCLUDE_JOLT
+	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled())
+		return;
+	impl->debugRenderer->Render(viewMatrix, projectionMatrix);
+#endif
+}
+
+std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool dynamic) {
+	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
+	Bind(obj.get());
+	obj->InitializeBoxBody(size, dynamic);
+	return obj;
+}
+
+std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
+	auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
+	Bind(obj.get());
+	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
+	return obj;
+}
+
+void PhysicsFactory::Bind(PhysicsObject *obj) {
+#ifndef EXCLUDE_JOLT
+	obj->BindPhysicsSystem(impl->physicsSystem);
+#endif
+}
+
+#endif

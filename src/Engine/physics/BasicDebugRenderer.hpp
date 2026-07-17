@@ -2,18 +2,24 @@
 
 #include <vector>
 #include <string>
-#include <memory>
 #include <map>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-class JPH::DebugRendererSimple;
+#include <Jolt/Jolt.h>
+#include <Jolt/Renderer/DebugRendererSimple.h>
 
 class BasicDebugRenderer : public JPH::DebugRendererSimple
 {
 public:
+    static bool& DebugRenderingEnabled()
+    {
+        static bool enabled = false;
+        return enabled;
+    }
+
     struct DebugVertex
     {
         glm::vec3 position;
@@ -95,6 +101,11 @@ public:
 
     void Render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
     {
+        if (!DebugRenderingEnabled()) {
+            Clear();
+            return;
+        }
+
         glUseProgram(shaderProgram);
         
         // 设置uniform
@@ -256,5 +267,11 @@ private:
         v2.color = color;
         batch.vertices.push_back(v1);
         batch.vertices.push_back(v2);
+    }
+
+public:
+    static void DrawImGuiToggle(const char* label)
+    {
+        // ImGui::Checkbox(label, &DebugRenderingEnabled());
     }
 };

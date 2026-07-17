@@ -1,54 +1,38 @@
 
-
-// #include <Jolt/Jolt.h>
-// #include <Jolt/Geometry/IndexedTriangle.h>
-// #include <Jolt/Physics/PhysicsSystem.h>
-// #include <Jolt/Physics/Body/BodyCreationSettings.h>
-// #include <Jolt/Physics/Body/BodyInterface.h>
-// #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
-// #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #pragma once
-#include <cstdarg>
-#include <iostream>
+
 #include <memory>
-#include <thread>
-
-
 
 #include "PhysicsObject.hpp"
 
-
-
-// namespace BroadPhaseLayers
-// {
-//   static constexpr BroadPhaseLayer MOVING(0);
-// };
-
-
 namespace fe{
 
-class PhysicsEngine {
- public:
+	class PhysicsFactory {
+	public:
 
-  struct Impl;
-  std::unique_ptr<Impl> impl;
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 
-  PhysicsEngine();
-  ~PhysicsEngine();
-
-
-  std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
+		PhysicsFactory();
+		~PhysicsFactory();
 
 
-  void Update(double dt);
+		std::vector<std::unique_ptr<PhysicsObject>> physicsObjects;
 
-  ObjectState SyncToRender();
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
+		void Update(double dt);
 
-  std::unique_ptr<fe::PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
-  
-  void EnableGravity();
-  void DisableGravity();
-};
+		ObjectState SyncToRender();
+
+		std::unique_ptr<PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
+		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
+		
+		void RemoveObject(std::unique_ptr<PhysicsObject> object);
+
+		void EnableGravity();
+		void DisableGravity();
+		void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
+
+		void Bind(PhysicsObject *obj);
+	};
 }
