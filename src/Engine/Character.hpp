@@ -13,11 +13,12 @@ namespace fe {
 class Character : public Object<> {
 public:
 	float moveSpeed = 5.0f;
-	float jumpSpeed = 0.15f;
+	float jumpSpeed = 8.0f;
 	float jumpHeightWhenGravityDisabled = 0.15f;
 	float groundCheckDistance = 0.15f;
 	glm::vec3 pendingMovement{};
 	bool pendingJump = false;
+	bool jumpTriggered = false;
 	bool gravityEnabled = true;
 	bool isGrounded = false;
 
@@ -62,11 +63,14 @@ public:
 				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
 			}
 
-			if (pendingJump && isGrounded) {
+			if (pendingJump && isGrounded && !jumpTriggered) {
 				targetVelocity.y = jumpSpeed;
+				jumpTriggered = true;
 			} else if (gravityEnabled) {
 				targetVelocity.y = this->state.velocity.y;
 			}
+			if (!pendingJump && jumpTriggered)
+				jumpTriggered = false;
 
 			this->physicsObject->SetLinearVelocity(targetVelocity);
 			pendingMovement = glm::vec3(0.0f);
@@ -82,6 +86,7 @@ public:
 			this->state.position += glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f);
 			pendingJump = false;
 		}
+		jumpTriggered = false;
 	}
 };
 
