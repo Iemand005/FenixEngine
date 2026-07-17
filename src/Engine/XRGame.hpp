@@ -31,7 +31,7 @@ namespace fe {
 
 		XRGameOptions() = default; 
 
-    	XRGameOptions(int w, int h) : fe::WindowOptions(w, h) {} 
+    	XRGameOptions(int w, int h) : fe::RendererOptions(w, h) {} 
 	};
 
 	class XRGame : public fe::Game {
