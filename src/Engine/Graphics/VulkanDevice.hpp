@@ -245,13 +245,13 @@ public:
 		recreateSwapChain();
 	}
 
-	void BeginFrame() {
+	void BeginFrame() override {
 		auto cmd = commandBuffers_[currentFrame_];
 		if (!cmd) {
 			std::cerr << "[VulkanDevice] BeginFrame: command buffer is null" << std::endl;
 			return;
 		}
-		
+
 		vkCmdSetViewport(cmd, 0, 1, &viewport);
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);

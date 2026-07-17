@@ -21,6 +21,7 @@ namespace fe {
 		virtual void Clear() = 0;
 		virtual void SetClearColor(float r, float g, float b, float a = 1) = 0;
 		virtual void Resize(int width, int height) = 0;
+		virtual void void BeginFrame() = 0;
 		virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
 		virtual void SubmitFrame() = 0;
 
