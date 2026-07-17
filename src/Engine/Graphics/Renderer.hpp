@@ -113,6 +113,7 @@ public:
 	}
 
 	Renderer(RendererOptions options) {
+		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
 		CreateRenderDevice(options.useVulkan);
 	}
 
