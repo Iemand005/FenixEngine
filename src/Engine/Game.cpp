@@ -20,8 +20,10 @@ Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(wid
 	Init();
 }
 
-	Game(RendererOptions options);
-Game::
+Game::Game(RendererOptions options) : Renderer(options) {
+	Init();
+}
+
 
 PhysicsFactory *Game::GetPhysicsEngine() {
 #ifndef EXCLUDE_JOLT
