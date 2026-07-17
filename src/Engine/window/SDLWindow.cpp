@@ -434,8 +434,8 @@ void *fe::SDLWindow::CreateVulkanSurface(void *instance) {
 	return (void*)surface;
 }
 
-fe::SizeDoesntMatter fe::SDLWindow::GetFramebufferSize() {
-	fe::SizeDoesntMatter m;
+fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
+	fe::WindowSize m;
 	// SDL_Getframeb
 	SDL_GetWindowSizeInPixels(impl->window, &m.width, &m.height);
 	return m;

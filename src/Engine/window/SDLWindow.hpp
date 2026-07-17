@@ -72,7 +72,7 @@ class SDLWindow : public IWindow {
   VulkanExtensions GetVulkanExtensions() override;
   void *CreateVulkanSurface(void *instance) override;
 
-  SizeDoesntMatter GetFramebufferSize() override;
+  WindowSize GetFramebufferSize() override;
 
 
 // struct SDL_Window;
