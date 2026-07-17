@@ -200,8 +200,6 @@ template<typename WindowT = DefaultWindow>
 		return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
 	}
 
-	double getDeltaTime() { return 1; }
-
 	void SetClearColor(float r, float g, float b, float a = 1) {
 		renderDevice->SetClearColor(r, g, b, a);
 	}
