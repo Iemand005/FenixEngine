@@ -818,13 +818,6 @@ private:
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats) {
 		for (const auto& fmt : formats) {
-			if ((fmt.format == VK_FORMAT_A2R10G10B10_UNORM_PACK32 ||
-			     fmt.format == VK_FORMAT_A2B10G10R10_UNORM_PACK32) &&
-				fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-				return fmt;
-			}
-		}
-		for (const auto& fmt : formats) {
 			if (fmt.format == VK_FORMAT_B8G8R8A8_SRGB &&
 				fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 				return fmt;
