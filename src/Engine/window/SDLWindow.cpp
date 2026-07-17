@@ -119,8 +119,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-		bool tenBit = options.tenBit;
-		if (tenBit) {
+		if (options.tenBit) {
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
