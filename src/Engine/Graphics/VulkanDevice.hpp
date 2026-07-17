@@ -347,10 +347,8 @@ public:
 		scissor.offset = {0, 0};
 		scissor.extent = swapChainExtent_;
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
 		drawCallCount_ = 0;
-		currentBoundPipeline_ = graphicsPipeline_;
+		currentBoundPipeline_ = VK_NULL_HANDLE;
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
@@ -428,9 +426,11 @@ public:
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
-		if (graphicsPipeline_ != currentBoundPipeline_) {
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-			currentBoundPipeline_ = graphicsPipeline_;
+		VkPipeline requiredPipeline = (vkBuffers->vertexFormat == VertexFormat::Array)
+			? graphicsPipelineArray_ : graphicsPipeline_;
+		if (requiredPipeline != currentBoundPipeline_) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
+			currentBoundPipeline_ = requiredPipeline;
 		}
 
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
@@ -1623,7 +1623,7 @@ private:
 	// ---------------------------------------------------------------
 	void createSyncObjects() {
 		size_t imageCount = swapChainImages_.size();
-		imageAvailableSemaphores_.resize(imageCount);
+		imageAvailableSemaphores_.resize(kMaxFramesInFlight);
 		renderFinishedSemaphores_.resize(imageCount);
 		inFlightFences_.resize(kMaxFramesInFlight);
 
@@ -1634,17 +1634,19 @@ private:
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < imageCount; i++) {
-			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS ||
-				vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS) {
+		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects.");
-			}
+		}
+
+		for (size_t i = 0; i < imageCount; i++) {
+			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS)
+				throw std::runtime_error("Failed to create sync objects.");
 		}
 
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-			if (vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS) {
+			if (vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects.");
-			}
 		}
 	}
 
@@ -1686,22 +1688,30 @@ private:
 
 		cleanupSwapChain();
 
+		for (auto& sem : imageAvailableSemaphores_) vkDestroySemaphore(device_, sem, nullptr);
+		imageAvailableSemaphores_.clear();
+		for (auto& sem : renderFinishedSemaphores_) vkDestroySemaphore(device_, sem, nullptr);
+		renderFinishedSemaphores_.clear();
+		for (auto& fence : inFlightFences_) vkDestroyFence(device_, fence, nullptr);
+		inFlightFences_.clear();
+
 		createSwapChain();
 		createImageViews();
 		createDepthResources();
 		createFramebuffers();
+		createSyncObjects();
 	}
 
 	// ---------------------------------------------------------------
 	// Cleanup
 	// ---------------------------------------------------------------
 	void cleanup() {
-		for (size_t i = 0; i < swapChainImages_.size(); i++) {
-			if (imageAvailableSemaphores_[i] != VK_NULL_HANDLE)
-				vkDestroySemaphore(device_, imageAvailableSemaphores_[i], nullptr);
-			if (renderFinishedSemaphores_[i] != VK_NULL_HANDLE)
-				vkDestroySemaphore(device_, renderFinishedSemaphores_[i], nullptr);
-		}
+		for (auto& sem : imageAvailableSemaphores_)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(device_, sem, nullptr);
+		imageAvailableSemaphores_.clear();
+		for (auto& sem : renderFinishedSemaphores_)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(device_, sem, nullptr);
+		renderFinishedSemaphores_.clear();
 
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (inFlightFences_[i] != VK_NULL_HANDLE)
