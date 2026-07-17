@@ -19,14 +19,13 @@ namespace fe
 		}
 
 	public:
-		EditableGameBase() {
-		}
+		EditableGameBase() {}
 
-		EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {
-		}
+		EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {}
 
-		EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {
-		}
+		EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {}
+
+		EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
 		void OnDraw() override {
 			// for (auto &light : scene->GetLightArray())
