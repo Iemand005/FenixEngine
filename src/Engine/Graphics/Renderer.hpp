@@ -97,8 +97,7 @@ public:
 
 	bool useVulkan = false;
 	Renderer(bool useVulkan = false) {
-		
-		this->useVulkan = useVulkan;
+		CreateRenderDevice(useVulkan);
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
@@ -114,10 +113,12 @@ public:
 	}
 
 	Renderer(RendererOptions options) {
-		InitRenderDevice()
+		CreateRenderDevice(options.useVulkan);
 	}
 
-	void InitRenderDevice(bool useVulkan = falsel) {
+	void CreateRenderDevice(bool useVulkan = false) {
+		if () return;
+		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
