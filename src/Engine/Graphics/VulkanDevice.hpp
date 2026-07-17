@@ -356,7 +356,7 @@ public:
 		vkTexture->uploadTextureArray(device_, physicalDevice_, commandPool_, graphicsQueue_, paths, scaling);
 	}
 
-	VkInstance GetInstance() const { return instance_; }
+	VkInstance GetInstance() const { return _instance; }
 	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
 	VkDevice GetDevice() const { return device_; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
@@ -386,8 +386,8 @@ private:
 	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
 	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
 
-	VkInstance instance_ = VK_NULL_HANDLE;
-	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+	VkInstance _instance = VK_NULL_HANDLE;
+	VkSurfaceKHR _surface = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
 	VkDevice device_ = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
@@ -466,7 +466,7 @@ private:
 			createInfo.ppEnabledLayerNames = kValidationLayers.data();
 		} else createInfo.enabledLayerCount = 0;
 
-		if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS)
+		if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create Vulkan instance.");
 	}
 
@@ -490,7 +490,7 @@ private:
 	}
 
 	void createSurface() {
-		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
+		_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
 	}
 
 
@@ -507,7 +507,7 @@ private:
 				indices.graphicsFamily = i;
 			}
 			VkBool32 presentSupport = VK_FALSE;
-			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface_, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, _surface, &presentSupport);
 			if (presentSupport) {
 				indices.presentFamily = i;
 			}
@@ -532,20 +532,20 @@ private:
 
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) {
 		SwapChainSupportDetails details;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, surface_, &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, _surface, &details.capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, nullptr);
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, details.formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, nullptr);
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, details.presentModes.data());
 		}
 
 		return details;
@@ -577,13 +577,13 @@ private:
 
 	void pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
+		vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
 		if (deviceCount == 0) {
 			throw std::runtime_error("No GPUs with Vulkan support found.");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
+		vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
 		int bestScore = -1;
 		VkPhysicalDevice bestDevice = VK_NULL_HANDLE;
@@ -663,7 +663,7 @@ private:
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		createInfo.surface = surface_;
+		createInfo.surface = _surface;
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = surfaceFormat.format;
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -1634,7 +1634,7 @@ private:
 			vkFreeMemory(device_, depthImageMemory_, nullptr);
 
 		if (device_ != VK_NULL_HANDLE) vkDestroyDevice(device_, nullptr);
-		if (surface_ != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance_, surface_, nullptr);
-		if (instance_ != VK_NULL_HANDLE) vkDestroyInstance(instance_, nullptr);
+		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);
+		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
 	}
 };
