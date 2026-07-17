@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "Graphics/Renderer.hpp"
+#include "window/IWindow.hpp"
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -30,7 +31,7 @@ namespace fe {
 
 		XRGameOptions() = default; 
 
-    	XRGameOptions(int w, int h) : width(w), height(h) {} 
+    	XRGameOptions(int w, int h) : fe::WindowOptions(w, h) {} 
 	};
 
 	class XRGame : public fe::Game {

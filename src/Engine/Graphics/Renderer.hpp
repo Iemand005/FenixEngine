@@ -60,6 +60,10 @@ namespace fe {
 
 	struct RendererOptions : WindowOptions {
 		bool useVulkan = true;
+		
+		RendererOptions() = default; 
+
+		RendererOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen) {}
 	};
 
 class Renderer {
