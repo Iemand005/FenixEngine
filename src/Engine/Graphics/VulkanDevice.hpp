@@ -44,7 +44,7 @@ const std::vector<const char*> kDeviceExtensions = {
 constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 600;
 constexpr int kMaxFramesInFlight = 2;
-constexpr int kMaxDrawsPerFrame = 256;
+constexpr int kMaxDrawsPerFrame = 2048;
 constexpr int kMaxCachedTextures = 1024;
 
 struct QueueFamilyIndices {
