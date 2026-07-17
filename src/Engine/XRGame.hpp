@@ -25,7 +25,8 @@ typedef int64_t XrTime;
 namespace fe {
 
 	struct XRGameOptions : RendererOptions {
-		bool vr = false;
+		bool launchVR = false;
+		bool drawWindow = true;
 	};
 
 	class XRGame : public fe::Game {
