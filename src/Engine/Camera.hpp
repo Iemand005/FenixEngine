@@ -61,14 +61,14 @@ private:
 											farTopLeft, farTopRight, farTopRight, farBottomRight, farBottomRight, farBottomLeft, farBottomLeft, farTopLeft,
 											nearTopLeft, farTopLeft, nearTopRight, farTopRight, nearBottomRight, farBottomRight, nearBottomLeft, farBottomLeft};
 
-		glGenVertexArrays(1, &frustumVAO);
-		glBindVertexArray(frustumVAO);
-		glGenBuffers(1, &frustumVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, frustumVBO);
-		glBufferData(GL_ARRAY_BUFFER, frustumVertices.size() * sizeof(glm::vec3), frustumVertices.data(), GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(0);
-		glBindVertexArray(0);
+		// glGenVertexArrays(1, &frustumVAO);
+		// glBindVertexArray(frustumVAO);
+		// glGenBuffers(1, &frustumVBO);
+		// glBindBuffer(GL_ARRAY_BUFFER, frustumVBO);
+		// glBufferData(GL_ARRAY_BUFFER, frustumVertices.size() * sizeof(glm::vec3), frustumVertices.data(), GL_STATIC_DRAW);
+		// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		// glEnableVertexAttribArray(0);
+		// glBindVertexArray(0);
 	};
 
 	void SetAspect(float aspect) {

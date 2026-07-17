@@ -40,7 +40,7 @@ void Game::Init() {
 	impl->physicsEngine = std::make_unique<PhysicsFactory>(!this->useVulkan);
 #endif
 	
-	LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 	
 	this->scene = std::make_unique<fe::Scene>();
 	this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 100.0f);
