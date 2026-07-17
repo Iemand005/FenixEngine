@@ -97,8 +97,7 @@ public:
 
 	bool useVulkan = false;
 	Renderer(bool useVulkan = false) {
-		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
-		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+		
 		this->useVulkan = useVulkan;
 	}
 
@@ -114,7 +113,14 @@ public:
 		renderDevice->Init(window.get());
 	}
 
-	Renderer(RendererOptions options) : jo {}
+	Renderer(RendererOptions options) {
+		InitRenderDevice()
+	}
+
+	void InitRenderDevice(bool useVulkan = falsel) {
+		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
+		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+	}
 
 
 	void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
