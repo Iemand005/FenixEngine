@@ -47,8 +47,6 @@ namespace fe
     // virtual void DrawUI();
     
   private:
-    // fe::Object *selectedObject;
-
     ImGuiIO io;
 
 	bool physicsGravityEnabled = true;
