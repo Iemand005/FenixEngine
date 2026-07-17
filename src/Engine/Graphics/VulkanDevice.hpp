@@ -10,6 +10,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -72,6 +73,7 @@ public:
 
 	VkDescriptorSet currentBoundTexture_   = VK_NULL_HANDLE;
     VkPipeline       currentBoundPipeline_ = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSet> frameDescriptorSets_;
 
     struct TextureDescriptorKey {
         VkImageView imageView;
@@ -92,7 +94,7 @@ public:
 
     std::unordered_map<TextureDescriptorKey, VkDescriptorSet, TextureDescriptorKeyHash> textureDescriptorCache_;
 
-    VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler);
+    // VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler);
 
 	void SetShaderPaths(const std::string& vertPath, const std::string& fragPath) {
 		vertShaderPath_ = vertPath;
@@ -245,6 +247,84 @@ public:
 		recreateSwapChain();
 	}
 
+	VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler) {
+		TextureDescriptorKey key{imageView, sampler};
+
+		auto it = textureDescriptorCache_.find(key);
+		if (it != textureDescriptorCache_.end()) {
+			return it->second;
+		}
+
+		// allocate a new descriptor set for this texture (set = 1, texture-only layout)
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool_;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayout_; // your set=1 layout (sampler only)
+
+		VkDescriptorSet newSet = VK_NULL_HANDLE;
+		VkResult result = vkAllocateDescriptorSets(device_, &allocInfo, &newSet);
+		if (result != VK_SUCCESS) {
+			std::cerr << "[VulkanDevice] Failed to allocate texture descriptor set" << std::endl;
+			return VK_NULL_HANDLE;
+		}
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = imageView;
+		imageInfo.sampler = sampler;
+
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = newSet;
+		write.dstBinding = 0; // binding 0 within set 1
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write.descriptorCount = 1;
+		write.pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+
+		textureDescriptorCache_[key] = newSet;
+		return newSet;
+	}
+
+	void createFrameDescriptorSets() {
+		uint32_t framesInFlight = static_cast<uint32_t>(uniformBuffers_.size()); // or MAX_FRAMES_IN_FLIGHT, whatever you use elsewhere
+
+		std::vector<VkDescriptorSetLayout> layouts(framesInFlight, descriptorSetLayout_);
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool_;
+		allocInfo.descriptorSetCount = framesInFlight;
+		allocInfo.pSetLayouts = layouts.data();
+
+		frameDescriptorSets_.resize(framesInFlight);
+		if (vkAllocateDescriptorSets(device_, &allocInfo, frameDescriptorSets_.data()) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to allocate frame (UBO) descriptor sets.");
+		}
+
+		// write each one to point at its corresponding uniform buffer
+		for (uint32_t i = 0; i < framesInFlight; ++i) {
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffers_[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = frameDescriptorSets_[i];
+			write.dstBinding = 0;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			write.descriptorCount = 1;
+			write.pBufferInfo = &bufferInfo;
+
+			vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+		}
+	}
+
 	void BeginFrame() override {
 		auto cmd = commandBuffers_[currentFrame_];
 		if (!cmd) {
@@ -252,7 +332,18 @@ public:
 			return;
 		}
 
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width  = static_cast<float>(swapChainExtent_.width);
+		viewport.height = static_cast<float>(swapChainExtent_.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = {0, 0};
+		scissor.extent = swapChainExtent_;
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
@@ -335,16 +426,16 @@ public:
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
 
-		VkDescriptorSet texSet = GetOrCreateTextureDescriptorSet(texture);
+		VkDescriptorSet texSet = GetOrCreateTextureDescriptorSet(imageView, sampler);
 		if (texSet != currentBoundTexture_) {
 			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 				pipelineLayout_, 1, 1, &texSet, 0, nullptr); // set 1 = texture
 			currentBoundTexture_ = texSet;
 		}
 
-		if (activePipeline != currentBoundPipeline_) {
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, activePipeline);
-			currentBoundPipeline_ = activePipeline;
+		if (graphicsPipeline_ != currentBoundPipeline_) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+			currentBoundPipeline_ = graphicsPipeline_;
 		}
 
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);

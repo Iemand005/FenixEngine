@@ -78,6 +78,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 		}
 	}
 
+	void BeginFrame() override {
+
+	}
+
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
