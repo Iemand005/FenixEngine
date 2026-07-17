@@ -464,13 +464,10 @@ private:
 		if (kEnableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(kValidationLayers.size());
 			createInfo.ppEnabledLayerNames = kValidationLayers.data();
-		} else {
-			createInfo.enabledLayerCount = 0;
-		}
+		} else createInfo.enabledLayerCount = 0;
 
-		if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
+		if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create Vulkan instance.");
-		}
 	}
 
 	bool checkValidationLayerSupport() {
