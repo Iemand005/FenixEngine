@@ -267,7 +267,7 @@ public:
 		VkDescriptorSet newSet = VK_NULL_HANDLE;
 		VkResult result = vkAllocateDescriptorSets(device_, &allocInfo, &newSet);
 		if (result != VK_SUCCESS) {
-			std::cerr << "[VulkanDevice] Failed to allocate texture descriptor set" << std::endl;
+			std::cerr << "[VulkanDevice] Failed to allocate texture descriptor set (VkResult=" << result << ")" << std::endl;
 			return VK_NULL_HANDLE;
 		}
 
@@ -349,11 +349,8 @@ public:
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &frameDescriptorSets_[currentFrame_], 0, nullptr);
-
 		drawCallCount_ = 0;
-		currentBoundTexture_ = VK_NULL_HANDLE;
+		currentBoundPipeline_ = graphicsPipeline_;
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
@@ -428,12 +425,8 @@ public:
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
 
-		VkDescriptorSet texSet = GetOrCreateTextureDescriptorSet(imageView, sampler);
-		if (texSet != currentBoundTexture_) {
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-				pipelineLayout_, 1, 1, &texSet, 0, nullptr); // set 1 = texture
-			currentBoundTexture_ = texSet;
-		}
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
 		if (graphicsPipeline_ != currentBoundPipeline_) {
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
