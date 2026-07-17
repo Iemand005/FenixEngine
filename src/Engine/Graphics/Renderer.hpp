@@ -92,9 +92,10 @@ public:
 	bool isConnectedToServer = false;
 
 	bool useVulkan = false;
-	Renderer() {
+	Renderer(bool useVulkan = false) {
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+		this->useVulkan = useVulkan;
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
