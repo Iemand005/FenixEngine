@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "Graphics/Renderer.hpp"
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -22,6 +23,11 @@
 typedef int64_t XrTime;
 
 namespace fe {
+
+	struct XRGameOptions : RendererOptions {
+		bool vr: 
+	};
+
 	class XRGame : public fe::Game {
 	private:
 		struct Impl;
