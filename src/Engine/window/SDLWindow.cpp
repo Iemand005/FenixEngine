@@ -62,8 +62,8 @@ inline void CheckError(bool success = false) {
 // }
 
 struct fe::SDLWindow::Impl {
-  SDL_Window* window;
-  SDL_GLContext gl_context;
+  SDL_Window* window = nullptr;
+  SDL_GLContext gl_context = nullptr;
 
   void SDL_FlushOnResizeAndMove(SDL_Window* window) {
 #ifdef WIN32
@@ -84,26 +84,9 @@ fe::SDLWindow::~SDLWindow() {
   Destroy();
 }
 
-fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options) : IWindow(width, height) {
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan) : IWindow(width, height) {
 	impl = std::make_unique<Impl>();
 	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO));
-
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
-	bool tenBit = true;
-
-	if (tenBit) {
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
-		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
-	}
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
@@ -117,18 +100,9 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 		return;
     }
 
-	auto windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+	auto windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+	if (!useVulkan) windowFlags |= SDL_WINDOW_OPENGL;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
-
-	// SDL_PropertiesID props = SDL_CreateProperties();
- //
-	// SDL_SetPointerProperty(
-	// 	props,
-	// 	SDL_PROP_WINDOW_CREATE_X11_WINDOW_POINTER,
-	// 	(void*)existing_x11_window
-	// );
-
-	// SDL_Window* window = SDL_CreateWindowWithProperties(props);
 
 	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
 
@@ -137,23 +111,38 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 		SDL_Quit();
 	}
 
-    // SDL_FlushOnResizeAndMove(window);
+	if (!useVulkan) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-	impl->gl_context = SDL_GL_CreateContext(impl->window);
-	if (!impl->gl_context) {
-		CheckError();
-		SDL_DestroyWindow(impl->window);
-		SDL_Quit();
-	}
+		bool tenBit = true;
 
-	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return;
+		if (tenBit) {
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
+		}
+
+		impl->gl_context = SDL_GL_CreateContext(impl->window);
+		if (!impl->gl_context) {
+			CheckError();
+			SDL_DestroyWindow(impl->window);
+			SDL_Quit();
+		}
+
+		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+			std::cout << "Failed to initialize GLAD" << std::endl;
+			return;
+		}
 	}
 
     keyboardState = SDL_GetKeyboardState(NULL);
-
-    // SDL_AddEventWatch(EventWatch, this);
 }
 
 void fe::SDLWindow::SwapBuffers() {  // TOOD: this 

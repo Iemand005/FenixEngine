@@ -173,14 +173,14 @@ public:
 	}
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
+		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
 		renderDevice->Init(window.get());
 	}
 
 template<typename WindowT = DefaultWindow>
-	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
+	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false) {
 		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
+		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 
 		window->resizeEvent = [this](int width, int height) {
 			this->Resize(width, height);
