@@ -26,7 +26,7 @@ find_package(Vulkan REQUIRED)
 # if(NOT FE_EXCLUDE_GLFW)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 # endif()
-if (NOT FE_EXCLUDE_JOLT)
+i?
 	set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
 	set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
 	if(MSVC)
@@ -40,6 +40,7 @@ endif()
 add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
 add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
+
 
 add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr) 
 
