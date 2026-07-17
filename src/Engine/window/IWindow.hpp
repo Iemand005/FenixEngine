@@ -16,6 +16,8 @@ namespace fe {
 		int height;
 	};
 
+	// struct WindowOptio
+
 	inline bool IsWayland() {
 		const char* session = std::getenv("XDG_SESSION_TYPE");
 		if (session && strcmp(session, "wayland") == 0)
@@ -29,6 +31,8 @@ namespace fe {
 	}
 
 	struct WindowOptions {
+		int width, height;
+		bool hidden = false, fullscreen = false;
 		long long int x11WindowId;
 	};
 
