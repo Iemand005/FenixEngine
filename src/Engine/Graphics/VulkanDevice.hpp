@@ -82,7 +82,7 @@ public:
 
 	void Init(fe::IWindow *window) override {
 		this->window = window;
-		createInstance();
+		CreateInstance();
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
@@ -437,7 +437,7 @@ private:
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
 
-	void createInstance() {
+	void CreateInstance() {
 		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
 			throw std::runtime_error(
 				"Validation layers requested but not available. "
@@ -446,14 +446,12 @@ private:
 
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "VkEngine";
+		appInfo.pApplicationName = "FenixEngine";
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "No Engine";
+		appInfo.pEngineName = "FenixEngine";
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_2;
 
-		// uint32_t glfwExtensionCount = 0;
-		// const char** glfwExtensions = window(&glfwExtensionCount);
 		fe::VulkanExtensions vkExts = window->GetVulkanExtensions();
 		std::vector<const char*> extensions(vkExts.extensions, vkExts.extensions + vkExts.extensionCount);
 
