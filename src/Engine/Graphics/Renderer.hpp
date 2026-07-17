@@ -58,9 +58,7 @@ using DefaultWindow = fe::GLFW3Window;
 
 namespace fe {
 
-	struct RendererOptions {
-		int width, height;
-		bool showWindow = true;
+	struct RendererOptions : WindowOptions {
 		bool useVulkan = true;
 	};
 
