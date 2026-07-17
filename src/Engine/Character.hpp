@@ -55,32 +55,22 @@ public:
 		isGrounded = false;
 
 		if (this->physicsObject) {
-			glm::vec3 currentPos = this->physicsObject->GetPosition();
-			glm::vec3 down = glm::vec3(0.0f, -1.0f, 0.0f);
-			glm::vec3 probePos = currentPos + down * (1.0f + groundCheckDistance);
-			isGrounded = currentPos.y <= groundCheckDistance + 0.01f;
-			if (!isGrounded) {
-				isGrounded = this->state.position.y <= groundCheckDistance + 0.01f;
-			}
-			isGrounded = true; // TODO: add JPH contact lsiterner and use that to determine if norma l of conatc t is up
+			isGrounded = true; // TODO: use JPH contact listener for proper ground check
+
 			glm::vec3 targetVelocity(0.0f);
 			if (glm::length2(pendingMovement) > 0.0001f) {
 				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
 			}
-			targetVelocity.y = gravityEnabled ? this->state.velocity.y : 0.0f;
-			this->physicsObject->SetLinearVelocity(targetVelocity);
-			pendingMovement = glm::vec3(0.0f);
 
 			if (pendingJump && isGrounded) {
-				if (gravityEnabled) {
-					this->physicsObject->AddLinearVelocity(glm::vec3(0.0f, jumpSpeed, 0.0f));
-					// this->physicsObject->SetLinearVelocity
-				} else {
-					this->physicsObject->AddPosition(glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f));
-					this->state.position += glm::vec3(0.0f, jumpHeightWhenGravityDisabled, 0.0f);
-				}
-				pendingJump = false;
+				targetVelocity.y = jumpSpeed;
+			} else if (gravityEnabled) {
+				targetVelocity.y = this->state.velocity.y;
 			}
+
+			this->physicsObject->SetLinearVelocity(targetVelocity);
+			pendingMovement = glm::vec3(0.0f);
+			pendingJump = false;
 			return;
 		}
 
