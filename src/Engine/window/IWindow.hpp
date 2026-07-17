@@ -34,6 +34,10 @@ namespace fe {
 		int width, height;
 		bool hidden = false, fullscreen = false;
 		long long int x11WindowId;
+
+		WindowOptions() = default; 
+
+    	WindowOptions(int w, int h, bool hidden = false, bool fullscreen = false) : width(w), height(h), hidden(hidden), fullscreen(fullscreen) {} 
 	};
 
 

@@ -27,6 +27,10 @@ namespace fe {
 	struct XRGameOptions : RendererOptions {
 		bool launchVR = false;
 		bool drawWindow = true;
+
+		XRGameOptions() = default; 
+
+    	XRGameOptions(int w, int h) : width(w), height(h) {} 
 	};
 
 	class XRGame : public fe::Game {
