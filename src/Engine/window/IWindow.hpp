@@ -33,9 +33,7 @@ namespace fe {
 	}
 
 	struct WindowOptions : WindowSize {
-		bool hidden = false,
-			fullscreen = false;
-			tenBit = true;
+		bool hidden = false, fullscreen = false, tenBit = true;
 		long long int x11WindowId;
 
 		WindowOptions() = default; 
