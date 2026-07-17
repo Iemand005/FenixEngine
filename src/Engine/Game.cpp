@@ -20,6 +20,9 @@ Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(wid
 	Init();
 }
 
+	Game(RendererOptions options);
+Game::
+
 PhysicsFactory *Game::GetPhysicsEngine() {
 #ifndef EXCLUDE_JOLT
 	return impl->physicsEngine.get();
