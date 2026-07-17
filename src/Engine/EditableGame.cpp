@@ -83,6 +83,9 @@ void fe::EditableGame::DrawDebugUI() {
 		if (ImGui::SliderFloat("FOV", &fov, -10.0f, 179.0f, "%.1f deg")) {
 			camera->SetFOV(fov);
 		}
+		if (ImGui::SliderFloat("Far Plane", &camera->farDist, 10.0f, 2000.0f, "%.1f")) {
+			camera->SetAspect(camera->aspect);
+		}
 	}
 
 	fe::Object<>* model = this->player.get();
