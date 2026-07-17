@@ -109,7 +109,7 @@ public:
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
-		renderDevice->Init(window.get());
+		
 	}
 
 	Renderer(RendererOptions options) {
@@ -169,6 +169,7 @@ public:
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
+		renderDevice->Init(window.get());
 	}
 
 template<typename WindowT = DefaultWindow>
@@ -185,11 +186,6 @@ template<typename WindowT = DefaultWindow>
 		// };
 		return std::move(window);
 	}
-
-
-	// void SetShaderProgram(ShaderProgram program) {
-	//   this->shader = std::make_unique
-	// }
 
 	void LoadShaders(Shader vertexShader, Shader fragmentShader) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
