@@ -37,51 +37,51 @@
 typedef int64_t XrTime;
 
 namespace fe {
-  class XRGame : public fe::Game {
-  private:
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+	class XRGame : public fe::Game {
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 
-  public:
+	public:
 
-    float playerHeight = 1.7f;
+		float playerHeight = 1.7f;
 
-    bool drawWindow = true;
+		bool drawWindow = true;
 
-    glm::vec3 positionOffset = glm::vec3(1.0f);
+		glm::vec3 positionOffset = glm::vec3(1.0f);
 
-    bool running = true;
-    
-    uint32_t swapchainImageIndex;
+		bool running = true;
+		
+		uint32_t swapchainImageIndex;
 
-    XRGame(bool launchVR = true);
-    XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
-    XRGame(GLADloadproc loadProc);
-    ~XRGame();
+		XRGame(bool launchVR = true);
+		XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
+		XRGame(GLADloadproc loadProc);
+		~XRGame();
 
-    bool IsInstanceValid();
+		bool IsInstanceValid();
 
-    void initOpenXR();
-    void initOpenXR(void *next);
+		void initOpenXR();
+		void initOpenXR(void *next);
 #ifdef WIN32
-    void initOpenXR(HDC hDC, HGLRC hGLRC);
+		void initOpenXR(HDC hDC, HGLRC hGLRC);
 #endif
-    
-    void EnableXR();
-    void DisableVR();
-    void LaunchVR();
+		
+		void EnableXR();
+		void DisableVR();
+		void LaunchVR();
 
-    void Redraw(GLuint fbo = 0) ;
-    void RedrawVR();
-    void RedrawWindow(GLuint fbo = 0);
+		void Redraw(GLuint fbo = 0) ;
+		void RedrawVR();
+		void RedrawWindow(GLuint fbo = 0);
 
-    void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
+		void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 
-    void DestroyXR();
+		void DestroyXR();
 
-    void Destroy() {
-      DestroyXR();
-      if (window) window->Destroy();
-    }
-  };
+		void Destroy() {
+			DestroyXR();
+			if (window) window->Destroy();
+		}
+	};
 }
