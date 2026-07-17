@@ -232,14 +232,15 @@ template<typename WindowT = DefaultWindow>
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
-		if (!scene || !camera || !shader) return;
+		if (!scene || !camera) return;
+		if (!useVulkan && !shader) return;
 
 		Clear();
-		CheckGLError("Redraw:after-Clear");
+		CheckErrors("Redraw:after-Clear");
 
 		if (shader) {
 			shader->Use();
-			CheckGLError("Redraw:after-Use");
+			CheckErrors("Redraw:after-Use");
 
 			float elapsedTime = (float)window->GetTime();
 			shader->SetFloat("time", elapsedTime);
@@ -248,14 +249,14 @@ template<typename WindowT = DefaultWindow>
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
 			renderDevice->SetMat4("view", camera->GetViewMatrix());
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
-			CheckGLError("Redraw:after-Uniforms");
+			CheckErrors("Redraw:after-Uniforms");
 
 			RenderScene();
-			CheckGLError("Redraw:after-RenderScene");
+			CheckErrors("Redraw:after-RenderScene");
 		}
 
 		OnDraw();
-		CheckGLError("Redraw:after-OnDraw");
+		CheckErrors("Redraw:after-OnDraw");
 
 		DrawUI();
 
@@ -269,18 +270,14 @@ template<typename WindowT = DefaultWindow>
 	}
 
 	void CheckErrors() {
-		if (useVulkan) return;
-		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR) {
-			std::cerr << "OpenGL error: " << err << std::endl;
-		}
+		CheckErrors("Renderer");
 	}
 
-	static void CheckGLError(const char* label) {
+	void CheckErrors(const char* label) {
+		if (useVulkan) return;
 		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR) {
+		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
-		}
 	}
 
 	void Update() {
