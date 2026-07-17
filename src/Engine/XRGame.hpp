@@ -16,23 +16,8 @@
 #define XR_USE_PLATFORM_WAYLAND
 #define XR_USE_PLATFORM_XLIB
 #endif
-// #include <openxr/openxr.h>
-// #include <openxr/openxr_platform.h>
-// #include <GL/glew.h>
-// #define GLFW_INCLUDE_NONE
-// #include <GLFW/glfw3.h>
-// #include <GLFW/glfw3native.h>
 
-#include <cstring>
-// #include <glad/glad.h>
-// #include <glm/glm.hpp>
-// #include <glm/gtc/matrix_transform.hpp>
-// #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <memory>
-#include <vector>
-
-#include "engine.h"
 
 typedef int64_t XrTime;
 
