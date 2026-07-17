@@ -59,6 +59,8 @@ using DefaultWindow = fe::GLFW3Window;
 namespace fe {
 
 	struct RendererOptions {
+		int width, height;
+		bool showWindow = true;
 		bool useVulkan = true;
 	};
 
@@ -118,7 +120,7 @@ public:
 
 	void CreateRenderDevice(bool useVulkan = false) {
 		if (renderDevice) return; // TODO: throwerror?kaykay
-		
+
 		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
