@@ -30,7 +30,8 @@ Renderer::Renderer(GLADloadproc loadProc) {
 }
 
 void Renderer::BindFrameBuffer(int bufferIndex) {
-  glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+	if (!useVulkan)
+		glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
 }
 
 void Renderer::RenderMesh(Mesh<>& mesh) {
