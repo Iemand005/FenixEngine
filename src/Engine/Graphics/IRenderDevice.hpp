@@ -41,5 +41,6 @@ namespace fe {
 			const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) {}
 
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
+		virtual const char* GetDeviceName() const = 0;
 	};
 }

@@ -143,6 +143,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void SubmitFrame() override {
 		glFlush();
 	}
+
+	const char* GetDeviceName() const override {
+		return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	}
 };
 
 }

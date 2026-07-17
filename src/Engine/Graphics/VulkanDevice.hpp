@@ -477,6 +477,7 @@ public:
 	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
 	VkDevice GetDevice() const { return device_; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
+	const char* GetDeviceName() const override { return deviceName_.c_str(); }
 	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
@@ -502,6 +503,7 @@ private:
 	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
 	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
 	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
+	std::string deviceName_;
 
 	VkInstance _instance = VK_NULL_HANDLE;
 	VkSurfaceKHR _surface = VK_NULL_HANDLE;
@@ -724,7 +726,8 @@ private:
 		physicalDevice_ = bestDevice;
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties(physicalDevice_, &props);
-		std::cout << "Selected GPU: " << props.deviceName << "\n";
+		deviceName_ = props.deviceName;
+		std::cout << "Selected GPU: " << deviceName_ << "\n";
 	}
 
 	void createLogicalDevice() {

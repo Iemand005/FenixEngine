@@ -23,6 +23,8 @@ void fe::EditableGame::DrawDebugUI() {
 	ImGui::Text("Hello, World!");
 	
 	ImGui::Text("Graphics API: %s", ImGui::GetIO().BackendRendererName ? ImGui::GetIO().BackendRendererName : "Unknown");
+	if (renderDevice)
+		ImGui::Text("Device: %s", renderDevice->GetDeviceName());
 
 	ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
