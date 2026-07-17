@@ -25,7 +25,7 @@ typedef int64_t XrTime;
 namespace fe {
 
 	struct XRGameOptions : RendererOptions {
-		bool vr: 
+		bool vr = false;
 	};
 
 	class XRGame : public fe::Game {
@@ -48,6 +48,7 @@ namespace fe {
 		XRGame(bool launchVR = true);
 		XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
 		XRGame(GLADloadproc loadProc);
+		XRGame(XRGameOptions optioins);
 		~XRGame();
 
 		bool IsInstanceValid();
