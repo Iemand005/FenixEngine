@@ -63,6 +63,12 @@ namespace fe
 
 		ImGui::StyleColorsDark();
 
+		float scale = SDL_GetWindowDisplayScale(window->GetWindow());
+		if (scale > 1.0f) {
+			io.FontGlobalScale = scale;
+			ImGui::GetStyle().ScaleAllSizes(scale);
+		}
+
 		if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
 		else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
 		if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
