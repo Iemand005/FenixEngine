@@ -70,6 +70,30 @@ class VulkanDevice : public fe::IRenderDevice {
 public:
 	VkClearValue m_VulkanClearColor{};
 
+	VkDescriptorSet currentBoundTexture_   = VK_NULL_HANDLE;
+    VkPipeline       currentBoundPipeline_ = VK_NULL_HANDLE;
+
+    struct TextureDescriptorKey {
+        VkImageView imageView;
+        VkSampler   sampler;
+
+        bool operator==(const TextureDescriptorKey& other) const {
+            return imageView == other.imageView && sampler == other.sampler;
+        }
+    };
+
+    struct TextureDescriptorKeyHash {
+        size_t operator()(const TextureDescriptorKey& k) const {
+            size_t h1 = std::hash<void*>{}(reinterpret_cast<void*>(k.imageView));
+            size_t h2 = std::hash<void*>{}(reinterpret_cast<void*>(k.sampler));
+            return h1 ^ (h2 << 1);
+        }
+    };
+
+    std::unordered_map<TextureDescriptorKey, VkDescriptorSet, TextureDescriptorKeyHash> textureDescriptorCache_;
+
+    VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler);
+
 	void SetShaderPaths(const std::string& vertPath, const std::string& fragPath) {
 		vertShaderPath_ = vertPath;
 		fragShaderPath_ = fragPath;
@@ -221,6 +245,24 @@ public:
 		recreateSwapChain();
 	}
 
+	void BeginFrame() {
+		auto cmd = commandBuffers_[currentFrame_];
+		if (!cmd) {
+			std::cerr << "[VulkanDevice] BeginFrame: command buffer is null" << std::endl;
+			return;
+		}
+		
+		vkCmdSetViewport(cmd, 0, 1, &viewport);
+		vkCmdSetScissor(cmd, 0, 1, &scissor);
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout_, 0, 1, &frameDescriptorSets_[currentFrame_], 0, nullptr);
+
+		drawCallCount_ = 0;
+		currentBoundTexture_ = VK_NULL_HANDLE;
+	}
+
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
@@ -293,33 +335,22 @@ public:
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
 
-		VkPipeline activePipeline = (vkBuffers->vertexFormat == VertexFormat::Array)
-			? graphicsPipelineArray_ : graphicsPipeline_;
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, activePipeline);
+		VkDescriptorSet texSet = GetOrCreateTextureDescriptorSet(texture);
+		if (texSet != currentBoundTexture_) {
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineLayout_, 1, 1, &texSet, 0, nullptr); // set 1 = texture
+			currentBoundTexture_ = texSet;
+		}
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
+		if (activePipeline != currentBoundPipeline_) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, activePipeline);
+			currentBoundPipeline_ = activePipeline;
+		}
 
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
-
 		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
-
-		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vkBuffers->indexCount), 1, 0, 0, 0);
+		vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 	}
 
 	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
