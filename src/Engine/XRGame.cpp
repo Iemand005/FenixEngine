@@ -1,5 +1,6 @@
 
 #include "XRGame.hpp"
+#include "Graphics/Renderer.hpp"
 
 #define XR_USE_PLATFORM_XLIB
 
@@ -279,6 +280,8 @@ XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow, bool showW
 }
 
 XRGame::XRGame(GLADloadproc loadProc) : Game(loadProc), impl(std::make_unique<Impl>()) {}
+
+XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options) {}
 
 XRGame::~XRGame() {
   Destroy();
