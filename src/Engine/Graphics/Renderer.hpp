@@ -58,6 +58,10 @@ using DefaultWindow = fe::GLFW3Window;
 
 namespace fe {
 
+	struct RendeerOptions {
+		useVulkan;
+	};
+
 class Renderer {
 public:
 	std::unique_ptr<IWindow> window = nullptr;
