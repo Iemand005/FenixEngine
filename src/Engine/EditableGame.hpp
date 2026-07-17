@@ -36,6 +36,14 @@ namespace fe
 		if (themed) ApplyBlackAndOrangeTheme();
     }
 
+	EditableGame(XRGameOptions options) : EditableGameBase(options) {
+		InitImGUI();
+		InitUI();
+		bool themed = true;
+		if (themed) ApplyBlackAndOrangeTheme();
+	}
+
+
     // virtual void DrawUI();
     
   private:
