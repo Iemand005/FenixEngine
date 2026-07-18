@@ -4,7 +4,8 @@
 
 #define XR_USE_PLATFORM_XLIB
 
-#include <GL/glx.h>
+// #include <GL/glx.h>
+#include <glad/glad.h>
 
 
 #include <openxr/openxr.h>
