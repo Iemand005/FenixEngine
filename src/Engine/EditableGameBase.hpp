@@ -2,10 +2,8 @@
 
 #include "XRGame.hpp"
 
-namespace fe
-{
-	class EditableGameBase : public XRGame
-	{
+namespace fe {
+	class EditableGameBase : public XRGame {
 
 		fe::ObjectBase *selectedObject = nullptr;
 		int lighselecIndex = -1;
@@ -28,15 +26,9 @@ namespace fe
 		EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
 		void OnDraw() override {
-			// for (auto &light : scene->GetLightArray())
 			auto lights = scene->GetLights();
-			// int lightCount = scene->GetLightCount();
-			// for (int i = 0; i < lightCount; ++i)
-			if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)DrawGizmo(lights[lighselecIndex].position);
-
-			// auto objects = scene->GetObjects();
-			// for (auto &object : objects)
-			//   DrawGizmo(object->state.position);
+			if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
+				DrawGizmo(lights[lighselecIndex].position);
 
 			if (selectedObject) DrawGizmo(selectedObject->state.position);
 		}

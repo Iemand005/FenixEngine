@@ -9,8 +9,6 @@ using namespace fe;
 
 Scene::Scene() {
 	objects = std::vector<std::shared_ptr<ObjectBase>>();
-	// this->EnableDepthTest();
-	// this->EnableFaceCulling();
 }
 
 Scene::~Scene() {
