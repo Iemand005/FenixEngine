@@ -25,9 +25,13 @@ namespace fe
 
     
     public:
-    EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {}
+    EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
+		Init();
+	}
 
-	EditableGame(XRGameOptions options) : EditableGameBase(options) {}
+	EditableGame(XRGameOptions options) : EditableGameBase(options) {
+		Init();
+	}
 	
 
     // virtual void DrawUI();
