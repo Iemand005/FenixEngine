@@ -51,74 +51,71 @@ namespace fe {
 
 public:
 
-	int width, height;
+		int width, height;
 
-	bool _isScreensaving = false;
-	double startX, startY;
+		bool _isScreensaving = false;
+		double startX, startY;
 
-	bool isFullscreen = false;
+		bool isFullscreen = false;
 
-	ResizeDelegate resizeEvent;
-	MouseMoveDelegate mouseMoveEvent;
+		ResizeDelegate resizeEvent;
+		MouseMoveDelegate mouseMoveEvent;
 
-	IWindow(int width, int height) : width(width), height(height) {}
+		IWindow(int width, int height) : width(width), height(height) {}
 
-	virtual bool ShouldClose() { return shouldClose; }
+		virtual bool ShouldClose() { return shouldClose; }
 
-	virtual void PrepareClose() { shouldClose = true; }
+		virtual void PrepareClose() { shouldClose = true; }
 
-	virtual void SetSwapInterval(int interval) = 0;
+		virtual void SetSwapInterval(int interval) = 0;
 
-	void EnableVSync() {
-		SetSwapInterval(1);
-	}
+		void EnableVSync() {
+			SetSwapInterval(1);
+		}
 
-	void DisableVSync() {
-		SetSwapInterval(0);
-	}
+		void DisableVSync() {
+			SetSwapInterval(0);
+		}
 
-	virtual void StartMouseCapture() {
-		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
+		virtual void StartMouseCapture() {
+			// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
 
-	virtual void StopMouseCapture() {
-		// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		virtual void StopMouseCapture() {
+			// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-	}
+		}
 
-	virtual void SetTitle(const char *newTitle) {};
+		virtual void SetTitle(const char *newTitle) {};
 
-	bool CapturingMouse() {return false;};
+		bool CapturingMouse() {return false;};
 
-	virtual void GetMousePosition(double *x, double *y) = 0;
+		virtual void GetMousePosition(double *x, double *y) = 0;
 
-	virtual VulkanExtensions GetVulkanExtensions() = 0;
-	
-	virtual void *CreateVulkanSurface(void *instance) = 0;
+		virtual VulkanExtensions GetVulkanExtensions() = 0;
+		
+		virtual void *CreateVulkanSurface(void *instance) = 0;
 
-	virtual WindowSize GetFramebufferSize() = 0;
+		virtual WindowSize GetFramebufferSize() = 0;
 
-	void ActivateScreenSaverMode() {
-		GetMousePosition(&startX, &startY);
-		_isScreensaving = true;
-	};
+		void ActivateScreenSaverMode() {
+			GetMousePosition(&startX, &startY);
+			_isScreensaving = true;
+		};
 
-	virtual void SetFullscreen(bool enabled) = 0;
-	void SetFullscreen() { SetFullscreen(true); }
-	void ToggleFullscreen() {
-	SetFullscreen(!isFullscreen);
-}
+		virtual void SetFullscreen(bool enabled) = 0;
+		void SetFullscreen() { SetFullscreen(true); }
+		void ToggleFullscreen() {
+			SetFullscreen(!isFullscreen);
+		}
 
-	virtual void GoBorderlessFullscreen() = 0;
-	// virtual void 
-	
-	virtual void SwapBuffers() = 0;
+		virtual void GoBorderlessFullscreen() = 0;
+		
+		virtual void SwapBuffers() = 0;
 
-	virtual double GetTime() = 0;
+		virtual double GetTime() = 0;
 
-	// virtual void PollEvents() = 0;
-
-	virtual void Destroy() {};
+		virtual void Destroy() {};
 
 	};
 }
