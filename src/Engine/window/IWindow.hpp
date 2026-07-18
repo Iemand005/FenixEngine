@@ -21,6 +21,7 @@ namespace fe {
 	// struct WindowOptio
 
 	inline bool IsWayland() {
+#ifndef _WIN32
 		const char* session = std::getenv("XDG_SESSION_TYPE");
 		if (session && strcmp(session, "wayland") == 0)
 			return true;
@@ -28,7 +29,7 @@ namespace fe {
 		const char* wayland_display = std::getenv("WAYLAND_DISPLAY");
 		if (wayland_display != NULL)
 			return true;
-
+#endif
 		return false;
 	}
 
@@ -77,14 +78,9 @@ public:
 			SetSwapInterval(0);
 		}
 
-		virtual void StartMouseCapture() {
-			// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		}
+		virtual void StartMouseCapture() {}
 
-		virtual void StopMouseCapture() {
-			// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-		}
+		virtual void StopMouseCapture() {}
 
 		virtual void SetTitle(const char *newTitle) {};
 
