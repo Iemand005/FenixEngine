@@ -758,8 +758,9 @@ private:
 
 		int score = 0;
 		if (preferIntegratedGPU_) {
-			if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 1000;
-			else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 100;
+			if (props.deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+				return -1;
+			score += 1000000;
 		} else {
 			if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
 			else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 100;
