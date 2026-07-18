@@ -2,7 +2,9 @@
 #include "XRGame.hpp"
 #include "Graphics/Renderer.hpp"
 
+#ifndef WIN32
 #define XR_USE_PLATFORM_XLIB
+#endif
 
 // #include <GL/glx.h>
 #include <glad/glad.h>
