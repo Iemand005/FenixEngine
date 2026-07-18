@@ -547,6 +547,8 @@ public:
 	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
 	VkPipeline GetGraphicsPipelineArray() const { return graphicsPipelineArray_; }
+
+	static void SetPreferIntegratedGPU(bool v) { preferIntegratedGPU_ = v; }
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout_; }
 	VkDescriptorSetLayout GetDescriptorSetLayout() const { return descriptorSetLayout_; }
 	uint32_t GetCurrentFrame() const { return currentFrame_; }
@@ -571,6 +573,7 @@ private:
 	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
 	std::string vertShaderFoxcraftPath_ = "resources/shaders/VertexShader_vk_foxcraft.spv";
 	std::string deviceName_;
+	static inline bool preferIntegratedGPU_ = false;
 
 	VkInstance _instance = VK_NULL_HANDLE;
 	VkSurfaceKHR _surface = VK_NULL_HANDLE;
@@ -754,8 +757,13 @@ private:
 		vkGetPhysicalDeviceProperties(dev, &props);
 
 		int score = 0;
-		if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
-		else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 100;
+		if (preferIntegratedGPU_) {
+			if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 1000;
+			else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 100;
+		} else {
+			if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
+			else if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) score += 100;
+		}
 		score += static_cast<int>(props.limits.maxImageDimension2D);
 		return score;
 	}
