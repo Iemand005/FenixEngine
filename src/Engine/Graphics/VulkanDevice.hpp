@@ -439,6 +439,66 @@ public:
 		vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 	}
 
+	void DrawIndirect(VkBuffer vertexBuffer, VkBuffer indexBuffer,
+		VkBuffer indirectBuffer, VkDeviceSize indirectOffset,
+		uint32_t drawCount, uint32_t stride,
+		VkDescriptorSet descriptorSet) {
+		auto cmd = commandBuffers_[currentFrame_];
+		if (!cmd || drawCount == 0) return;
+
+		VkPipeline requiredPipeline = graphicsPipelineArray_;
+		if (requiredPipeline != currentBoundPipeline_) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
+			currentBoundPipeline_ = requiredPipeline;
+		}
+
+		VkBuffer vb = vertexBuffer;
+		VkDeviceSize vbOffset = 0;
+		vkCmdBindVertexBuffers(cmd, 0, 1, &vb, &vbOffset);
+		vkCmdBindIndexBuffer(cmd, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
+
+		glm::mat4 identity(1.0f);
+		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
+			0, sizeof(glm::mat4), &identity);
+
+		vkCmdDrawIndexedIndirect(cmd, indirectBuffer, indirectOffset,
+			drawCount, stride);
+	}
+
+	void UpdateIndirectDescriptorSet(VkDescriptorSet set, VkImageView textureView, VkSampler sampler) {
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = uniformBuffers_[currentFrame_];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = textureView;
+		imageInfo.sampler = sampler;
+
+		std::array<VkWriteDescriptorSet, 2> writes{};
+		writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writes[0].dstSet = set;
+		writes[0].dstBinding = 0;
+		writes[0].dstArrayElement = 0;
+		writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writes[0].descriptorCount = 1;
+		writes[0].pBufferInfo = &bufferInfo;
+
+		writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writes[1].dstSet = set;
+		writes[1].dstBinding = 1;
+		writes[1].dstArrayElement = 0;
+		writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writes[1].descriptorCount = 1;
+		writes[1].pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(device_, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+	}
+
 	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
 		return std::make_unique<VulkanGPUBuffers>();
 	}
@@ -484,7 +544,11 @@ public:
 	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
 	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
+	VkPipeline GetGraphicsPipelineArray() const { return graphicsPipelineArray_; }
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout_; }
+	VkDescriptorSetLayout GetDescriptorSetLayout() const { return descriptorSetLayout_; }
+	uint32_t GetCurrentFrame() const { return currentFrame_; }
+	uint32_t GetDrawCallCount() const { return drawCallCount_; }
 
 	void SetModelMatrix(const glm::mat4& m) { currentModel_ = m; updateUniformBuffer(currentFrame_); }
 	void SetViewMatrix(const glm::mat4& v) { currentView_ = v; }
