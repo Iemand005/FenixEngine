@@ -58,6 +58,14 @@ using DefaultWindow = fe::GLFW3Window;
 
 namespace fe {
 
+	struct RendererOptions : WindowOptions {
+		bool useVulkan = true;
+
+		RendererOptions() = default; 
+
+		RendererOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen) {}
+	};
+
 class Renderer {
 public:
 	std::unique_ptr<IWindow> window = nullptr;
@@ -92,9 +100,8 @@ public:
 	bool isConnectedToServer = false;
 
 	bool useVulkan = false;
-	Renderer() {
-		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
-		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+	Renderer(bool useVulkan = false) {
+		CreateRenderDevice(useVulkan);
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
@@ -105,8 +112,22 @@ public:
 	Renderer(GLADloadproc loadProc);
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
+		CreateRenderDevice(false);
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
-		renderDevice->Init(window.get());
+		
+	}
+
+	Renderer(RendererOptions options) {
+		CreateRenderDevice(options.useVulkan);
+		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
+	}
+
+	void CreateRenderDevice(bool useVulkan = false) {
+		if (renderDevice) return; // TODO: throwerror?kaykay
+
+		this->useVulkan = useVulkan;
+		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
+		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
 
 
@@ -152,13 +173,14 @@ public:
 	}
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen);
+		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
+		renderDevice->Init(window.get());
 	}
 
 template<typename WindowT = DefaultWindow>
-	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false) {
+	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false) {
 		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen);
+		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 
 		window->resizeEvent = [this](int width, int height) {
 			this->Resize(width, height);
@@ -169,11 +191,6 @@ template<typename WindowT = DefaultWindow>
 		// };
 		return std::move(window);
 	}
-
-
-	// void SetShaderProgram(ShaderProgram program) {
-	//   this->shader = std::make_unique
-	// }
 
 	void LoadShaders(Shader vertexShader, Shader fragmentShader) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
@@ -187,8 +204,6 @@ template<typename WindowT = DefaultWindow>
 		this->shader = std::make_unique<fe::ShaderProgram>();
 		return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
 	}
-
-	double getDeltaTime() { return 1; }
 
 	void SetClearColor(float r, float g, float b, float a = 1) {
 		renderDevice->SetClearColor(r, g, b, a);
@@ -217,30 +232,25 @@ template<typename WindowT = DefaultWindow>
 
 	void Redraw() {
 		auto window = GetWindow<DefaultWindow>();
-		if (!scene || !camera || !shader) return;
+		if (!scene || !camera) return;
+		if (!useVulkan && !shader) return;
 
 		Clear();
-		CheckGLError("Redraw:after-Clear");
 
 		if (shader) {
 			shader->Use();
-			CheckGLError("Redraw:after-Use");
-
 			float elapsedTime = (float)window->GetTime();
 			shader->SetFloat("time", elapsedTime);
-
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
-			renderDevice->SetMat4("view", camera->GetViewMatrix());
-			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
-			CheckGLError("Redraw:after-Uniforms");
-
-			RenderScene();
-			CheckGLError("Redraw:after-RenderScene");
 		}
 
+		renderDevice->SetMat4("view", camera->GetViewMatrix());
+		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+
+		RenderScene();
+
 		OnDraw();
-		CheckGLError("Redraw:after-OnDraw");
 
 		DrawUI();
 
@@ -254,17 +264,14 @@ template<typename WindowT = DefaultWindow>
 	}
 
 	void CheckErrors() {
-		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR) {
-			std::cerr << "OpenGL error: " << err << std::endl;
-		}
+		CheckErrors("Renderer");
 	}
 
-	static void CheckGLError(const char* label) {
+	void CheckErrors(const char* label) {
+		if (useVulkan) return;
 		GLenum err;
-		while ((err = glGetError()) != GL_NO_ERROR) {
+		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
-		}
 	}
 
 	void Update() {

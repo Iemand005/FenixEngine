@@ -1,3 +1,4 @@
+#ifdef FE_INCLUDE_OPENVR
 #include <openvr.h>
 #include <iostream>
 
@@ -119,3 +120,5 @@ void OpenVR::Shutdown() {
     if (overlayFbo) glDeleteFramebuffers(1, &overlayFbo);
 	vr::VR_Shutdown();
 }
+
+#endif

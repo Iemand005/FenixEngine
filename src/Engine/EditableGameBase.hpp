@@ -4,62 +4,61 @@
 
 namespace fe
 {
-  class EditableGameBase : public XRGame
-  {
+	class EditableGameBase : public XRGame
+	{
 
-    fe::ObjectBase *selectedObject = nullptr;
-    int lighselecIndex = -1;
+		fe::ObjectBase *selectedObject = nullptr;
+		int lighselecIndex = -1;
 
-    void DrawGizmo(const glm::vec3& position) {
-      if (!scene) return;
-      scene->DrawCircle(position, 10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
-      scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
-      scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
-      scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
-    }
+		void DrawGizmo(const glm::vec3& position) {
+			if (!scene) return;
+			scene->DrawCircle(position, 10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+			scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
+			scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
+			scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
+		}
 
-  public:
-    EditableGameBase() {
-    }
+	public:
+		EditableGameBase() {}
 
-    EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {
-    }
+		EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {}
 
-    EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {
-    }
+		EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {}
 
-    void OnDraw() override {
-      // for (auto &light : scene->GetLightArray())
-      auto lights = scene->GetLights();
-      // int lightCount = scene->GetLightCount();
-      // for (int i = 0; i < lightCount; ++i)
-      if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)DrawGizmo(lights[lighselecIndex].position);
+		EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
-      // auto objects = scene->GetObjects();
-      // for (auto &object : objects)
-      //   DrawGizmo(object->state.position);
+		void OnDraw() override {
+			// for (auto &light : scene->GetLightArray())
+			auto lights = scene->GetLights();
+			// int lightCount = scene->GetLightCount();
+			// for (int i = 0; i < lightCount; ++i)
+			if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)DrawGizmo(lights[lighselecIndex].position);
 
-      if (selectedObject) DrawGizmo(selectedObject->state.position);
-    }
+			// auto objects = scene->GetObjects();
+			// for (auto &object : objects)
+			//   DrawGizmo(object->state.position);
 
-    void SelectObjectByIndex(int index) {
-      // this->geto
-      auto objs = scene->GetObjects();
-      auto objec = objs[index];
-      selectedObject = objec.get();
-    }
+			if (selectedObject) DrawGizmo(selectedObject->state.position);
+		}
 
-    void UnselectObject() {
-      selectedObject = nullptr;
-    }
+		void SelectObjectByIndex(int index) {
+			// this->geto
+			auto objs = scene->GetObjects();
+			auto objec = objs[index];
+			selectedObject = objec.get();
+		}
 
-    void SelectLightByIndex(int index) {
-      lighselecIndex = index;
-    }
+		void UnselectObject() {
+			selectedObject = nullptr;
+		}
 
-    void UnselectLight() {
-      lighselecIndex = -1;
-    }
-  };
-  
+		void SelectLightByIndex(int index) {
+			lighselecIndex = index;
+		}
+
+		void UnselectLight() {
+			lighselecIndex = -1;
+		}
+	};
+	
 } // namespace fe

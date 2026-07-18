@@ -11,10 +11,14 @@ namespace fe {
 		unsigned int extensionCount;
 	};
 
-	struct SizeDoesntMatter {
-		int width;
-		int height;
+	struct WindowSize {
+		int width, height;
+
+		WindowSize() = default; 
+    	WindowSize(int w, int h) : width(w), height(h) {}
 	};
+
+	// struct WindowOptio
 
 	inline bool IsWayland() {
 		const char* session = std::getenv("XDG_SESSION_TYPE");
@@ -28,8 +32,13 @@ namespace fe {
 		return false;
 	}
 
-	struct WindowOptions {
+	struct WindowOptions : WindowSize {
+		bool hidden = false, fullscreen = false, tenBit = true;
 		long long int x11WindowId;
+
+		WindowOptions() = default; 
+
+		WindowOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowSize(w, h), hidden(hidden), fullscreen(fullscreen) {}
 	};
 
 
@@ -87,7 +96,7 @@ public:
 	
 	virtual void *CreateVulkanSurface(void *instance) = 0;
 
-	virtual SizeDoesntMatter GetFramebufferSize() = 0;
+	virtual WindowSize GetFramebufferSize() = 0;
 
 	void ActivateScreenSaverMode() {
 		GetMousePosition(&startX, &startY);
@@ -97,8 +106,8 @@ public:
 	virtual void SetFullscreen(bool enabled) = 0;
 	void SetFullscreen() { SetFullscreen(true); }
 	void ToggleFullscreen() {
-    SetFullscreen(!isFullscreen);
-  }
+	SetFullscreen(!isFullscreen);
+}
 
 	virtual void GoBorderlessFullscreen() = 0;
 	// virtual void 

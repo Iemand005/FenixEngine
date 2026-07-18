@@ -5,6 +5,8 @@
 #define NOMINMAX
 
 #include <windows.h>
+#else
+//#include <x11/Xlib.h>
 #endif
 
 #include <functional>
@@ -32,7 +34,7 @@ class SDLWindow : public IWindow {
  public:
   bool capturingMouse = false;
 
-  SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {});
+  SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
   ~SDLWindow();
 
   void SetSwapInterval(int interval) override;
@@ -70,7 +72,7 @@ class SDLWindow : public IWindow {
   VulkanExtensions GetVulkanExtensions() override;
   void *CreateVulkanSurface(void *instance) override;
 
-  SizeDoesntMatter GetFramebufferSize() override;
+  WindowSize GetFramebufferSize() override;
 
 
 // struct SDL_Window;
@@ -107,6 +109,9 @@ class SDLWindow : public IWindow {
 #else
   void* GetWaylandSurface();
   void* GetWaylandDisplay();
+
+  void* GetX11Display();
+  unsigned long GetGLXDrawable();
 #endif
 };
 

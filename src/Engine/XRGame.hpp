@@ -1,4 +1,6 @@
 #include "Game.hpp"
+#include "Graphics/Renderer.hpp"
+#include "window/IWindow.hpp"
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -14,73 +16,72 @@
 #endif
 #else
 #define XR_USE_PLATFORM_WAYLAND
+#define XR_USE_PLATFORM_XLIB
 #endif
-// #include <openxr/openxr.h>
-// #include <openxr/openxr_platform.h>
-// #include <GL/glew.h>
-// #define GLFW_INCLUDE_NONE
-// #include <GLFW/glfw3.h>
-// #include <GLFW/glfw3native.h>
 
-#include <cstring>
-// #include <glad/glad.h>
-// #include <glm/glm.hpp>
-// #include <glm/gtc/matrix_transform.hpp>
-// #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <memory>
-#include <vector>
-
-#include "engine.h"
 
 typedef int64_t XrTime;
 
 namespace fe {
-  class XRGame : public fe::Game {
-  private:
-    struct Impl;
-    std::unique_ptr<Impl> impl;
 
-  public:
+	struct XRGameOptions : RendererOptions {
+		bool launchVR = false;
+		bool drawWindow = true;
 
-    float playerHeight = 1.7f;
+		XRGameOptions() = default; 
 
-    bool drawWindow = true;
+    	XRGameOptions(int w, int h) : fe::RendererOptions(w, h) {}
 
-    glm::vec3 positionOffset = glm::vec3(1.0f);
+		XRGameOptions(int w, int h, bool launchVR, bool drawWindow = true) : fe::RendererOptions(w, h), launchVR(launchVR), drawWindow(drawWindow) {}
+	};
 
-    bool running = true;
-    
-    uint32_t swapchainImageIndex;
+	class XRGame : public fe::Game {
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> impl;
 
-    XRGame(bool launchVR = true);
-    XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
-    XRGame(GLADloadproc loadProc);
-    ~XRGame();
+	public:
 
-    bool IsInstanceValid();
+		float playerHeight = 1.7f;
 
-    void initOpenXR();
-    void initOpenXR(void *next);
+		bool drawWindow = true;
+
+		glm::vec3 positionOffset = glm::vec3(1.0f);
+
+		bool running = true;
+		
+		uint32_t swapchainImageIndex;
+
+		XRGame(bool launchVR = true);
+		XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
+		XRGame(GLADloadproc loadProc);
+		XRGame(XRGameOptions optioins);
+		~XRGame();
+
+		bool IsInstanceValid();
+
+		void initOpenXR();
+		void initOpenXR(void *next);
 #ifdef WIN32
-    void initOpenXR(HDC hDC, HGLRC hGLRC);
+		void initOpenXR(HDC hDC, HGLRC hGLRC);
 #endif
-    
-    void EnableXR();
-    void DisableVR();
-    void LaunchVR();
+		
+		void EnableXR();
+		void DisableVR();
+		void LaunchVR();
 
-    void Redraw(GLuint fbo = 0) ;
-    void RedrawVR();
-    void RedrawWindow(GLuint fbo = 0);
+		void Redraw(GLuint fbo = 0) ;
+		void RedrawVR();
+		void RedrawWindow(GLuint fbo = 0);
 
-    void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
+		void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 
-    void DestroyXR();
+		void DestroyXR();
 
-    void Destroy() {
-      DestroyXR();
-      if (window) window->Destroy();
-    }
-  };
+		void Destroy() {
+			DestroyXR();
+			if (window) window->Destroy();
+		}
+	};
 }

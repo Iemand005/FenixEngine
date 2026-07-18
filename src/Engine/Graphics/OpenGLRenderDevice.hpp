@@ -78,6 +78,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 		}
 	}
 
+	void BeginFrame() override {
+
+	}
+
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
@@ -138,6 +142,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void SubmitFrame() override {
 		glFlush();
+	}
+
+	const char* GetDeviceName() const override {
+		return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	}
 };
 

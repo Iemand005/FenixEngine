@@ -20,6 +20,11 @@ Game::Game(int width, int height, bool skipInit, bool showWindow) : Renderer(wid
 	Init();
 }
 
+Game::Game(RendererOptions options) : Renderer(options) {
+	Init();
+}
+
+
 PhysicsFactory *Game::GetPhysicsEngine() {
 #ifndef EXCLUDE_JOLT
 	return impl->physicsEngine.get();
@@ -32,10 +37,10 @@ void Game::Init() {
 	SetClearColor(0.0F, 0.0F, 0.0f);
 
 #ifndef EXCLUDE_JOLT
-	impl->physicsEngine = std::make_unique<PhysicsFactory>();
+	impl->physicsEngine = std::make_unique<PhysicsFactory>(!this->useVulkan);
 #endif
 	
-	LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
+	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 	
 	this->scene = std::make_unique<fe::Scene>();
 	this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 100.0f);

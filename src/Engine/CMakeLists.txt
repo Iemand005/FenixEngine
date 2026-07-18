@@ -3,6 +3,7 @@ project(Engine LANGUAGES CXX C)
 
 option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
 option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
+option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -44,7 +45,10 @@ add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
 add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
 
-add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr) 
+if (FE_INCLUDE_OPENVR)
+	add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr)
+	target_compile_definitions(Engine PRIVATE FE_INCLUDE_OPENVR)
+endif()
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
 if(MSVC AND TARGET Jolt)

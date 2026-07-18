@@ -80,6 +80,8 @@ public:
 
 	Game(int width, int height, bool skipInit = false, bool showWindow = true);
 
+	Game(RendererOptions options);
+
 
 	void Init();
 

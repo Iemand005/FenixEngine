@@ -21,6 +21,8 @@ namespace fe {
 		virtual void Clear() = 0;
 		virtual void SetClearColor(float r, float g, float b, float a = 1) = 0;
 		virtual void Resize(int width, int height) = 0;
+		
+		virtual void BeginFrame() = 0;
 		virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
 		virtual void SubmitFrame() = 0;
 
@@ -39,5 +41,6 @@ namespace fe {
 			const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) {}
 
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
+		virtual const char* GetDeviceName() const = 0;
 	};
 }

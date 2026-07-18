@@ -10,6 +10,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -43,7 +44,8 @@ const std::vector<const char*> kDeviceExtensions = {
 constexpr int kWindowWidth = 800;
 constexpr int kWindowHeight = 600;
 constexpr int kMaxFramesInFlight = 2;
-constexpr int kMaxDrawsPerFrame = 256;
+constexpr int kMaxDrawsPerFrame = 2048;
+constexpr int kMaxCachedTextures = 1024;
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
@@ -70,6 +72,31 @@ class VulkanDevice : public fe::IRenderDevice {
 public:
 	VkClearValue m_VulkanClearColor{};
 
+	VkDescriptorSet currentBoundTexture_   = VK_NULL_HANDLE;
+    VkPipeline       currentBoundPipeline_ = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSet> frameDescriptorSets_;
+
+    struct TextureDescriptorKey {
+        VkImageView imageView;
+        VkSampler   sampler;
+
+        bool operator==(const TextureDescriptorKey& other) const {
+            return imageView == other.imageView && sampler == other.sampler;
+        }
+    };
+
+    struct TextureDescriptorKeyHash {
+        size_t operator()(const TextureDescriptorKey& k) const {
+            size_t h1 = std::hash<void*>{}(reinterpret_cast<void*>(k.imageView));
+            size_t h2 = std::hash<void*>{}(reinterpret_cast<void*>(k.sampler));
+            return h1 ^ (h2 << 1);
+        }
+    };
+
+    std::unordered_map<TextureDescriptorKey, VkDescriptorSet, TextureDescriptorKeyHash> textureDescriptorCache_;
+
+    // VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler);
+
 	void SetShaderPaths(const std::string& vertPath, const std::string& fragPath) {
 		vertShaderPath_ = vertPath;
 		fragShaderPath_ = fragPath;
@@ -82,7 +109,7 @@ public:
 
 	void Init(fe::IWindow *window) override {
 		this->window = window;
-		createInstance();
+		CreateInstance();
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
@@ -100,6 +127,7 @@ public:
 		createDescriptorPool();
 		createDefaultTexture();
 		createDescriptorSets();
+		createFrameDescriptorSets();
 		createCommandBuffers();
 		createSyncObjects();
 	}
@@ -221,6 +249,108 @@ public:
 		recreateSwapChain();
 	}
 
+	VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler) {
+		TextureDescriptorKey key{imageView, sampler};
+
+		auto it = textureDescriptorCache_.find(key);
+		if (it != textureDescriptorCache_.end()) {
+			return it->second;
+		}
+
+		// allocate a new descriptor set for this texture (set = 1, texture-only layout)
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool_;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayout_; // your set=1 layout (sampler only)
+
+		VkDescriptorSet newSet = VK_NULL_HANDLE;
+		VkResult result = vkAllocateDescriptorSets(device_, &allocInfo, &newSet);
+		if (result != VK_SUCCESS) {
+			std::cerr << "[VulkanDevice] Failed to allocate texture descriptor set (VkResult=" << result << ")" << std::endl;
+			return VK_NULL_HANDLE;
+		}
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = imageView;
+		imageInfo.sampler = sampler;
+
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = newSet;
+		write.dstBinding = 0; // binding 0 within set 1
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		write.descriptorCount = 1;
+		write.pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+
+		textureDescriptorCache_[key] = newSet;
+		return newSet;
+	}
+
+	void createFrameDescriptorSets() {
+		uint32_t framesInFlight = static_cast<uint32_t>(uniformBuffers_.size()); // or MAX_FRAMES_IN_FLIGHT, whatever you use elsewhere
+
+		std::vector<VkDescriptorSetLayout> layouts(framesInFlight, descriptorSetLayout_);
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool_;
+		allocInfo.descriptorSetCount = framesInFlight;
+		allocInfo.pSetLayouts = layouts.data();
+
+		frameDescriptorSets_.resize(framesInFlight);
+		if (vkAllocateDescriptorSets(device_, &allocInfo, frameDescriptorSets_.data()) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to allocate frame (UBO) descriptor sets.");
+		}
+
+		// write each one to point at its corresponding uniform buffer
+		for (uint32_t i = 0; i < framesInFlight; ++i) {
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffers_[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = frameDescriptorSets_[i];
+			write.dstBinding = 0;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			write.descriptorCount = 1;
+			write.pBufferInfo = &bufferInfo;
+
+			vkUpdateDescriptorSets(device_, 1, &write, 0, nullptr);
+		}
+	}
+
+	void BeginFrame() override {
+		auto cmd = commandBuffers_[currentFrame_];
+		if (!cmd) {
+			std::cerr << "[VulkanDevice] BeginFrame: command buffer is null" << std::endl;
+			return;
+		}
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width  = static_cast<float>(swapChainExtent_.width);
+		viewport.height = static_cast<float>(swapChainExtent_.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = {0, 0};
+		scissor.extent = swapChainExtent_;
+		vkCmdSetScissor(cmd, 0, 1, &scissor);
+		drawCallCount_ = 0;
+		currentBoundPipeline_ = VK_NULL_HANDLE;
+	}
+
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
 
@@ -293,33 +423,20 @@ public:
 		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
 		VkDeviceSize offsets[] = {0};
 
-		VkPipeline activePipeline = (vkBuffers->vertexFormat == VertexFormat::Array)
-			? graphicsPipelineArray_ : graphicsPipeline_;
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, activePipeline);
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
-		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
+		VkPipeline requiredPipeline = (vkBuffers->vertexFormat == VertexFormat::Array)
+			? graphicsPipelineArray_ : graphicsPipeline_;
+		if (requiredPipeline != currentBoundPipeline_) {
+			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
+			currentBoundPipeline_ = requiredPipeline;
+		}
 
-		vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vkBuffers->indexCount), 1, 0, 0, 0);
+		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
+		vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 	}
 
 	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
@@ -356,10 +473,11 @@ public:
 		vkTexture->uploadTextureArray(device_, physicalDevice_, commandPool_, graphicsQueue_, paths, scaling);
 	}
 
-	VkInstance GetInstance() const { return instance_; }
+	VkInstance GetInstance() const { return _instance; }
 	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
 	VkDevice GetDevice() const { return device_; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
+	const char* GetDeviceName() const override { return deviceName_.c_str(); }
 	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
@@ -385,9 +503,10 @@ private:
 	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
 	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
 	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
+	std::string deviceName_;
 
-	VkInstance instance_ = VK_NULL_HANDLE;
-	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+	VkInstance _instance = VK_NULL_HANDLE;
+	VkSurfaceKHR _surface = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
 	VkDevice device_ = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
@@ -437,7 +556,7 @@ private:
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
 
-	void createInstance() {
+	void CreateInstance() {
 		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
 			throw std::runtime_error(
 				"Validation layers requested but not available. "
@@ -446,14 +565,12 @@ private:
 
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "VkEngine";
+		appInfo.pApplicationName = "FenixEngine";
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "No Engine";
+		appInfo.pEngineName = "FenixEngine";
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_2;
 
-		// uint32_t glfwExtensionCount = 0;
-		// const char** glfwExtensions = window(&glfwExtensionCount);
 		fe::VulkanExtensions vkExts = window->GetVulkanExtensions();
 		std::vector<const char*> extensions(vkExts.extensions, vkExts.extensions + vkExts.extensionCount);
 
@@ -466,13 +583,10 @@ private:
 		if (kEnableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(kValidationLayers.size());
 			createInfo.ppEnabledLayerNames = kValidationLayers.data();
-		} else {
-			createInfo.enabledLayerCount = 0;
-		}
+		} else createInfo.enabledLayerCount = 0;
 
-		if (vkCreateInstance(&createInfo, nullptr, &instance_) != VK_SUCCESS) {
+		if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create Vulkan instance.");
-		}
 	}
 
 	bool checkValidationLayerSupport() {
@@ -495,7 +609,7 @@ private:
 	}
 
 	void createSurface() {
-		surface_ = (VkSurfaceKHR)window->CreateVulkanSurface(instance_);
+		_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
 	}
 
 
@@ -512,7 +626,7 @@ private:
 				indices.graphicsFamily = i;
 			}
 			VkBool32 presentSupport = VK_FALSE;
-			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface_, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, _surface, &presentSupport);
 			if (presentSupport) {
 				indices.presentFamily = i;
 			}
@@ -537,20 +651,20 @@ private:
 
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) {
 		SwapChainSupportDetails details;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, surface_, &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, _surface, &details.capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, nullptr);
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface_, &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, details.formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, nullptr);
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface_, &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, details.presentModes.data());
 		}
 
 		return details;
@@ -582,13 +696,13 @@ private:
 
 	void pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
+		vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
 		if (deviceCount == 0) {
 			throw std::runtime_error("No GPUs with Vulkan support found.");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
+		vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
 		int bestScore = -1;
 		VkPhysicalDevice bestDevice = VK_NULL_HANDLE;
@@ -612,7 +726,8 @@ private:
 		physicalDevice_ = bestDevice;
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties(physicalDevice_, &props);
-		std::cout << "Selected GPU: " << props.deviceName << "\n";
+		deviceName_ = props.deviceName;
+		std::cout << "Selected GPU: " << deviceName_ << "\n";
 	}
 
 	void createLogicalDevice() {
@@ -668,7 +783,7 @@ private:
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		createInfo.surface = surface_;
+		createInfo.surface = _surface;
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = surfaceFormat.format;
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -1440,16 +1555,16 @@ private:
 	void createDescriptorPool() {
 		std::array<VkDescriptorPoolSize, 2> poolSizes{};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight + kMaxFramesInFlight + kMaxCachedTextures);
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight + kMaxFramesInFlight + kMaxCachedTextures);
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight);
+		poolInfo.maxSets = static_cast<uint32_t>(kMaxDrawsPerFrame * kMaxFramesInFlight + kMaxFramesInFlight + kMaxCachedTextures);
 
 		if (vkCreateDescriptorPool(device_, &poolInfo, nullptr, &descriptorPool_) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create descriptor pool.");
@@ -1511,7 +1626,7 @@ private:
 	// ---------------------------------------------------------------
 	void createSyncObjects() {
 		size_t imageCount = swapChainImages_.size();
-		imageAvailableSemaphores_.resize(imageCount);
+		imageAvailableSemaphores_.resize(kMaxFramesInFlight);
 		renderFinishedSemaphores_.resize(imageCount);
 		inFlightFences_.resize(kMaxFramesInFlight);
 
@@ -1522,17 +1637,19 @@ private:
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (size_t i = 0; i < imageCount; i++) {
-			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS ||
-				vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS) {
+		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &imageAvailableSemaphores_[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects.");
-			}
+		}
+
+		for (size_t i = 0; i < imageCount; i++) {
+			if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, &renderFinishedSemaphores_[i]) != VK_SUCCESS)
+				throw std::runtime_error("Failed to create sync objects.");
 		}
 
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-			if (vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS) {
+			if (vkCreateFence(device_, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects.");
-			}
 		}
 	}
 
@@ -1574,22 +1691,30 @@ private:
 
 		cleanupSwapChain();
 
+		for (auto& sem : imageAvailableSemaphores_) vkDestroySemaphore(device_, sem, nullptr);
+		imageAvailableSemaphores_.clear();
+		for (auto& sem : renderFinishedSemaphores_) vkDestroySemaphore(device_, sem, nullptr);
+		renderFinishedSemaphores_.clear();
+		for (auto& fence : inFlightFences_) vkDestroyFence(device_, fence, nullptr);
+		inFlightFences_.clear();
+
 		createSwapChain();
 		createImageViews();
 		createDepthResources();
 		createFramebuffers();
+		createSyncObjects();
 	}
 
 	// ---------------------------------------------------------------
 	// Cleanup
 	// ---------------------------------------------------------------
 	void cleanup() {
-		for (size_t i = 0; i < swapChainImages_.size(); i++) {
-			if (imageAvailableSemaphores_[i] != VK_NULL_HANDLE)
-				vkDestroySemaphore(device_, imageAvailableSemaphores_[i], nullptr);
-			if (renderFinishedSemaphores_[i] != VK_NULL_HANDLE)
-				vkDestroySemaphore(device_, renderFinishedSemaphores_[i], nullptr);
-		}
+		for (auto& sem : imageAvailableSemaphores_)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(device_, sem, nullptr);
+		imageAvailableSemaphores_.clear();
+		for (auto& sem : renderFinishedSemaphores_)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(device_, sem, nullptr);
+		renderFinishedSemaphores_.clear();
 
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (inFlightFences_[i] != VK_NULL_HANDLE)
@@ -1639,7 +1764,7 @@ private:
 			vkFreeMemory(device_, depthImageMemory_, nullptr);
 
 		if (device_ != VK_NULL_HANDLE) vkDestroyDevice(device_, nullptr);
-		if (surface_ != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance_, surface_, nullptr);
-		if (instance_ != VK_NULL_HANDLE) vkDestroyInstance(instance_, nullptr);
+		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);
+		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
 	}
 };

@@ -30,7 +30,8 @@ Renderer::Renderer(GLADloadproc loadProc) {
 }
 
 void Renderer::BindFrameBuffer(int bufferIndex) {
-  glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+	if (!useVulkan)
+		glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
 }
 
 void Renderer::RenderMesh(Mesh<>& mesh) {
@@ -39,27 +40,32 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 }
 
 void Renderer::RenderObject(ObjectBase& object) {
-	if (!shader) return;
 	glm::mat4 model = object.GetModelMatrix();
-	shader->SetMat4("model", model);
+	glm::vec3 modelPos = glm::vec3(model[3]);
+	glm::vec3 center = modelPos + object.boundingCenterOffset;
+	glm::vec3 toCenter = center - camera->GetPos();
+	if (glm::dot(toCenter, camera->front) < -object.boundingRadius)
+		return;
+	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
 	object.Render(renderDevice.get());
 }
 
 void Renderer::RenderScene(Scene *scene) {
-	if (!shader) return;
-
-	int count = scene->GetLightCount();
-	auto pointLights = scene->GetLights();
-	shader->SetInt("lightCount", count);
-	for (int i = 0; i < count; ++i) {
-		const auto& l = pointLights[i];
-		shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-		shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-		shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-		shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+	if (shader) {
+		int count = scene->GetLightCount();
+		auto pointLights = scene->GetLights();
+		shader->SetInt("lightCount", count);
+		for (int i = 0; i < count; ++i) {
+			const auto& l = pointLights[i];
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+		}
 	}
 
+	renderDevice->BeginFrame();
 	for (auto& object : scene->GetObjects()) {
 		RenderObject(*object);
 	}

@@ -36,11 +36,17 @@ namespace fe
 		if (themed) ApplyBlackAndOrangeTheme();
     }
 
+	EditableGame(XRGameOptions options) : EditableGameBase(options) {
+		InitImGUI();
+		InitUI();
+		bool themed = true;
+		if (themed) ApplyBlackAndOrangeTheme();
+	}
+
+
     // virtual void DrawUI();
     
   private:
-    // fe::Object *selectedObject;
-
     ImGuiIO io;
 
 	bool physicsGravityEnabled = true;
@@ -56,6 +62,12 @@ namespace fe
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
 		ImGui::StyleColorsDark();
+
+		float scale = SDL_GetWindowDisplayScale(window->GetWindow());
+		if (scale > 1.0f) {
+			io.FontGlobalScale = scale;
+			ImGui::GetStyle().ScaleAllSizes(scale);
+		}
 
 		if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
 		else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());

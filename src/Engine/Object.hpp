@@ -34,6 +34,8 @@ class ObjectBase {
 public:
 	ObjectState state{};
 	glm::mat4 modelMatrix{1.0f};
+	float boundingRadius = 0.0f;
+	glm::vec3 boundingCenterOffset{0.0f};
 
 	bool isStatic = false;
 	bool touchedGround = false;
