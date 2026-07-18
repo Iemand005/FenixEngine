@@ -164,12 +164,16 @@ void fe::SDLWindow::SetMouseCapture(bool captureMouse) {
 void fe::SDLWindow::StartMouseCapture() {
 	SetMouseCapture(true);
 	SDL_HideCursor();
-	}
+}
 
 void fe::SDLWindow::StopMouseCapture() {
 	SetMouseCapture(false);
 	SDL_ShowCursor();
 }
+
+// bool fe::SDLWindow::IsCapturingMouse() {
+// 	return capturingMouse;
+// }
 
 void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 
