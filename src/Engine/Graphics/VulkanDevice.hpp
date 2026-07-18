@@ -540,6 +540,7 @@ public:
 	const char* GetDeviceName() const override { return deviceName_.c_str(); }
 	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
+	VkCommandPool GetCommandPool() const { return commandPool_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
 	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
 	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
