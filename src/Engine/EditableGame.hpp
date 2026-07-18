@@ -25,28 +25,21 @@ namespace fe
 
     
     public:
-    EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
-		// this->physicsEngine->DisableGravity();
+    EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {}
 
-		// SDL_Init(SDL_INIT_VIDEO);
+	EditableGame(XRGameOptions options) : EditableGameBase(options) {}
+	
 
-		InitImGUI();
-		InitUI();
-		bool themed = true;
-		if (themed) ApplyBlackAndOrangeTheme();
-    }
-
-	EditableGame(XRGameOptions options) : EditableGameBase(options) {
+    // virtual void DrawUI();
+    
+  private:
+	void Init() {
 		InitImGUI();
 		InitUI();
 		bool themed = true;
 		if (themed) ApplyBlackAndOrangeTheme();
 	}
 
-
-    // virtual void DrawUI();
-    
-  private:
     ImGuiIO io;
 
 	bool physicsGravityEnabled = true;
