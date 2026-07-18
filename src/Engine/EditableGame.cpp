@@ -29,38 +29,34 @@ void fe::EditableGame::DrawDebugUI() {
 	ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
-	glm::vec3 cp = camera->GetPos();
-	float p[3] = {cp.x, cp.y, cp.z};
-	if (ImGui::DragFloat3("Camera Pos", p))
-		camera->SetPos(glm::vec3(p[0], p[1], p[2]));
-
+	
 	ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
 	size_t totalVertices = 0;
 	for (auto& obj : this->scene->GetObjects()) totalVertices += obj->GetTotalVertexCount();
 	ImGui::Text("Vertices: %zu", totalVertices);
-
+	
 	if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
 		this->EnableXR ();
 	}
-
+	
 	if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
 		this->DestroyXR();
 	}
-
+	
 	if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
 		std::cout << "Button clicked!" << std::endl;
 	}
-
+	
 	static bool wireframe = false;
 	if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
 		if (wireframe) this->EnableWireframe();
 		else this->DisableWireframe();
 	}
-
+	
 	// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
-#ifndef EXCLUDE_JOLT
+	#ifndef EXCLUDE_JOLT
 	ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
-
+	
 	if (ImGui::Button(physicsGravityEnabled ? "Disable Gravity" : "Enable Gravity")) {
 		physicsGravityEnabled = !physicsGravityEnabled;
 		if (this->player) {
@@ -72,18 +68,22 @@ void fe::EditableGame::DrawDebugUI() {
 			if (GetPhysicsEngine()) GetPhysicsEngine()->DisableGravity();
 		}
 	}
-
-#else
+	
+	#else
 	ImGui::Text("Jolt disabled.");
-#endif
-
-
+	#endif
+	
+	glm::vec3 cp = camera->GetPos();
+	float p[3] = {cp.x, cp.y, cp.z};
+	if (ImGui::DragFloat3("Camera Pos", p))
+		camera->SetPos(glm::vec3(p[0], p[1], p[2]));
+	
 	if (camera) {
 		float fov = camera->GetFOV();
 		if (ImGui::SliderFloat("FOV", &fov, -10.0f, 179.0f, "%.1f deg")) {
 			camera->SetFOV(fov);
 		}
-		if (ImGui::SliderFloat("Far Plane", &camera->farDist, 10.0f, 2000.0f, "%.1f")) {
+		if (ImGui::SliderFloat("Far Plane", &camera->farDist, 10.0f, 3000.0f, "%.1f")) {
 			camera->SetAspect(camera->aspect);
 		}
 	}
