@@ -1124,12 +1124,12 @@ private:
 			attributeDescs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, texCoord)};
 		} else if (format == VertexFormat::Foxcraft) {
 			bindingDesc.binding = 0;
-			bindingDesc.stride = 10;
+			bindingDesc.stride = 7;
 			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			attributeDescs.resize(2);
 			attributeDescs[0] = {0, 0, VK_FORMAT_R16G16B16_SINT, 0};
-			attributeDescs[1] = {1, 0, VK_FORMAT_R8G8B8A8_UINT, 6};
+			attributeDescs[1] = {1, 0, VK_FORMAT_R8_UINT, 6};
 		} else {
 			bindingDesc = fe::Vertex::getBindingDescription();
 			auto stdAttrs = fe::Vertex::getAttributeDescriptions();
