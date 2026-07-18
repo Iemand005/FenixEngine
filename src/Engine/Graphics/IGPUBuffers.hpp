@@ -6,6 +6,7 @@
 enum class VertexFormat {
 	Standard,  // fe::Vertex: vec3 pos, vec3 normal, vec2 uv (32 bytes)
 	Array,     // fe::VertexArray: vec3 pos, vec3 normal, vec3 texCoord (36 bytes)
+	Foxcraft,  // FoxcraftPackedVertex: int16 xyz, uint8 normal+u+v+layer (10 bytes)
 };
 
 class IGPUBuffers {

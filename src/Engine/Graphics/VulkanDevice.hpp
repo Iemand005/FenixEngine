@@ -120,6 +120,7 @@ public:
 		createDescriptorSetLayout();
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
 		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArray_);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraft_);
 		createDepthResources();
 		createFramebuffers();
 		createCommandPool();
@@ -446,7 +447,7 @@ public:
 		auto cmd = commandBuffers_[currentFrame_];
 		if (!cmd || drawCount == 0) return;
 
-		VkPipeline requiredPipeline = graphicsPipelineArray_;
+		VkPipeline requiredPipeline = graphicsPipelineFoxcraft_;
 		if (requiredPipeline != currentBoundPipeline_) {
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
@@ -568,6 +569,7 @@ private:
 	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
 	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
 	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
+	std::string vertShaderFoxcraftPath_ = "resources/shaders/VertexShader_vk_foxcraft.spv";
 	std::string deviceName_;
 
 	VkInstance _instance = VK_NULL_HANDLE;
@@ -590,6 +592,7 @@ private:
 	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
 	VkPipeline graphicsPipeline_ = VK_NULL_HANDLE;
 	VkPipeline graphicsPipelineArray_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineFoxcraft_ = VK_NULL_HANDLE;
 
 	std::vector<VkBuffer> uniformBuffers_;
 	std::vector<VkDeviceMemory> uniformBuffersMemory_;
@@ -1110,6 +1113,14 @@ private:
 			attributeDescs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, position)};
 			attributeDescs[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, normal)};
 			attributeDescs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, texCoord)};
+		} else if (format == VertexFormat::Foxcraft) {
+			bindingDesc.binding = 0;
+			bindingDesc.stride = 10;
+			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+			attributeDescs.resize(2);
+			attributeDescs[0] = {0, 0, VK_FORMAT_R16G16B16_SINT, 0};
+			attributeDescs[1] = {1, 0, VK_FORMAT_R8G8B8A8_UINT, 6};
 		} else {
 			bindingDesc = fe::Vertex::getBindingDescription();
 			auto stdAttrs = fe::Vertex::getAttributeDescriptions();
@@ -1794,6 +1805,8 @@ private:
 
 		if (graphicsPipeline_ != VK_NULL_HANDLE)
 			vkDestroyPipeline(device_, graphicsPipeline_, nullptr);
+		if (graphicsPipelineFoxcraft_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(device_, graphicsPipelineFoxcraft_, nullptr);
 		if (pipelineLayout_ != VK_NULL_HANDLE)
 			vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
 		if (renderPass_ != VK_NULL_HANDLE)
