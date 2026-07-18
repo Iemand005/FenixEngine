@@ -220,11 +220,11 @@ class Networker {
           this->socket.send<HelloOkPacket>(from);
 
           ClientListPacket clientList;
-          clientList.clientCount = clients.size();
+          clientList.clientCount = static_cast<unsigned char>(clients.size());
           size_t i = 0;
           for (auto& [address, client] : clients) {
             auto size = copyStr(clientList.clients[i].username, client.username);
-            clientList.clients[i].usernameLength = size;
+            clientList.clients[i].usernameLength = static_cast<unsigned char>(size);
             clientList.clients[i].id = client.id;
             i++;
 
