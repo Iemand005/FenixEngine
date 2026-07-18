@@ -171,9 +171,9 @@ void fe::SDLWindow::StopMouseCapture() {
 	SDL_ShowCursor();
 }
 
-// bool fe::SDLWindow::IsCapturingMouse() {
-// 	return capturingMouse;
-// }
+bool fe::SDLWindow::IsCapturingMouse() {
+	return capturingMouse;
+}
 
 void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 

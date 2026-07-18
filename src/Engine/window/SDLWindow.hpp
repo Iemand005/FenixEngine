@@ -29,10 +29,10 @@ class SDLWindow : public IWindow {
 
 	const bool* keyboardState = nullptr;
 
+  bool capturingMouse = false;
 
 
  public:
-  bool capturingMouse = false;
 
   SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
   ~SDLWindow();
@@ -44,6 +44,8 @@ class SDLWindow : public IWindow {
   void StartMouseCapture() override;
 
   void StopMouseCapture() override;
+
+  bool IsCapturingMouse();
 
   // void SetMouseCapture(bool captureMouse = true);
 
