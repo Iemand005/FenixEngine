@@ -427,7 +427,8 @@ void XRGame::initOpenXR(void *next) {
 }
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
-	XrVector2f joystickInput = {0.0f, 0.0f};
+	XrVector2f rightJoystickInput = {0.0f, 0.0f};
+	XrVector2f leftJoystickInput = {0.0f, 0.0f};
 	XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
 
 	XrActiveActionSet activeActionSet{impl->actionSet, XR_NULL_PATH};
@@ -442,9 +443,9 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	xrGetActionStateVector2f(impl->session, &getInfo, &moveState);
 
 	if (moveState.isActive) {
-		joystickInput = moveState.currentState;
+		rightJoystickInput = moveState.currentState;
 	} else {
-		joystickInput = {0.0f, 0.0f};
+		rightJoystickInput = {0.0f, 0.0f};
 	}
 
 	XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
@@ -457,7 +458,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 	auto ori = headPose.orientation;
 
-	if (fabsf(joystickInput.x) > 0.1f || fabsf(joystickInput.y) > 0.1f) {
+	if (fabsf(rightJoystickInput.x) > 0.1f || fabsf(rightJoystickInput.y) > 0.1f) {
 		glm::vec3 forward = glm::vec3(-2.0f * (ori.x * ori.z + ori.w * ori.y), -2.0f * (ori.y * ori.z - ori.w * ori.x), -1.0f + 2.0f * (ori.x * ori.x + ori.y * ori.y));
 		glm::vec3 right = glm::vec3(1.0f - 2.0f * (ori.y * ori.y + ori.z * ori.z), 2.0f * (ori.x * ori.y + ori.w * ori.z), 2.0f * (ori.x * ori.z - ori.w * ori.y));
 
@@ -466,9 +467,9 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 		XrVector3f movement;
 		float moveSpeed = 0.1f;
-		movement.x = .3f * forward.x * joystickInput.y + right.x * joystickInput.x * moveSpeed;
-		movement.y = 0.0f;
-		movement.z = -.3f * forward.z * joystickInput.y + right.z * joystickInput.x * moveSpeed;
+		movement.x = -.3f * forward.x * rightJoystickInput.y + right.x * rightJoystickInput.x * moveSpeed;
+		movement.y = leftJoystickInput.y;
+		movement.z = -.3f * forward.z * rightJoystickInput.y + right.z * rightJoystickInput.x * moveSpeed;
 
 		player->state.position.x += movement.x;
 		player->state.position.z += movement.z;
