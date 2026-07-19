@@ -40,9 +40,6 @@ const std::vector<const char*> kValidationLayers = {
 const std::vector<const char*> kDeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
-	VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
-	VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
-	VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
 };
 
 constexpr int kWindowWidth = 800;
