@@ -541,6 +541,11 @@ public:
 	const char* GetDeviceName() const override { return deviceName_.c_str(); }
 	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
+
+	VkImage GetColorAttachmentImage(uint64_t handle) const {
+		if (handle == 0) return VK_NULL_HANDLE;
+		return reinterpret_cast<const ColorAttachment*>(handle)->image;
+	}
 	VkCommandPool GetCommandPool() const { return commandPool_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
 	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
@@ -566,7 +571,7 @@ public:
 		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
 	}
 
-	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0) override {
+	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0) override {
 		VkImage colorImage = reinterpret_cast<VkImage>(nativeImage);
 
 		VkImageViewCreateInfo viewInfo{};
@@ -586,15 +591,15 @@ public:
 		if (vkCreateImageView(device_, &viewInfo, nullptr, &colorImageView) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create XR color image view.");
 
-		VkFormat depthFormat = findDepthFormat();
+		VkFormat depthFmt = depthFormat != 0 ? static_cast<VkFormat>(depthFormat) : findDepthFormat();
 		VkImage depthImage;
 		VkDeviceMemory depthImageMemory;
-		createImage(w, h, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+		createImage(w, h, depthFmt, VK_IMAGE_TILING_OPTIMAL,
 			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-		VkImageView depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		VkImageView depthImageView = createImageView(depthImage, depthFmt, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, depthFormat);
+		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, depthFmt);
 
 		std::array<VkImageView, 2> attachments = {colorImageView, depthImageView};
 
@@ -618,7 +623,8 @@ public:
 
 		ExternalFramebuffer* ext = new ExternalFramebuffer{
 			framebuffer, colorImageView,
-			depthImageView, depthImage, depthImageMemory
+			depthImageView, depthImage, depthImageMemory,
+			depthFmt
 		};
 		return reinterpret_cast<uint64_t>(ext);
 	}
@@ -647,7 +653,7 @@ public:
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		vkBeginCommandBuffer(cmd, &beginInfo);
 
-		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, findDepthFormat());
+		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, ext->depthFormat);
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = m_VulkanClearColor.color;
@@ -699,11 +705,41 @@ public:
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	}
 
+	bool IsVulkan() const override { return true; }
+
+	uint64_t CreateColorAttachment(uint32_t w, uint32_t h) override {
+		VkImage image;
+		VkDeviceMemory memory;
+		createImage(w, h, swapChainImageFormat_, VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, memory);
+
+		ColorAttachment* ca = new ColorAttachment{image, memory};
+		return reinterpret_cast<uint64_t>(ca);
+	}
+
+	void DestroyColorAttachment(uint64_t handle) override {
+		if (handle == 0) return;
+		ColorAttachment* ca = reinterpret_cast<ColorAttachment*>(handle);
+		vkDestroyImage(device_, ca->image, nullptr);
+		vkFreeMemory(device_, ca->memory, nullptr);
+		delete ca;
+	}
+
+	void TransitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+		transitionImageLayout(image, swapChainImageFormat_, oldLayout, newLayout);
+	}
+
 	uint64_t GetSwapchainFormat() const override {
 		return static_cast<uint64_t>(swapChainImageFormat_);
 	}
 
 private:
+
+	struct ColorAttachment {
+		VkImage image;
+		VkDeviceMemory memory;
+	};
 
 	struct ExternalFramebuffer {
 		VkFramebuffer framebuffer;
@@ -711,6 +747,7 @@ private:
 		VkImageView depthImageView;
 		VkImage depthImage;
 		VkDeviceMemory depthImageMemory;
+		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	};
 
 	VkRenderPass getOrCreateXrRenderPass(VkFormat colorFormat, VkFormat depthFormat) {

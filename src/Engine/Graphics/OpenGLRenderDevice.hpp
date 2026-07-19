@@ -144,22 +144,54 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glFlush();
 	}
 
-	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0) override {
+	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0) override {
 		GLuint fbo;
 		glGenFramebuffers(1, &fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, static_cast<GLuint>(nativeImage), 0, static_cast<GLint>(layer));
+
+		GLuint depthRB = 0;
+		if (depthFormat != 0) {
+			glGenRenderbuffers(1, &depthRB);
+			glBindRenderbuffer(GL_RENDERBUFFER, depthRB);
+			glRenderbufferStorage(GL_RENDERBUFFER, static_cast<GLenum>(depthFormat), w, h);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRB);
+		}
+
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			std::cerr << "OpenGL FBO incomplete: 0x" << std::hex << status << std::dec << std::endl;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		return fbo;
+
+		uint64_t ret = fbo;
+		if (depthRB != 0) {
+			ret |= (static_cast<uint64_t>(depthRB) << 32);
+		}
+		return ret;
 	}
 
 	void DestroyFramebuffer(uint64_t fb) override {
-		GLuint fbo = static_cast<GLuint>(fb);
+		GLuint fbo   = static_cast<GLuint>(fb & 0xFFFFFFFF);
+		GLuint depth = static_cast<GLuint>(fb >> 32);
 		glDeleteFramebuffers(1, &fbo);
+		if (depth != 0) glDeleteRenderbuffers(1, &depth);
+	}
+
+	uint64_t CreateColorAttachment(uint32_t w, uint32_t h) override {
+		GLuint tex;
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, static_cast<GLsizei>(w), static_cast<GLsizei>(h), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		return tex;
+	}
+
+	void DestroyColorAttachment(uint64_t image) override {
+		GLuint tex = static_cast<GLuint>(image);
+		glDeleteTextures(1, &tex);
 	}
 
 	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {

@@ -42,11 +42,16 @@ namespace fe {
 
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
 
-		virtual uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0) { return 0; }
+		virtual uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0) { return 0; }
 		virtual void DestroyFramebuffer(uint64_t fb) {}
 		virtual void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) {}
 		virtual void EndExternalFrame() {}
 		virtual uint64_t GetSwapchainFormat() const { return 0; }
+
+		virtual uint64_t CreateColorAttachment(uint32_t w, uint32_t h) { return 0; }
+		virtual void DestroyColorAttachment(uint64_t image) {}
+
+		virtual bool IsVulkan() const { return false; }
 
 		virtual const char* GetDeviceName() const = 0;
 	};
