@@ -47,7 +47,7 @@ add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissf
 
 if (FE_INCLUDE_OPENVR)
 	add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr)
-	target_compile_definitions(Engine PRIVATE FE_INCLUDE_OPENVR)
+	add_compile_definitions(FE_INCLUDE_OPENVR)
 endif()
 
 # Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
@@ -209,11 +209,11 @@ if(WIN32)
 		set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
 	endif()
 
-	# add_custom_command(TARGET Engine POST_BUILD
-	#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	#     "${OPENVR_DLL}"
-	#     "$<TARGET_FILE_DIR:Engine>"
-	# )
+	add_custom_command(TARGET Engine POST_BUILD
+	    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	    "${OPENVR_DLL}"
+	    "$<TARGET_FILE_DIR:Engine>"
+	)
 endif()
 # END OPENV
 

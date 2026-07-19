@@ -185,9 +185,8 @@ void OpenVR::GetEyeViewProjection(uint32_t eye, glm::mat4& view, glm::mat4& proj
 	glm::mat4 eyeWorld = hmdWorld * eyeLocal;
 	view = glm::inverse(eyeWorld);
 
-	// Projection — auto-select API convention
-	vr::GraphicsAPIConvention api = rd->IsVulkan() ? vr::API_Vulkan : vr::API_OpenGL;
-	vr::HmdMatrix44_t raw = sys->GetProjectionMatrix(static_cast<vr::EVREye>(eye), 0.01f, 100.0f, api);
+	// Projection — legacy API (no convention enum in this SDK)
+	vr::HmdMatrix44_t raw = sys->GetProjectionMatrix(static_cast<vr::EVREye>(eye), 0.01f, 100.0f);
 	proj = Hmd44ToGlm(raw);
 }
 
