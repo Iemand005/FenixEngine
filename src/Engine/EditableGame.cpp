@@ -18,6 +18,15 @@ void fe::EditableGame::OnDraw() {
 
 void fe::EditableGame::DrawDebugUI() {
 
+#ifdef FE_INCLUDE_OPENVR
+	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
+		ImGui::Begin("XR");
+		ImGui::Text("OpenVR HMD active");
+		ImGui::End();
+		return;
+	}
+#endif
+
 	ImGui::Begin("Debug");
 	{
 	ImGui::Text("Hello, World!");
@@ -45,15 +54,6 @@ void fe::EditableGame::DrawDebugUI() {
 
 	
 #ifdef FE_INCLUDE_OPENVR
-	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
-		ImGui::Begin("XR");
-		ImGui::Text("OpenVR HMD active");
-		ImGui::End();
-		return;
-	}
-
-	// if (impl->drawVR) return;
-
 	ImGui::Begin("XR");
 	if (ImGui::Button("Start OpenVR HMD")) {
 		StartOpenVR();
