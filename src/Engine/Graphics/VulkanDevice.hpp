@@ -40,6 +40,9 @@ const std::vector<const char*> kValidationLayers = {
 const std::vector<const char*> kDeviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
+	VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
+	VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+	VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
 };
 
 constexpr int kWindowWidth = 800;
@@ -572,14 +575,15 @@ public:
 		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
 	}
 
-	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0) override {
+	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
 		VkImage colorImage = reinterpret_cast<VkImage>(nativeImage);
+		VkFormat fmt = colorFormat != 0 ? static_cast<VkFormat>(colorFormat) : swapChainImageFormat_;
 
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = colorImage;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = swapChainImageFormat_;
+		viewInfo.format = fmt;
 		viewInfo.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
 							   VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -600,7 +604,7 @@ public:
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
 		VkImageView depthImageView = createImageView(depthImage, depthFmt, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, depthFmt);
+		VkRenderPass rp = getOrCreateXrRenderPass(fmt, depthFmt);
 
 		std::array<VkImageView, 2> attachments = {colorImageView, depthImageView};
 
@@ -625,7 +629,7 @@ public:
 		ExternalFramebuffer* ext = new ExternalFramebuffer{
 			framebuffer, colorImageView,
 			depthImageView, depthImage, depthImageMemory,
-			depthFmt
+			depthFmt, fmt
 		};
 		return reinterpret_cast<uint64_t>(ext);
 	}
@@ -654,7 +658,7 @@ public:
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		vkBeginCommandBuffer(cmd, &beginInfo);
 
-		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, ext->depthFormat);
+		VkRenderPass rp = getOrCreateXrRenderPass(ext->colorFormat != VK_FORMAT_UNDEFINED ? ext->colorFormat : swapChainImageFormat_, ext->depthFormat);
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = m_VulkanClearColor.color;
@@ -749,6 +753,7 @@ private:
 		VkImage depthImage;
 		VkDeviceMemory depthImageMemory;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
+		VkFormat colorFormat = VK_FORMAT_UNDEFINED;
 	};
 
 	VkRenderPass getOrCreateXrRenderPass(VkFormat colorFormat, VkFormat depthFormat) {

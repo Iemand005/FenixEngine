@@ -147,7 +147,7 @@ struct fe::XRGame::Impl {
 				uint64_t nativeImage = useVulkan
 					? reinterpret_cast<uint64_t>(swapchainImagesVK[i].image)
 					: static_cast<uint64_t>(swapchainImagesGL[i].image);
-				framebuffers[eye][i] = renderDevice->CreateFramebuffer(nativeImage, swapchainWidth, swapchainHeight, eye);
+				framebuffers[eye][i] = renderDevice->CreateFramebuffer(nativeImage, swapchainWidth, swapchainHeight, eye, 0, chosenFormat);
 			}
 		}
 

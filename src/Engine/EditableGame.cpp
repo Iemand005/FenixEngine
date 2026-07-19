@@ -42,6 +42,24 @@ void fe::EditableGame::DrawDebugUI() {
 	if (ImGui::Button("Disable VR :()", ImVec2(100, 20))) {
 		this->DestroyXR();
 	}
+
+	
+#ifdef FE_INCLUDE_OPENVR
+	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
+		ImGui::Begin("XR");
+		ImGui::Text("OpenVR HMD active");
+		ImGui::End();
+		return;
+	}
+
+	if (impl->drawVR) return;
+
+	ImGui::Begin("XR");
+	if (ImGui::Button("Start OpenVR HMD")) {
+		StartOpenVR();
+	}
+	ImGui::End();
+#endif
 	
 	if (ImGui::Button("Enable AA", ImVec2(70, 20))) {
 		std::cout << "Button clicked!" << std::endl;
