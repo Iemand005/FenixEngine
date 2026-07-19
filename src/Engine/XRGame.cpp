@@ -391,6 +391,21 @@ void XRGame::initOpenXR(void *next) {
 		}
 	}
 
+	if (impl->useVulkan) {
+		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
+		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
+			(PFN_xrVoidFunction*)(&pfn));
+		if (pfn) {
+			auto* vkBinding = static_cast<XrGraphicsBindingVulkanKHR*>(next);
+			VkPhysicalDevice runtimeDevice = VK_NULL_HANDLE;
+			XrResult result = pfn(impl->instance, impl->systemId,
+				vkBinding->instance, &runtimeDevice);
+			if (XR_SUCCEEDED(result)) {
+				vkBinding->physicalDevice = runtimeDevice;
+			}
+		}
+	}
+
 	XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
 	sessionInfo.systemId = impl->systemId;
 	sessionInfo.next = next;

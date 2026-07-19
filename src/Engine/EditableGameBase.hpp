@@ -26,11 +26,11 @@ namespace fe {
 		EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
 		void OnDraw() override {
-			auto lights = scene->GetLights();
-			if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
-				DrawGizmo(lights[lighselecIndex].position);
+			// auto lights = scene->GetLights();
+			// if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
+			// 	DrawGizmo(lights[lighselecIndex].position);
 
-			if (selectedObject) DrawGizmo(selectedObject->state.position);
+			// if (selectedObject) DrawGizmo(selectedObject->state.position);
 		}
 
 		void SelectObjectByIndex(int index) {
