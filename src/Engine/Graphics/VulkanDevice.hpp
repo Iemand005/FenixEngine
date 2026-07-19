@@ -546,6 +546,8 @@ public:
 	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
 	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
+	const glm::mat4& GetViewMatrix() const { return currentView_; }
+	const glm::mat4& GetProjectionMatrix() const { return currentProj_; }
 	VkPipeline GetGraphicsPipelineArray() const { return graphicsPipelineArray_; }
 
 	static void SetPreferIntegratedGPU(bool v) { preferIntegratedGPU_ = v; }
