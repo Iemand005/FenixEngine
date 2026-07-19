@@ -31,6 +31,8 @@
 #include <wayland-client.h>
 #endif
 
+#include <Graphics/VulkanDevice.hpp>
+
 using namespace fe;
 
 void CheckGLError(const char* location) {
@@ -367,14 +369,17 @@ void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
 	initOpenXR(&gfx);
 }
 
-void XRGame::initOpenXR(HDC hDC) {
-	XrGraphics
-	XrGraphicsBindingOpenGLWin32KHR gfx{};
-	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
-	gfx.hDC = hDC;
-	gfx.hGLRC = hGLRC;
+void XRGame::initOpenXR(VulkanDevice m_renderDevice) {
+	XrGraphicsBindingVulkanKHR vkBinding{};
+	vkBinding.type             = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
+	vkBinding.next             = nullptr;
+	vkBinding.instance         = m_renderDevice->GetVkInstance();
+	vkBinding.physicalDevice   = m_renderDevice->GetVkPhysicalDevice();
+	vkBinding.device           = m_renderDevice->GetVkDevice();
+	vkBinding.queueFamilyIndex = m_renderDevice->GetGraphicsQueueFamilyIndex();
+	vkBinding.queueIndex       = m_renderDevice->GetGraphicsQueueIndex();
 
-	initOpenXR(&gfx);
+	initOpenXR(&vkBinding);
 }
 
 #endif
