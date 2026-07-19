@@ -237,6 +237,8 @@ struct fe::XRGame::Impl {
 	}
 
 	void PollEvents() {
+		if (instance == XR_NULL_HANDLE) return;
+
 		XrEventDataBuffer event = {XR_TYPE_EVENT_DATA_BUFFER};
 
 		while (xrPollEvent(instance, &event) == XR_SUCCESS) {
@@ -383,6 +385,18 @@ void XRGame::initOpenXR(void *next) {
 		xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLReqs));
 		if (pfnGetOpenGLReqs) {
 			impl->outputError(pfnGetOpenGLReqs(impl->instance, impl->systemId, &glReqs));
+		}
+	}
+
+	if (impl->useVulkan) {
+		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
+		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
+			(PFN_xrVoidFunction*)(&pfn));
+		if (pfn) {
+			auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
+			VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
+			impl->outputError(pfn(impl->instance, impl->systemId,
+				vk->GetInstance(), &vkPhysicalDevice));
 		}
 	}
 
