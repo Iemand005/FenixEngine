@@ -581,7 +581,9 @@ public:
 	}
 
 	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
-		VkImage colorImage = GetColorAttachmentImage(nativeImage);
+		VkImage colorImage = colorFormat != 0
+			? reinterpret_cast<VkImage>(nativeImage)
+			: GetColorAttachmentImage(nativeImage);
 		VkFormat fmt = colorFormat != 0 ? static_cast<VkFormat>(colorFormat) : swapChainImageFormat_;
 
 		VkImageViewCreateInfo viewInfo{};
