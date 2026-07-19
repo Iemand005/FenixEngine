@@ -29,6 +29,8 @@
 
 #include "Graphics/VulkanDevice.hpp"
 
+#include <imgui.h>
+
 using namespace fe;
 
 void CheckGLError(const char* location) {
@@ -65,6 +67,7 @@ struct fe::XRGame::Impl {
 	int32_t swapchainWidth, swapchainHeight;
 
 	bool drawVR = false;
+	bool drawOpenVR = false;
 
 	XrActionSet actionSet = XR_NULL_HANDLE;
 	XrAction moveAction = XR_NULL_HANDLE;
@@ -472,8 +475,36 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 bool XRGame::IsInstanceValid() { return impl->instance != XR_NULL_HANDLE; }
 
+void XRGame::StartOpenVR() {
+	openVR = std::make_unique<fe::OpenVR>();
+	openVR->InitHMD(renderDevice.get());
+	if (openVR->mode == OpenVR::Mode::Scene) {
+		impl->drawOpenVR = true;
+		impl->drawVR = false;
+		window->StopMouseCapture();
+	}
+}
+
 void XRGame::DisableVR() {
 	impl->outputError(xrRequestExitSession(impl->session));
+}
+
+void XRGame::DrawUI() {
+	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
+		// OpenVR HMD active — show status instead of button
+		ImGui::Begin("XR");
+		ImGui::Text("OpenVR HMD active");
+		ImGui::End();
+		return;
+	}
+
+	if (impl->drawVR) return; // OpenXR active
+
+	ImGui::Begin("XR");
+	if (ImGui::Button("Start OpenVR HMD")) {
+		StartOpenVR();
+	}
+	ImGui::End();
 }
 
 void XRGame::DestroyXR() {
@@ -500,6 +531,12 @@ void XRGame::DestroyXR() {
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
 	impl->session = XR_NULL_HANDLE;
 	impl->instance = XR_NULL_HANDLE;
+
+	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
+		openVR->ShutdownHMD();
+	}
+	openVR.reset();
+	impl->drawOpenVR = false;
 }
 
 void XRGame::LaunchVR() {
@@ -525,6 +562,11 @@ void XRGame::EnableXR() {
 void XRGame::Redraw(uint64_t fbo) {
 	{
 		impl->PollEvents();
+
+		if (impl->drawOpenVR && openVR && openVR->mode == OpenVR::Mode::Scene) {
+			openVR->RenderHMDFrame([this]() { RenderScene(); });
+		}
+
 		if (impl->drawVR) RedrawVR();
 		if (drawWindow) RedrawWindow(fbo);
 		CheckErrors();

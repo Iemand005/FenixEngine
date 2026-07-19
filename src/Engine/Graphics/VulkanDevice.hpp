@@ -901,6 +901,7 @@ private:
 
 		fe::VulkanExtensions vkExts = window->GetVulkanExtensions();
 		std::vector<const char*> extensions(vkExts.extensions, vkExts.extensions + vkExts.extensionCount);
+		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

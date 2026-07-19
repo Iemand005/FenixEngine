@@ -18,6 +18,8 @@
 
 #include <memory>
 
+#include "openvr/OpenVR.hpp"
+
 typedef int64_t XrTime;
 
 namespace fe {
@@ -39,6 +41,8 @@ namespace fe {
 		std::unique_ptr<Impl> impl;
 
 	public:
+
+		std::unique_ptr<fe::OpenVR> openVR;
 
 		float playerHeight = 1.7f;
 
@@ -62,6 +66,7 @@ namespace fe {
 		void initOpenXR(void *next);
 
 		void EnableXR();
+		void StartOpenVR();
 		void DisableVR();
 		void LaunchVR();
 
@@ -70,6 +75,8 @@ namespace fe {
 		void RedrawWindow(uint64_t fbo = 0);
 
 		void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
+
+		void DrawUI() override;
 
 		void DestroyXR();
 
