@@ -94,8 +94,7 @@ public:
 	std::unique_ptr<Networker> client = nullptr;
 #endif
 
-	std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
-			std::unordered_map<unsigned char, std::shared_ptr<Character>>();
+	std::unordered_map<unsigned char, std::shared_ptr<Character>> players = std::unordered_map<unsigned char, std::shared_ptr<Character>>();
 
 	bool isConnectedToServer = false;
 
@@ -105,9 +104,7 @@ public:
 	}
 
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-	Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {
-		//Init();
-	}
+	Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {}
 
 	Renderer(GLADloadproc loadProc);
 
