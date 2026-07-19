@@ -122,7 +122,8 @@ struct fe::XRGame::Impl {
 		swapchainInfo.mipCount = 1;
 		swapchainInfo.faceCount = 1;
 		swapchainInfo.sampleCount = 1;
-		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
+			XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
 
 		outputError(xrCreateSwapchain(session, &swapchainInfo, &swapchain));
 
