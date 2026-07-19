@@ -18,7 +18,11 @@
 
 #include <memory>
 
+#ifdef FE_INCLUDE_OPENVR
 #include "openvr/OpenVR.hpp"
+#else
+namespace fe { class OpenVR; }
+#endif
 
 typedef int64_t XrTime;
 
@@ -42,7 +46,9 @@ namespace fe {
 
 	public:
 
+#ifdef FE_INCLUDE_OPENVR
 		std::unique_ptr<fe::OpenVR> openVR;
+#endif
 
 		float playerHeight = 1.7f;
 
@@ -66,7 +72,9 @@ namespace fe {
 		void initOpenXR(void *next);
 
 		void EnableXR();
+#ifdef FE_INCLUDE_OPENVR
 		void StartOpenVR();
+#endif
 		void DisableVR();
 		void LaunchVR();
 

@@ -475,6 +475,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 bool XRGame::IsInstanceValid() { return impl->instance != XR_NULL_HANDLE; }
 
+#ifdef FE_INCLUDE_OPENVR
 void XRGame::StartOpenVR() {
 	openVR = std::make_unique<fe::OpenVR>();
 	openVR->InitHMD(renderDevice.get());
@@ -484,27 +485,29 @@ void XRGame::StartOpenVR() {
 		window->StopMouseCapture();
 	}
 }
+#endif
 
 void XRGame::DisableVR() {
 	impl->outputError(xrRequestExitSession(impl->session));
 }
 
 void XRGame::DrawUI() {
+#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
-		// OpenVR HMD active — show status instead of button
 		ImGui::Begin("XR");
 		ImGui::Text("OpenVR HMD active");
 		ImGui::End();
 		return;
 	}
 
-	if (impl->drawVR) return; // OpenXR active
+	if (impl->drawVR) return;
 
 	ImGui::Begin("XR");
 	if (ImGui::Button("Start OpenVR HMD")) {
 		StartOpenVR();
 	}
 	ImGui::End();
+#endif
 }
 
 void XRGame::DestroyXR() {
@@ -532,11 +535,13 @@ void XRGame::DestroyXR() {
 	impl->session = XR_NULL_HANDLE;
 	impl->instance = XR_NULL_HANDLE;
 
+#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
 		openVR->ShutdownHMD();
 	}
 	openVR.reset();
 	impl->drawOpenVR = false;
+#endif
 }
 
 void XRGame::LaunchVR() {
@@ -563,9 +568,11 @@ void XRGame::Redraw(uint64_t fbo) {
 	{
 		impl->PollEvents();
 
+#ifdef FE_INCLUDE_OPENVR
 		if (impl->drawOpenVR && openVR && openVR->mode == OpenVR::Mode::Scene) {
 			openVR->RenderHMDFrame([this]() { RenderScene(); });
 		}
+#endif
 
 		if (impl->drawVR) RedrawVR();
 		if (drawWindow) RedrawWindow(fbo);
