@@ -52,7 +52,7 @@ void fe::EditableGame::DrawDebugUI() {
 		return;
 	}
 
-	if (impl->drawVR) return;
+	// if (impl->drawVR) return;
 
 	ImGui::Begin("XR");
 	if (ImGui::Button("Start OpenVR HMD")) {
