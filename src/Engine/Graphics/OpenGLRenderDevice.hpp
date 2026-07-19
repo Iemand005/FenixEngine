@@ -65,8 +65,14 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * indexCount, indices, GL_STATIC_DRAW);
 
 		for (const auto& attr : layout) {
-			glVertexAttribPointer(attr.location, attr.components, GL_FLOAT, GL_FALSE,
-				static_cast<GLsizei>(vertexStride), (void*)attr.offset);
+			GLenum glType = OpenGLGPUBuffers::toGLType(attr.type);
+			if (attr.type == fe::VertexAttribType::Float) {
+				glVertexAttribPointer(attr.location, attr.components, glType, GL_FALSE,
+					static_cast<GLsizei>(vertexStride), (void*)attr.offset);
+			} else {
+				glVertexAttribIPointer(attr.location, attr.components, glType,
+					static_cast<GLsizei>(vertexStride), (void*)attr.offset);
+			}
 			glEnableVertexAttribArray(attr.location);
 		}
 
@@ -194,15 +200,29 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glDeleteTextures(1, &tex);
 	}
 
-	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+	void BeginVRFrame() override {}
+
+	void BeginEyeFrame(uint64_t fb, uint32_t w, uint32_t h) override {
 		glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(fb));
 		glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void EndExternalFrame() override {
+	void EndEyeFrame() override {
 		glFlush();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void EndVRFrame() override {}
+
+	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+		BeginVRFrame();
+		BeginEyeFrame(fb, w, h);
+	}
+
+	void EndExternalFrame() override {
+		EndEyeFrame();
+		EndVRFrame();
 	}
 
 	uint64_t GetSwapchainFormat() const override {

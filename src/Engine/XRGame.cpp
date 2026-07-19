@@ -617,6 +617,8 @@ void XRGame::RedrawVR() {
 
 	bool render2D = false;
 
+	renderDevice->BeginVRFrame();
+
 	for (uint32_t eye = 0; eye < viewCount; eye++) {
 		XrPosef pose = views[eye].pose;
 		XrFovf xrFov = views[eye].fov;
@@ -641,10 +643,10 @@ void XRGame::RedrawVR() {
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
 			// Render to the eye framebuffer
-			renderDevice->BeginExternalFrame(impl->framebuffers[eye][swapchainImageIndex],
+			renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
 				impl->swapchainWidth, impl->swapchainHeight);
 			RenderScene();
-			renderDevice->EndExternalFrame();
+			renderDevice->EndEyeFrame();
 		} else {
 			if (!useVulkan) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImagesGL[swapchainImageIndex].image);
@@ -662,15 +664,10 @@ void XRGame::RedrawVR() {
 		projectionViews[eye].subImage.imageArrayIndex = eye;
 	}
 
+	renderDevice->EndVRFrame();
+
 	XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
 	impl->outputError(xrReleaseSwapchainImage(impl->swapchain, &releaseInfo));
-
-	XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-	layer.space = impl->appSpace;
-	layer.viewCount = viewCount;
-	layer.views = projectionViews.data();
-
-	const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
 
 	XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
 	endInfo.displayTime = impl->frameState.predictedDisplayTime;

@@ -645,18 +645,19 @@ public:
 		delete ext;
 	}
 
-	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
-		ExternalFramebuffer* ext = reinterpret_cast<ExternalFramebuffer*>(fb);
-
+	void BeginVRFrame() override {
 		vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
 		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
 
-		auto cmd = commandBuffers_[currentFrame_];
-
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(cmd, &beginInfo);
+		vkBeginCommandBuffer(commandBuffers_[currentFrame_], &beginInfo);
+	}
+
+	void BeginEyeFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+		ExternalFramebuffer* ext = reinterpret_cast<ExternalFramebuffer*>(fb);
+		auto cmd = commandBuffers_[currentFrame_];
 
 		VkRenderPass rp = getOrCreateXrRenderPass(ext->colorFormat != VK_FORMAT_UNDEFINED ? ext->colorFormat : swapChainImageFormat_, ext->depthFormat);
 
@@ -694,10 +695,12 @@ public:
 		currentBoundPipeline_ = VK_NULL_HANDLE;
 	}
 
-	void EndExternalFrame() override {
-		auto cmd = commandBuffers_[currentFrame_];
+	void EndEyeFrame() override {
+		vkCmdEndRenderPass(commandBuffers_[currentFrame_]);
+	}
 
-		vkCmdEndRenderPass(cmd);
+	void EndVRFrame() override {
+		auto cmd = commandBuffers_[currentFrame_];
 		vkEndCommandBuffer(cmd);
 
 		VkSubmitInfo submitInfo{};
@@ -708,6 +711,16 @@ public:
 		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+	}
+
+	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+		BeginVRFrame();
+		BeginEyeFrame(fb, w, h);
+	}
+
+	void EndExternalFrame() override {
+		EndEyeFrame();
+		EndVRFrame();
 	}
 
 	bool IsVulkan() const override { return true; }

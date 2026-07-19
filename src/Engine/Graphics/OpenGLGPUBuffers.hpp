@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <vector>
 
+#include "../Vertex.hpp"
 #include "IGPUBuffers.hpp"
 
 class OpenGLGPUBuffers : public IGPUBuffers {
@@ -23,6 +24,14 @@ public:
 
 	unsigned int getVAO() const { return vao; }
 
+	static GLenum toGLType(fe::VertexAttribType type) {
+		switch (type) {
+			case fe::VertexAttribType::Short: return GL_SHORT;
+			case fe::VertexAttribType::UByte: return GL_UNSIGNED_BYTE;
+			default: return GL_FLOAT;
+		}
+	}
+
 	template<typename VertexType>
 	void upload(const std::vector<VertexType>& vertices, const std::vector<unsigned int>& indices) {
 		indexCount = static_cast<int>(indices.size());
@@ -40,7 +49,12 @@ public:
 
 		auto layout = VertexType::getLayout();
 		for (const auto& attr : layout) {
-			glVertexAttribPointer(attr.location, attr.components, GL_FLOAT, GL_FALSE, sizeof(VertexType), (void*)attr.offset);
+			GLenum glType = toGLType(attr.type);
+			if (attr.type == fe::VertexAttribType::Float) {
+				glVertexAttribPointer(attr.location, attr.components, glType, GL_FALSE, sizeof(VertexType), (void*)attr.offset);
+			} else {
+				glVertexAttribIPointer(attr.location, attr.components, glType, sizeof(VertexType), (void*)attr.offset);
+			}
 			glEnableVertexAttribArray(attr.location);
 		}
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <array>
+#include <cstdint>
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
@@ -9,10 +10,17 @@
 
 namespace fe {
 
+enum class VertexAttribType : uint8_t {
+    Float = 0,
+    Short = 1,
+    UByte = 2,
+};
+
 struct VertexAttribute {
     int location;  
     int components;
-    size_t offset; 
+    size_t offset;
+    VertexAttribType type = VertexAttribType::Float;
 };
 
 // struct IVertex {
@@ -36,9 +44,9 @@ public:
 
 	static std::vector<VertexAttribute> getLayout() {
 			return {
-					{ 0, 3, offsetof(Vertex, position) }, // 3 floats voor pos
-					{ 1, 3, offsetof(Vertex, normal) },   // 3 floats voor normal
-					{ 2, 2, offsetof(Vertex, uv) }        // 2 floats voor UV (2D)
+					{ 0, 3, offsetof(Vertex, position), VertexAttribType::Float },
+					{ 1, 3, offsetof(Vertex, normal), VertexAttribType::Float },
+					{ 2, 2, offsetof(Vertex, uv), VertexAttribType::Float }
 			};
 	}
 
@@ -88,9 +96,9 @@ public:
 
 	static std::vector<VertexAttribute> getLayout() {
 			return {
-					{ 0, 3, offsetof(VertexArray, position) },
-					{ 1, 3, offsetof(VertexArray, normal) },
-					{ 2, 3, offsetof(VertexArray, texCoord) }        // 3 floats voor UV (3D!)
+					{ 0, 3, offsetof(VertexArray, position), VertexAttribType::Float },
+					{ 1, 3, offsetof(VertexArray, normal), VertexAttribType::Float },
+					{ 2, 3, offsetof(VertexArray, texCoord), VertexAttribType::Float }
 			};
 	}
 };
