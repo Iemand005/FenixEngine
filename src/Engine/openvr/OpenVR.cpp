@@ -1,3 +1,4 @@
+#include <string>
 #ifdef FE_INCLUDE_OPENVR
 #include <openvr.h>
 #include <iostream>
@@ -152,8 +153,7 @@ void OpenVR::InitHMD(IRenderDevice* renderDevice) {
 	vrCompositor = vr::VRCompositor();
 
 	sys->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
-	std::cout << "[OpenVR] HMD ready — " << renderWidth << "x" << renderHeight
-	          << " per eye (" << (rd->IsVulkan() ? "Vulkan" : "OpenGL") << ")" << std::endl;
+	std::cout << "[OpenVR] HMD ready — " << std::to_string(renderWidth) << "x" << std::to_stringrenderHeigh0 << " per eye (" << (rd->IsVulkan() ? "Vulkan" : "OpenGL") << ")" << std::endl;
 
 	uint64_t depthFormat = rd->IsVulkan() ? 0 : GL_DEPTH_COMPONENT24;
 
