@@ -153,14 +153,13 @@ void OpenVR::InitHMD(IRenderDevice* renderDevice) {
 	vrCompositor = vr::VRCompositor();
 
 	sys->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
-	std::cout << "[OpenVR] HMD ready — " << std::to_string(renderWidth) << "x" << std::to_stringrenderHeigh0 << " per eye (" << (rd->IsVulkan() ? "Vulkan" : "OpenGL") << ")" << std::endl;
+	std::cout << "[OpenVR] HMD ready — " << std::to_string(renderWidth) << "x" << std::to_string(renderHeight) << " per eye (" << (rd->IsVulkan() ? "Vulkan" : "OpenGL") << ")" << std::endl;
 
 	uint64_t depthFormat = rd->IsVulkan() ? 0 : GL_DEPTH_COMPONENT24;
 
 	for (int eye = 0; eye < 2; ++eye) {
 		eyeColorImages[eye]  = rd->CreateColorAttachment(renderWidth, renderHeight);
-		eyeFramebuffers[eye] = rd->CreateFramebuffer(eyeColorImages[eye],
-			renderWidth, renderHeight, 0, depthFormat);
+		eyeFramebuffers[eye] = rd->CreateFramebuffer(eyeColorImages[eye], renderWidth, renderHeight, 0, depthFormat);
 	}
 
 	mode = Mode::Scene;
@@ -168,8 +167,7 @@ void OpenVR::InitHMD(IRenderDevice* renderDevice) {
 
 void OpenVR::WaitGetPoses() {
 	auto* compositor = static_cast<vr::IVRCompositor*>(vrCompositor);
-	compositor->WaitGetPoses(hmdPoses_, vr::k_unMaxTrackedDeviceCount,
-	                         gamePoses_, vr::k_unMaxTrackedDeviceCount);
+	compositor->WaitGetPoses(hmdPoses_, vr::k_unMaxTrackedDeviceCount, gamePoses_, vr::k_unMaxTrackedDeviceCount);
 }
 
 void OpenVR::GetEyeViewProjection(uint32_t eye, glm::mat4& view, glm::mat4& proj) const {
