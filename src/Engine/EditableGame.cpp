@@ -22,6 +22,9 @@ void fe::EditableGame::DrawDebugUI() {
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
 		ImGui::Begin("XR");
 		ImGui::Text("OpenVR HMD active");
+		if (ImGui::Button("Stop OpenVR")) {
+			DestroyXR();
+		}
 		ImGui::End();
 		return;
 	}
