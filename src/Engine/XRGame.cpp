@@ -576,7 +576,11 @@ void XRGame::Redraw(uint64_t fbo) {
 
 #ifdef FE_INCLUDE_OPENVR
 		if (impl->drawOpenVR && openVR && openVR->mode == OpenVR::Mode::Scene) {
-			openVR->RenderHMDFrame([this]() { RenderScene(); });
+			openVR->RenderHMDFrame([this]() {
+				for (auto& object : scene->GetObjects()) {
+					RenderObject(*object);
+				}
+			});
 		}
 #endif
 
