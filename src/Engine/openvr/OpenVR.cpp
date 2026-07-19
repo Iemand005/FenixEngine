@@ -221,7 +221,19 @@ void OpenVR::RenderHMDFrame(const std::function<void()>& renderScene) {
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
-			vrTex = { (void*)img, vr::TextureType_Vulkan, vr::ColorSpace_Gamma };
+			vr::VRVulkanTextureData_t vulkanTex{};
+			vulkanTex.m_nImage = reinterpret_cast<uint64_t>(img);
+			vulkanTex.m_pDevice = vk->GetDevice();
+			vulkanTex.m_pPhysicalDevice = vk->GetPhysicalDevice();
+			vulkanTex.m_pInstance = vk->GetInstance();
+			vulkanTex.m_pQueue = vk->GetGraphicsQueue();
+			vulkanTex.m_nQueueFamilyIndex = vk->GetGraphicsQueueFamily();
+			vulkanTex.m_nWidth = renderWidth;
+			vulkanTex.m_nHeight = renderHeight;
+			vulkanTex.m_nFormat = static_cast<uint32_t>(vk->GetSwapchainFormat());
+			vulkanTex.m_nSampleCount = 1;
+
+			vrTex = { &vulkanTex, vr::TextureType_Vulkan, vr::ColorSpace_Gamma };
 		} else {
 			GLuint tex = static_cast<GLuint>(eyeColorImages[eye]);
 			vrTex = { (void*)(uintptr_t)tex, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
