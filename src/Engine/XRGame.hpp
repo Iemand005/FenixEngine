@@ -4,16 +4,13 @@
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
+#define XR_USE_GRAPHICS_API_VULKAN
 #ifdef WIN32
 #define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
-// #define XR_EXTENSION_PROTOTYPES
-// #define XR_KHR_opengl_enable
-#ifdef XR_USE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
-#endif
 #else
 #define XR_USE_PLATFORM_WAYLAND
 #define XR_USE_PLATFORM_XLIB
@@ -63,17 +60,14 @@ namespace fe {
 
 		void initOpenXR();
 		void initOpenXR(void *next);
-#ifdef WIN32
-		void initOpenXR(HDC hDC, HGLRC hGLRC);
-#endif
-		
+
 		void EnableXR();
 		void DisableVR();
 		void LaunchVR();
 
-		void Redraw(GLuint fbo = 0) ;
+		void Redraw(uint64_t fbo = 0) ;
 		void RedrawVR();
-		void RedrawWindow(GLuint fbo = 0);
+		void RedrawWindow(uint64_t fbo = 0);
 
 		void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
 

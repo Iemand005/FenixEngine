@@ -144,6 +144,39 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glFlush();
 	}
 
+	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0) override {
+		GLuint fbo;
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, static_cast<GLuint>(nativeImage), 0, static_cast<GLint>(layer));
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			std::cerr << "OpenGL FBO incomplete: 0x" << std::hex << status << std::dec << std::endl;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		return fbo;
+	}
+
+	void DestroyFramebuffer(uint64_t fb) override {
+		GLuint fbo = static_cast<GLuint>(fb);
+		glDeleteFramebuffers(1, &fbo);
+	}
+
+	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+		glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(fb));
+		glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h));
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void EndExternalFrame() override {
+		glFlush();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	uint64_t GetSwapchainFormat() const override {
+		return GL_RGBA8;
+	}
+
 	const char* GetDeviceName() const override {
 		return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	}

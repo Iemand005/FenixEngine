@@ -566,7 +566,225 @@ public:
 		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
 	}
 
+	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0) override {
+		VkImage colorImage = reinterpret_cast<VkImage>(nativeImage);
+
+		VkImageViewCreateInfo viewInfo{};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = colorImage;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = swapChainImageFormat_;
+		viewInfo.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+							   VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = layer;
+		viewInfo.subresourceRange.layerCount = 1;
+
+		VkImageView colorImageView;
+		if (vkCreateImageView(device_, &viewInfo, nullptr, &colorImageView) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create XR color image view.");
+
+		VkFormat depthFormat = findDepthFormat();
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		createImage(w, h, depthFormat, VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+		VkImageView depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, depthFormat);
+
+		std::array<VkImageView, 2> attachments = {colorImageView, depthImageView};
+
+		VkFramebufferCreateInfo fbInfo{};
+		fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		fbInfo.renderPass = rp;
+		fbInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		fbInfo.pAttachments = attachments.data();
+		fbInfo.width = w;
+		fbInfo.height = h;
+		fbInfo.layers = 1;
+
+		VkFramebuffer framebuffer;
+		if (vkCreateFramebuffer(device_, &fbInfo, nullptr, &framebuffer) != VK_SUCCESS) {
+			vkDestroyImageView(device_, depthImageView, nullptr);
+			vkDestroyImage(device_, depthImage, nullptr);
+			vkFreeMemory(device_, depthImageMemory, nullptr);
+			vkDestroyImageView(device_, colorImageView, nullptr);
+			return 0;
+		}
+
+		ExternalFramebuffer* ext = new ExternalFramebuffer{
+			framebuffer, colorImageView,
+			depthImageView, depthImage, depthImageMemory
+		};
+		return reinterpret_cast<uint64_t>(ext);
+	}
+
+	void DestroyFramebuffer(uint64_t fb) override {
+		if (fb == 0) return;
+		ExternalFramebuffer* ext = reinterpret_cast<ExternalFramebuffer*>(fb);
+		vkDestroyFramebuffer(device_, ext->framebuffer, nullptr);
+		vkDestroyImageView(device_, ext->colorImageView, nullptr);
+		vkDestroyImageView(device_, ext->depthImageView, nullptr);
+		vkDestroyImage(device_, ext->depthImage, nullptr);
+		vkFreeMemory(device_, ext->depthImageMemory, nullptr);
+		delete ext;
+	}
+
+	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override {
+		ExternalFramebuffer* ext = reinterpret_cast<ExternalFramebuffer*>(fb);
+
+		vkWaitForFences(device_, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+		vkResetFences(device_, 1, &inFlightFences_[currentFrame_]);
+		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+
+		auto cmd = commandBuffers_[currentFrame_];
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		vkBeginCommandBuffer(cmd, &beginInfo);
+
+		VkRenderPass rp = getOrCreateXrRenderPass(swapChainImageFormat_, findDepthFormat());
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = m_VulkanClearColor.color;
+		clearValues[1].depthStencil = {1.0f, 0};
+
+		VkRenderPassBeginInfo rpBegin{};
+		rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		rpBegin.renderPass = rp;
+		rpBegin.framebuffer = ext->framebuffer;
+		rpBegin.renderArea.offset = {0, 0};
+		rpBegin.renderArea.extent = {w, h};
+		rpBegin.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		rpBegin.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(w);
+		viewport.height = static_cast<float>(h);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = {0, 0};
+		scissor.extent = {w, h};
+		vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+		drawCallCount_ = 0;
+		currentBoundPipeline_ = VK_NULL_HANDLE;
+	}
+
+	void EndExternalFrame() override {
+		auto cmd = commandBuffers_[currentFrame_];
+
+		vkCmdEndRenderPass(cmd);
+		vkEndCommandBuffer(cmd);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmd;
+
+		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
+
+		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+	}
+
+	uint64_t GetSwapchainFormat() const override {
+		return static_cast<uint64_t>(swapChainImageFormat_);
+	}
+
 private:
+
+	struct ExternalFramebuffer {
+		VkFramebuffer framebuffer;
+		VkImageView colorImageView;
+		VkImageView depthImageView;
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+	};
+
+	VkRenderPass getOrCreateXrRenderPass(VkFormat colorFormat, VkFormat depthFormat) {
+		if (xrRenderPass_ != VK_NULL_HANDLE && xrRenderPassFormat_ == colorFormat)
+			return xrRenderPass_;
+
+		if (xrRenderPass_ != VK_NULL_HANDLE) {
+			vkDestroyRenderPass(device_, xrRenderPass_, nullptr);
+			xrRenderPass_ = VK_NULL_HANDLE;
+		}
+
+		VkAttachmentDescription colorAttachment{};
+		colorAttachment.format = colorFormat;
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference colorRef{};
+		colorRef.attachment = 0;
+		colorRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentDescription depthAttachment{};
+		depthAttachment.format = depthFormat;
+		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference depthRef{};
+		depthRef.attachment = 1;
+		depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorRef;
+		subpass.pDepthStencilAttachment = &depthRef;
+
+		VkSubpassDependency dep{};
+		dep.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dep.dstSubpass = 0;
+		dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dep.srcAccessMask = 0;
+		dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+
+		VkRenderPassCreateInfo rpInfo{};
+		rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		rpInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		rpInfo.pAttachments = attachments.data();
+		rpInfo.subpassCount = 1;
+		rpInfo.pSubpasses = &subpass;
+		rpInfo.dependencyCount = 1;
+		rpInfo.pDependencies = &dep;
+
+		if (vkCreateRenderPass(device_, &rpInfo, nullptr, &xrRenderPass_) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create XR render pass.");
+
+		xrRenderPassFormat_ = colorFormat;
+		return xrRenderPass_;
+	}
+
+	// XR/external rendering resources
+	VkRenderPass xrRenderPass_ = VK_NULL_HANDLE;
+	VkFormat xrRenderPassFormat_ = VK_FORMAT_UNDEFINED;
 	fe::IWindow *window;
 
 	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
@@ -1798,6 +2016,11 @@ private:
 	// Cleanup
 	// ---------------------------------------------------------------
 	void cleanup() {
+		if (xrRenderPass_ != VK_NULL_HANDLE) {
+			vkDestroyRenderPass(device_, xrRenderPass_, nullptr);
+			xrRenderPass_ = VK_NULL_HANDLE;
+		}
+
 		for (auto& sem : imageAvailableSemaphores_)
 			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(device_, sem, nullptr);
 		imageAvailableSemaphores_.clear();
