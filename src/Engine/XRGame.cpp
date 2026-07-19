@@ -391,18 +391,6 @@ void XRGame::initOpenXR(void *next) {
 		}
 	}
 
-	if (impl->useVulkan) {
-		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
-		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
-			(PFN_xrVoidFunction*)(&pfn));
-		if (pfn) {
-			auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
-			VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
-			impl->outputError(pfn(impl->instance, impl->systemId,
-				vk->GetInstance(), &vkPhysicalDevice));
-		}
-	}
-
 	XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
 	sessionInfo.systemId = impl->systemId;
 	sessionInfo.next = next;
