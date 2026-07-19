@@ -623,16 +623,32 @@ void XRGame::RedrawVR() {
 
 	renderDevice->BeginVRFrame();
 
+	// Set up lighting once, shared by all eyes
+	if (shader) {
+		int count = scene->GetLightCount();
+		auto pointLights = scene->GetLights();
+		shader->SetInt("lightCount", count);
+		for (int i = 0; i < count; ++i) {
+			const auto& l = pointLights[i];
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+		}
+	}
+
 	for (uint32_t eye = 0; eye < viewCount; eye++) {
 		XrPosef pose = views[eye].pose;
 		XrFovf xrFov = views[eye].fov;
 
-		glm::vec3 position(pose.position.x, pose.position.y, pose.position.z);
+		glm::vec3 hmdPosition(pose.position.x, pose.position.y, pose.position.z);
 		glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
 		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
 		if (!render2D) {
-			camera->update(position + positionOffset, orientation, fov);
+			// Camera position = player position + HMD offset + user offset
+			glm::vec3 cameraPos = player->state.position + hmdPosition + positionOffset;
+			camera->update(cameraPos, orientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
 			if (!useVulkan) {
@@ -649,7 +665,9 @@ void XRGame::RedrawVR() {
 			// Render to the eye framebuffer
 			renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
 				impl->swapchainWidth, impl->swapchainHeight);
-			RenderScene();
+			for (auto& object : scene->GetObjects()) {
+				RenderObject(*object);
+			}
 			renderDevice->EndEyeFrame();
 		} else {
 			if (!useVulkan) {
