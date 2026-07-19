@@ -111,6 +111,11 @@ public:
 		fragShaderArrayPath_ = fragPath;
 	}
 
+	void SetFoxcraftShaderPaths(const std::string& vertPath, const std::string& fragPath) {
+		vertShaderFoxcraftPath_ = vertPath;
+		fragShaderArrayPath_ = fragPath;
+	}
+
 	void Init(fe::IWindow *window) override {
 		this->window = window;
 		CreateInstance();
@@ -843,11 +848,11 @@ private:
 	VkFormat xrRenderPassFormat_ = VK_FORMAT_UNDEFINED;
 	fe::IWindow *window;
 
-	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
-	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
-	std::string vertShaderArrayPath_ = "resources/shaders/VertexShader_vk_array.spv";
-	std::string fragShaderArrayPath_ = "resources/shaders/FragmentShader_vk_array.spv";
-	std::string vertShaderFoxcraftPath_ = "resources/shaders/VertexShader_vk_foxcraft.spv";
+	std::string vertShaderPath_;
+	std::string fragShaderPath_;
+	std::string vertShaderArrayPath_;
+	std::string fragShaderArrayPath_;
+	std::string vertShaderFoxcraftPath_;
 	std::string deviceName_;
 	static inline bool preferIntegratedGPU_ = false;
 
@@ -1342,7 +1347,8 @@ private:
 	static std::vector<char> readFile(const std::string& path) {
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 		if (!file.is_open()) {
-			throw std::runtime_error("Failed to open shader file: " + path);
+			std::cerr << "[VulkanDevice] Failed to open shader file: " << path << std::endl;
+			return {};
 		}
 		size_t fileSize = static_cast<size_t>(file.tellg());
 		std::vector<char> buffer(fileSize);
@@ -1371,6 +1377,12 @@ private:
 								VertexFormat format, VkPipeline& outPipeline) {
 		auto vertShaderCode = readFile(vertPath);
 		auto fragShaderCode = readFile(fragPath);
+
+		if (vertShaderCode.empty() || fragShaderCode.empty()) {
+			std::cerr << "[VulkanDevice] Skipping pipeline creation — missing shader: " << vertPath << " or " << fragPath << std::endl;
+			outPipeline = VK_NULL_HANDLE;
+			return;
+		}
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);

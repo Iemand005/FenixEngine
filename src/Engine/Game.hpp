@@ -90,7 +90,7 @@ public:
 	PhysicsFactory *GetPhysicsEngine();
 
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
-		this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
+		Renderer::LoadShaders(vertexShaderPath, fragmentShaderPath);
 	}
 
 	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {

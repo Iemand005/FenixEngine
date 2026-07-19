@@ -99,6 +99,24 @@ public:
 	bool isConnectedToServer = false;
 
 	bool useVulkan = false;
+
+	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
+	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
+	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
+	std::string vertArrayShaderPath_;
+	std::string fragArrayShaderPath_;
+	std::string vertFoxcraftShaderPath_;
+	std::string fragFoxcraftShaderPath_;
+
+	void PushShaderPathsToVulkanDevice() {
+		if (!useVulkan || !renderDevice) return;
+		auto* vkDev = dynamic_cast<VulkanDevice*>(renderDevice.get());
+		if (!vkDev) return;
+		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
+		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
+		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+	}
+
 	Renderer(bool useVulkan = false) {
 		CreateRenderDevice(useVulkan);
 	}
@@ -171,6 +189,7 @@ public:
 	
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
+		PushShaderPathsToVulkanDevice();
 		renderDevice->Init(window.get());
 	}
 
@@ -195,6 +214,38 @@ template<typename WindowT = DefaultWindow>
 
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
+		// Derive Vulkan SPIR-V paths from the OpenGL paths (VertexShader.glsl -> VertexShader_vk.spv)
+		auto vkPath = [](const std::string& glslPath) -> std::string {
+			std::string path = glslPath;
+			size_t dot = path.rfind('.');
+			size_t slash = path.rfind('/');
+			if (dot != std::string::npos && slash != std::string::npos && dot > slash) {
+				path.insert(dot, "_vk");
+				path.replace(dot + 3, std::string::npos, ".spv");
+			}
+			return path;
+		};
+		vertShaderPath_ = vkPath(vertexShaderPath);
+		fragShaderPath_ = vkPath(fragmentShaderPath);
+		PushShaderPathsToVulkanDevice();
+	}
+
+	void LoadVulkanShaders(const std::string& vertPath, const std::string& fragPath) {
+		vertShaderPath_ = vertPath;
+		fragShaderPath_ = fragPath;
+		PushShaderPathsToVulkanDevice();
+	}
+
+	void LoadArrayShaders(const std::string& vertPath, const std::string& fragPath) {
+		vertArrayShaderPath_ = vertPath;
+		fragArrayShaderPath_ = fragPath;
+		PushShaderPathsToVulkanDevice();
+	}
+
+	void LoadFoxcraftShaders(const std::string& vertPath, const std::string& fragPath) {
+		vertFoxcraftShaderPath_ = vertPath;
+		fragFoxcraftShaderPath_ = fragPath;
+		PushShaderPathsToVulkanDevice();
 	}
 
 	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
