@@ -7,7 +7,7 @@
 #endif
 
 // #include <GL/glx.h>
-#include <glad/glad.h>
+// #include <glad/glad.h>
 
 
 #include <openxr/openxr.h>
@@ -359,6 +359,16 @@ void XRGame::initOpenXR() {
 #ifdef XR_USE_PLATFORM_WIN32
 
 void XRGame::initOpenXR(HDC hDC, HGLRC hGLRC) {
+	XrGraphicsBindingOpenGLWin32KHR gfx{};
+	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
+	gfx.hDC = hDC;
+	gfx.hGLRC = hGLRC;
+
+	initOpenXR(&gfx);
+}
+
+void XRGame::initOpenXR(HDC hDC) {
+	XrGraphics
 	XrGraphicsBindingOpenGLWin32KHR gfx{};
 	gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR;
 	gfx.hDC = hDC;

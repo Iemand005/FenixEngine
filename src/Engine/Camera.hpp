@@ -129,6 +129,12 @@ private:
 		dir.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 
 		front = glm::normalize(dir);
+
+		glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+		if (glm::length(right) < 0.001f)
+			right = glm::vec3(1.0f, 0.0f, 0.0f);
+		up = glm::normalize(glm::cross(right, front));
+
 		updateView(position, front, up);
 	}
 

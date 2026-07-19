@@ -110,7 +110,7 @@ public:
 	void Init(fe::IWindow *window) override {
 		this->window = window;
 		CreateInstance();
-		createSurface();
+		CreateSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
 		createSwapChain();
@@ -662,6 +662,10 @@ private:
 			throw std::runtime_error("Failed to create Vulkan instance.");
 	}
 
+	void CreateSurface() {
+		_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+	}
+
 	bool checkValidationLayerSupport() {
 		uint32_t layerCount;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -681,9 +685,7 @@ private:
 		return true;
 	}
 
-	void createSurface() {
-		_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
-	}
+	
 
 
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) {
