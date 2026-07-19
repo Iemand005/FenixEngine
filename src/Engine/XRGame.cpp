@@ -104,10 +104,10 @@ struct fe::XRGame::Impl {
 			std::cout << "  " << format << std::endl;
 		}
 
-		int64_t preferredFormat = static_cast<int64_t>(renderDevice->GetSwapchainFormat());
 		int64_t chosenFormat = formats[0];
+		// Try to prefer a UNORM format over SRGB for better NVIDIA NVAPI sharing support
 		for (auto format : formats) {
-			if (format == preferredFormat) {
+			if (format == VK_FORMAT_R8G8B8A8_UNORM || format == VK_FORMAT_B8G8R8A8_UNORM) {
 				chosenFormat = format;
 				break;
 			}
@@ -123,7 +123,8 @@ struct fe::XRGame::Impl {
 		swapchainInfo.faceCount = 1;
 		swapchainInfo.sampleCount = 1;
 		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
-			XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
+			XR_SWAPCHAIN_USAGE_SAMPLED_BIT |
+			XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
 
 		outputError(xrCreateSwapchain(session, &swapchainInfo, &swapchain));
 
