@@ -31,6 +31,6 @@ void VulkanDevice::pickPhysicalDevice() {
 	_physicalDevice = bestDevice;
 	VkPhysicalDeviceProperties props;
 	vkGetPhysicalDeviceProperties(_physicalDevice, &props);
-	deviceName_ = props.deviceName;
-	std::cout << "Selected GPU: " << deviceName_ << "\n";
+	_deviceName = props.deviceName;
+	std::cout << "Selected GPU: " << _deviceName << "\n";
 }
