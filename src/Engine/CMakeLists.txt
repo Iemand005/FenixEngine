@@ -66,6 +66,7 @@ add_library(Renderer STATIC
 	Graphics/Renderer.cpp
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
+	Graphics/VulkanRenderDevice.cpp
 )
 
 target_include_directories(Renderer PRIVATE

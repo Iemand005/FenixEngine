@@ -1068,9 +1068,8 @@ private:
 	void pickPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
-		if (deviceCount == 0) {
+		if (deviceCount == 0)
 			throw std::runtime_error("No GPUs with Vulkan support found.");
-		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
