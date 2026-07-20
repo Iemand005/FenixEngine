@@ -178,7 +178,7 @@ if(NOT FE_EXCLUDE_JOLT)
 endif()
 
 if(WIN32)
-	target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32)
+	target_link_libraries(Engine PRIVATE gdi32 opengl32 shell32 user32 RuntimeObject windowsapp)
 elseif(APPLE)
 	target_link_libraries(Engine PRIVATE "-framework OpenGL")
 else()
