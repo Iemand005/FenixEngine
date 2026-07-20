@@ -146,6 +146,7 @@ if(WIN32)
     target_compile_definitions(Engine PRIVATE
         WINRT_LEAN_AND_MEAN
         _AMD64_
+		_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
     )
 endif()
 
