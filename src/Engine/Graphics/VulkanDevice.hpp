@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -45,8 +44,6 @@ const std::vector<const char*> kDeviceExtensions = {
 	VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
 };
 
-constexpr int kWindowWidth = 800;
-constexpr int kWindowHeight = 600;
 constexpr int kMaxFramesInFlight = 2;
 constexpr int kMaxDrawsPerFrame = 2048;
 constexpr int kMaxCachedTextures = 1024;
@@ -918,43 +915,9 @@ private:
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
 	glm::vec4 currentObjectColor_ = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	void CreateInstance() {
-		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
-			throw std::runtime_error(
-				"Validation layers requested but not available. "
-				"Did you install vulkan-validationlayers(-dev)?");
-		}
+	void CreateInstance();
 
-		VkApplicationInfo appInfo{};
-		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "FenixEngine";
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "FenixEngine";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_2;
-
-		fe::VulkanExtensions vkExts = window->GetVulkanExtensions();
-		std::vector<const char*> extensions(vkExts.extensions, vkExts.extensions + vkExts.extensionCount);
-		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-		VkInstanceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		createInfo.pApplicationInfo = &appInfo;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-		createInfo.ppEnabledExtensionNames = extensions.data();
-
-		if (kEnableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(kValidationLayers.size());
-			createInfo.ppEnabledLayerNames = kValidationLayers.data();
-		} else createInfo.enabledLayerCount = 0;
-
-		if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create Vulkan instance.");
-	}
-
-	void CreateSurface() {
-		_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
-	}
+	void CreateSurface();
 
 	bool checkValidationLayerSupport() {
 		uint32_t layerCount;
