@@ -26,6 +26,7 @@ namespace fe {
 		ObjectState SyncToRender();
 
 		std::unique_ptr<PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true, bool allowRotation = false);
+		std::unique_ptr<PhysicsObject> CreateSphereObject(float radius, bool dynamic = true);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 		// template<typename T>

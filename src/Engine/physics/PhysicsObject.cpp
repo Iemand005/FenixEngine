@@ -10,6 +10,7 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
 using namespace JPH;
@@ -247,6 +248,41 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 	this->impl->bodyId = impl->body->GetID();
 	bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
 	// bodyInterface->SetGravityFactor()
+#endif
+}
+
+void PhysicsObject::InitializeSphereBody(float radius, bool dynamic) {
+#ifndef EXCLUDE_JOLT
+	if (!impl->physicsSystem) {
+		std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
+		return;
+	}
+
+	JPH::SphereShapeSettings sphereShapeSettings(radius);
+	sphereShapeSettings.SetDensity(1000.0);
+
+	JPH::ShapeSettings::ShapeResult shapeResult = sphereShapeSettings.Create();
+	JPH::ShapeRefC shape = shapeResult.Get();
+
+	JPH::BodyCreationSettings bodySettings(shape, JPH::RVec3(0.0, 0.0, 0.0), JPH::Quat::sIdentity(),
+		dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static, Layers::MOVING);
+	bodySettings.mMaxLinearVelocity = 10000.0;
+	bodySettings.mApplyGyroscopicForce = true;
+	bodySettings.mLinearDamping = 0.0;
+	bodySettings.mAngularDamping = 0.05f;
+	bodySettings.mFriction = 0.1f;
+	bodySettings.mRestitution = 0.3f;
+	if (dynamic) {
+		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+		JPH::MassProperties massProperties;
+		massProperties.mMass = 1.0f;
+		bodySettings.mMassPropertiesOverride = massProperties;
+	}
+
+	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+	this->impl->body = bodyInterface->CreateBody(bodySettings);
+	this->impl->bodyId = impl->body->GetID();
+	bodyInterface->AddBody(this->impl->body->GetID(), JPH::EActivation::Activate);
 #endif
 }
 

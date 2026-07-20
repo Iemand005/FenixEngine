@@ -212,6 +212,13 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool
 	return obj;
 }
 
+std::unique_ptr<PhysicsObject> PhysicsFactory::CreateSphereObject(float radius, bool dynamic) {
+	auto obj = std::make_unique<fe::PhysicsObject>();
+	Bind(obj.get());
+	obj->InitializeSphereBody(radius, dynamic);
+	return obj;
+}
+
 std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices) {
 	auto obj = std::make_unique<fe::PhysicsObject>(vertices, indices);
 	Bind(obj.get());
