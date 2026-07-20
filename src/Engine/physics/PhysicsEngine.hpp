@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "PhysicsObject.hpp"
-#include "../Mesh.hpp"
+#include "../Vertex.hpp"
 
 namespace fe {
 
