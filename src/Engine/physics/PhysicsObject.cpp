@@ -239,6 +239,8 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 	bodySettings.mApplyGyroscopicForce = true;
 	bodySettings.mLinearDamping = 0.0;
 	bodySettings.mAngularDamping = 0.0;
+	bodySettings.mFriction = 0.05f;
+	bodySettings.mRestitution = 0.6f;
 	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
 	// this->physicsSystem = physicsSystem;
