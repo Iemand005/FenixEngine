@@ -34,19 +34,19 @@ Accelerometer::~Accelerometer() {
 }
 
 glm::vec3 Accelerometer::GetAcceleration() const {
-	if (!available || !sensor) return {0.0f};
+	if (!available || !sensor) return glm::vec3(0.0f);
 
 	auto reading = sensor.GetCurrentReading();
 	if (reading) {
 		std::lock_guard lock(mutex);
-		lastReading = {
+		lastReading = glm::vec3(
 			static_cast<float>(reading.AccelerationX()),
 			static_cast<float>(reading.AccelerationY()),
 			static_cast<float>(reading.AccelerationZ())
-		};
+		);
 		return lastReading;
 	}
-	return {0.0f};
+	return glm::vec3(0.0f);
 }
 
 void Accelerometer::Start(ReadingCallback callback) {
@@ -83,11 +83,11 @@ void Accelerometer::HandleReading(
 
 	{
 		std::lock_guard lock(mutex);
-		lastReading = {
+		lastReading = glm::vec3(
 			static_cast<float>(reading.AccelerationX()),
 			static_cast<float>(reading.AccelerationY()),
 			static_cast<float>(reading.AccelerationZ())
-		};
+		);
 	}
 
 	if (userCallback) {
@@ -104,7 +104,7 @@ Accelerometer::Accelerometer() {
 Accelerometer::~Accelerometer() = default;
 
 glm::vec3 Accelerometer::GetAcceleration() const {
-	return {0.0f};
+	return glm::vec3(0.0f);
 }
 
 void Accelerometer::Start(ReadingCallback callback) {
