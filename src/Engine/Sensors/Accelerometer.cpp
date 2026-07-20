@@ -144,7 +144,7 @@ std::vector<Accelerometer> Accelerometer::EnumerateAll() {
 		winrt::init_apartment(winrt::apartment_type::multi_threaded);
 
 		try {
-			winrt::hstring selector = winrt::Windows::Devices::Sensors::Accelerometer::GetDeviceSelector();
+			winrt::hstring selector = winrt::Windows::Devices::Sensors::Accelerometer::GetDeviceSelector(winrt::Windows::Devices::Sensors::AccelerometerReadingType::Standard);
 			winrt::Windows::Devices::Enumeration::DeviceInformationCollection devices =
 				winrt::Windows::Devices::Enumeration::DeviceInformation::FindAllAsync(selector).get();
 
