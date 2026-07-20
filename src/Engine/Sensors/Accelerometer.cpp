@@ -39,11 +39,9 @@ glm::vec3 Accelerometer::GetAcceleration() const {
 	auto reading = sensor.GetCurrentReading();
 	if (reading) {
 		std::lock_guard lock(mutex);
-		lastReading = glm::vec3(
-			static_cast<float>(reading.AccelerationX()),
-			static_cast<float>(reading.AccelerationY()),
-			static_cast<float>(reading.AccelerationZ())
-		);
+		lastReading.x	static_cast<float>(reading.AccelerationX());
+		lastReading.y	static_cast<float>(reading.AccelerationY());
+		lastReading.z	static_cast<float>(reading.AccelerationZ());
 		return lastReading;
 	}
 	return glm::vec3(0.0f);
