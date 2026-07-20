@@ -428,12 +428,19 @@ void SDLWindow::GetJoysticks() {
 	int count = 0;
     SDL_JoystickID *joysticks = SDL_GetJoysticks(&count);
 
-	printf("%i joysticks were found.\n\n", count );
-    printf("The names of the joysticks are:\n");
 		
-    for( i=0; i < SDL_NumJoysticks(); i++ ) 
-    {
-        printf("    %s\n", SDL_JoystickName(i));
+    if (joysticks) {
+		printf("%i joysticks were found.\n\n", count );
+		printf("The names of the joysticks are:\n");
+        for (int i = 0; i < count; i++) {
+            const char *name = SDL_GetJoystickNameForID(joysticks[i]);
+            printf("  [%d] ID: %u - Naam: %s\n", i, (unsigned int)joysticks[i], name ? name : "Onbekend");
+        }
+        
+        // Vergeet de array niet vrij te geven!
+        SDL_free(joysticks);
+    } else {
+        printf("Geen joysticks aangesloten of fout opgetreden.\n");
     }
 }
 
