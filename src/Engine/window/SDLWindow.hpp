@@ -85,7 +85,7 @@ class SDLWindow : public IWindow {
 
   // union SDL_Event;
 
-  bool PollSDLEvent(SDL_Event* event, bool getKeyboardState = true);;
+  bool PollSDLEvent(SDL_Event* event, bool getKeyboardState = true);
   
 
   // struct SDL_Window;
@@ -102,6 +102,8 @@ class SDLWindow : public IWindow {
   void GetFramebufferSize(int *width, int *height);
 
   bool HideMouse();
+
+  void GetJoysticks();
 
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32

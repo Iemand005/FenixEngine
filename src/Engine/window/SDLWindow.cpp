@@ -14,22 +14,25 @@
 
 #include "SDLWindow.hpp"
 
+using namespace fe;
+
 #ifdef WIN32
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
+
 inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-  WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-  LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
-
-  switch (msg) {
-    case WM_MOVING:
-    case WM_TIMER: {
-      DwmFlush();
-    }
-  }
-
-  return res;
+	WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
+	
+	switch (msg) {
+		case WM_MOVING:
+		case WM_TIMER: {
+			DwmFlush();
+		}
+	}
+	
+	return res;
 }
 #endif
 
@@ -419,6 +422,16 @@ bool fe::SDLWindow::HideMouse() {
 
 void fe::SDLWindow::SetTitle(const char *title) {
 	SDL_SetWindowTitle(impl->window, title);
+}
+
+void SDLWindow::GetJoysticks() {
+	printf("%i joysticks were found.\n\n", SDL_NumJoysticks() );
+    printf("The names of the joysticks are:\n");
+		
+    for( i=0; i < SDL_NumJoysticks(); i++ ) 
+    {
+        printf("    %s\n", SDL_JoystickName(i));
+    }
 }
 
 fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
