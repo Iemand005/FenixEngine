@@ -425,7 +425,10 @@ void fe::SDLWindow::SetTitle(const char *title) {
 }
 
 void SDLWindow::GetJoysticks() {
-	printf("%i joysticks were found.\n\n", SDL_NumJoysticks() );
+	int count = 0;
+    SDL_JoystickID *joysticks = SDL_GetJoysticks(&count);
+
+	printf("%i joysticks were found.\n\n", count );
     printf("The names of the joysticks are:\n");
 		
     for( i=0; i < SDL_NumJoysticks(); i++ ) 
