@@ -1,0 +1,6 @@
+
+namespace fe {
+	class Accelerometer {
+
+	};
+};
