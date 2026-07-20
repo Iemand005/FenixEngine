@@ -106,6 +106,8 @@ glm::vec3 Accelerometer::GetAcceleration() const {
 	return glm::vec3(0.0f);
 }
 
+void Accelerometer::Calibrate() {}
+
 void Accelerometer::Start(ReadingCallback callback) {
 	(void)callback;
 	std::cout << "[Accelerometer] Not available on this platform" << std::endl;
