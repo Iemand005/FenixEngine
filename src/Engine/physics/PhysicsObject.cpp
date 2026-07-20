@@ -259,7 +259,7 @@ void PhysicsObject::InitializeSphereBody(float radius, bool dynamic) {
 	}
 
 	JPH::SphereShapeSettings sphereShapeSettings(radius);
-	sphereShapeSettings.SetDensity(1000.0);
+	sphereShapeSettings.SetDensity(100.0);
 
 	JPH::ShapeSettings::ShapeResult shapeResult = sphereShapeSettings.Create();
 	JPH::ShapeRefC shape = shapeResult.Get();
