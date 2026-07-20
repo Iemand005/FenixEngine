@@ -25,7 +25,6 @@
 #endif
 
 #include "PhysicsEngine.hpp"
-#include "Veertex.hpp"
 #include "BasicDebugRenderer.hpp"
 
 // JPH_SUPPRESS_WARNINGS
