@@ -136,6 +136,13 @@ if(WIN32)
         CXX_STANDARD_REQUIRED ON
     )
 
+	if(MSVC)
+        target_compile_options(FenixEngine PRIVATE 
+            /permissive-   # Turns off MSVC non-standard extensions
+            /Zc:preprocessor # Forces modern, standard C++ preprocessor
+        )
+    endif()
+
     target_compile_definitions(Engine PRIVATE
         WINRT_LEAN_AND_MEAN
         _AMD64_
