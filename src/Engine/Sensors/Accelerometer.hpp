@@ -26,7 +26,7 @@ namespace fe {
 
 		bool IsAvailable() const { return available; }
 
-		glm::vec3 GetAcceleration() const;
+		glm::vec3 GetAcceleration();
 
 		void Start(ReadingCallback callback);
 		void Stop();
