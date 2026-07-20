@@ -445,7 +445,8 @@ public:
 
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &currentModel_);
+		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{currentModel_, currentObjectColor_};
+		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushData), &pushData);
 		vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 	}
 
@@ -471,8 +472,10 @@ public:
 			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
 		glm::mat4 identity(1.0f);
-		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT,
-			0, sizeof(glm::mat4), &identity);
+		glm::vec4 defaultColor(1.0f, 1.0f, 1.0f, 1.0f);
+		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{identity, defaultColor};
+		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(PushData), &pushData);
 
 		vkCmdDrawIndexedIndirect(cmd, indirectBuffer, indirectOffset,
 			drawCount, stride);
@@ -578,6 +581,10 @@ public:
 		if (strcmp(name, "model") == 0) { currentModel_ = value; }
 		else if (strcmp(name, "view") == 0) { currentView_ = value; updateUniformBuffer(currentFrame_); }
 		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
+	}
+
+	void SetVec3(const char* name, const glm::vec3& value) override {
+		if (strcmp(name, "objectColor") == 0) { currentObjectColor_ = glm::vec4(value, 1.0f); }
 	}
 
 	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
@@ -909,6 +916,7 @@ private:
 	glm::mat4 currentModel_ = glm::mat4(1.0f);
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
+	glm::vec4 currentObjectColor_ = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	void CreateInstance() {
 		if (kEnableValidationLayers && !checkValidationLayerSupport()) {
@@ -1494,9 +1502,9 @@ private:
 		colorBlending.pAttachments = &colorBlendAttachment;
 
 		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(glm::mat4);
+		pushConstantRange.size = sizeof(glm::mat4) + sizeof(glm::vec4);
 
 		if (pipelineLayout_ == VK_NULL_HANDLE) {
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

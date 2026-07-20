@@ -48,6 +48,7 @@ void Renderer::RenderObject(ObjectBase& object) {
 		return;
 	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
+	renderDevice->SetVec3("objectColor", object.color);
 	object.Render(renderDevice.get());
 }
 

@@ -41,6 +41,7 @@ namespace fe {
 			const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) {}
 
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
+		virtual void SetVec3(const char* name, const glm::vec3& value) {}
 
 		virtual uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) { return 0; }
 		virtual void DestroyFramebuffer(uint64_t fb) {}

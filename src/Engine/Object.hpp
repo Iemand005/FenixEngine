@@ -41,6 +41,8 @@ public:
 	bool touchedGround = false;
 	bool touchedOtherObject = false;
 
+	glm::vec3 color{1.0f, 1.0f, 1.0f};
+
 	std::unique_ptr<PhysicsObject> physicsObject = nullptr;
 	std::string sourcePath;
 	std::string name = "unkle";
