@@ -381,12 +381,12 @@ namespace fe::Primitives {
 				int next = current + sectorCount + 1;
 
 				indices.push_back(current);
-				indices.push_back(next);
 				indices.push_back(current + 1);
+				indices.push_back(next);
 
 				indices.push_back(current + 1);
-				indices.push_back(next);
 				indices.push_back(next + 1);
+				indices.push_back(next);
 			}
 		}
 
