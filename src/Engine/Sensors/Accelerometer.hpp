@@ -1,4 +1,4 @@
-
+#pragma once
 #ifdef WIN32
 #define WINRT_LEAN_AND_MEAN
 #define _AMD64_
