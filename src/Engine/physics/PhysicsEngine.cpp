@@ -215,10 +215,10 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<gl
 
 std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
 	std::vector<glm::vec3> vtxs(vertices.size()); //= std::vector<class Ty>
-	for (auto vtx in vertices) {
-		
+	for (auto vtx : vertices) {
+		vtxs.push_back(vtx.position);
 	}
-	CreateObject()
+	CreateObject(vtxs, indices);
 }
 
 void PhysicsFactory::Bind(PhysicsObject *obj) {
