@@ -123,8 +123,12 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_draw.cpp
 )
 
-add_library(Engine STATIC ${SOURCE_FILES} ${IMGUI_SOURCE_FILES}
-openvr/OpenVR.cpp)
+set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+if(FE_INCLUDE_OPENVR)
+	list(APPEND ENGINE_SOURCE_FILES openvr/OpenVR.cpp)
+endif()
+
+add_library(Engine STATIC ${ENGINE_SOURCE_FILES})
 
 
 
@@ -142,7 +146,6 @@ target_include_directories(Engine PUBLIC
 
 	../../external/glfw/include
 
-	${EXTERNAL_DIR}/openvr/headers
 )
 
 if(NOT FE_EXCLUDE_JOLT)
@@ -194,28 +197,25 @@ target_link_libraries(Engine PRIVATE
 	kissfft::kissfft-float
 )
 
-# TODO: same for openVR
-# target_link_libraries(Engine PRIVATE
-#     openvr_api
-# )
-target_include_directories(Engine PRIVATE "${EXTERNAL_DIR}/openvr/headers")
+if(FE_INCLUDE_OPENVR)
+	target_include_directories(Engine PRIVATE "${EXTERNAL_DIR}/openvr/headers")
 
-if(WIN32)
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-		target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/lib/win64/openvr_api.lib")
-		set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
-	else()
-		target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/lib/win32/openvr_api.lib")
-		set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
+	if(WIN32)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+			target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/lib/win64/openvr_api.lib")
+			set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win64/openvr_api.dll")
+		else()
+			target_link_libraries(Engine PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/lib/win32/openvr_api.lib")
+			set(OPENVR_DLL "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/openvr/bin/win32/openvr_api.dll")
+		endif()
+
+		add_custom_command(TARGET Engine POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${OPENVR_DLL}"
+			"$<TARGET_FILE_DIR:Engine>"
+		)
 	endif()
-
-	add_custom_command(TARGET Engine POST_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	    "${OPENVR_DLL}"
-	    "$<TARGET_FILE_DIR:Engine>"
-	)
 endif()
-# END OPENV
 
 if(NOT FE_EXCLUDE_GLFW)
 	target_link_libraries(Engine PUBLIC glfw)
