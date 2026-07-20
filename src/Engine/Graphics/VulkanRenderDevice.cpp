@@ -25,13 +25,12 @@ void VulkanDevice::pickPhysicalDevice() {
 		}
 	}
 
-	if (bestDevice == VK_NULL_HANDLE || bestScore < 0) {
+	if (bestDevice == VK_NULL_HANDLE || bestScore < 0)
 		throw std::runtime_error("No suitable GPU found.");
-	}
 
-	physicalDevice_ = bestDevice;
+	_physicalDevice = bestDevice;
 	VkPhysicalDeviceProperties props;
-	vkGetPhysicalDeviceProperties(physicalDevice_, &props);
+	vkGetPhysicalDeviceProperties(_physicalDevice, &props);
 	deviceName_ = props.deviceName;
 	std::cout << "Selected GPU: " << deviceName_ << "\n";
 }

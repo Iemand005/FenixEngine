@@ -528,7 +528,7 @@ public:
 		if (!buffers) return;
 
 		auto* vkBuffers = static_cast<VulkanGPUBuffers*>(buffers);
-		vkBuffers->upload(device_, physicalDevice_, commandPool_, graphicsQueue_,
+		vkBuffers->upload(device_, _physicalDevice, commandPool_, graphicsQueue_,
 			vertices, vertexStride, vertexCount, indices, indexCount);
 	}
 
@@ -536,18 +536,18 @@ public:
 		const std::string& path, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
 		if (!texture) return;
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
-		vkTexture->upload(device_, physicalDevice_, commandPool_, graphicsQueue_, path, scaling);
+		vkTexture->upload(device_, _physicalDevice, commandPool_, graphicsQueue_, path, scaling);
 	}
 
 	void UploadTextureArray(fe::IGPUTexture* texture,
 		const std::vector<std::string>& paths, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
 		if (!texture) return;
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
-		vkTexture->uploadTextureArray(device_, physicalDevice_, commandPool_, graphicsQueue_, paths, scaling);
+		vkTexture->uploadTextureArray(device_, _physicalDevice, commandPool_, graphicsQueue_, paths, scaling);
 	}
 
 	VkInstance GetInstance() const { return _instance; }
-	VkPhysicalDevice GetPhysicalDevice() const { return physicalDevice_; }
+	VkPhysicalDevice GetPhysicalDevice() const { return _physicalDevice; }
 	VkDevice GetDevice() const { return device_; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
 	const char* GetDeviceName() const override { return deviceName_.c_str(); }
@@ -867,7 +867,7 @@ private:
 
 	VkInstance _instance = VK_NULL_HANDLE;
 	VkSurfaceKHR _surface = VK_NULL_HANDLE;
-	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
+	VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 	VkDevice device_ = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
 	VkQueue presentQueue_ = VK_NULL_HANDLE;
@@ -1068,7 +1068,7 @@ private:
 	void pickPhysicalDevice();
 
 	void createLogicalDevice() {
-		QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
 		std::set<uint32_t> uniqueQueueFamilies = {
 			indices.graphicsFamily.value(),
@@ -1097,7 +1097,7 @@ private:
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(kDeviceExtensions.size());
 		createInfo.ppEnabledExtensionNames = kDeviceExtensions.data();
 
-		if (vkCreateDevice(physicalDevice_, &createInfo, nullptr, &device_) != VK_SUCCESS) {
+		if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &device_) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create logical device.");
 		}
 
@@ -1107,7 +1107,7 @@ private:
 	}
 
 	void createSwapChain() {
-		SwapChainSupportDetails support = querySwapChainSupport(physicalDevice_);
+		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
@@ -1128,7 +1128,7 @@ private:
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 		uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
 		if (indices.graphicsFamily != indices.presentFamily) {
@@ -1277,7 +1277,7 @@ private:
 		};
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(physicalDevice_, format, &props);
+			vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &props);
 			if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 				return format;
 			}
@@ -1605,7 +1605,7 @@ private:
 	// Command pool + buffers
 	// ---------------------------------------------------------------
 	void createCommandPool() {
-		QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
 		VkCommandPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1636,7 +1636,7 @@ private:
 	// ---------------------------------------------------------------
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) &&
