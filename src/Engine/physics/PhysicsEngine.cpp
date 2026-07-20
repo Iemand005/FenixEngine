@@ -213,6 +213,8 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<gl
 }
 
 std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
+	std::vector vtxs;
+	vtxs.reserve(vertices.size())l
 	CreateObject()
 }
 
