@@ -5,13 +5,17 @@
 #define NOMINMAX
 #define _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Devices.Sensors.h>
+#include <winrt/Windows.Devices.Enumeration.h>
 #endif
 
 #include <glm/glm.hpp>
 #include <functional>
 #include <mutex>
 #include <atomic>
+#include <string>
+#include <vector>
 
 namespace fe {
 
@@ -25,7 +29,12 @@ namespace fe {
 		Accelerometer(const Accelerometer&) = delete;
 		Accelerometer& operator=(const Accelerometer&) = delete;
 
+		Accelerometer(Accelerometer&& other) noexcept;
+		Accelerometer& operator=(Accelerometer&& other) noexcept;
+
 		bool IsAvailable() const { return available; }
+		const std::string& GetName() const { return name; }
+		const std::string& GetId() const { return id; }
 
 		glm::vec3 GetAcceleration();
 
@@ -33,11 +42,15 @@ namespace fe {
 		void Start(ReadingCallback callback);
 		void Stop();
 
+		static std::vector<Accelerometer> EnumerateAll();
+
 	private:
 		std::atomic<bool> available{false};
 		mutable std::mutex mutex;
 		glm::vec3 lastReading = glm::vec3(0.0f);
 		glm::vec3 calibrationOffset = glm::vec3(0.0f);
+		std::string name;
+		std::string id;
 
 #ifdef _WIN32
 		winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
