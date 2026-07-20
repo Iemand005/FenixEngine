@@ -34,7 +34,7 @@ namespace fe {
 	private:
 		std::atomic<bool> available{false};
 		mutable std::mutex mutex;
-		glm::vec3 lastReading{0.0f};
+		mutable glm::vec3 lastReading = glm::vec3(0.0f);
 
 #ifdef _WIN32
 		void EnsureApartment();
