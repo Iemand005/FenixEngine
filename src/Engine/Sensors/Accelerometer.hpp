@@ -29,6 +29,7 @@ namespace fe {
 
 		glm::vec3 GetAcceleration();
 
+		void Calibrate();
 		void Start(ReadingCallback callback);
 		void Stop();
 
@@ -36,6 +37,7 @@ namespace fe {
 		std::atomic<bool> available{false};
 		mutable std::mutex mutex;
 		glm::vec3 lastReading = glm::vec3(0.0f);
+		glm::vec3 calibrationOffset = glm::vec3(0.0f);
 
 #ifdef _WIN32
 		winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};

@@ -34,9 +34,18 @@ glm::vec3 Accelerometer::GetAcceleration() {
 		lastReading.x = static_cast<float>(reading.AccelerationX());
 		lastReading.y = static_cast<float>(reading.AccelerationY());
 		lastReading.z = static_cast<float>(reading.AccelerationZ());
-		return lastReading;
+		return lastReading - calibrationOffset;
 	}
 	return glm::vec3(0.0f);
+}
+
+void Accelerometer::Calibrate() {
+	std::lock_guard lock(mutex);
+	calibrationOffset = lastReading;
+	std::cout << "[Accelerometer] Calibrated: ("
+	          << calibrationOffset.x << ", "
+	          << calibrationOffset.y << ", "
+	          << calibrationOffset.z << ")" << std::endl;
 }
 
 void Accelerometer::Start(ReadingCallback callback) {
@@ -77,7 +86,7 @@ void Accelerometer::HandleReading(
 			static_cast<float>(reading.AccelerationX()),
 			static_cast<float>(reading.AccelerationY()),
 			static_cast<float>(reading.AccelerationZ())
-		);
+		) - calibrationOffset;
 	}
 
 	if (userCallback) {
