@@ -214,7 +214,8 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<gl
 }
 
 std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
-	std::vector<glm::vec3> vtxs(vertices.size());
+	std::vector<glm::vec3> vtxs;
+	vtxs.reserve(vertices.size());
 	for (auto vtx : vertices)
 		vtxs.push_back(vtx.position);
 	return CreateObject(vtxs, indices);
