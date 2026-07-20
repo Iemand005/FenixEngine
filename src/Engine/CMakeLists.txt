@@ -137,7 +137,7 @@ if(WIN32)
     )
 
 	if(MSVC)
-        target_compile_options(FenixEngine PRIVATE 
+        target_compile_options(Engine PRIVATE 
             /permissive-   # Turns off MSVC non-standard extensions
             /Zc:preprocessor # Forces modern, standard C++ preprocessor
         )
