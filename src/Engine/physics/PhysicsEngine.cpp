@@ -218,7 +218,7 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Ve
 	for (auto vtx : vertices) {
 		vtxs.push_back(vtx.position);
 	}
-	CreateObject(vtxs, indices);
+	return CreateObject(vtxs, indices);
 }
 
 void PhysicsFactory::Bind(PhysicsObject *obj) {
