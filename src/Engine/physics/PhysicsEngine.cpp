@@ -25,6 +25,7 @@
 #endif
 
 #include "PhysicsEngine.hpp"
+#include "Veertex.hpp"
 #include "BasicDebugRenderer.hpp"
 
 // JPH_SUPPRESS_WARNINGS
@@ -210,6 +211,10 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<gl
 	Bind(obj.get());
 	obj->InitializeMeshBody(vertices, indices, glm::vec3(0.0f), 1000.0f, true);
 	return obj;
+}
+
+std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
+	CreateObject()
 }
 
 void PhysicsFactory::Bind(PhysicsObject *obj) {
