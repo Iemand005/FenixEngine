@@ -273,7 +273,7 @@ void PhysicsObject::InitializeSphereBody(float radius, bool dynamic) {
 	bodySettings.mAngularDamping = 0.0f;
 	bodySettings.mFriction = 0.0f;
 	bodySettings.mRestitution = 0.3f;
-	if (dynamic) {
+	bodySettings.mAllowSleeping = false;
 		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
 		JPH::MassProperties massProperties;
 		massProperties.mMass = 1.0f;
