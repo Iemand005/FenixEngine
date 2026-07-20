@@ -226,10 +226,9 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 	float c = size.z;
 
 	JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
-	bodyShapeSettings.mConvexRadius = 0.01;
+	bodyShapeSettings.mConvexRadius = 0.05;
 	bodyShapeSettings.SetDensity(1000.0);
 	bodyShapeSettings.SetEmbedded();
-	// bodyShapeSettings.mA
 
 	JPH::ShapeSettings::ShapeResult body_shape_result = bodyShapeSettings.Create();
 	JPH::ShapeRefC body_shape = body_shape_result.Get();
@@ -239,8 +238,8 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 	bodySettings.mApplyGyroscopicForce = true;
 	bodySettings.mLinearDamping = 0.0;
 	bodySettings.mAngularDamping = 0.0;
-	bodySettings.mFriction = 0.05f;
-	bodySettings.mRestitution = 0.6f;
+	bodySettings.mFriction = 0.0f;
+	bodySettings.mRestitution = 0.8f;
 	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
 	// this->physicsSystem = physicsSystem;
@@ -261,7 +260,7 @@ void PhysicsObject::InitializeSphereBody(float radius, bool dynamic) {
 	}
 
 	JPH::SphereShapeSettings sphereShapeSettings(radius);
-	sphereShapeSettings.SetDensity(100.0);
+	sphereShapeSettings.SetDensity(50.0);
 
 	JPH::ShapeSettings::ShapeResult shapeResult = sphereShapeSettings.Create();
 	JPH::ShapeRefC shape = shapeResult.Get();
@@ -271,9 +270,9 @@ void PhysicsObject::InitializeSphereBody(float radius, bool dynamic) {
 	bodySettings.mMaxLinearVelocity = 10000.0;
 	bodySettings.mApplyGyroscopicForce = true;
 	bodySettings.mLinearDamping = 0.0;
-	bodySettings.mAngularDamping = 0.05f;
-	bodySettings.mFriction = 0.1f;
-	bodySettings.mRestitution = 0.3f;
+	bodySettings.mAngularDamping = 0.0f;
+	bodySettings.mFriction = 0.0f;
+	bodySettings.mRestitution = 0.8f;
 	if (dynamic) {
 		bodySettings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
 		JPH::MassProperties massProperties;
