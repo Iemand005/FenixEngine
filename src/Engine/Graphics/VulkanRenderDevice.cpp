@@ -1,7 +1,7 @@
 
 #include "VulkanDevice.hpp"
 
-void VulkanDevice::pickPhysicalDevice() {
+void VulkanDevice::PickPhysicalDevice() {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
 	if (deviceCount == 0)

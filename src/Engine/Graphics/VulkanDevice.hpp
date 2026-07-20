@@ -120,7 +120,7 @@ public:
 		this->window = window;
 		CreateInstance();
 		CreateSurface();
-		pickPhysicalDevice();
+		PickPhysicalDevice();
 		createLogicalDevice();
 		createSwapChain();
 
@@ -1065,7 +1065,7 @@ private:
 
 
 
-	void pickPhysicalDevice();
+	void PickPhysicalDevice();
 
 	void createLogicalDevice() {
 		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
