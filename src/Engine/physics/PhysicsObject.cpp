@@ -221,12 +221,12 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 		return;
 	}
 
-	float a = size.x;
-	float b = size.y;
-	float c = size.z;
+	float a = size.x * 0.5f;
+	float b = size.y * 0.5f;
+	float c = size.z * 0.5f;
 
 	JPH::BoxShapeSettings bodyShapeSettings(JPH::Vec3(a, b, c));
-	bodyShapeSettings.mConvexRadius = 0.05;
+	bodyShapeSettings.mConvexRadius = 0.08;
 	bodyShapeSettings.SetDensity(1000.0);
 	bodyShapeSettings.SetEmbedded();
 
