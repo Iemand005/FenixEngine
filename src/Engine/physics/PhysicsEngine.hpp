@@ -4,8 +4,7 @@
 #include <memory>
 
 #include "PhysicsObject.hpp"
-#include "../Vertex.hpp"
-#include "../Vertex.hpp"
+#include "../Mesh.hpp"
 
 namespace fe {
 
@@ -29,8 +28,8 @@ namespace fe {
 		std::unique_ptr<PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
-		template<>
-		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Mesh<>>& vertices, const std::vector<unsigned int>& indices);
+		// template<typename T>
+		// std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Mesh<T>>& mesh);
 		
 		void RemoveObject(std::unique_ptr<PhysicsObject> object);
 
