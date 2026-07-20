@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #define WINRT_LEAN_AND_MEAN
 #define NOMINMAX
+#define _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Devices.Sensors.h>
 #endif
