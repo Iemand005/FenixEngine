@@ -213,7 +213,7 @@ void PhysicsObject::BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physic
 #endif
 }
 
-void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
+void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRotation) {
 #ifndef EXCLUDE_JOLT
 	if (!impl->physicsSystem) {
 		std::cerr << "Error: PhysicsObject has no bound PhysicsSystem!" << std::endl;
@@ -238,7 +238,6 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic) {
 	bodySettings.mApplyGyroscopicForce = true;
 	bodySettings.mLinearDamping = 0.0;
 	bodySettings.mAngularDamping = 0.0;
-	bool allowRotation = false;
 	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
 	// this->physicsSystem = physicsSystem;

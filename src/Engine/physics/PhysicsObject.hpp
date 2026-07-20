@@ -56,7 +56,7 @@ public:
 
 private:
 	void BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem);
-	void InitializeBoxBody(glm::vec3 size, bool dynamic);
+	void InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRotation = false);
 	void InitializeMeshBody(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const glm::vec3& position, float density, bool isStatic);
 };
 }  // namespace fe

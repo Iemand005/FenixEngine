@@ -6,16 +6,8 @@ using namespace fe;
 
 #ifdef _WIN32
 
-void Accelerometer::EnsureApartment() {
-	if (!apartmentInitialized) {
-		winrt::init_apartment(winrt::apartment_type::multi_threaded);
-		apartmentInitialized = true;
-	}
-}
-
 Accelerometer::Accelerometer() {
 	try {
-		EnsureApartment();
 		sensor = winrt::Windows::Devices::Sensors::Accelerometer::GetDefault();
 		if (sensor) {
 			available = true;

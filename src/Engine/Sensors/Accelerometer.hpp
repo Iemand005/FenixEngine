@@ -38,9 +38,6 @@ namespace fe {
 		glm::vec3 lastReading = glm::vec3(0.0f);
 
 #ifdef _WIN32
-		void EnsureApartment();
-		bool apartmentInitialized = false;
-
 		winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
 		winrt::event_token token{};
 		std::atomic<bool> running{false};

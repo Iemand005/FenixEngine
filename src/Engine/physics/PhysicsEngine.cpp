@@ -191,6 +191,12 @@ void PhysicsFactory::DisableGravity() {
 #endif
 }
 
+void PhysicsFactory::SetGravity(const glm::vec3& gravity) {
+#ifndef EXCLUDE_JOLT
+	impl->physicsSystem->SetGravity(JPH::Vec3(gravity.x, gravity.y, gravity.z));
+#endif
+}
+
 void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
 #ifndef EXCLUDE_JOLT
 	if (!impl || !impl->debugRenderer || !BasicDebugRenderer::DebugRenderingEnabled())
@@ -199,10 +205,10 @@ void PhysicsFactory::RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& p
 #endif
 }
 
-std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool dynamic) {
+std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(glm::vec3 size, bool dynamic, bool allowRotation) {
 	auto obj = std::make_unique<fe::PhysicsObject>(size, dynamic);
 	Bind(obj.get());
-	obj->InitializeBoxBody(size, dynamic);
+	obj->InitializeBoxBody(size, dynamic, allowRotation);
 	return obj;
 }
 

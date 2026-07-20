@@ -25,7 +25,7 @@ namespace fe {
 
 		ObjectState SyncToRender();
 
-		std::unique_ptr<PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true);
+		std::unique_ptr<PhysicsObject> CreateObject(glm::vec3 size, bool dynamic = true, bool allowRotation = false);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 		// template<typename T>
@@ -35,6 +35,7 @@ namespace fe {
 
 		void EnableGravity();
 		void DisableGravity();
+		void SetGravity(const glm::vec3& gravity);
 		void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
 
 		void Bind(PhysicsObject *obj);
