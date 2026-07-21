@@ -537,7 +537,7 @@ public:
 	}
 
 	void UploadTexture(fe::IGPUTexture* texture,
-		const ImageData& image, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
+		const fe::ImageData& image, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
 		if (!texture) return;
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
 		vkTexture->upload(_device, _physicalDevice, commandPool_, graphicsQueue_, image, scaling);
