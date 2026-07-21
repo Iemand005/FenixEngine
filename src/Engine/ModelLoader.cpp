@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 
+#define CGLTF_IMPLEMENTATION
 #include "../../external/cgltf/cgltf.h"
 
 using namespace fe;
