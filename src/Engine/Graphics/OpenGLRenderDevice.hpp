@@ -11,11 +11,34 @@ namespace fe {
 
 
 class OpenGLRenderDevice : public IRenderDevice {
+	GLuint defaultTextureId_ = 0;
 
 	void Init(fe::IWindow *window) override {
-// 11	
+		glGenTextures(1, &defaultTextureId_);
+		glBindTexture(GL_TEXTURE_2D, defaultTextureId_);
+		unsigned char whitePixel[4] = {255, 255, 255, 255};
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 		EnableDepthTest();
 		EnableFaceCulling();
+	}
+
+	void SetVec3(const char* name, const glm::vec3& value) override {
+		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+		if (prog) glUniform3f(glGetUniformLocation(prog, name), value.x, value.y, value.z);
+	}
+
+	void SetInt(const char* name, int value) override {
+		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+		if (prog) glUniform1i(glGetUniformLocation(prog, name), value);
+	}
+
+	void SetFloat(const char* name, float value) override {
+		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+		if (prog) glUniform1f(glGetUniformLocation(prog, name), value);
 	}
 
 	void Clear() override {
@@ -105,14 +128,16 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 		glBuffers->bind(); 
 
+		glActiveTexture(GL_TEXTURE0);
 		if (texture) {
 			const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
-			glActiveTexture(GL_TEXTURE0);
 			if (glTexture->isTextureArray()) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
 			} else {
 				glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
 			}
+		} else {
+			glBindTexture(GL_TEXTURE_2D, defaultTextureId_);
 		}
 
 		glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
@@ -125,6 +150,8 @@ class OpenGLRenderDevice : public IRenderDevice {
 			} else {
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
+		} else {
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 
@@ -136,6 +163,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (!ok) {
 			std::cerr << "UploadTexture: failed to load " << path << std::endl;
 		}
+	}
+
+	void UploadTexture(IGPUTexture* texture,
+		const ImageData& image, TextureScaling scaling = TextureScaling::Linear) override {
+		if (!texture) return;
+		auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
+		glTexture->upload(image, scaling);
 	}
 
 	void UploadTextureArray(IGPUTexture* texture,

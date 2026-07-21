@@ -40,6 +40,19 @@ public:
 
 		auto image = fe::ImageLoader::Load(textureFilePath);
 		if (image.pixels.size() == 0) return;
+		uploadFromImage(device, physicalDevice, commandPool, graphicsQueue, image, scaling);
+	}
+
+	void upload(VkDevice device, VkPhysicalDevice physicalDevice,
+				VkCommandPool commandPool, VkQueue graphicsQueue,
+				const ImageData& imageData, TextureScaling scaling = TextureScaling::Linear) {
+		if (imageData.pixels.empty()) return;
+		uploadFromImage(device, physicalDevice, commandPool, graphicsQueue, imageData, scaling);
+	}
+
+	void uploadFromImage(VkDevice device, VkPhysicalDevice physicalDevice,
+				VkCommandPool commandPool, VkQueue graphicsQueue,
+				const ImageData& image, TextureScaling scaling) {
 
 		uint32_t w = static_cast<uint32_t>(image.width);
 		uint32_t h = static_cast<uint32_t>(image.height);

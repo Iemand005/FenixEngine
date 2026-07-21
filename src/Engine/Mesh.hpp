@@ -40,9 +40,15 @@ namespace fe {
 
 		IRenderDevice* device_ = nullptr;
 
+		glm::vec4 color{1.0f};
+
 		std::string pendingTexturePath;
 		TextureScaling pendingTextureScaling = TextureScaling::Linear;
 		bool hasPendingTexture = false;
+
+		ImageData pendingImageData;
+		TextureScaling pendingImageScaling = TextureScaling::Linear;
+		bool hasPendingImageData = false;
 
 		std::vector<std::string> pendingTextureArrayPaths;
 		TextureScaling pendingTextureArrayScaling = TextureScaling::Linear;
@@ -77,10 +83,15 @@ namespace fe {
 							gpuTexture = nullptr;
 							device_ = other.device_;
 							hasTransparency = other.hasTransparency;
+							color = other.color;
 
 							hasPendingTexture = other.hasPendingTexture;
 							pendingTexturePath = other.pendingTexturePath;
 							pendingTextureScaling = other.pendingTextureScaling;
+
+							hasPendingImageData = other.hasPendingImageData;
+							pendingImageData = other.pendingImageData;
+							pendingImageScaling = other.pendingImageScaling;
 
 							hasPendingTextureArray = other.hasPendingTextureArray;
 							pendingTextureArrayPaths = other.pendingTextureArrayPaths;
@@ -91,6 +102,11 @@ namespace fe {
 								gpuTexture = device_->CreateGPUTexture();
 								if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
 								hasPendingTexture = false;
+							}
+							if (device_ && hasPendingImageData) {
+								gpuTexture = device_->CreateGPUTexture();
+								if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingImageData, pendingImageScaling);
+								hasPendingImageData = false;
 							}
 							if (device_ && hasPendingTextureArray) {
 								gpuTexture = device_->CreateGPUTexture();
@@ -111,10 +127,14 @@ namespace fe {
 			  gpuBuffers(std::move(other.gpuBuffers)),
 			  gpuTexture(std::move(other.gpuTexture)),
 			  hasTransparency(other.hasTransparency),
+			  color(other.color),
 			  device_(other.device_),
 			  pendingTexturePath(std::move(other.pendingTexturePath)),
 			  pendingTextureScaling(other.pendingTextureScaling),
 			  hasPendingTexture(other.hasPendingTexture),
+			  pendingImageData(std::move(other.pendingImageData)),
+			  pendingImageScaling(other.pendingImageScaling),
+			  hasPendingImageData(other.hasPendingImageData),
 			  pendingTextureArrayPaths(std::move(other.pendingTextureArrayPaths)),
 			  pendingTextureArrayScaling(other.pendingTextureArrayScaling),
 			  hasPendingTextureArray(other.hasPendingTextureArray) {}
@@ -130,10 +150,14 @@ namespace fe {
 				gpuBuffers = std::move(other.gpuBuffers);
 				gpuTexture = std::move(other.gpuTexture);
 				hasTransparency = other.hasTransparency;
+				color = other.color;
 				device_ = other.device_;
 				pendingTexturePath = std::move(other.pendingTexturePath);
 				pendingTextureScaling = other.pendingTextureScaling;
 				hasPendingTexture = other.hasPendingTexture;
+				pendingImageData = std::move(other.pendingImageData);
+				pendingImageScaling = other.pendingImageScaling;
+				hasPendingImageData = other.hasPendingImageData;
 				pendingTextureArrayPaths = std::move(other.pendingTextureArrayPaths);
 				pendingTextureArrayScaling = other.pendingTextureArrayScaling;
 				hasPendingTextureArray = other.hasPendingTextureArray;
@@ -149,9 +173,13 @@ namespace fe {
 					physicsObject(other.physicsObject ? other.physicsObject->Clone() : nullptr),
 					device_(other.device_),
 					hasTransparency(other.hasTransparency),
+					color(other.color),
 					hasPendingTexture(other.hasPendingTexture),
 					pendingTexturePath(other.pendingTexturePath),
 					pendingTextureScaling(other.pendingTextureScaling),
+					hasPendingImageData(other.hasPendingImageData),
+					pendingImageData(other.pendingImageData),
+					pendingImageScaling(other.pendingImageScaling),
 					hasPendingTextureArray(other.hasPendingTextureArray),
 					pendingTextureArrayPaths(other.pendingTextureArrayPaths),
 					pendingTextureArrayScaling(other.pendingTextureArrayScaling) {
@@ -160,6 +188,11 @@ namespace fe {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
 				hasPendingTexture = false;
+			}
+			if (device_ && hasPendingImageData) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) device_->UploadTexture(gpuTexture.get(), pendingImageData, pendingImageScaling);
+				hasPendingImageData = false;
 			}
 			if (device_ && hasPendingTextureArray) {
 				gpuTexture = device_->CreateGPUTexture();
@@ -182,6 +215,14 @@ namespace fe {
 					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
 				}
 				hasPendingTextureArray = false;
+			}
+
+			if (hasPendingImageData) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTexture(gpuTexture.get(), pendingImageData, pendingImageScaling);
+				}
+				hasPendingImageData = false;
 			}
 
 			if (hasPendingTexture) {
@@ -235,6 +276,24 @@ namespace fe {
 			return true;
 		}
 
+		bool loadTexture(const ImageData& image, TextureScaling newScaling = TextureScaling::Linear) override {
+			if (device_) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTexture(gpuTexture.get(), image, newScaling);
+					return true;
+				}
+				return false;
+			}
+			pendingImageData = image;
+			pendingImageScaling = newScaling;
+			hasPendingImageData = true;
+			return true;
+		}
+
+		glm::vec4 GetColor() const override { return color; }
+		void SetColor(const glm::vec4& c) override { color = c; }
+
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Linear) override {
 			if (textureFilePaths.empty()) return false;
 
@@ -276,6 +335,7 @@ namespace fe {
 			copy->indexCount = indexCount;
 			copy->modelMatrix = modelMatrix;
 			copy->hasTransparency = hasTransparency;
+			copy->color = color;
 			copy->scaling = scaling;
 			copy->device_ = device_;
 
@@ -292,6 +352,17 @@ namespace fe {
 					if (copy->gpuTexture) {
 						device_->UploadTextureArray(copy->gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
 						copy->hasPendingTextureArray = false;
+					}
+				}
+			} else if (hasPendingImageData) {
+				copy->pendingImageData = pendingImageData;
+				copy->pendingImageScaling = pendingImageScaling;
+				copy->hasPendingImageData = true;
+				if (device_) {
+					copy->gpuTexture = device_->CreateGPUTexture();
+					if (copy->gpuTexture) {
+						device_->UploadTexture(copy->gpuTexture.get(), pendingImageData, pendingImageScaling);
+						copy->hasPendingImageData = false;
 					}
 				}
 			} else if (hasPendingTexture) {

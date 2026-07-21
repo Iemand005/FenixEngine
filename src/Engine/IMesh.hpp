@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>
 
+#include "ImageLoader.hpp"
 #include "physics/PhysicsObject.hpp"
 #include "Graphics/IGPUBuffers.hpp"
 #include "Graphics/IGPUTexture.hpp"
@@ -33,7 +34,11 @@ public:
     virtual IGPUTexture* GetGPUTexture() const = 0;
 
     virtual bool loadTexture(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) = 0;
+    virtual bool loadTexture(const ImageData& image, TextureScaling scaling = TextureScaling::Linear) = 0;
     virtual bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) = 0;
+
+    virtual glm::vec4 GetColor() const = 0;
+    virtual void SetColor(const glm::vec4& c) = 0;
 
     virtual bool GetHasTransparency() const = 0;
     virtual void SetHasTransparency(bool v) = 0;

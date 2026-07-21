@@ -23,7 +23,14 @@ namespace fe {
 		bool load(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) override {
 			auto image = fe::ImageLoader::Load(textureFilePath);
 			if (image.pixels.size() == 0) return false;
+			return uploadFromImage(image, scaling);
+		}
 
+		bool upload(const ImageData& image, TextureScaling scaling = TextureScaling::Linear) {
+			return uploadFromImage(image, scaling);
+		}
+
+		bool uploadFromImage(const ImageData& image, TextureScaling scaling) {
 			glGenTextures(1, &textureId);
 			glBindTexture(GL_TEXTURE_2D, textureId);
 

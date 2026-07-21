@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -10,12 +11,14 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include <stb_image.h>
+
 #define CGLTF_IMPLEMENTATION
 #include "../../external/cgltf/cgltf.h"
 
 using namespace fe;
 
-static void ProcessGLTFNode(cgltf_node* node, Object* parent) {
+static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string& fileName) {
 	auto obj = std::make_unique<Object>();
 
 	if (node->name) obj->name = node->name;
@@ -92,14 +95,52 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent) {
 				}
 			}
 
-			obj->EmplaceMesh<Vertex>(std::move(vertices), std::move(indices));
+			auto& mesh = obj->EmplaceMesh<Vertex>(std::move(vertices), std::move(indices));
+
+			if (prim->material) {
+				auto& pbr = prim->material->pbr_metallic_roughness;
+				mesh.SetColor(glm::vec4(
+					pbr.base_color_factor[0],
+					pbr.base_color_factor[1],
+					pbr.base_color_factor[2],
+					pbr.base_color_factor[3]));
+
+				auto* texView = &pbr.base_color_texture;
+				if (texView->texture && texView->texture->image) {
+					auto* image = texView->texture->image;
+					if (image->buffer_view) {
+						const uint8_t* raw = static_cast<const uint8_t*>(image->buffer_view->buffer->data) + image->buffer_view->offset;
+						int w, h, n;
+						uint8_t* pixels = stbi_load_from_memory(raw, static_cast<int>(image->buffer_view->size), &w, &h, &n, 4);
+						if (pixels) {
+							ImageData img;
+							img.width = w; img.height = h; img.channels = 4;
+							img.pixels.assign(pixels, pixels + w * h * 4);
+							stbi_image_free(pixels);
+							mesh.loadTexture(img);
+						}
+					} else if (image->uri) {
+						std::filesystem::path glbDir = std::filesystem::path(fileName).parent_path();
+						std::string texPath = (glbDir / image->uri).string();
+						mesh.loadTexture(texPath);
+					}
+				}
+			}
+		}
+	}
+
+	if (!obj->meshes.empty()) {
+		auto* firstMesh = obj->meshes[0].get();
+		if (firstMesh) {
+			glm::vec4 mc = firstMesh->GetColor();
+			obj->color = glm::vec3(mc);
 		}
 	}
 
 	Object* rawPtr = parent->AddChild(std::move(obj));
 
 	for (cgltf_size i = 0; i < node->children_count; ++i) {
-		ProcessGLTFNode(node->children[i], rawPtr);
+		ProcessGLTFNode(node->children[i], rawPtr, fileName);
 	}
 }
 
@@ -125,7 +166,7 @@ std::shared_ptr<Object> ModelLoader::LoadModel(const std::string& fileName) {
 
 	if (data->scene) {
 		for (cgltf_size i = 0; i < data->scene->nodes_count; ++i) {
-			ProcessGLTFNode(data->scene->nodes[i], root.get());
+			ProcessGLTFNode(data->scene->nodes[i], root.get(), fileName);
 		}
 	} else {
 		std::cerr << "[ModelLoader] No default scene found; loading meshes flat." << std::endl;

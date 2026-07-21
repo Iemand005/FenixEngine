@@ -10,6 +10,7 @@
 #include "../window/IWindow.hpp"
 #include "IGPUTexture.hpp"
 #include "IGPUBuffers.hpp"
+#include "../ImageLoader.hpp"
 #include "../Vertex.hpp"
 
 namespace fe {
@@ -37,11 +38,16 @@ namespace fe {
 		virtual void UploadTexture(IGPUTexture* texture,
 			const std::string& path, TextureScaling scaling = TextureScaling::Linear) {}
 
+		virtual void UploadTexture(IGPUTexture* texture,
+			const ImageData& image, TextureScaling scaling = TextureScaling::Linear) {}
+
 		virtual void UploadTextureArray(IGPUTexture* texture,
 			const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) {}
 
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
 		virtual void SetVec3(const char* name, const glm::vec3& value) {}
+		virtual void SetInt(const char* name, int value) {}
+		virtual void SetFloat(const char* name, float value) {}
 
 		virtual uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) { return 0; }
 		virtual void DestroyFramebuffer(uint64_t fb) {}

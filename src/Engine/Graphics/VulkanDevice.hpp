@@ -536,6 +536,13 @@ public:
 		vkTexture->upload(_device, _physicalDevice, commandPool_, graphicsQueue_, path, scaling);
 	}
 
+	void UploadTexture(fe::IGPUTexture* texture,
+		const ImageData& image, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
+		if (!texture) return;
+		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
+		vkTexture->upload(_device, _physicalDevice, commandPool_, graphicsQueue_, image, scaling);
+	}
+
 	void UploadTextureArray(fe::IGPUTexture* texture,
 		const std::vector<std::string>& paths, fe::TextureScaling scaling = fe::TextureScaling::Linear) override {
 		if (!texture) return;
