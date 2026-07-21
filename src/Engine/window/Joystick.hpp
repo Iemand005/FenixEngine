@@ -1,19 +1,20 @@
 #pragma once
 
+#include <string>
+
 #include <SDL3/SDL.h>
-#include <stringx>
 
 namespace fe {
 	class Joystick {
 public:
 		Joystick(unsigned int id) {
-			joystick = id;
+			this->id = id;
 		}
 
 		std:: string GetName() {
-			return SDL_GetJoystickNameForID(joystickIds[i]);
+			return SDL_GetJoystickNameForID(id);
 		}
 private:
-	SDL_JoystickID joystick;
+		SDL_JoystickID id;
 	};
 }
