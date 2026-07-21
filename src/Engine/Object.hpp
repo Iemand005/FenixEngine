@@ -96,6 +96,24 @@ public:
 		sourcePath = objFilePath;
 	}
 
+	Object* GetParent() const { return parent; }
+	const std::vector<std::unique_ptr<Object>>& GetChildren() const { return children; }
+
+	Object* AddChild(std::unique_ptr<Object> child) {
+        child->parent = this;
+        children.push_back(std::move(child));
+        return children.back().get();
+    }
+
+    void RemoveChild(Object* child) {
+        auto it = std::find_if(children.begin(), children.end(),
+            [child](const std::unique_ptr<Object>& c) { return c.get() == child; });
+        if (it != children.end()) {
+            (*it)->m_parent = nullptr;
+            children.erase(it);
+        }
+    }
+
 	size_t GetMeshCount() const override { return meshes.size(); }
 	size_t GetTotalVertexCount() const override {
 		size_t total = 0;
