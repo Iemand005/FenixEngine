@@ -40,15 +40,10 @@ public:
 		glm::vec2 GetAxis() {
 			if (!handle) return glm::vec2(0.0f);
 
-			glm::vec2 raw(SDL_GetJoystickAxis(handle, 0), SDL_GetJoystickAxis(handle, 1));
-			glm::vec2 value = raw / 32768.0f;
-
-			return value;
+			return glm::vec2(SDL_GetJoystickAxis(handle, 0), SDL_GetJoystickAxis(handle, 1)) / 32768.0f;
 		}
 private:
 		SDL_JoystickID id;
 		SDL_Joystick* handle = nullptr;
-
-		glm::vec2 value;
 	};
 }
