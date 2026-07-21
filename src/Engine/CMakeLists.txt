@@ -20,7 +20,7 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-set(EXTERNAL_DIR "../../external")
+set(EXTERNAL_DIR "${EXTERNAL_DIR}")
 
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
@@ -75,7 +75,7 @@ target_include_directories(Renderer PRIVATE
 )
 
 target_include_directories(Renderer PUBLIC
-	../../external/glm
+	${EXTERNAL_DIR}/glm
 )
 
 
@@ -162,17 +162,17 @@ target_include_directories(Engine PRIVATE
 )
 
 target_include_directories(Engine PUBLIC
-	../../external/glm
-	../../external/imgui
+	${EXTERNAL_DIR}/glm
+	${EXTERNAL_DIR}/imgui
 
-	../../external/glfw/include
+	${EXTERNAL_DIR}/glfw/include
 
-	../../external/cgltf
+	${EXTERNAL_DIR}/cgltf
 )
 
 if(NOT FE_EXCLUDE_JOLT)
 	target_include_directories(Engine PUBLIC
-		../../external/JoltPhysics
+		${EXTERNAL_DIR}/JoltPhysics
 	)
 endif()
 
