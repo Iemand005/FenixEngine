@@ -3,6 +3,6 @@
 using namespace fe;
 
 
-Object<Vertex> ModelLoader::LoadModel(std::string fileName) {
+Object<> ModelLoader::LoadModel(std::string fileName) {
 
 }
