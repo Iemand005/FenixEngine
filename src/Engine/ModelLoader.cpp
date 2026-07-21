@@ -1,7 +1,8 @@
 #include "ModelLoader.hpp"
 
 // #include <cgltf.h>
-#include "../../cgltf/cgltf.h"
+// #include "../../cgltf/cgltf.h"
+#include "../../external/cgltf/cgltf.h"
 
 using namespace fe;
 
@@ -13,5 +14,6 @@ Object ModelLoader::LoadMesh(std::string fileName) {
 	cgltf_data* data = nullptr;
 	cgltf_result parse_result = cgltf_parse_file(&options, fileName.c_str(), &data);
 
-	return std::move(result);
+	// return std::move(result);
+	
 }
