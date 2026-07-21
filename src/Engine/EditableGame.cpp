@@ -18,7 +18,7 @@ void fe::EditableGame::OnDraw() {
 }
 
 
-void DrawObjectNodee(Object* object, Camera* camera, float step) {
+void DrawObjectNodee() {
     ImGui::PushID(object);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
