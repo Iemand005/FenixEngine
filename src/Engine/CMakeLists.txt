@@ -159,6 +159,7 @@ endif()
 
 target_include_directories(Engine PRIVATE
 	../../include
+	${EXTERNAL_DIR}/cgltf
 )
 
 target_include_directories(Engine PUBLIC
@@ -166,8 +167,6 @@ target_include_directories(Engine PUBLIC
 	${EXTERNAL_DIR}/imgui
 
 	${EXTERNAL_DIR}/glfw/include
-
-	${EXTERNAL_DIR}/cgltf
 )
 
 if(NOT FE_EXCLUDE_JOLT)
