@@ -38,11 +38,10 @@ public:
 		}
 
 		glm::vec2 GetAxis() {
-			int raw_x = SDL_GetJoystickAxis(handle, 0);
-			int raw_y = SDL_GetJoystickAxis(handle, 1);
+			if (!handle) return glm::vec2(0.0f);
 
-			value.x = static_cast<float>(raw_x) / 32768.0f;
-			value.y = static_cast<float>(raw_y) / 32768.0f;
+			glm::vec2 raw(SDL_GetJoystickAxis(handle, 0), SDL_GetJoystickAxis(handle, 1));
+			glm::vec2 value = raw / 32768.0f;
 
 			return value;
 		}
