@@ -1,7 +1,7 @@
 #pragma once
 
 namespace fe {
-	class ModelFactory{
-
+	class ModelFactory {
+		
 	};
 }
