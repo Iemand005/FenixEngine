@@ -436,7 +436,6 @@ void SDLWindow::GetJoysticks() {
             std::string name = SDL_GetJoystickNameForID(joysticks[i]);
 			
 			std::cout << "Found joystick: " << name << std::endl;
-            // printf("  [%d] ID: %u - Naam: %s\n", i, (unsigned int)joysticks[i], name ? name : "Onbekend");
         }
         
         SDL_free(joysticks);
