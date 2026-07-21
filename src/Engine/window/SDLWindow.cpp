@@ -206,9 +206,9 @@ SDL_Window* fe::SDLWindow::GetWindow() { return impl->window; }
 
 SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
 
- bool fe::SDLWindow::IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
+bool fe::SDLWindow::IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
 
-  bool fe::SDLWindow::PollSDLEvent(SDL_Event* event, bool getKeyboardState) {
+bool fe::SDLWindow::PollSDLEvent(SDL_Event* event, bool getKeyboardState) {
     if (getKeyboardState) keyboardState = SDL_GetKeyboardState(NULL);
     if (!SDL_PollEvent(event)) return false;
 
@@ -448,6 +448,10 @@ std::vector<Joystick> SDLWindow::GetJoysticks() {
     }
 	
 	return joysticks;
+}
+
+void SDLWindow::UpdateJoysticks() {
+	SDL_UpdateJoysticks();
 }
 
 fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {

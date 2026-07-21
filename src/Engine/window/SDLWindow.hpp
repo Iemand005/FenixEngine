@@ -105,6 +105,8 @@ class SDLWindow : public IWindow {
 
   std::vector<Joystick> GetJoysticks();
 
+  void UpdateJoysticks();
+
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32
 	HWND GetNativeWindow();
