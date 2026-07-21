@@ -18,6 +18,12 @@ public:
                 SDL_CloseJoystick(handle);
         }
 
+		Joystick(const Joystick&) = delete;
+        Joystick& operator=(const Joystick&) = delete;
+        Joystick(Joystick&& other) noexcept : id(other.id), handle(other.handle) {
+            other.handle = nullptr;
+        }
+
 		std:: string GetName() {
 			return SDL_GetJoystickNameForID(id);
 		}
