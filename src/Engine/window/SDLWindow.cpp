@@ -190,6 +190,7 @@ void fe::SDLWindow::OpenFileDialog(FileDialogCallback callback, const char* filt
 	auto* cb = new FileDialogCallback(std::move(callback));
 	SDL_DialogFileFilter filters[] = {{ filterName, filterPattern }};
 	SDL_ShowOpenFileDialog(SDLWindow::OnFileDialogResult, cb, impl->window, filters, 1, nullptr, false);
+	SDL_Log("SDL Dialog Error status: %s", SDL_GetError());
 }
 
 void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const* files, int filter) {
