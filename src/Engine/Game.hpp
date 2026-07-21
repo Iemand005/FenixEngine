@@ -1,4 +1,5 @@
 #pragma once
+#include "window/Joystick.hpp"
 #define GLFW_INCLUDE_NONE
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
@@ -45,7 +46,10 @@ public:
 
 	std::vector<std::shared_ptr<Object<>>> maps = std::vector<std::shared_ptr<Object<>>>();
 
+	// TODO: deprecate!
 	std::vector<std::string> messages;
+
+	std::vector<Joystick> joysticks;
 
 	double lastUpdateTime = 0.0f;
 
