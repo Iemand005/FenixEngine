@@ -5,6 +5,8 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #define CGLTF_IMPLEMENTATION
 #include "../../external/cgltf/cgltf.h"
@@ -17,12 +19,19 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent) {
 	if (node->name) obj->name = node->name;
 	else obj->name = "GLBNode";
 
-	obj->state.position = glm::vec3(
-		node->translation[0], node->translation[1], node->translation[2]);
-	obj->state.orientation = glm::quat(
-		node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]);
-	obj->state.scale = glm::vec3(
-		node->scale[0], node->scale[1], node->scale[2]);
+	if (node->has_matrix) {
+		glm::mat4 mat = glm::make_mat4(node->matrix);
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(mat, obj->state.scale, obj->state.orientation, obj->state.position, skew, perspective);
+	} else {
+		obj->state.position = glm::vec3(
+			node->translation[0], node->translation[1], node->translation[2]);
+		obj->state.orientation = glm::quat(
+			node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]);
+		obj->state.scale = glm::vec3(
+			node->scale[0], node->scale[1], node->scale[2]);
+	}
 
 	if (node->mesh) {
 		for (cgltf_size p = 0; p < node->mesh->primitives_count; ++p) {
