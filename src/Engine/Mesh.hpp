@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <cstdio>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -13,14 +12,11 @@
 
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
-#include "WawaDir.hpp"
-#include "ImageLoader.hpp"
 
 #include "Graphics/IGPUBuffers.hpp"
 #include "Graphics/IGPUTexture.hpp"
 #include "Graphics/IRenderDevice.hpp"
 #include "Graphics/OpenGLGPUBuffers.hpp"
-#include "Graphics/OpenGLGPUTexture.hpp"
 
 
 namespace fe {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Mesh.hpp"
+#include "Object.hpp"
 
 namespace fe {
-	class ModelFactory {
-		static Mesh<> LoadMesh();
+	class ModelLoader {
+		static Object<> LoadMesh(std::string fileName);
 	};
 }
