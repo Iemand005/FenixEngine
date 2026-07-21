@@ -109,7 +109,7 @@ void fe::EditableGame::DrawDebugUI() {
 		}
 	}
 
-	fe::Object<>* model = this->player.get();
+	fe::Object* model = this->player.get();
 	if (model) {
 		ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 		if (model->physicsObject) {

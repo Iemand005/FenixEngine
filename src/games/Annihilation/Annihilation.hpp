@@ -98,10 +98,10 @@ class Annihilation : public fe::EditableGame {
     const float minDistanceSq = minDistance * minDistance;
 
     auto zombieTemplate = std::static_pointer_cast<fe::Character>(this->player->Clone());
-    if (zombieTemplate->meshes.size() < 2) return;
+    if (zombieTemplate->GetMeshCount() < 2) return;
 
-    zombieTemplate->meshes[0].loadTexture("resources/textures/chau_zombfacemap.png");
-    zombieTemplate->meshes[1].loadTexture("resources/textures/citizenzomb_sheet_reference.png");
+    zombieTemplate->meshes[0]->loadTexture("resources/textures/chau_zombfacemap.png");
+    zombieTemplate->meshes[1]->loadTexture("resources/textures/citizenzomb_sheet_reference.png");
     for (int i = 0; i < count; i++) {
       float x = static_cast<float>(rand() % 100 - 50);
       float z = static_cast<float>(rand() % 100 - 50);
@@ -205,7 +205,7 @@ class Annihilation : public fe::EditableGame {
         std::cout << "Button clicked!" << std::endl;
       }
 
-      fe::Object<>* model = this->player.get();
+      fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
       for (size_t i = 0; i < this->npcs.size(); ++i) {
         ImGui::Text("NPC %zu", i);
@@ -232,7 +232,7 @@ class Annihilation : public fe::EditableGame {
         this->connectToServer(addressBuffer, port, usernameBuffer);
       }
 
-      fe::Object<>* model = this->player.get();
+      fe::Object* model = this->player.get();
       ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
       ImGui::Text("Players:");

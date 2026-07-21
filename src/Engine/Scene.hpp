@@ -13,7 +13,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Timer.hpp"
-#include "Mesh.hpp"
+#include "IMesh.hpp"
+#include "Vertex.hpp"
 
 namespace fe {
 
@@ -26,8 +27,9 @@ struct PointLight {
 	float radius{10.0f};
 };
 
-template<typename V> class Object;
+class Object;
 class ObjectBase;
+template<typename VertexType> class Mesh;
 
 class Scene {
 	private:
@@ -66,7 +68,7 @@ public:
 	void ClearObjects() { objects.clear(); }
 
 	void AddObject(std::shared_ptr<ObjectBase> object);
-	std::shared_ptr<Object<>> AddObject(Mesh<> mesh);
+	std::shared_ptr<Object> AddObject(Mesh<Vertex> mesh);
 	bool RemoveObject(std::shared_ptr<ObjectBase> object);
 
 	void AddLight() { ++lightCount; }

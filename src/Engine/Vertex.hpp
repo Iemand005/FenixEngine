@@ -103,4 +103,9 @@ public:
 	}
 };
 
+namespace detail {
+	inline glm::vec3 extractPosition(const Vertex& v) { return v.position; }
+	inline glm::vec3 extractPosition(const VertexArray& v) { return v.position; }
+}
+
 }

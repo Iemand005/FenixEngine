@@ -154,7 +154,7 @@ namespace fe {
 					this->connectToServer(addressBuffer, port, usernameBuffer);
 				}
 
-				fe::Object<>* model = this->player.get();
+				fe::Object* model = this->player.get();
 				ImGui::SliderFloat3("Position", &model->state.position.x, -10.0f, 10.0f);
 
 				ImGui::Text("Players:");

@@ -6,11 +6,11 @@
 #include "OBJ_Loader.h"
 
 #include "Object.hpp"
+#include "Mesh.hpp"
 
 namespace fe {
 
-template<typename T>
-bool Object<T>::LoadObj(std::string path, float scale) {
+bool Object::LoadObj(std::string path, float scale) {
   objl::Loader objectLoader;
 
   bool success = objectLoader.LoadFile(path);
@@ -34,21 +34,19 @@ bool Object<T>::LoadObj(std::string path, float scale) {
 
     for (size_t i = 0; i < indices.size(); i++) indices[i] = loadedMesh.Indices[i];
 
-    Mesh mesh(vertices, indices);
+    auto mesh = std::make_unique<Mesh<Vertex>>(vertices, indices);
     if (!loadedMesh.MeshMaterial.map_Kd.empty()) {
       std::filesystem::path texPath(loadedMesh.MeshMaterial.map_Kd);
       if (texPath.is_relative()) texPath = objDir / texPath;
-      mesh.loadTexture(texPath.string());
+      mesh->loadTexture(texPath.string());
     }
 
-    this->meshes.push_back(mesh);
+    this->meshes.push_back(std::move(mesh));
   }
 
   this->state.scale = glm::vec3(scale);
 
   return true;
 }
-
-template class Object<Vertex>;
 
 }  // namespace fe

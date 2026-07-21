@@ -10,7 +10,7 @@
 
 namespace fe {
 
-class Character : public Object<> {
+class Character : public Object {
 public:
 	float moveSpeed = 5.0f;
 	float jumpSpeed = 8.0f;
@@ -52,7 +52,7 @@ public:
 	}
 
 	void Update(double deltaTime) override {
-		Object::Update(deltaTime);
+		ObjectBase::Update(deltaTime);
 		isGrounded = false;
 
 		if (this->physicsObject) {

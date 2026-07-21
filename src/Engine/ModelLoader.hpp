@@ -4,6 +4,6 @@
 
 namespace fe {
 	class ModelLoader {
-		static Object<> LoadMesh(std::string fileName);
+		static Object LoadMesh(std::string fileName);
 	};
 }

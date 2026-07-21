@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <glm/glm.hpp>
@@ -10,6 +9,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "IMesh.hpp"
 #include "Vertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
@@ -18,11 +18,10 @@
 #include "Graphics/IRenderDevice.hpp"
 #include "Graphics/OpenGLGPUBuffers.hpp"
 
-
 namespace fe {
 
 	template <typename VertexType = Vertex>
-	class Mesh {
+	class Mesh : public IMesh {
 		unsigned int indexCount;
 
 	public:
@@ -169,7 +168,7 @@ namespace fe {
 			}
 		}
 
-		void SetDevice(IRenderDevice* d) {
+		void SetDevice(IRenderDevice* d) override {
 			device_ = d;
 			if (!device_) return;
 
@@ -221,7 +220,7 @@ namespace fe {
 
 		bool loadObj(std::string objFilePath);
 
-		bool loadTexture(std::string textureFilePath, TextureScaling newScaling = TextureScaling::Linear) {
+		bool loadTexture(const std::string& textureFilePath, TextureScaling newScaling = TextureScaling::Linear) override {
 			if (device_) {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
@@ -236,7 +235,7 @@ namespace fe {
 			return true;
 		}
 
-		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Linear) {
+		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling newScaling = TextureScaling::Linear) override {
 			if (textureFilePaths.empty()) return false;
 
 			if (device_) {
@@ -254,56 +253,56 @@ namespace fe {
 			return true;
 		}
 
-		void CopyToGPU() {
+		void CopyToGPU() override {
 			init();
 		}
 
-		void RemoveFromGPU() {
+		void RemoveFromGPU() override {
 			gpuBuffers.reset();
 			gpuTexture.reset();
 		}
 
-		void FreeCpuData() {
+		void FreeCpuData() override {
 			vertices.clear();
 			vertices.shrink_to_fit();
 			indices.clear();
 			indices.shrink_to_fit();
 		}
 
-		Mesh Clone() const {
-			Mesh copy;
-			copy.vertices = vertices;
-			copy.indices = indices;
-			copy.indexCount = indexCount;
-			copy.modelMatrix = modelMatrix;
-			copy.hasTransparency = hasTransparency;
-			copy.scaling = scaling;
-			copy.device_ = device_;
+		std::unique_ptr<IMesh> Clone() const override {
+			auto copy = std::make_unique<Mesh<VertexType>>();
+			copy->vertices = vertices;
+			copy->indices = indices;
+			copy->indexCount = indexCount;
+			copy->modelMatrix = modelMatrix;
+			copy->hasTransparency = hasTransparency;
+			copy->scaling = scaling;
+			copy->device_ = device_;
 
 			if (device_ && !vertices.empty() && !indices.empty()) {
-				copy.init();
+				copy->init();
 			}
 
 			if (hasPendingTextureArray) {
-				copy.pendingTextureArrayPaths = pendingTextureArrayPaths;
-				copy.pendingTextureArrayScaling = pendingTextureArrayScaling;
-				copy.hasPendingTextureArray = true;
+				copy->pendingTextureArrayPaths = pendingTextureArrayPaths;
+				copy->pendingTextureArrayScaling = pendingTextureArrayScaling;
+				copy->hasPendingTextureArray = true;
 				if (device_) {
-					copy.gpuTexture = device_->CreateGPUTexture();
-					if (copy.gpuTexture) {
-						device_->UploadTextureArray(copy.gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
-						copy.hasPendingTextureArray = false;
+					copy->gpuTexture = device_->CreateGPUTexture();
+					if (copy->gpuTexture) {
+						device_->UploadTextureArray(copy->gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+						copy->hasPendingTextureArray = false;
 					}
 				}
 			} else if (hasPendingTexture) {
-				copy.pendingTexturePath = pendingTexturePath;
-				copy.pendingTextureScaling = pendingTextureScaling;
-				copy.hasPendingTexture = true;
+				copy->pendingTexturePath = pendingTexturePath;
+				copy->pendingTextureScaling = pendingTextureScaling;
+				copy->hasPendingTexture = true;
 				if (device_) {
-					copy.gpuTexture = device_->CreateGPUTexture();
-					if (copy.gpuTexture) {
-						device_->UploadTexture(copy.gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
-						copy.hasPendingTexture = false;
+					copy->gpuTexture = device_->CreateGPUTexture();
+					if (copy->gpuTexture) {
+						device_->UploadTexture(copy->gpuTexture.get(), pendingTexturePath, pendingTextureScaling);
+						copy->hasPendingTexture = false;
 					}
 				}
 			}
@@ -311,12 +310,33 @@ namespace fe {
 			return copy;
 		}
 
+		// --- IMesh accessors ---
+
+		IGPUBuffers* GetGPUBuffers() const override { return gpuBuffers.get(); }
+		IGPUTexture* GetGPUTexture() const override { return gpuTexture.get(); }
+
+		size_t GetVertexCount() const override { return vertices.size(); }
+		size_t GetIndexCount() const override { return indices.size(); }
+		const std::vector<unsigned int>& GetIndices() const override { return indices; }
+
+		bool GetHasTransparency() const override { return hasTransparency; }
+		void SetHasTransparency(bool v) override { hasTransparency = v; }
+
+		void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) override {
+			physicsObject = std::move(obj);
+		}
+
+		void GetPositions(std::vector<glm::vec3>& out) const override {
+			out.resize(vertices.size());
+			for (size_t i = 0; i < vertices.size(); ++i) {
+				out[i] = detail::extractPosition(vertices[i]);
+			}
+		}
+
 		glm::mat4 getModelMatrix() { return modelMatrix; }
 
 		const std::vector<VertexType>& GetVertices() const { return vertices; }
-		const std::vector<unsigned int>& GetIndices() const { return indices; }
 
-		void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
 	};
 
 }

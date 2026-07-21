@@ -6,16 +6,20 @@
 #include <memory>
 #include <string>
 #include <filesystem>
+#include <algorithm>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "bases.h"
-#include "Mesh.hpp"
+#include "IMesh.hpp"
 #include "ShaderProgram.hpp"
+#include "Graphics/IRenderDevice.hpp"
 
 namespace fe {
+
+template<typename VertexType> class Mesh;
 
 class ObjectBase {
 public:
@@ -65,23 +69,20 @@ public:
 	void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
 };
 
-template <typename VertexType = Vertex>
 class Object : public ObjectBase {
 public:
-	std::vector<Mesh<VertexType>> meshes;
+	std::vector<std::unique_ptr<IMesh>> meshes;
 	Object* parent = nullptr;
-    std::vector<std::unique_ptr<Object<VertexType>>> children;
+    std::vector<std::unique_ptr<Object>> children;
 
 	unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
 	std::vector<glm::vec3> boundingBoxVertices;
 
 	Object() : ObjectBase() {}
 
-	Object(Mesh<VertexType> mesh) : ObjectBase() {
-		if (mesh.physicsObject) {
-			this->physicsObject = std::move(mesh.physicsObject);
-		}
-		meshes.push_back(std::move(mesh));
+	template<typename VertexType>
+	explicit Object(Mesh<VertexType> mesh) : ObjectBase() {
+		PushMesh(std::move(mesh));
 	}
 
 	Object(std::string objFilePath, float scale = 1.0f) : ObjectBase() {
@@ -109,23 +110,38 @@ public:
         auto it = std::find_if(children.begin(), children.end(),
             [child](const std::unique_ptr<Object>& c) { return c.get() == child; });
         if (it != children.end()) {
-            (*it)->m_parent = nullptr;
+            (*it)->parent = nullptr;
             children.erase(it);
         }
     }
 
+	template<typename VertexType>
+	void PushMesh(Mesh<VertexType>&& mesh) {
+		if (mesh.physicsObject) {
+			this->physicsObject = std::move(mesh.physicsObject);
+		}
+		meshes.push_back(std::make_unique<Mesh<VertexType>>(std::move(mesh)));
+	}
+
+	template<typename VertexType>
+	Mesh<VertexType>& EmplaceMesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
+		auto mesh = std::make_unique<Mesh<VertexType>>(std::move(vertices), std::move(indices));
+		auto& ref = *mesh;
+		meshes.push_back(std::move(mesh));
+		return ref;
+	}
+
 	size_t GetMeshCount() const override { return meshes.size(); }
 	size_t GetTotalVertexCount() const override {
 		size_t total = 0;
-		for (const auto& m : meshes) total += m.vertices.size();
+		for (const auto& m : meshes) total += m->GetVertexCount();
 		return total;
 	}
 
 	void Render(IRenderDevice* device) override {
-		for (size_t i = 0; i < meshes.size(); ++i) {
-			auto& mesh = meshes[i];
-			mesh.SetDevice(device);
-			device->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
+		for (auto& mesh : meshes) {
+			mesh->SetDevice(device);
+			device->DrawMesh(mesh->GetGPUBuffers(), mesh->GetGPUTexture());
 		}
 	}
 
@@ -133,10 +149,9 @@ public:
 
 	std::shared_ptr<Object> Clone() const {
 		auto newObj = std::make_shared<Object>();
-		newObj->meshes.clear();
 		newObj->meshes.reserve(meshes.size());
 		for (const auto& m : meshes) {
-			newObj->meshes.push_back(m.Clone());
+			newObj->meshes.push_back(m->Clone());
 		}
 		newObj->state = this->state;
 		newObj->state.scale = this->state.scale;
@@ -160,3 +175,6 @@ public:
 };
 
 }
+
+// Explicit template instantiation for common types
+#include "Mesh.hpp"

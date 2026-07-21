@@ -1,4 +1,5 @@
 #include "Object.hpp"
+#include "Mesh.hpp"
 #include "Scene.hpp"
 
 #include <algorithm>
@@ -19,8 +20,9 @@ Scene::~Scene() {
 
 void Scene::AddObject(std::shared_ptr<ObjectBase> object) { objects.push_back(object); }
 
-std::shared_ptr<Object<>> Scene::AddObject(Mesh<> mesh) {
-	auto obj = std::make_shared<Object<>>(mesh);
+std::shared_ptr<Object> Scene::AddObject(Mesh<Vertex> mesh) {
+	auto obj = std::make_shared<Object>();
+	obj->PushMesh(std::move(mesh));
 	objects.push_back(obj);
 	return obj;
 }

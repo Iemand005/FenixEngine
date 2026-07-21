@@ -32,7 +32,7 @@ public:
 	std::vector<glm::vec3> path;
 	int windowStart = 0;
 	float pathIndex = 1.0f;
-	std::vector<std::shared_ptr<fe::Object<>>> chunks;
+	std::vector<std::shared_ptr<fe::Object>> chunks;
 	glm::vec3 lastUp = glm::vec3(0, 1, 0);
 	glm::vec3 lastRight = glm::vec3(1, 0, 0);
 	glm::vec3 prevEndForward{0};
@@ -110,7 +110,7 @@ public:
 
 		chunks.resize(NUM_CHUNKS);
 		for (int i = 0; i < NUM_CHUNKS; i++) {
-			chunks[i] = std::make_shared<fe::Object<>>();
+			chunks[i] = std::make_shared<fe::Object>();
 			BuildTunnelMesh(chunks[i], windowStart + i * SHIFT);
 			chunks[i]->name = "Tunnel" + std::to_string(i);
 			scene->AddObject(chunks[i]);
@@ -160,7 +160,7 @@ public:
 		}
 	}
 
-	void BuildTunnelMesh(std::shared_ptr<fe::Object<>> obj, int pointIdx) {
+	void BuildTunnelMesh(std::shared_ptr<fe::Object> obj, int pointIdx) {
 		std::vector<glm::vec3> pts(POINTS_PER_CHUNK);
 		for (int i = 0; i < POINTS_PER_CHUNK; i++)
 			pts[i] = path[pointIdx + i];
@@ -177,7 +177,7 @@ public:
 		}
 
 		obj->meshes.clear();
-		obj->meshes.push_back(
+		obj->PushMesh(
 			fe::Primitives::GenerateBentTunnel(
 				pts, 1.0f, TUNNEL_SEGMENTS, SUBDIVISIONS_PER_SEG, true,
 				&lastUp, &lastRight, &lastUp, &lastRight,
@@ -204,7 +204,7 @@ public:
 		newCount = std::clamp(newCount, 2, MAX_CHUNKS);
 		if (newCount > NUM_CHUNKS) {
 			for (int i = NUM_CHUNKS; i < newCount; i++) {
-				chunks.push_back(std::make_shared<fe::Object<>>());
+				chunks.push_back(std::make_shared<fe::Object>());
 				BuildTunnelMesh(chunks[i], windowStart + i * SHIFT);
 				chunks[i]->name = "Tunnel" + std::to_string(i);
 				scene->AddObject(chunks[i]);
