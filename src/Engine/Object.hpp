@@ -69,6 +69,8 @@ template <typename VertexType = Vertex>
 class Object : public ObjectBase {
 public:
 	std::vector<Mesh<VertexType>> meshes;
+	Object* parent = nullptr;
+    std::vector<std::unique_ptr<Object<VertexType>>> children;
 
 	unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
 	std::vector<glm::vec3> boundingBoxVertices;
