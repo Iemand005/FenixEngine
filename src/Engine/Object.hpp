@@ -2,10 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <glad/glad.h>
 
-#include <chrono>
 #include <cstdio>
-#include <fstream>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <filesystem>
@@ -17,16 +14,6 @@
 #include "bases.h"
 #include "Mesh.hpp"
 #include "ShaderProgram.hpp"
-#include "physics/PhysicsEngine.hpp"
-
-
-//#ifndef STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_IMPLEMENTATION
-//#include <stb_image.h>
-//#endif  // !STB_IMAGE_IMPLEMENTATION
-
-//#define OBJ_LOADER
-//#include "OBJ_Loader.h"
 
 namespace fe {
 
