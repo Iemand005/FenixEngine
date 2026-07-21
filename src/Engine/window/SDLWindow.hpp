@@ -9,13 +9,13 @@
 //#include <x11/Xlib.h>
 #endif
 
-#include <functional>
-#include <iostream>
 #include <memory>
+#include <string>
 
 #include <SDL3/SDL.h>
 
 #include "IWindow.hpp"
+#include "Joystick.hpp"
 
 namespace fe {
 
@@ -103,7 +103,7 @@ class SDLWindow : public IWindow {
 
   bool HideMouse();
 
-  void GetJoysticks();
+  std::vector<Joystick> GetJoysticks();
 
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32

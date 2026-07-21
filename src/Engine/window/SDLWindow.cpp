@@ -1,5 +1,6 @@
 
 #include "IWindow.hpp"
+#include "Joystick.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -7,6 +8,9 @@
 
 //#include <GL/glx.h>
 #endif
+
+#include <functional>
+#include <iostream>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
@@ -424,24 +428,26 @@ void fe::SDLWindow::SetTitle(const char *title) {
 	SDL_SetWindowTitle(impl->window, title);
 }
 
-void SDLWindow::GetJoysticks() {
+std::vector<Joystick> SDLWindow::GetJoysticks() {
 	int count = 0;
-    SDL_JoystickID *joysticks = SDL_GetJoysticks(&count);
+    SDL_JoystickID *joystickIds = SDL_GetJoysticks(&count);
 
+	std::vector<Joystick> joysticks;
 		
-    if (joysticks) {
+    if (joystickIds) {
 		printf("%i joysticks were found.\n\n", count );
 		printf("The names of the joysticks are:\n");
         for (int i = 0; i < count; i++) {
-            std::string name = SDL_GetJoystickNameForID(joysticks[i]);
+            std::string name = SDL_GetJoystickNameForID(joystickIds[i]);
 			
 			std::cout << "Found joystick: " << name << std::endl;
+			joysticks.emplace_back(joystickIds[i]);
         }
         
-        SDL_free(joysticks);
-    } else {
-        printf("Geen joysticks aangesloten of fout opgetreden.\n");
+        SDL_free(joystickIds);
     }
+	
+	return joysticks;
 }
 
 fe::VulkanExtensions fe::SDLWindow::GetVulkanExtensions() {
