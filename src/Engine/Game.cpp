@@ -52,6 +52,13 @@ void Game::Init() {
 	InitUI();
 }
 
+void Game::LoadModel(const std::string& path) {
+	auto obj = ModelLoader::LoadModel(path);
+	if (obj) {
+		scene->AddObject(obj);
+	}
+}
+
 void Game::UpdatePhysics(double deltaTime) {
 #ifndef EXCLUDE_JOLT
 	if (impl->physicsEngine) impl->physicsEngine->Update(deltaTime);
