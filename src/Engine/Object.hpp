@@ -65,8 +65,12 @@ public:
 
 	glm::mat4 GetModelMatrix() {
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position);
-		model = glm::rotate(model, glm::radians(this->state.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(this->state.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		if (glm::length(this->state.orientation - glm::quat(1, 0, 0, 0)) > 0.001f) {
+			model = model * glm::mat4_cast(this->state.orientation);
+		} else {
+			model = glm::rotate(model, glm::radians(this->state.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(this->state.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
 		model = glm::scale(model, this->state.scale);
 		return model;
 	}

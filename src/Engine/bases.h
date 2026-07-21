@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace fe {
 	struct ObjectState {
@@ -7,6 +8,7 @@ namespace fe {
 		glm::vec3 rotation{0.0f};
 		glm::vec3 velocity{0.0f};
 		glm::vec3 scale{1.0f};
+		glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
 	};
 
 	enum Direction {
