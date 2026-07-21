@@ -24,6 +24,16 @@ public:
             other.handle = nullptr;
         }
 
+		Joystick& operator=(Joystick&& other) noexcept {
+            if (this != &other) {
+                if (handle) SDL_CloseJoystick(handle);
+                id = other.id;
+                handle = other.handle;
+                other.handle = nullptr;
+            }
+            return *this;
+        }
+
 		std:: string GetName() {
 			return SDL_GetJoystickNameForID(id);
 		}
