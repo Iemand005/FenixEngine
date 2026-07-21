@@ -9,13 +9,12 @@
 namespace fe {
 	class Joystick {
 public:
-		Joystick(unsigned int id) {
-			this->id = id;
+		Joystick(unsigned int id) : id(id) {
+			handle = SDL_OpenJoystick(id);
 		}
 
 		~Joystick() {
-            if (handle)
-                SDL_CloseJoystick(handle);
+            if (handle) SDL_CloseJoystick(handle);
         }
 
 		Joystick(const Joystick&) = delete;
@@ -49,7 +48,7 @@ public:
 		}
 private:
 		SDL_JoystickID id;
-		SDL_Joystick* handle;
+		SDL_Joystick* handle = nullptr;
 
 		glm::vec2 value;
 	};
