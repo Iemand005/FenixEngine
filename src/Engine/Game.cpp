@@ -1,6 +1,7 @@
 #include <memory>
 
 #include "Game.hpp"
+#include "ModelLoader.hpp"
 
 using namespace fe;
 

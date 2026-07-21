@@ -174,6 +174,8 @@ public:
 		return model;
 	}
 
+	void LoadModel(const std::string& path);
+
 	std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
 		return std::make_shared<fe::Object>(path, scale);
 	}

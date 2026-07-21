@@ -95,7 +95,11 @@ class SDLWindow : public IWindow {
 
   SDL_GLContext GetSDLGLContext();
 
+  static void SDLCALL OnFileDialogResult(void* userdata, const char* const* files, int filter);
+
   void Destroy() override;
+
+  void OpenFileDialog(FileDialogCallback callback, const char* filterName, const char* filterPattern) override;
 
   double GetTime() override;
 

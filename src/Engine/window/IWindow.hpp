@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 namespace fe {
 
@@ -108,6 +109,9 @@ public:
 		virtual void SwapBuffers() = 0;
 
 		virtual double GetTime() = 0;
+
+		using FileDialogCallback = std::function<void(const std::string&)>;
+		virtual void OpenFileDialog(FileDialogCallback callback, const char* filterName = "Model Files", const char* filterPattern = "*.glb;*.gltf;*.obj") {}
 
 		virtual void Destroy() {};
 

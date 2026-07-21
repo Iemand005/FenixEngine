@@ -14,6 +14,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <SDL3/SDL_dialog.h>
 #include <glad/glad.h>
 
 #include "SDLWindow.hpp"
@@ -184,6 +185,20 @@ bool fe::SDLWindow::IsCapturingMouse() {
 
 void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w, h); }
 
+
+void fe::SDLWindow::OpenFileDialog(FileDialogCallback callback, const char* filterName, const char* filterPattern) {
+	auto* cb = new FileDialogCallback(std::move(callback));
+	SDL_DialogFileFilter filters[] = {{ filterName, filterPattern }};
+	SDL_ShowOpenFileDialog(SDLWindow::OnFileDialogResult, cb, impl->window, filters, 1, nullptr, false);
+}
+
+void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const* files, int filter) {
+	auto cb = static_cast<FileDialogCallback*>(userdata);
+	if (files && files[0]) {
+		(*cb)(files[0]);
+	}
+	delete cb;
+}
 
 void fe::SDLWindow::Destroy() {
 	if (!impl) return;
