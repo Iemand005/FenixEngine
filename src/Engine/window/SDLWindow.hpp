@@ -99,7 +99,7 @@ class SDLWindow : public IWindow {
 
   void Destroy() override;
 
-  void OpenFileDialog(FileDialogCallback callback, const char* filterName, const char* filterPattern) override;
+  void OpenFileDialog(FileDialogCallback callback, const char* filterName = "Model Files", const char* filterPattern = "*.glb;*.gltf;*.obj") override;
 
   double GetTime() override;
 
