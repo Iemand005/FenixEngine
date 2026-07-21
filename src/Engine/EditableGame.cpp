@@ -1,23 +1,3 @@
-#pragma once
-
-#include <imgui.h>
-
-#include "Object.hpp"
-#include "Camera.hpp"
-#include "EditableGame.hpp"
-#include "physics/BasicDebugRenderer.hpp"
-
-
-void fe::EditableGame::OnDraw() {
-	EditableGameBase::OnDraw();
-#ifndef EXCLUDE_JOLT
-	if (GetPhysicsEngine()) {
-		GetPhysicsEngine()->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
-	}
-#endif
-}
-
-
 void DrawObjectNodee(Object* obje, Camera* camera, float step) {
     ImGui::PushID(obje);
 
@@ -61,6 +41,26 @@ void DrawObjectNodee(Object* obje, Camera* camera, float step) {
 
     ImGui::PopID();
 }
+
+#include <imgui.h>
+
+#include "Object.hpp"
+#include "Camera.hpp"
+#include "EditableGame.hpp"
+#include "physics/BasicDebugRenderer.hpp"
+
+
+
+void fe::EditableGame::OnDraw() {
+	EditableGameBase::OnDraw();
+#ifndef EXCLUDE_JOLT
+	if (GetPhysicsEngine()) {
+		GetPhysicsEngine()->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+	}
+#endif
+}
+
+
 
 void fe::EditableGame::DrawDebugUI() {
 
