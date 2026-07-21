@@ -51,10 +51,18 @@ void Scene::SetLight(int index) {
 	pointLights[index].radius = 10.0f;
 }
 
+static void UpdateObjectRecursive(ObjectBase& obj, double dt) {
+	obj.Update(dt);
+	if (auto* o = dynamic_cast<Object*>(&obj)) {
+		for (auto& child : o->GetChildren())
+			UpdateObjectRecursive(*child, dt);
+	}
+}
+
 double Scene::Update() {
 	auto deltaTime = timer.update();
 	for (auto& object : objects) {
-		object->Update(deltaTime);
+		UpdateObjectRecursive(*object, deltaTime);
 	}
 	ResolveCollisions();
 	return deltaTime;

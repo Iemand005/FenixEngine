@@ -54,7 +54,7 @@ public:
 	virtual size_t GetMeshCount() const { return 0; }
 	virtual size_t GetTotalVertexCount() const { return 0; }
 
-	glm::mat4 GetModelMatrix() {
+	virtual glm::mat4 GetModelMatrix() {
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position);
 		if (glm::length(this->state.orientation - glm::quat(1, 0, 0, 0)) > 0.001f) {
 			model = model * glm::mat4_cast(this->state.orientation);
@@ -95,6 +95,12 @@ public:
 	Object(std::string objFilePath, ObjectState state) : ObjectBase() { LoadObj(objFilePath);
 		this->state = state;
 		sourcePath = objFilePath;
+	}
+
+	glm::mat4 GetModelMatrix() override {
+		glm::mat4 local = ObjectBase::GetModelMatrix();
+		if (parent) return parent->GetModelMatrix() * local;
+		return local;
 	}
 
 	Object* GetParent() const { return parent; }

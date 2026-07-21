@@ -50,6 +50,10 @@ void Renderer::RenderObject(ObjectBase& object) {
 	renderDevice->SetMat4("model", model);
 	renderDevice->SetVec3("objectColor", object.color);
 	object.Render(renderDevice.get());
+	if (auto* obj = dynamic_cast<Object*>(&object)) {
+		for (auto& child : obj->GetChildren())
+			RenderObject(*child);
+	}
 }
 
 void Renderer::RenderScene(Scene *scene) {
