@@ -138,11 +138,18 @@ void fe::EditableGame::DrawDebugUI() {
 	static char filenameBuffer[512] = "\0";
 	static float newObjectScale = 1.0f;
 
-	ImGui::InputText("Model file (.obj)", filenameBuffer, IM_ARRAYSIZE(filenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-	ImGui::DragFloat3("Scale##newObj", &newObjectScale, 0.001f);
-	if (ImGui::Button("Load model")) {
+	if (ImGui::Button("Open Model")) {
+		auto* w = static_cast<fe::SDLWindow*>(this->window.get());
+		w->OpenFileDialog([this](const std::string& path) {
+			this->LoadModel(path);
+		});
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load .obj")) {
 		LoadObj(filenameBuffer, newObjectScale);
 	}
+	ImGui::InputText(".obj path", filenameBuffer, IM_ARRAYSIZE(filenameBuffer));
+	ImGui::DragFloat3("Scale##newObj", &newObjectScale, 0.001f);
 
 
 	static char mapNameBuffer[512] = "level.fes\0";
