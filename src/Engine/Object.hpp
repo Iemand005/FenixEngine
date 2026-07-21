@@ -31,6 +31,7 @@ public:
 	bool isStatic = false;
 	bool touchedGround = false;
 	bool touchedOtherObject = false;
+	bool reverseWinding = false;
 
 	glm::vec3 color{1.0f, 1.0f, 1.0f};
 

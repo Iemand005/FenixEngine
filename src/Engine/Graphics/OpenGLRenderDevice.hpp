@@ -41,6 +41,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (prog) glUniform1f(glGetUniformLocation(prog, name), value);
 	}
 
+	void SetFrontFace(bool ccw) override {
+		glFrontFace(ccw ? GL_CCW : GL_CW);
+	}
+
 	void Clear() override {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}

@@ -49,11 +49,13 @@ void Renderer::RenderObject(ObjectBase& object) {
 	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
 	renderDevice->SetVec3("objectColor", object.color);
+	if (object.reverseWinding) renderDevice->SetFrontFace(false);
 	object.Render(renderDevice.get());
 	if (auto* obj = dynamic_cast<Object*>(&object)) {
 		for (auto& child : obj->GetChildren())
 			RenderObject(*child);
 	}
+	if (object.reverseWinding) renderDevice->SetFrontFace(true);
 }
 
 void Renderer::RenderScene(Scene *scene) {

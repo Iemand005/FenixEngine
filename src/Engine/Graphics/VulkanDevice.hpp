@@ -440,6 +440,8 @@ public:
 			currentBoundPipeline_ = requiredPipeline;
 		}
 
+		vkCmdSetFrontFace(cmd, currentFrontFace_);
+
 		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{currentModel_, currentObjectColor_};
@@ -459,6 +461,8 @@ public:
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
 		}
+
+		vkCmdSetFrontFace(cmd, currentFrontFace_);
 
 		VkBuffer vb = vertexBuffer;
 		VkDeviceSize vbOffset = 0;
@@ -589,6 +593,10 @@ public:
 
 	void SetVec3(const char* name, const glm::vec3& value) override {
 		if (strcmp(name, "objectColor") == 0) { currentObjectColor_ = glm::vec4(value, 1.0f); }
+	}
+
+	void SetFrontFace(bool ccw) override {
+		currentFrontFace_ = ccw ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
 	}
 
 	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
@@ -921,6 +929,7 @@ private:
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
 	glm::vec4 currentObjectColor_ = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	VkFrontFace currentFrontFace_ = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 	void CreateInstance();
 
@@ -1385,7 +1394,7 @@ private:
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-		std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+		std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_FRONT_FACE};
 		VkPipelineDynamicStateCreateInfo dynamicState{};
 		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
