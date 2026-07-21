@@ -1,6 +1,7 @@
 #include "ModelLoader.hpp"
 
-#include <cgltf.h>
+// #include <cgltf.h>
+#include "../../cgltf/cgltf.h"
 
 using namespace fe;
 
