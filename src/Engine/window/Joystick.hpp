@@ -39,12 +39,17 @@ public:
 		}
 
 		glm::vec2 GetAxis() {
-			Sint16 left_x = SDL_GetGamepadAxis(id, SDL_GAMEPAD_AXIS_LEFTX);
-			Sint16 left_y = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+			int raw_x = SDL_GetJoystickAxis(handle, 0);
+			int raw_y = SDL_GetJoystickAxis(handle, 1);
+
+			out_x = static_cast<float>(raw_x) / 32768.0f;
+			out_y = static_cast<float>(raw_y) / 32768.0f;
 
 		}
 private:
 		SDL_JoystickID id;
 		SDL_Joystick* handle;
+
+		glm::vec2 value{0.0f};
 	};
 }
