@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "Object.hpp"
+#include "Camera.hpp"
 #include "EditableGame.hpp"
 #include "physics/BasicDebugRenderer.hpp"
 
@@ -15,6 +17,50 @@ void fe::EditableGame::OnDraw() {
 #endif
 }
 
+
+void DrawObjectNodee(Object* object, Camera* camera, float step) {
+    ImGui::PushID(object);
+
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (object->children.empty()) {
+        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
+    bool open = ImGui::TreeNodeEx(object->name.c_str(), flags);
+
+    ImGui::DragFloat3("Position", &object->state.position.x, step);
+
+    if (object->physicsObject) {
+        glm::vec3 physicsPos = object->physicsObject->GetPosition();
+        if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
+            object->physicsObject->SetPosition(physicsPos);
+        }
+        glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
+        if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
+            object->physicsObject->SetLinearVelocity(physicsVel);
+        }
+    }
+
+    ImGui::DragFloat3("Rotation", &object->state.rotation.x, step);
+    ImGui::DragFloat3("Scale", &object->state.scale.x, step);
+
+    if (ImGui::Button("Focus")) {
+        glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
+        camera->SetPos(object->state.position + offset);
+        camera->LookAt(object->state.position);
+    }
+
+    ImGui::Separator();
+
+    if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
+        for (auto &child : object->children) {
+            DrawObjectNode(child.get(), camera, step);
+        }
+        ImGui::TreePop();
+    }
+
+    ImGui::PopID();
+}
 
 void fe::EditableGame::DrawDebugUI() {
 
@@ -170,32 +216,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 	size_t i = 0;
 	for (auto &object : scene->GetObjects()) {
-		// ImGui::Text("Object %zu", i);
-		ImGui::Text(object->name.c_str());
-		ImGui::DragFloat3(("Position##npc" + std::to_string(i)).c_str(), &object->state.position.x, step);
-		if (object->physicsObject) {
-			std::string physicsPosLabel = "Physics Pos##" + std::to_string(i);
-			glm::vec3 physicsPos = object->physicsObject->GetPosition();
-			if (ImGui::DragFloat3(physicsPosLabel.c_str(), &physicsPos.x, step)) {
-				object->physicsObject->SetPosition(physicsPos);
-			}
-			std::string physicsVelLabel = "Physics Vel##" + std::to_string(i);
-			glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
-			if (ImGui::DragFloat3(physicsVelLabel.c_str(), &physicsVel.x, step)) {
-				object->physicsObject->SetLinearVelocity(physicsVel);
-			}
-		}
-		ImGui::DragFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &object->state.rotation.x, step);
-		ImGui::DragFloat3(("Scale##npc" + std::to_string(i)).c_str(), &object->state.scale.x, step);
-		if(ImGui::Button(("Focus##" + std::to_string(i)).c_str())) {
-			glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
-			camera->SetPos(object->state.position + offset);
-			camera->LookAt(object->state.position);
-		}
-
-		ImGui::Separator();
-
-		++i;
+		DrawObjectNode(object.get(), camera, step);
 	}
 
 	if (ImGui::Button("Add light"))
