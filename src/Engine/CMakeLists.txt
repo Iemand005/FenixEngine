@@ -167,6 +167,7 @@ target_include_directories(Engine PUBLIC
 
 	../../external/glfw/include
 
+	../../external/cgltf
 )
 
 if(NOT FE_EXCLUDE_JOLT)
