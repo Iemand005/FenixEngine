@@ -75,10 +75,9 @@ class Annihilation : public fe::EditableGame {
     // map1->physicsComponent = new fe::PhysicsObject(physicsEngine->physicsSystem);
 
     for (auto &mesh : map1->meshes) {
-      auto vertices = std::vector<glm::vec3>();
-      for (auto &vertex : mesh.vertices)
-        vertices.push_back(vertex.position);
-      mesh.SetPhysicsObject(physicsEngine->CreateObject(vertices, mesh.indices));
+      std::vector<glm::vec3> positions;
+      mesh->GetPositions(positions);
+      mesh->SetPhysicsObject(GetPhysicsEngine()->CreateObject(positions, mesh->GetIndices()));
     }
 
     // this->maps.push_back(loadStaticOBJ("resources/testmap/testmappy.obj", 5.0f));
@@ -87,7 +86,7 @@ class Annihilation : public fe::EditableGame {
 
     this->player = std::static_pointer_cast<fe::Character>(LoadObj("resources/models/citizen.obj", 0.1f));
 
-    this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+    this->player->SetPhysicsObject(GetPhysicsEngine()->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
 
 
     // spawnZombies(10);
