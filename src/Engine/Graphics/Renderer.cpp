@@ -1,5 +1,3 @@
-#include <glad/glad.h>
-
 #include "Renderer.hpp"
 #include "../Object.hpp"
 #include "../Scene.hpp"
@@ -9,15 +7,15 @@
 using namespace fe;
 
 void Renderer::EnableWireframe() {
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  renderDevice->EnableWireframe();
 }
 void Renderer::DisableWireframe() {
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  renderDevice->DisableWireframe();
 }
 
 void Renderer::ToggleWireframe(bool enabled) {
-  if (enabled) EnableWireframe();
-  else DisableWireframe();
+  if (enabled) renderDevice->EnableWireframe();
+  else renderDevice->DisableWireframe();
 }
 
 Renderer::Renderer(GLADloadproc loadProc) {
@@ -30,8 +28,7 @@ Renderer::Renderer(GLADloadproc loadProc) {
 }
 
 void Renderer::BindFrameBuffer(int bufferIndex) {
-	if (!useVulkan)
-		glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+	renderDevice->BindFramebuffer(bufferIndex);
 }
 
 void Renderer::RenderMesh(Mesh<>& mesh) {

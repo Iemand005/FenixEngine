@@ -45,6 +45,18 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glFrontFace(ccw ? GL_CCW : GL_CW);
 	}
 
+	void EnableWireframe() override {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+
+	void DisableWireframe() override {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	void BindFramebuffer(int bufferIndex) override {
+		glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
+	}
+
 	void Clear() override {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}

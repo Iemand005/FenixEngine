@@ -51,6 +51,10 @@ namespace fe {
 
 		virtual void SetFrontFace(bool ccw) {}
 
+		virtual void EnableWireframe() {}
+		virtual void DisableWireframe() {}
+		virtual void BindFramebuffer(int bufferIndex) {}
+
 		virtual uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) { return 0; }
 		virtual void DestroyFramebuffer(uint64_t fb) {}
 		virtual void BeginVRFrame() {}
