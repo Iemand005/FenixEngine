@@ -3,7 +3,6 @@
 #define NOMINMAX
 #define FE_EXCLUDE_GLFW
 
-#include <cstdio>
 #include <iostream>
 
 
@@ -103,11 +102,6 @@ namespace fe {
 				// ImGui_ImplVulkan_CreateFontsTexture();
 			}
 		}
-
-		// void DrawUI() override {
-
-		// }
-
 
 	public:
 
