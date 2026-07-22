@@ -9,7 +9,7 @@
 using namespace fe;
 
 Scene::Scene() {
-	objects = std::vector<std::shared_ptr<ObjectBase>>();
+	objects = std::vector<std::shared_ptr<Object>>();
 }
 
 Scene::~Scene() {
@@ -18,7 +18,7 @@ Scene::~Scene() {
 	if (gizmoProgram) glDeleteProgram(gizmoProgram);
 }
 
-void Scene::AddObject(std::shared_ptr<ObjectBase> object) { objects.push_back(object); }
+void Scene::AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
 
 std::shared_ptr<Object> Scene::AddObject(Mesh<Vertex> mesh) {
 	auto obj = std::make_shared<Object>();
@@ -27,15 +27,15 @@ std::shared_ptr<Object> Scene::AddObject(Mesh<Vertex> mesh) {
 	return obj;
 }
 
-std::vector<std::shared_ptr<ObjectBase>> Scene::GetFilteredObjects(std::shared_ptr<ObjectBase> exclude) const {
-	std::vector<std::shared_ptr<ObjectBase>> filtered;
-	std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [exclude](const std::shared_ptr<ObjectBase>& obj) {
+std::vector<std::shared_ptr<Object>> Scene::GetFilteredObjects(std::shared_ptr<Object> exclude) const {
+	std::vector<std::shared_ptr<Object>> filtered;
+	std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [exclude](const std::shared_ptr<Object>& obj) {
 		return obj != exclude;
 	});
 	return filtered;
 }
 
-bool Scene::RemoveObject(std::shared_ptr<ObjectBase> object) {
+bool Scene::RemoveObject(std::shared_ptr<Object> object) {
 	auto it = std::find(objects.begin(), objects.end(), object);
 	if (it != objects.end()) {
 		objects.erase(it);
@@ -51,7 +51,7 @@ void Scene::SetLight(int index) {
 	pointLights[index].radius = 10.0f;
 }
 
-static void UpdateObjectRecursive(ObjectBase& obj, double dt) {
+static void UpdateObjectRecursive(Object& obj, double dt) {
 	obj.Update(dt);
 	if (auto* o = dynamic_cast<Object*>(&obj)) {
 		for (auto& child : o->GetChildren())
