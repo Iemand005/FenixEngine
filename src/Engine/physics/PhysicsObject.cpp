@@ -415,19 +415,11 @@ ObjectState PhysicsObject::SyncToRender() {
 #ifndef EXCLUDE_JOLT
 	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
 
-	JPH::RMat44 transform = bodyInterface->GetWorldTransform(impl->bodyId);
-	JPH::RVec3 position = transform.GetTranslation();
-	JPH::Vec3 x = transform.GetAxisX();
-	JPH::Vec3 y = transform.GetAxisY();
-	JPH::Vec3 z = transform.GetAxisZ();
-	float translation[3] = {(float)position.GetX(), (float)position.GetY(), (float)position.GetZ()};
-	float rotation[9] = {x.GetX(), y.GetX(), z.GetX(), x.GetY(), y.GetY(), z.GetY(), x.GetZ(), y.GetZ(), z.GetZ()};
 	ObjectState state;
-	state.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
-	state.rotation = glm::vec3(x.GetX(), y.GetX(), z.GetX());
+	state.position = impl->ParseVec3(bodyInterface->GetPosition(impl->bodyId));
+	JPH::Quat q = bodyInterface->GetRotation(impl->bodyId);
+	state.orientation = glm::quat(q.GetW(), q.GetX(), q.GetY(), q.GetZ());
 	state.scale = glm::vec3(1.0f);
-	// state.rotationY = glm::vec3(x.GetY(), y.GetY(), y.GetY());
-	// state.rotationZ67 = glm::vec3(x.GetZ(), y.GetZ(), z.GetZ());
 	state.velocity = impl->ParseVec3(bodyInterface->GetLinearVelocity(impl->bodyId));
 	return state;
 #else
