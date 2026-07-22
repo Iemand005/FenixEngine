@@ -225,7 +225,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 	auto lights = scene->GetLights();
 	for (int i = 0; i < scene->GetLightCount(); ++i) {
-		ImGui::Text("Light %zu", i);
+		ImGui::Text("Light %i", i);
 		ImGui::DragFloat3(("Position##light" + std::to_string(i)).c_str(), &lights[i].position.x, step);
 		ImGui::DragFloat3(("Colour##light" + std::to_string(i)).c_str(), &lights[i].color.x, step);
 		ImGui::DragFloat(("Radius##light" + std::to_string(i)).c_str(), &lights[i].radius, step);
