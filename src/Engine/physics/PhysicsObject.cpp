@@ -199,6 +199,58 @@ void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
 #endif
 }
 
+void PhysicsObject::AddForce(glm::vec3 force) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().AddForce(impl->bodyId, impl->VecConv(force));
+#endif
+}
+
+void PhysicsObject::AddTorque(glm::vec3 torque) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().AddTorque(impl->bodyId, impl->VecConv(torque));
+#endif
+}
+
+void PhysicsObject::SetFriction(float friction) {
+#ifndef EXCLUDE_JOLT
+	if (impl->body)
+		impl->body->SetFriction(friction);
+#endif
+}
+
+float PhysicsObject::GetFriction() {
+#ifndef EXCLUDE_JOLT
+	if (impl->body)
+		return impl->body->GetFriction();
+#endif
+	return 0.0f;
+}
+
+float PhysicsObject::GetLinearDamping() {
+#ifndef EXCLUDE_JOLT
+	if (impl->body && impl->body->GetMotionProperties())
+		return impl->body->GetMotionProperties()->GetLinearDamping();
+#endif
+	return 0.0f;
+}
+
+float PhysicsObject::GetAngularDamping() {
+#ifndef EXCLUDE_JOLT
+	if (impl->body && impl->body->GetMotionProperties())
+		return impl->body->GetMotionProperties()->GetAngularDamping();
+#endif
+	return 0.0f;
+}
+
+void PhysicsObject::SetDamping(float linearDamping, float angularDamping) {
+#ifndef EXCLUDE_JOLT
+	if (impl->body && impl->body->GetMotionProperties()) {
+		impl->body->GetMotionProperties()->SetLinearDamping(linearDamping);
+		impl->body->GetMotionProperties()->SetAngularDamping(angularDamping);
+	}
+#endif
+}
+
 void PhysicsObject::SetAngularVelocity(glm::vec3 velocity) {
 #ifndef EXCLUDE_JOLT
 	this->impl->physicsSystem->GetBodyInterface().SetAngularVelocity(impl->bodyId, impl->VecConv(velocity));

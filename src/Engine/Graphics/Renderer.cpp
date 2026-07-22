@@ -41,7 +41,7 @@ void Renderer::RenderObject(Object& object) {
 	glm::vec3 modelPos = glm::vec3(model[3]);
 	glm::vec3 center = modelPos + object.boundingCenterOffset;
 	glm::vec3 toCenter = center - camera->GetPos();
-	if (glm::dot(toCenter, camera->front) < -object.boundingRadius)
+	if (frustumCullingEnabled && glm::dot(toCenter, camera->front) < -object.boundingRadius)
 		return;
 	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);

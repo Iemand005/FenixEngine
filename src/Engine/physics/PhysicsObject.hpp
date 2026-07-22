@@ -48,6 +48,15 @@ public:
 
 	void AddLinearVelocity(glm::vec3 velocity);
 
+	void AddForce(glm::vec3 force);
+	void AddTorque(glm::vec3 torque);
+
+	void SetFriction(float friction);
+	float GetFriction();
+	void SetDamping(float linearDamping, float angularDamping);
+	float GetLinearDamping();
+	float GetAngularDamping();
+
 	void SetAngularVelocity(glm::vec3 velocity);
 	glm::vec3 GetAngularVelocity();
 

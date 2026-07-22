@@ -103,6 +103,7 @@ public:
 	bool isConnectedToServer = false;
 
 	bool useVulkan = false;
+	bool frustumCullingEnabled = false;
 
 	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
 	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";

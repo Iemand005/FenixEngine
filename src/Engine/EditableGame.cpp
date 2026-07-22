@@ -34,13 +34,30 @@ void DrawObjectNode(Object* object, Camera* camera, Scene* scene, float step) {
     ImGui::DragFloat3("Position", &object->state.position.x, step);
 
     if (object->physicsObject) {
-        glm::vec3 physicsPos = object->physicsObject->GetPosition();
-        if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
-            object->physicsObject->SetPosition(physicsPos);
-        }
-        glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
-        if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
-            object->physicsObject->SetLinearVelocity(physicsVel);
+        if (ImGui::TreeNode("Physics")) {
+            glm::vec3 physicsPos = object->physicsObject->GetPosition();
+            if (ImGui::DragFloat3("Pos", &physicsPos.x, step)) {
+                object->physicsObject->SetPosition(physicsPos);
+            }
+            glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
+            if (ImGui::DragFloat3("Vel", &physicsVel.x, step)) {
+                object->physicsObject->SetLinearVelocity(physicsVel);
+            }
+            float friction = object->physicsObject->GetFriction();
+            if (ImGui::SliderFloat("Friction", &friction, 0.0f, 1.0f)) {
+                object->physicsObject->SetFriction(friction);
+            }
+            float linDamp = object->physicsObject->GetLinearDamping();
+            if (ImGui::SliderFloat("Lin Damping", &linDamp, 0.0f, 1.0f)) {
+                float angDamp = object->physicsObject->GetAngularDamping();
+                object->physicsObject->SetDamping(linDamp, angDamp);
+            }
+            float angDamp = object->physicsObject->GetAngularDamping();
+            if (ImGui::SliderFloat("Ang Damping", &angDamp, 0.0f, 1.0f)) {
+                float linDamp = object->physicsObject->GetLinearDamping();
+                object->physicsObject->SetDamping(linDamp, angDamp);
+            }
+            ImGui::TreePop();
         }
     }
 
@@ -100,6 +117,8 @@ void fe::EditableGame::DrawDebugUI() {
 	for (auto& obj : this->scene->GetObjects()) totalVertices += obj->GetTotalVertexCount();
 	ImGui::Text("Vertices: %zu", totalVertices);
 	
+	ImGui::Checkbox("Frustum Culling", &frustumCullingEnabled);
+
 	if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
 		this->EnableXR ();
 	}
