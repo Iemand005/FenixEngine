@@ -26,7 +26,7 @@ struct ObjectData {
 	class Level {
 		public:
 
-		bool Save(std::vector<std::shared_ptr<fe::ObjectBase>> objects, std::string fileName) {
+		bool Save(std::vector<std::shared_ptr<fe::Object>> objects, std::string fileName) {
 			// std::vector<ObjectData> datas = std::vector<ObjectData>(objects.size());
 			size_t size = sizeof(LevelData) + sizeof(ObjectData) * objects.size();
 

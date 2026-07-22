@@ -5,7 +5,7 @@
 namespace fe {
 	class EditableGameBase : public XRGame {
 
-		fe::ObjectBase *selectedObject = nullptr;
+		fe::Object *selectedObject = nullptr;
 		int lighselecIndex = -1;
 
 		void DrawGizmo(const glm::vec3& position) {

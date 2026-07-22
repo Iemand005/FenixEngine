@@ -52,7 +52,7 @@ public:
 	}
 
 	void Update(double deltaTime) override {
-		ObjectBase::Update(deltaTime);
+		Object::Update(deltaTime);
 		isGrounded = false;
 
 		if (this->physicsObject) {

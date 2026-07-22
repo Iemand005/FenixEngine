@@ -39,7 +39,7 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 	renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
 }
 
-void Renderer::RenderObject(ObjectBase& object) {
+void Renderer::RenderObject(Object& object) {
 	glm::mat4 model = object.GetModelMatrix();
 	glm::vec3 modelPos = glm::vec3(model[3]);
 	glm::vec3 center = modelPos + object.boundingCenterOffset;
