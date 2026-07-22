@@ -20,48 +20,48 @@ void fe::EditableGame::OnDraw() {
 }
 
 
-void DrawObjectNode(/*Object* object, Camera* camera,*/ float step, std::shared_ptr<Object> obj) {
-    // ImGui::PushID(object);
+void DrawObjectNode(Object* object, Camera* camera, float step) {
+    ImGui::PushID(object);
 
-    // ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-    // if (object->children.empty()) {
-    //     flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    // }
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (object->children.empty()) {
+        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
 
-    // bool open = ImGui::TreeNodeEx(object->name.c_str(), flags);
+    bool open = ImGui::TreeNodeEx(object->name.c_str(), flags);
 
-    // ImGui::DragFloat3("Position", &object->state.position.x, step);
+    ImGui::DragFloat3("Position", &object->state.position.x, step);
 
-    // if (object->physicsObject) {
-    //     glm::vec3 physicsPos = object->physicsObject->GetPosition();
-    //     if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
-    //         object->physicsObject->SetPosition(physicsPos);
-    //     }
-    //     glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
-    //     if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
-    //         object->physicsObject->SetLinearVelocity(physicsVel);
-    //     }
-    // }
+    if (object->physicsObject) {
+        glm::vec3 physicsPos = object->physicsObject->GetPosition();
+        if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
+            object->physicsObject->SetPosition(physicsPos);
+        }
+        glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
+        if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
+            object->physicsObject->SetLinearVelocity(physicsVel);
+        }
+    }
 
-    // ImGui::DragFloat3("Rotation", &object->state.rotation.x, step);
-    // ImGui::DragFloat3("Scale", &object->state.scale.x, step);
+    ImGui::DragFloat3("Rotation", &object->state.rotation.x, step);
+    ImGui::DragFloat3("Scale", &object->state.scale.x, step);
 
-    // if (ImGui::Button("Focus")) {
-    //     glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
-    //     camera->SetPos(object->state.position + offset);
-    //     camera->LookAt(object->state.position);
-    // }
+    if (ImGui::Button("Focus")) {
+        glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
+        camera->SetPos(object->state.position + offset);
+        camera->LookAt(object->state.position);
+    }
 
-    // ImGui::Separator();
+    ImGui::Separator();
 
-    // if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
-    //     for (auto &child : object->children) {
-    //         DrawObjectNode(child.get(), camera, step);
-    //     }
-    //     ImGui::TreePop();
-    // }
+    if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
+        for (auto &child : object->children) {
+            DrawObjectNode(child.get(), camera, step);
+        }
+        ImGui::TreePop();
+    }
 
-    // ImGui::PopID();
+    ImGui::PopID();
 }
 
 void fe::EditableGame::DrawDebugUI() {
@@ -217,9 +217,8 @@ void fe::EditableGame::DrawDebugUI() {
 	float step = snapToGrid ? 0.1f : 0.0001f;
 
 	size_t i = 0;
-	for (auto &object : scene->GetObjects()) {
-		// DrawObjectNode(object.get(), camera, step);
-	}
+	for (auto &object : scene->GetObjects())
+		DrawObjectNode(object.get(), camera, step);
 
 	if (ImGui::Button("Add light"))
 		this->scene->AddLight();
