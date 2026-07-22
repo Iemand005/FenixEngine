@@ -50,9 +50,12 @@ class Character;
 
 #ifndef FE_EXCLUDE_SDL
 using DefaultWindow = fe::SDLWindow;
-#endif
+#define FE_HAS_WINDOW
+#else
 #ifndef FE_EXCLUDE_GLFW
 using DefaultWindow = fe::GLFW3Window;
+#define FE_HAS_WINDOW
+#endif
 #endif
 
 #define WAYLAND
@@ -129,13 +132,16 @@ public:
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		CreateRenderDevice(false);
+#ifdef FE_HAS_WINDOW
 		NewWindow(width, height, hidden, fullscreen);// TODO make scrut struct for thes eoptions brudah
-		
+#endif
 	}
 
 	Renderer(RendererOptions options) {
 		CreateRenderDevice(options.useVulkan);
+#ifdef FE_HAS_WINDOW
 		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
+#endif
 	}
 
 	void CreateRenderDevice(bool useVulkan = false) {
@@ -146,7 +152,7 @@ public:
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
 
-
+#ifdef FE_HAS_WINDOW
 	void ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent = nullptr) {
 		auto window = GetWindow<DefaultWindow>();
 		switch (mode) {
@@ -187,14 +193,16 @@ public:
 			}
 		}
 	}
+#endif
 	
+#ifdef FE_HAS_WINDOW
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
 		PushShaderPathsToVulkanDevice();
 		renderDevice->Init(window.get());
 	}
 
-template<typename WindowT = DefaultWindow>
+	template<typename WindowT = DefaultWindow>
 	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false) {
 		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
 		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
@@ -208,6 +216,7 @@ template<typename WindowT = DefaultWindow>
 		// };
 		return std::move(window);
 	}
+#endif
 
 	void LoadShaders(Shader vertexShader, Shader fragmentShader) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
@@ -280,7 +289,9 @@ template<typename WindowT = DefaultWindow>
 	void RenderScene() { RenderScene(scene.get()); }
 
 	void Redraw() {
+		#ifdef FE_HAS_WINDOW
 		auto window = GetWindow<DefaultWindow>();
+#endif
 		if (!scene || !camera) return;
 		if (!useVulkan && !shader) return;
 
@@ -288,7 +299,9 @@ template<typename WindowT = DefaultWindow>
 
 		if (shader) {
 			shader->Use();
+#ifdef FE_HAS_WINDOW
 			float elapsedTime = (float)window->GetTime();
+#endif
 			shader->SetFloat("time", elapsedTime);
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
@@ -308,8 +321,9 @@ template<typename WindowT = DefaultWindow>
 		renderDevice->SubmitFrame();
 
 		fpsCounter.update();
-
+#ifdef FE_HAS_WINDOW
 		if (!useVulkan) window->SwapBuffers();
+#endif
 	}
 
 	void CheckErrors() {
