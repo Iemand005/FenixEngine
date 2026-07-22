@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "EditableGame.hpp"
+#include "Scene.hpp"
 #include "physics/BasicDebugRenderer.hpp"
 
 #include <imgui.h>
@@ -20,7 +21,7 @@ void fe::EditableGame::OnDraw() {
 }
 
 
-void DrawObjectNode(Object* object, Camera* camera, float step) {
+void DrawObjectNode(Object* object, Camera* camera, Scene* scene, float step) {
     ImGui::PushID(object);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -52,11 +53,15 @@ void DrawObjectNode(Object* object, Camera* camera, float step) {
         camera->LookAt(object->state.position);
     }
 
+	if (ImGui::Button("Delete")) {
+		scene->RemoveObject(object);
+    }
+
     ImGui::Separator();
 
     if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
         for (auto &child : object->children) {
-            DrawObjectNode(child.get(), camera, step);
+            DrawObjectNode(child.get(), camera, scene, step);
         }
         ImGui::TreePop();
     }
@@ -218,7 +223,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 	size_t i = 0;
 	for (auto &object : scene->GetObjects())
-		DrawObjectNode(object.get(), camera.get(), step);
+		DrawObjectNode(object.get(), camera.get(), scene.get(), step);
 
 	if (ImGui::Button("Add light"))
 		this->scene->AddLight();

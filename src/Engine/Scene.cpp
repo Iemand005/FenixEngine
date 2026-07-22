@@ -44,6 +44,18 @@ bool Scene::RemoveObject(std::shared_ptr<Object> object) {
 	return false;
 }
 
+bool Scene::RemoveObject(Object* object) {
+    auto it = std::find_if(objects.begin(), objects.end(),
+        [object](const std::shared_ptr<Object>& obj) {
+            return obj.get() == object;
+        });
+    if (it != objects.end()) {
+        objects.erase(it);
+        return true;
+    }
+    return false;
+}
+
 void Scene::SetLight(int index) {
 	pointLights[index].position = glm::vec3(3.0f, 3.0f, 3.0f);
 	pointLights[index].color = glm::vec3(1.0f);

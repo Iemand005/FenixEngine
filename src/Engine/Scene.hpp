@@ -69,6 +69,7 @@ public:
 	void AddObject(std::shared_ptr<Object> object);
 	std::shared_ptr<Object> AddObject(Mesh<Vertex> mesh);
 	bool RemoveObject(std::shared_ptr<Object> object);
+	bool RemoveObject(Object* object);
 
 	void AddLight() { ++lightCount; }
 	void RemoveLight() { --lightCount; }
