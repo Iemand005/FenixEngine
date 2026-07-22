@@ -199,6 +199,29 @@ void PhysicsObject::AddLinearVelocity(glm::vec3 velocity) {
 #endif
 }
 
+void PhysicsObject::SetAngularVelocity(glm::vec3 velocity) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().SetAngularVelocity(impl->bodyId, impl->VecConv(velocity));
+#endif
+}
+
+glm::vec3 PhysicsObject::GetAngularVelocity() {
+#ifndef EXCLUDE_JOLT
+	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetAngularVelocity(impl->bodyId));
+#else
+	return {};
+#endif
+}
+
+glm::quat PhysicsObject::GetRotation() {
+#ifndef EXCLUDE_JOLT
+	JPH::Quat q = this->impl->physicsSystem->GetBodyInterface().GetRotation(impl->bodyId);
+	return glm::quat(q.GetW(), q.GetX(), q.GetY(), q.GetZ());
+#else
+	return glm::quat(1, 0, 0, 0);
+#endif
+}
+
 glm::vec3 PhysicsObject::GetPosition() {
 #ifndef EXCLUDE_JOLT
 	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId));

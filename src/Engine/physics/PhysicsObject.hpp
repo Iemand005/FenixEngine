@@ -48,6 +48,11 @@ public:
 
 	void AddLinearVelocity(glm::vec3 velocity);
 
+	void SetAngularVelocity(glm::vec3 velocity);
+	glm::vec3 GetAngularVelocity();
+
+	glm::quat GetRotation();
+
 	glm::vec3 GetPosition();
 	void SetPosition(glm::vec3 position);
 	void AddPosition(glm::vec3 position);
