@@ -20,7 +20,7 @@ void fe::EditableGame::OnDraw() {
 }
 
 
-void DrawObjectNode(ObjectBase* object, Camera* camera, float step) {
+void DrawObjectNode(Object* object, Camera* camera, float step) {
     ImGui::PushID(object);
 
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -218,7 +218,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 	size_t i = 0;
 	for (auto &object : scene->GetObjects())
-		DrawObjectNode(object.get(), camera, step);
+		DrawObjectNode(object.get(), camera.get(), step);
 
 	if (ImGui::Button("Add light"))
 		this->scene->AddLight();
