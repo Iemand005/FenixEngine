@@ -289,7 +289,7 @@ public:
 	void RenderScene() { RenderScene(scene.get()); }
 
 	void Redraw() {
-		#ifdef FE_HAS_WINDOW
+#ifdef FE_HAS_WINDOW
 		auto window = GetWindow<DefaultWindow>();
 #endif
 		if (!scene || !camera) return;
@@ -301,8 +301,9 @@ public:
 			shader->Use();
 #ifdef FE_HAS_WINDOW
 			float elapsedTime = (float)window->GetTime();
+
+			shader->SetFloat("time", elapsedTime); // TODO: report time other way (via param?) for embeddded rendering
 #endif
-			shader->SetFloat("time", elapsedTime);
 			shader->SetMat4("view", camera->GetViewMatrix());
 			shader->SetMat4("projection", camera->GetProjectionMatrix());
 		}
