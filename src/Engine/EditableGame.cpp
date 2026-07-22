@@ -1,55 +1,14 @@
-void DrawObjectNodee(Object* obje, Camera* camera, float step) {
-    ImGui::PushID(obje);
+#pragma once
 
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-    if (obje->children.empty()) {
-        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    }
-
-    bool open = ImGui::TreeNodeEx(obje->name.c_str(), flags);
-
-    ImGui::DragFloat3("Position", &obje->state.position.x, step);
-
-    if (obje->physicsObject) {
-        glm::vec3 physicsPos = obje->physicsObject->GetPosition();
-        if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
-            obje->physicsObject->SetPosition(physicsPos);
-        }
-        glm::vec3 physicsVel = obje->physicsObject->GetLinearVelocity();
-        if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
-            obje->physicsObject->SetLinearVelocity(physicsVel);
-        }
-    }
-
-    ImGui::DragFloat3("Rotation", &obje->state.rotation.x, step);
-    ImGui::DragFloat3("Scale", &obje->state.scale.x, step);
-
-    if (ImGui::Button("Focus")) {
-        glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
-        camera->SetPos(obje->state.position + offset);
-        camera->LookAt(obje->state.position);
-    }
-
-    ImGui::Separator();
-
-    if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
-        for (auto &child : obje->children) {
-            DrawObjectNode(child.get(), camera, step);
-        }
-        ImGui::TreePop();
-    }
-
-    ImGui::PopID();
-}
-
-#include <imgui.h>
 
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "EditableGame.hpp"
 #include "physics/BasicDebugRenderer.hpp"
 
+#include <imgui.h>
 
+using namespace fe;
 
 void fe::EditableGame::OnDraw() {
 	EditableGameBase::OnDraw();
@@ -61,6 +20,49 @@ void fe::EditableGame::OnDraw() {
 }
 
 
+void DrawObjectNode(/*Object* object, Camera* camera,*/ float step, std::shared_ptr<Object> obj) {
+    // ImGui::PushID(object);
+
+    // ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    // if (object->children.empty()) {
+    //     flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    // }
+
+    // bool open = ImGui::TreeNodeEx(object->name.c_str(), flags);
+
+    // ImGui::DragFloat3("Position", &object->state.position.x, step);
+
+    // if (object->physicsObject) {
+    //     glm::vec3 physicsPos = object->physicsObject->GetPosition();
+    //     if (ImGui::DragFloat3("Physics Pos", &physicsPos.x, step)) {
+    //         object->physicsObject->SetPosition(physicsPos);
+    //     }
+    //     glm::vec3 physicsVel = object->physicsObject->GetLinearVelocity();
+    //     if (ImGui::DragFloat3("Physics Vel", &physicsVel.x, step)) {
+    //         object->physicsObject->SetLinearVelocity(physicsVel);
+    //     }
+    // }
+
+    // ImGui::DragFloat3("Rotation", &object->state.rotation.x, step);
+    // ImGui::DragFloat3("Scale", &object->state.scale.x, step);
+
+    // if (ImGui::Button("Focus")) {
+    //     glm::vec3 offset = glm::vec3(3.0f, 2.0f, 3.0f);
+    //     camera->SetPos(object->state.position + offset);
+    //     camera->LookAt(object->state.position);
+    // }
+
+    // ImGui::Separator();
+
+    // if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
+    //     for (auto &child : object->children) {
+    //         DrawObjectNode(child.get(), camera, step);
+    //     }
+    //     ImGui::TreePop();
+    // }
+
+    // ImGui::PopID();
+}
 
 void fe::EditableGame::DrawDebugUI() {
 
@@ -207,7 +209,7 @@ void fe::EditableGame::DrawDebugUI() {
 	if (ImGui::Button("Load map!"))
 		this->LoadLevel();
 
-	if (ImGui::Button("Clear objes"))
+	if (ImGui::Button("Clear objects"))
 		this->scene->ClearObjects();
 
 	static bool snapToGrid = true;
@@ -215,8 +217,8 @@ void fe::EditableGame::DrawDebugUI() {
 	float step = snapToGrid ? 0.1f : 0.0001f;
 
 	size_t i = 0;
-	for (auto &obje : scene->GetObjects()) {
-		DrawObjectNode(obje.get(), camera, step);
+	for (auto &object : scene->GetObjects()) {
+		// DrawObjectNode(object.get(), camera, step);
 	}
 
 	if (ImGui::Button("Add light"))
