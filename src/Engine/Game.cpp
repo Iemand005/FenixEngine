@@ -48,7 +48,7 @@ void Game::Init() {
 	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 	
 	this->scene = std::make_unique<fe::Scene>();
-	this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 100.0f);
+	this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 1000.0f);
 	
 	this->scene->SetLight();
 	

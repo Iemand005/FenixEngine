@@ -437,3 +437,11 @@ void PhysicsObject::Destroy() {
 	impl->physicsSystem = nullptr;
 #endif
 }
+
+JPH::BodyID PhysicsObject::GetBodyID() const {
+#ifndef EXCLUDE_JOLT
+	return impl->bodyId;
+#else
+	return JPH::BodyID();
+#endif
+}

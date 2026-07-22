@@ -26,6 +26,7 @@
 #endif
 
 #include "PhysicsEngine.hpp"
+#include "PhysicsVehicle.hpp"
 #include "BasicDebugRenderer.hpp"
 
 // JPH_SUPPRESS_WARNINGS
@@ -103,6 +104,7 @@ struct PhysicsFactory::Impl {
 	std::shared_ptr<ObjectLayerPairFilterImpl> object_vs_object_layer_filter;
 	std::shared_ptr<ObjectVsBroadPhaseLayerFilterImpl> objectVsBroadphaseLayerFilter;
 	std::unique_ptr<BasicDebugRenderer> debugRenderer;
+	std::vector<std::unique_ptr<PhysicsVehicle>> vehicles;
 #endif
 };
 
@@ -160,12 +162,9 @@ void PhysicsFactory::Update(double dt) {
 		return;
 	}
 
-	// Number of collision steps (configurable, currently set to 1 for simplicity)
 	const int collisionSteps = 1;
-
-	// Cast dt to float as required by Jolt Physics
 	float deltaTime = static_cast<float>(dt);
-	
+
 	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
 
 	if (impl->debugRenderer && BasicDebugRenderer::DebugRenderingEnabled()) {
@@ -232,6 +231,18 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Ve
 	for (auto vtx : vertices)
 		vtxs.push_back(vtx.position);
 	return CreateObject(vtxs, indices);
+}
+
+PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels) {
+#ifndef EXCLUDE_JOLT
+	auto vehicle = std::make_unique<PhysicsVehicle>();
+	vehicle->Create(body, impl->physicsSystem, wheels);
+	auto* ptr = vehicle.get();
+	impl->vehicles.push_back(std::move(vehicle));
+	return ptr;
+#else
+	return nullptr;
+#endif
 }
 
 void PhysicsFactory::Bind(PhysicsObject *obj) {

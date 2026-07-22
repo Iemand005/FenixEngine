@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace JPH { class PhysicsSystem; }
+namespace JPH { class PhysicsSystem; class BodyID; }
 
 
 namespace fe {
@@ -67,6 +67,8 @@ public:
 	void AddPosition(glm::vec3 position);
 
 	void Destroy();
+
+	JPH::BodyID GetBodyID() const;
 
 private:
 	void BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem);
