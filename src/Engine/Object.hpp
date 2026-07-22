@@ -179,6 +179,12 @@ public:
 	std::string GetName() {
 		return name;
 	}
+
+	void RemoveFromParent() {
+		if (parent) {
+			parent->RemoveChild(this);
+		}
+	}
 };
 
 }

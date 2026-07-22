@@ -35,25 +35,45 @@ std::vector<std::shared_ptr<Object>> Scene::GetFilteredObjects(std::shared_ptr<O
 	return filtered;
 }
 
+static bool RemoveChildRecursive(Object* parent, Object* target) {
+	for (auto& child : parent->children) {
+		if (child.get() == target) {
+			parent->RemoveChild(child.get());
+			return true;
+		}
+		if (RemoveChildRecursive(child.get(), target))
+			return true;
+	}
+	return false;
+}
+
 bool Scene::RemoveObject(std::shared_ptr<Object> object) {
 	auto it = std::find(objects.begin(), objects.end(), object);
 	if (it != objects.end()) {
 		objects.erase(it);
 		return true;
 	}
+	for (auto& obj : objects) {
+		if (RemoveChildRecursive(obj.get(), object.get()))
+			return true;
+	}
 	return false;
 }
 
 bool Scene::RemoveObject(Object* object) {
-    auto it = std::find_if(objects.begin(), objects.end(),
-        [object](const std::shared_ptr<Object>& obj) {
-            return obj.get() == object;
-        });
-    if (it != objects.end()) {
-        objects.erase(it);
-        return true;
-    }
-    return false;
+	auto it = std::find_if(objects.begin(), objects.end(),
+		[object](const std::shared_ptr<Object>& obj) {
+			return obj.get() == object;
+		});
+	if (it != objects.end()) {
+		objects.erase(it);
+		return true;
+	}
+	for (auto& obj : objects) {
+		if (RemoveChildRecursive(obj.get(), object))
+			return true;
+	}
+	return false;
 }
 
 void Scene::SetLight(int index) {
