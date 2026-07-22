@@ -50,7 +50,7 @@ public:
     this->player = std::make_shared<fe::Character>();
     this->scene->AddObject(player);
 
-    this->player->SetPhysicsObject(physicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
+	this->player->SetPhysicsObject(GetPhysicsEngine->CreateObject(glm::vec3(1.0f, 1.0f, 1.0f)));
   }
 
   void ProcessInput() {

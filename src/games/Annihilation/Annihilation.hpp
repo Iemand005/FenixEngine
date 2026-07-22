@@ -186,8 +186,8 @@ class Annihilation : public fe::EditableGame {
 
 
   void DrawUI() override {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    // ImGui_ImplOpenGL3_NewFrame();
+    // ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     ImGui::Begin("Debug info");
