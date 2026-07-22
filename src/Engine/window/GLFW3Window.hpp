@@ -16,7 +16,7 @@ namespace fe {
 
 class GLFW3Window : public IWindow {
 public:
-	GLFW3Window(std::string title, int width, int height, bool hidden = false, bool fullscreen = false);
+	GLFW3Window(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
 	~GLFW3Window();
 
 	bool InitGlfw(std::string title, bool fullscreen = true, bool tenBit = true);
@@ -41,7 +41,7 @@ public:
 
 	double GetTime() override;
 
-	// void GetFramebufferSize(int *width, int *height);
+	void GetFramebufferSize(int *width, int *height);
 	WindowSize GetFramebufferSize() override;
 
 	bool HideMouse();

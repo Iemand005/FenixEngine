@@ -21,7 +21,7 @@ struct GLFW3Window::Impl {
 };
 
 }
-fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden, bool fullscreen) : IWindow(width, height), title(title) {
+fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan) : IWindow(width, height), title(title) {
 	impl = std::make_unique<Impl>();
 	InitGlfw(title, fullscreen);
 }
@@ -149,6 +149,10 @@ WindowSize fe::GLFW3Window::GetFramebufferSize() {
 	WindowSize size;
 	glfwGetFramebufferSize(impl->window, &size.width, &size.height);
 	return size;
+}
+
+void fe::GLFW3Window::GetFramebufferSize(int *width, int *height) {
+	glfwGetFramebufferSize(impl->window, width, height);
 }
 
 bool fe::GLFW3Window::HideMouse() {

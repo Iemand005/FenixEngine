@@ -50,7 +50,8 @@ class Character;
 
 #ifndef FE_EXCLUDE_SDL
 using DefaultWindow = fe::SDLWindow;
-#else
+#endif
+#ifndef FE_EXCLUDE_GLFW
 using DefaultWindow = fe::GLFW3Window;
 #endif
 
