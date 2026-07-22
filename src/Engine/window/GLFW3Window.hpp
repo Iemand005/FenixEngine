@@ -41,7 +41,8 @@ public:
 
 	double GetTime() override;
 
-	void GetFramebufferSize(int *width, int *height);
+	// void GetFramebufferSize(int *width, int *height);
+	WindowSize GetFramebufferSize() override;
 
 	bool HideMouse();
 

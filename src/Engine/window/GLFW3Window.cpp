@@ -12,6 +12,8 @@
 
 #include "GLFW3Window.hpp"
 
+using namespace fe;
+
 namespace fe {
 
 struct GLFW3Window::Impl {
@@ -143,8 +145,10 @@ double fe::GLFW3Window::GetTime() {
 	return glfwGetTime();
 }
 
-void fe::GLFW3Window::GetFramebufferSize(int *width, int* height) {
-	glfwGetFramebufferSize(impl->window, width, height);
+WindowSize fe::GLFW3Window::GetFramebufferSize() {
+	WindowSize size;
+	glfwGetFramebufferSize(impl->window, &size.width, &size.height);
+	return size;
 }
 
 bool fe::GLFW3Window::HideMouse() {
