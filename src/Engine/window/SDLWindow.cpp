@@ -432,10 +432,6 @@ double fe::SDLWindow::GetTime() {
 	return SDL_GetTicks() * 0.001f;
 }
 
-void fe::SDLWindow::GetFramebufferSize(int *width, int* height) {
-	SDL_GetWindowSize(impl->window, width, height);
-}
-
 bool fe::SDLWindow::HideMouse() {
 	return SDL_HideCursor();
 }
@@ -486,7 +482,6 @@ void *fe::SDLWindow::CreateVulkanSurface(void *instance) {
 
 fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
 	fe::WindowSize m;
-	// SDL_Getframeb
 	SDL_GetWindowSizeInPixels(impl->window, &m.width, &m.height);
 	return m;
 }
