@@ -16,13 +16,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../stdafx.h"
 
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
-// #include "physics/PhysicsEngine.hpp"
-#include "Camera.hpp"
 #include "Character.hpp"
 #include "Object.hpp"
 #include "ShaderProgram.hpp"
@@ -31,7 +28,7 @@
 
 #define WAYLAND
 
-#include "Graphics/Renderer.hpp"
+#include "Renderer.hpp"
 
 namespace fe {
 
