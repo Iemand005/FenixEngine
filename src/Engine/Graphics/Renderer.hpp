@@ -1,4 +1,5 @@
 #pragma once
+#include <exception>
 #ifdef FE_EXCLUDE_GLFW
 #define GLFW_INCLUDE_NONE
 #endif
@@ -269,7 +270,10 @@ public:
 		renderDevice->SetClearColor(r, g, b, a);
 	}
 
-	void Resize() { Resize(this->window->width, this->window->height); }
+	void Resize() {
+		throw new std::exception("Please implement");
+		// Resize(this->window->width, this->window->height);
+	}
 	void Resize(int width, int height) {
 		// glViewport(0, 0, width, height);
 		renderDevice->Resize(width, height);
