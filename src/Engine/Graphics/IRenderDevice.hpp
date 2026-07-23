@@ -75,6 +75,9 @@ namespace fe {
 
 		virtual void* UploadToImGui(const unsigned char* rgba, int w, int h) { return nullptr; }
 
+		virtual void DrawDebugLines(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) {}
+		virtual void DrawDebugTriangles(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) {}
+
 		virtual const char* GetDeviceName() const = 0;
 	};
 }

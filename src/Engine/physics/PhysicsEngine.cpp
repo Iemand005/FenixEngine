@@ -109,7 +109,7 @@ struct PhysicsFactory::Impl {
 };
 
 // MAYBE TODO: uh maybe perhaps uh rename this calss to uh physicsfactory or soemthing? it's a facture more than a engine really
-PhysicsFactory::PhysicsFactory(bool enableDebugRenderer) {
+PhysicsFactory::PhysicsFactory(fe::IRenderDevice* renderDevice, bool enableDebugRenderer) {
 #ifndef EXCLUDE_JOLT
 	impl = std::make_unique<Impl>();
 
@@ -132,7 +132,7 @@ PhysicsFactory::PhysicsFactory(bool enableDebugRenderer) {
 	impl->physicsSystem->Init(1024, 0, 1024, 1024, *impl->broad_phase_layer_interface, *impl->objectVsBroadphaseLayerFilter, *impl->object_vs_object_layer_filter);
 
 	if (enableDebugRenderer) {
-		impl->debugRenderer = std::make_unique<BasicDebugRenderer>();
+		impl->debugRenderer = std::make_unique<BasicDebugRenderer>(renderDevice);
 		JPH::DebugRenderer::sInstance = impl->debugRenderer.get();
 	}
 

@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include "IRenderDevice.hpp"
 #include "OpenGLGPUBuffers.hpp"
 #include "OpenGLGPUTexture.hpp"
@@ -12,6 +14,107 @@ namespace fe {
 
 class OpenGLRenderDevice : public IRenderDevice {
 	GLuint defaultTextureId_ = 0;
+
+	GLuint debugShaderProgram_ = 0;
+	GLuint debugVAO_ = 0;
+	GLuint debugVBO_ = 0;
+
+	void InitDebugRenderer()
+	{
+		if (debugShaderProgram_ != 0) return;
+
+		const char* vertexShaderSource = R"(
+			#version 330 core
+			layout(location = 0) in vec3 aPos;
+			layout(location = 1) in vec4 aColor;
+
+			uniform mat4 uView;
+			uniform mat4 uProjection;
+
+			out vec4 vColor;
+
+			void main()
+			{
+				vColor = aColor;
+				gl_Position = uProjection * uView * vec4(aPos, 1.0);
+			}
+		)";
+
+		const char* fragmentShaderSource = R"(
+			#version 330 core
+			in vec4 vColor;
+			out vec4 FragColor;
+
+			void main()
+			{
+				FragColor = vColor;
+			}
+		)";
+
+		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+		glCompileShader(vertexShader);
+
+		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+		glCompileShader(fragmentShader);
+
+		debugShaderProgram_ = glCreateProgram();
+		glAttachShader(debugShaderProgram_, vertexShader);
+		glAttachShader(debugShaderProgram_, fragmentShader);
+		glLinkProgram(debugShaderProgram_);
+
+		glDeleteShader(vertexShader);
+		glDeleteShader(fragmentShader);
+
+		glGenVertexArrays(1, &debugVAO_);
+		glGenBuffers(1, &debugVBO_);
+
+		glBindVertexArray(debugVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, debugVBO_);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 28, (void*)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 28, (void*)12);
+		glEnableVertexAttribArray(1);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
+	void DrawDebugLines(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) override
+	{
+		InitDebugRenderer();
+
+		glUseProgram(debugShaderProgram_);
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uProjection"), 1, GL_FALSE, glm::value_ptr(proj));
+
+		glBindVertexArray(debugVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, debugVBO_);
+		glBufferData(GL_ARRAY_BUFFER, vertexCount * 28, vertices, GL_STREAM_DRAW);
+		glDrawArrays(GL_LINES, 0, vertexCount);
+		glBindVertexArray(0);
+
+		glUseProgram(0);
+	}
+
+	void DrawDebugTriangles(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) override
+	{
+		InitDebugRenderer();
+
+		glUseProgram(debugShaderProgram_);
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uProjection"), 1, GL_FALSE, glm::value_ptr(proj));
+
+		glBindVertexArray(debugVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, debugVBO_);
+		glBufferData(GL_ARRAY_BUFFER, vertexCount * 28, vertices, GL_STREAM_DRAW);
+		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+		glBindVertexArray(0);
+
+		glUseProgram(0);
+	}
 
 	void Init(fe::IWindow *window) override {
 		glGenTextures(1, &defaultTextureId_);

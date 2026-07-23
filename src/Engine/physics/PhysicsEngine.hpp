@@ -9,6 +9,7 @@
 #include "../Vertex.hpp"
 
 namespace fe {
+	class IRenderDevice;
 
 	class PhysicsFactory {
 	public:
@@ -16,7 +17,7 @@ namespace fe {
 		struct Impl;
 		std::unique_ptr<Impl> impl;
 
-		PhysicsFactory(bool enableDebugRenderer = true);
+		PhysicsFactory(fe::IRenderDevice* renderDevice, bool enableDebugRenderer = true);
 		~PhysicsFactory();
 
 

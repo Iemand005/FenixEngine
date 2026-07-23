@@ -42,7 +42,7 @@ void Game::Init() {
 	SetClearColor(0.0F, 0.0F, 0.0f);
 
 #ifndef EXCLUDE_JOLT
-	impl->physicsEngine = std::make_unique<PhysicsFactory>(!this->useVulkan);
+	impl->physicsEngine = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
 #endif
 	
 	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
