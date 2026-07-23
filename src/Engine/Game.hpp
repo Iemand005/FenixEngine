@@ -168,17 +168,6 @@ class Game : public Renderer {
 		return model;
 	}
 
-	double getDeltaTime() { return 1; }
-
-	// void SetClearColor(float r, float g, float b, float a = 1);
-
-	void Resize() { Resize(this->window->width, this->window->height); }
-	void Resize(int width, int height) {
-		Renderer::Resize(width, height);
-		// if (this->scene) this->scene->Resize(width, height);
-		// this->UpdateAspect(width, height);
-	}
-
 	void Redraw(GLuint fbo) {
 		BindFrameBuffer(fbo);
 		Renderer::Redraw();
@@ -193,26 +182,11 @@ class Game : public Renderer {
 
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
-	// virtual void OnDraw() {}
-
-	template <typename WindowT = IWindow>
-	WindowT* GetWindow() {
-		return (WindowT*)this->window.get();
-	}
 
 	double GetFPS() { return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0; }
 
 	void UpdateAspect(int width, int height) {
 		if (this->camera) this->camera->SetAspect(width, height);
-	}
-
-	bool ShouldClose() {
-		if (!this->window) return false;
-		return this->window->ShouldClose();
-	}
-
-	void Destroy() {
-		if (window) window->Destroy();
 	}
 };
 
