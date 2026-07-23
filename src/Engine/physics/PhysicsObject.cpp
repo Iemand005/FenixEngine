@@ -315,6 +315,7 @@ void PhysicsObject::InitializeBoxBody(glm::vec3 size, bool dynamic, bool allowRo
 	bodySettings.mAngularDamping = 0.0;
 	bodySettings.mFriction = 0.0f;
 	bodySettings.mRestitution = 0.3f;
+	bodySettings.mAllowSleeping = false;
 	if (!allowRotation) bodySettings.mAllowedDOFs = JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY | JPH::EAllowedDOFs::TranslationZ;
 
 	// this->physicsSystem = physicsSystem;
