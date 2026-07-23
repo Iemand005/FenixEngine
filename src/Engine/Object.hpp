@@ -1,28 +1,28 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
-#include <glad/glad.h>
+// #include <glad/glad.h>
 
-#include <cstdio>
-#include <memory>
-#include <string>
-#include <filesystem>
 #include <algorithm>
-
+#include <cstdio>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <memory>
+#include <string>
 
-#include "bases.h"
+#include "Graphics/IRenderDevice.hpp"
 #include "IMesh.hpp"
 #include "ShaderProgram.hpp"
-#include "Graphics/IRenderDevice.hpp"
+#include "bases.h"
 
 namespace fe {
 
-template<typename VertexType> class Mesh;
+template <typename VertexType>
+class Mesh;
 
 class ObjectBase {
-public:
+   public:
 	ObjectState state{};
 	glm::mat4 modelMatrix{1.0f};
 	float boundingRadius = 0.0f;
@@ -72,17 +72,17 @@ public:
 };
 
 class Object : public ObjectBase {
-public:
+   public:
 	std::vector<std::unique_ptr<IMesh>> meshes;
 	Object* parent = nullptr;
-    std::vector<std::unique_ptr<Object>> children;
+	std::vector<std::unique_ptr<Object>> children;
 
 	unsigned int boundingBoxVAO = 0, boundingBoxVBO = 0;
 	std::vector<glm::vec3> boundingBoxVertices;
 
 	Object() : ObjectBase() {}
 
-	template<typename VertexType>
+	template <typename VertexType>
 	explicit Object(Mesh<VertexType> mesh) : ObjectBase() {
 		PushMesh(std::move(mesh));
 	}
@@ -94,7 +94,8 @@ public:
 		sourcePath = objFilePath;
 	}
 
-	Object(std::string objFilePath, ObjectState state) : ObjectBase() { LoadObj(objFilePath);
+	Object(std::string objFilePath, ObjectState state) : ObjectBase() {
+		LoadObj(objFilePath);
 		this->state = state;
 		sourcePath = objFilePath;
 	}
@@ -109,21 +110,20 @@ public:
 	const std::vector<std::unique_ptr<Object>>& GetChildren() const { return children; }
 
 	Object* AddChild(std::unique_ptr<Object> child) {
-        child->parent = this;
-        children.push_back(std::move(child));
-        return children.back().get();
-    }
+		child->parent = this;
+		children.push_back(std::move(child));
+		return children.back().get();
+	}
 
-    void RemoveChild(Object* child) {
-        auto it = std::find_if(children.begin(), children.end(),
-            [child](const std::unique_ptr<Object>& c) { return c.get() == child; });
-        if (it != children.end()) {
-            (*it)->parent = nullptr;
-            children.erase(it);
-        }
-    }
+	void RemoveChild(Object* child) {
+		auto it = std::find_if(children.begin(), children.end(), [child](const std::unique_ptr<Object>& c) { return c.get() == child; });
+		if (it != children.end()) {
+			(*it)->parent = nullptr;
+			children.erase(it);
+		}
+	}
 
-	template<typename VertexType>
+	template <typename VertexType>
 	void PushMesh(Mesh<VertexType>&& mesh) {
 		if (mesh.physicsObject) {
 			this->physicsObject = std::move(mesh.physicsObject);
@@ -131,7 +131,7 @@ public:
 		meshes.push_back(std::make_unique<Mesh<VertexType>>(std::move(mesh)));
 	}
 
-	template<typename VertexType>
+	template <typename VertexType>
 	Mesh<VertexType>& EmplaceMesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
 		auto mesh = std::make_unique<Mesh<VertexType>>(std::move(vertices), std::move(indices));
 		auto& ref = *mesh;
@@ -178,9 +178,7 @@ public:
 		this->state.rotation.y = yaw - 180;
 	}
 
-	std::string GetName() {
-		return name;
-	}
+	std::string GetName() { return name; }
 
 	void RemoveFromParent() {
 		if (parent) {
@@ -189,7 +187,7 @@ public:
 	}
 };
 
-}
+}  // namespace fe
 
 // Explicit template instantiation for common types
 #include "Mesh.hpp"
