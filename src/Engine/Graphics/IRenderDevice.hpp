@@ -15,6 +15,8 @@
 
 namespace fe {
 
+	enum class GizmoDrawMode { Lines, LineLoop };
+
 	class IRenderDevice {
 	public:
 		virtual ~IRenderDevice() = default;
@@ -77,6 +79,8 @@ namespace fe {
 
 		virtual void DrawDebugLines(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) {}
 		virtual void DrawDebugTriangles(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) {}
+
+		virtual void DrawGizmoLines(const float* vertices, int vertexCount, GizmoDrawMode mode, const glm::vec3& color, float lineWidth, const glm::mat4& view, const glm::mat4& proj) {}
 
 		virtual const char* GetDeviceName() const = 0;
 	};

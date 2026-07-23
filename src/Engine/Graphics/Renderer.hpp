@@ -316,6 +316,9 @@ public:
 		renderDevice->SetMat4("view", camera->GetViewMatrix());
 		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
+		scene->SetRenderDevice(renderDevice.get());
+		scene->SetCameraMatrices(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+
 		RenderScene();
 
 		OnDraw();

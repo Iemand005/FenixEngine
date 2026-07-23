@@ -2,6 +2,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -114,6 +115,52 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glBindVertexArray(0);
 
 		glUseProgram(0);
+	}
+
+	void DrawGizmoLines(const float* vertices, int vertexCount, GizmoDrawMode mode, const glm::vec3& color, float lineWidth, const glm::mat4& view, const glm::mat4& proj) override
+	{
+		InitDebugRenderer();
+
+		GLint previousProgram = 0;
+		glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+
+		GLboolean depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
+		GLfloat previousLineWidth = 1.0f;
+		glGetFloatv(GL_LINE_WIDTH, &previousLineWidth);
+
+		glDisable(GL_DEPTH_TEST);
+
+		glUseProgram(debugShaderProgram_);
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(debugShaderProgram_, "uProjection"), 1, GL_FALSE, glm::value_ptr(proj));
+
+		static std::vector<float> temp;
+		temp.resize(vertexCount * 7);
+		for (int i = 0; i < vertexCount; ++i) {
+			int src = i * 3;
+			int dst = i * 7;
+			temp[dst]     = vertices[src];
+			temp[dst + 1] = vertices[src + 1];
+			temp[dst + 2] = vertices[src + 2];
+			temp[dst + 3] = color.r;
+			temp[dst + 4] = color.g;
+			temp[dst + 5] = color.b;
+			temp[dst + 6] = 1.0f;
+		}
+
+		glBindVertexArray(debugVAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, debugVBO_);
+		glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(temp.size() * sizeof(float)), temp.data(), GL_STREAM_DRAW);
+
+		GLenum glMode = (mode == GizmoDrawMode::LineLoop) ? GL_LINE_LOOP : GL_LINES;
+		glLineWidth(lineWidth);
+		glDrawArrays(glMode, 0, vertexCount);
+		glLineWidth(previousLineWidth);
+
+		glBindVertexArray(0);
+		glUseProgram(static_cast<GLuint>(previousProgram));
+		if (depthWasEnabled) glEnable(GL_DEPTH_TEST);
+		else glDisable(GL_DEPTH_TEST);
 	}
 
 	void Init(fe::IWindow *window) override {

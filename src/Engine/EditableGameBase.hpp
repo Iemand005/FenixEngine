@@ -25,23 +25,20 @@ class EditableGameBase : public XRGame {
 	EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
 	void OnDraw() override {
-		// auto lights = scene->GetLights();
-		// if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
-		// 	DrawGizmo(lights[lighselecIndex].position);
-
-		// if (selectedObject) DrawGizmo(selectedObject->state.position);
+		if (selectedObject) DrawGizmo(selectedObject->state.position);
 
 		auto physics = GetPhysicsEngine();
 		if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 
 	void SelectObjectByIndex(int index) {
-		// this->geto
 		auto objs = scene->GetObjects();
 		auto objec = objs[index];
 		selectedObject = objec.get();
 	}
 
+	void SelectObject(fe::Object* obj) { selectedObject = obj; }
+	fe::Object* GetSelectedObject() const { return selectedObject; }
 	void UnselectObject() { selectedObject = nullptr; }
 
 	void SelectLightByIndex(int index) { lighselecIndex = index; }

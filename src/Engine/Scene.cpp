@@ -13,9 +13,6 @@ Scene::Scene() {
 }
 
 Scene::~Scene() {
-	if (gizmoVBO) glDeleteBuffers(1, &gizmoVBO);
-	if (gizmoVAO) glDeleteVertexArrays(1, &gizmoVAO);
-	if (gizmoProgram) glDeleteProgram(gizmoProgram);
 }
 
 void Scene::AddObject(std::shared_ptr<Object> object) { objects.push_back(object); }
@@ -112,148 +109,10 @@ void Scene::ResolveCollisions() {
 	}
 }
 
-GLuint Scene::CompileShader(GLenum type, const char* source) {
-	GLuint shader = glCreateShader(type);
-	glShaderSource(shader, 1, &source, nullptr);
-	glCompileShader(shader);
-
-	GLint success = GL_FALSE;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	if (success == GL_FALSE) {
-		GLint logLength = 0;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-		std::string log(static_cast<size_t>(std::max(logLength, 1)), '\0');
-		glGetShaderInfoLog(shader, logLength, nullptr, log.data());
-		glDeleteShader(shader);
-		throw std::runtime_error(log.empty() ? "Failed to compile gizmo shader" : log);
-	}
-
-	return shader;
-}
-
-bool Scene::CheckProgramLink(GLuint program, std::string& logOut) {
-	GLint success = GL_FALSE;
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	if (success == GL_FALSE) {
-		GLint logLength = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-		logOut.assign(static_cast<size_t>(std::max(logLength, 1)), '\0');
-		glGetProgramInfoLog(program, logLength, nullptr, logOut.data());
-		return false;
-	}
-	logOut.clear();
-	return true;
-}
-
-void Scene::DrawGizmoLines(const std::vector<glm::vec3>& vertices, GLenum mode, const glm::vec3& color, float lineWidth) {
-	if (vertices.empty() || !hasCameraMatrices) return;
-
-	EnsureGizmoRenderer();
-
-	GLint previousProgram = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
-
-	GLboolean depthWasEnabled = glIsEnabled(GL_DEPTH_TEST);
-	GLfloat previousLineWidth = 1.0f;
-	glGetFloatv(GL_LINE_WIDTH, &previousLineWidth);
-
-	glDisable(GL_DEPTH_TEST);
-
-	glUseProgram(gizmoProgram);
-	const glm::mat4 model(1.0f);
-	glUniformMatrix4fv(gizmoModelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	glUniformMatrix4fv(gizmoViewLoc, 1, GL_FALSE, glm::value_ptr(lastViewMatrix));
-	glUniformMatrix4fv(gizmoProjectionLoc, 1, GL_FALSE, glm::value_ptr(lastProjectionMatrix));
-	glUniform3f(gizmoColorLoc, color.r, color.g, color.b);
-
-	glBindVertexArray(gizmoVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STREAM_DRAW);
-	glLineWidth(lineWidth);
-	glDrawArrays(mode, 0, static_cast<GLsizei>(vertices.size()));
-	glLineWidth(previousLineWidth);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	glUseProgram(static_cast<GLuint>(previousProgram));
-	if (depthWasEnabled) glEnable(GL_DEPTH_TEST);
-	else glDisable(GL_DEPTH_TEST);
-}
-
-void Scene::EnsureGizmoRenderer() {
-	if (gizmoRendererReady) return;
-
-	static const char* vertexShaderSource = R"(#version 330 core
-layout(location = 0) in vec3 aPos;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main() {
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
-}
-)";
-
-	static const char* fragmentShaderSource = R"(#version 330 core
-out vec4 FragColor;
-
-uniform vec3 uColor;
-
-void main() {
-	FragColor = vec4(uColor, 1.0);
-}
-)";
-
-	GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
-	GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-	gizmoProgram = glCreateProgram();
-	glAttachShader(gizmoProgram, vertexShader);
-	glAttachShader(gizmoProgram, fragmentShader);
-	glLinkProgram(gizmoProgram);
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	std::string linkLog;
-	if (!CheckProgramLink(gizmoProgram, linkLog)) {
-		glDeleteProgram(gizmoProgram);
-		gizmoProgram = 0;
-		throw std::runtime_error(linkLog.empty() ? "Failed to link gizmo shader" : linkLog);
-	}
-
-	gizmoModelLoc = glGetUniformLocation(gizmoProgram, "model");
-	gizmoViewLoc = glGetUniformLocation(gizmoProgram, "view");
-	gizmoProjectionLoc = glGetUniformLocation(gizmoProgram, "projection");
-	gizmoColorLoc = glGetUniformLocation(gizmoProgram, "uColor");
-
-	glGenVertexArrays(1, &gizmoVAO);
-	glGenBuffers(1, &gizmoVBO);
-
-	glBindVertexArray(gizmoVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), nullptr, GL_STREAM_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), reinterpret_cast<void*>(0));
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	gizmoRendererReady = true;
-}
-
-void Scene::DrawCircle(float radius, int segments) {
-	DrawCircle(glm::vec3(0.0f), radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
-}
-
-void Scene::DrawCircle(const glm::vec3& position, float radius, int segments) {
-	DrawCircle(position, radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
-}
-
 void Scene::DrawCircle(const glm::vec3& position, float radius, int segments, const glm::vec3& rotationDegrees, const glm::vec3& color) {
 	if (radius <= 0.0f) return;
 	segments = std::max(segments, 3);
-	if (!hasCameraMatrices) return;
-
-	EnsureGizmoRenderer();
+	if (!renderDevice_) return;
 
 	glm::mat4 rotation(1.0f);
 	rotation = glm::rotate(rotation, glm::radians(rotationDegrees.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -270,11 +129,16 @@ void Scene::DrawCircle(const glm::vec3& position, float radius, int segments, co
 		glm::vec3 localPoint(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
 		circleVertices.emplace_back(glm::vec3(transform * glm::vec4(localPoint, 1.0f)));
 	}
-	DrawGizmoLines(circleVertices, GL_LINE_LOOP, color);
+
+	renderDevice_->DrawGizmoLines(
+		reinterpret_cast<const float*>(circleVertices.data()),
+		static_cast<int>(circleVertices.size()),
+		GizmoDrawMode::LineLoop, color, 2.0f,
+		viewMatrix_, projectionMatrix_);
 }
 
 void Scene::DrawArrow(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color, float headLengthScale, float headRadiusScale) {
-	if (!hasCameraMatrices) return;
+	if (!renderDevice_) return;
 
 	glm::vec3 direction = to - from;
 	float length = glm::length(direction);
@@ -319,7 +183,11 @@ void Scene::DrawArrow(const glm::vec3& from, const glm::vec3& to, const glm::vec
 		arrowVertices.push_back(headRing[(i + 1) % headRing.size()]);
 	}
 
-	DrawGizmoLines(arrowVertices, GL_LINES, color);
+	renderDevice_->DrawGizmoLines(
+		reinterpret_cast<const float*>(arrowVertices.data()),
+		static_cast<int>(arrowVertices.size()),
+		GizmoDrawMode::Lines, color, 2.0f,
+		viewMatrix_, projectionMatrix_);
 }
 
 void Scene::DrawArrow(const glm::vec3& origin, const glm::vec3& direction, float length, const glm::vec3& color, float headLengthScale, float headRadiusScale) {
@@ -329,4 +197,12 @@ void Scene::DrawArrow(const glm::vec3& origin, const glm::vec3& direction, float
 	if (directionLength <= 0.0001f) return;
 
 	DrawArrow(origin, origin + (direction / directionLength) * length, color, headLengthScale, headRadiusScale);
+}
+
+void Scene::DrawCircle(float radius, int segments) {
+	DrawCircle(glm::vec3(0.0f), radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+}
+
+void Scene::DrawCircle(const glm::vec3& position, float radius, int segments) {
+	DrawCircle(position, radius, segments, glm::vec3(0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
 }

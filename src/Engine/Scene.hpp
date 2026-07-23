@@ -1,7 +1,5 @@
 
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#include <glad/glad.h>
 
 #include <array>
 #include <memory>
@@ -10,11 +8,11 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "Timer.hpp"
 #include "IMesh.hpp"
 #include "Vertex.hpp"
+#include "Graphics/IRenderDevice.hpp"
 
 namespace fe {
 
@@ -39,28 +37,16 @@ class Scene {
 	std::array<PointLight, kMaxPointLights> pointLights{};
 	int lightCount = 1;
 
-	glm::mat4 lastViewMatrix = glm::mat4(1.0f);
-	glm::mat4 lastProjectionMatrix = glm::mat4(1.0f);
-	bool hasCameraMatrices = false;
-
-	GLuint gizmoProgram = 0;
-	GLuint gizmoVAO = 0;
-	GLuint gizmoVBO = 0;
-	GLint gizmoModelLoc = -1;
-	GLint gizmoViewLoc = -1;
-	GLint gizmoProjectionLoc = -1;
-	GLint gizmoColorLoc = -1;
-	bool gizmoRendererReady = false;
-
-	static GLuint CompileShader(GLenum type, const char* source);
-	static bool CheckProgramLink(GLuint program, std::string& logOut);
-
-	void DrawGizmoLines(const std::vector<glm::vec3>& vertices, GLenum mode, const glm::vec3& color, float lineWidth = 2.0f);
-	void EnsureGizmoRenderer();
+	IRenderDevice* renderDevice_ = nullptr;
+	glm::mat4 viewMatrix_ = glm::mat4(1.0f);
+	glm::mat4 projectionMatrix_ = glm::mat4(1.0f);
 
 public:
 	Scene();
 	~Scene();
+
+	void SetRenderDevice(IRenderDevice* device) { renderDevice_ = device; }
+	void SetCameraMatrices(const glm::mat4& view, const glm::mat4& proj) { viewMatrix_ = view; projectionMatrix_ = proj; }
 
 	std::vector<std::shared_ptr<Object>>& GetObjects() { return objects; }
 	std::vector<std::shared_ptr<Object>> GetFilteredObjects(std::shared_ptr<Object> exclude) const;
@@ -78,8 +64,6 @@ public:
 	int GetLightCount() { return lightCount; }
 	PointLight* GetLights() { return pointLights.data(); }
 	std::array<PointLight, kMaxPointLights> GetLightArray() { return pointLights; }
-
-	void EndRender() { glBindVertexArray(0); }
 
 	double Update();
 	void ResolveCollisions();

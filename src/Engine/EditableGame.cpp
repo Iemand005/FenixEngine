@@ -15,7 +15,7 @@ using namespace fe;
 
 void fe::EditableGame::OnDraw() { EditableGameBase::OnDraw(); }
 
-void DrawObjectNode(Object* object, Camera* camera, Scene* scene, float step) {
+void DrawObjectNode(Object* object, Camera* camera, Scene* scene, EditableGame* game, float step) {
 	ImGui::PushID(object);
 
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -23,7 +23,13 @@ void DrawObjectNode(Object* object, Camera* camera, Scene* scene, float step) {
 		flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 	}
 
+	if (game->GetSelectedObject() == object)
+		flags |= ImGuiTreeNodeFlags_Selected;
+
 	bool open = ImGui::TreeNodeEx(object->name.c_str(), flags);
+
+	if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+		game->SelectObject(object);
 
 	ImGui::DragFloat3("Position", &object->state.position.x, step);
 
