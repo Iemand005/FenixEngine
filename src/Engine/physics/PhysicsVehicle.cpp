@@ -128,6 +128,10 @@ void PhysicsVehicle::SetDriverInput(float forward, float right, float brake, flo
 	if (controller) {
 		controller->SetDriverInput(forward, right, brake, handbrake);
 	}
+	
+	if (body && physicsSystem && (forward != 0.0f || brake != 0.0f || handbrake != 0.0f)) {
+    	physicsSystem->GetBodyInterface().ActivateBody(body->GetBodyID());
+	}
 #endif
 }
 
