@@ -78,7 +78,7 @@ void DrawObjectNode(Object* object, Camera* camera, Scene* scene, EditableGame* 
 
 	if (open && !(flags & ImGuiTreeNodeFlags_NoTreePushOnOpen)) {
 		for (auto& child : object->children) {
-			DrawObjectNode(child.get(), camera, scene, step);
+			DrawObjectNode(child.get(), camera, scene, game, step);
 		}
 		ImGui::TreePop();
 	}
@@ -263,8 +263,7 @@ void fe::EditableGame::DrawDebugUI() {
 		ImGui::Checkbox("Snap to grid", &snapToGrid);
 		float step = snapToGrid ? 0.1f : 0.0001f;
 
-		size_t i = 0;
-		for (auto& object : scene->GetObjects()) DrawObjectNode(object.get(), camera.get(), scene.get(), step);
+		for (auto& object : scene->GetObjects()) DrawObjectNode(object.get(), camera.get(), scene.get(), this, step);
 
 		if (ImGui::Button("Add light")) this->scene->AddLight();
 
