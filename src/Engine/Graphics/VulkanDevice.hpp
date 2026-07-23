@@ -2111,6 +2111,18 @@ private:
 			vkDestroyPipeline(_device, graphicsPipelineArrayCW_, nullptr);
 		if (graphicsPipelineFoxcraftCW_ != VK_NULL_HANDLE)
 			vkDestroyPipeline(_device, graphicsPipelineFoxcraftCW_, nullptr);
+		if (graphicsPipelineTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineTransparent_, nullptr);
+		if (graphicsPipelineArrayTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineArrayTransparent_, nullptr);
+		if (graphicsPipelineFoxcraftTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineFoxcraftTransparent_, nullptr);
+		if (graphicsPipelineCWTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineCWTransparent_, nullptr);
+		if (graphicsPipelineArrayCWTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineArrayCWTransparent_, nullptr);
+		if (graphicsPipelineFoxcraftCWTransparent_ != VK_NULL_HANDLE)
+			vkDestroyPipeline(_device, graphicsPipelineFoxcraftCWTransparent_, nullptr);
 		if (pipelineLayout_ != VK_NULL_HANDLE)
 			vkDestroyPipelineLayout(_device, pipelineLayout_, nullptr);
 		if (renderPass_ != VK_NULL_HANDLE)
