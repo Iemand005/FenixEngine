@@ -21,11 +21,14 @@ PhysicsVehicle::PhysicsVehicle() = default;
 
 PhysicsVehicle::~PhysicsVehicle() {
 #ifndef EXCLUDE_JOLT
-	if (constraint && physicsSystem) {
-		physicsSystem->RemoveStepListener(constraint);
-		physicsSystem->RemoveConstraint(constraint);
+	if (constraint) {
+		if (physicsSystem) {
+			physicsSystem->RemoveStepListener(constraint);
+			physicsSystem->RemoveConstraint(constraint);
+		}
+		constraint->Release();
+		constraint = nullptr;
 	}
-	delete constraint;
 #endif
 }
 
@@ -60,9 +63,9 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 	controllerSettings->mTransmission.mMode = ETransmissionMode::Auto;
 	controllerSettings->mTransmission.mGearRatios = { 2.66f, 1.78f, 1.30f, 1.0f };
 	controllerSettings->mTransmission.mReverseGearRatios = { -2.90f };
-	controllerSettings->mTransmission.mSwitchTime = 0.5f;
-	controllerSettings->mTransmission.mClutchReleaseTime = 0.3f;
-	controllerSettings->mTransmission.mSwitchLatency = 0.5f;
+	controllerSettings->mTransmission.mSwitchTime = 0.05f;
+	controllerSettings->mTransmission.mClutchReleaseTime = 0.05f;
+	controllerSettings->mTransmission.mSwitchLatency = 0.1f;
 	controllerSettings->mTransmission.mShiftUpRPM = 4000.0f;
 	controllerSettings->mTransmission.mShiftDownRPM = 2000.0f;
 	controllerSettings->mTransmission.mClutchStrength = 10.0f;
@@ -119,6 +122,9 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 	system->AddStepListener(constraint);
 
 	controller = static_cast<WheeledVehicleController*>(constraint->GetController());
+
+	// Start in 1st gear with clutch fully engaged (skip neutral delay)
+	controller->GetTransmission().Set(1, 1.0f);
 
 #endif
 }
