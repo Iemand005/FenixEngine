@@ -130,6 +130,13 @@ public:
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCW_, VK_FRONT_FACE_CLOCKWISE);
 		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCW_, VK_FRONT_FACE_CLOCKWISE);
 		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCW_, VK_FRONT_FACE_CLOCKWISE);
+
+		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE);
+		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE);
+		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
+		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
 		createDepthResources();
 		createFramebuffers();
 		createCommandPool();
@@ -437,12 +444,22 @@ public:
 			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
 
 		VkPipeline requiredPipeline;
-		if (vkBuffers->vertexFormat == VertexFormat::Array) {
-			requiredPipeline = reverseWinding_ ? graphicsPipelineArrayCW_ : graphicsPipelineArray_;
-		} else if (vkBuffers->vertexFormat == VertexFormat::Foxcraft) {
-			requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCW_ : graphicsPipelineFoxcraft_;
+		if (transparentMode_) {
+			if (vkBuffers->vertexFormat == VertexFormat::Array) {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineArrayCWTransparent_ : graphicsPipelineArrayTransparent_;
+			} else if (vkBuffers->vertexFormat == VertexFormat::Foxcraft) {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCWTransparent_ : graphicsPipelineFoxcraftTransparent_;
+			} else {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineCWTransparent_ : graphicsPipelineTransparent_;
+			}
 		} else {
-			requiredPipeline = reverseWinding_ ? graphicsPipelineCW_ : graphicsPipeline_;
+			if (vkBuffers->vertexFormat == VertexFormat::Array) {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineArrayCW_ : graphicsPipelineArray_;
+			} else if (vkBuffers->vertexFormat == VertexFormat::Foxcraft) {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCW_ : graphicsPipelineFoxcraft_;
+			} else {
+				requiredPipeline = reverseWinding_ ? graphicsPipelineCW_ : graphicsPipeline_;
+			}
 		}
 		if (requiredPipeline != currentBoundPipeline_) {
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
@@ -1442,7 +1459,7 @@ private:
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = depthWriteEnable;
 		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
