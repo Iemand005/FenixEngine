@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "window/IWindow.hpp"
 
 #pragma once
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -88,7 +89,7 @@ namespace fe {
 
 		void Destroy() {
 			DestroyXR();
-			if (window) window->Destroy();
+			Game::Destroy();
 		}
 	};
 }
