@@ -8,6 +8,7 @@
 #include "physics/BasicDebugRenderer.hpp"
 
 #include <imgui.h>
+#include <algorithm>
 
 using namespace fe;
 
@@ -144,6 +145,41 @@ void fe::EditableGame::DrawDebugUI() {
 	if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
 		if (wireframe) this->EnableWireframe();
 		else this->DisableWireframe();
+	}
+
+	static bool showDepthBuffer = false;
+	ImGui::Checkbox("Show Depth Buffer", &showDepthBuffer);
+	if (showDepthBuffer && !useVulkan) {
+		static GLuint depthTex = 0;
+		static int prevW = 0, prevH = 0;
+		int fbW = (int)window->GetFramebufferSize().width;
+		int fbH = (int)window->GetFramebufferSize().height;
+		int readW = std::min(fbW, 640);
+		int readH = fbH * readW / fbW;
+		if (!depthTex || readW != prevW || readH != prevH) {
+			if (depthTex) glDeleteTextures(1, &depthTex);
+			glGenTextures(1, &depthTex);
+			glBindTexture(GL_TEXTURE_2D, depthTex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			prevW = readW; prevH = readH;
+		}
+		std::vector<float> depths(readW * readH);
+		glReadPixels(0, 0, readW, readH, GL_DEPTH_COMPONENT, GL_FLOAT, depths.data());
+		float mn = 1.0f, mx = 0.0f;
+		for (float d : depths) { if (d < mn) mn = d; if (d > mx) mx = d; }
+		float rng = mx - mn;
+		std::vector<uint8_t> img(readW * readH * 4);
+		for (int i = 0; i < readW * readH; i++) {
+			uint8_t c = (uint8_t)(((rng > 0.001f ? (depths[i] - mn) / rng : 0.5f)) * 255.0f);
+			img[i*4] = c; img[i*4+1] = c; img[i*4+2] = c; img[i*4+3] = 255;
+		}
+		glBindTexture(GL_TEXTURE_2D, depthTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, readW, readH, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+		glBindTexture(GL_TEXTURE_2D, 0);
+		ImGui::Begin("Depth Buffer");
+		ImGui::Image((ImTextureID)(uintptr_t)depthTex, ImVec2((float)readW, (float)readH));
+		ImGui::End();
 	}
 	
 	// BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
