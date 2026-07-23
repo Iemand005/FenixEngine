@@ -284,6 +284,10 @@ public:
 		renderDevice->Clear();
 	 }
 
+	void SetTransparentMode(bool enabled) {
+		renderDevice->SetTransparentMode(enabled);
+	}
+
 	void RenderMesh(Mesh<>& mesh);
 	void RenderObject(Object& object, bool transparentPass = false);
 	void RenderScene(Scene *scene);
