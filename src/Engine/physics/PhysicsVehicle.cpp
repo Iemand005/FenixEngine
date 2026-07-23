@@ -79,7 +79,7 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		wheel->mSuspensionMaxLength = wc.suspensionMaxLength;
 		wheel->mSuspensionSpring.mFrequency = wc.suspensionFrequency;
 		wheel->mSuspensionSpring.mDamping = wc.suspensionDamping;
-		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(40.0f) : 0.0f;
+		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(60.0f) : 0.0f;
 		wheel->mMaxBrakeTorque = 1500.0f;
 		wheel->mMaxHandBrakeTorque = 4000.0f;
 

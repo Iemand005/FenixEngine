@@ -94,6 +94,10 @@ private:
 	glm::vec3 GetPos() const { return position; }
 	void setFront(const glm::vec3& front) {
 		this->front = front;
+		glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+		if (glm::length(right) < 0.001f)
+			right = glm::vec3(1.0f, 0.0f, 0.0f);
+		this->up = glm::normalize(glm::cross(right, front));
 		updateView(position, front, up);
 	}
 
