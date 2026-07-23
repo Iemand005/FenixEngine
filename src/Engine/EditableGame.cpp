@@ -164,7 +164,10 @@ void fe::EditableGame::DrawDebugUI() {
 			void* tex = renderDevice->UploadToImGui(img.data(), readW, readH);
 			if (tex) {
 				ImGui::Begin("Depth Buffer");
-				ImGui::Image(tex, ImVec2(static_cast<float>(readW), static_cast<float>(readH)));
+				ImVec2 avail = ImGui::GetContentRegionAvail();
+				float scale = std::min(avail.x / readW, avail.y / readH);
+				if (scale > 1.0f) scale = 1.0f;
+				ImGui::Image(tex, ImVec2(readW * scale, readH * scale));
 				ImGui::End();
 			}
 		}
