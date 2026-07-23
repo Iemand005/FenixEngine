@@ -6,27 +6,27 @@
 #define NOMINMAX
 #endif
 
-#include "../stdafx.h"
-
+#include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <type_traits>
-#include <cmath>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#include "../stdafx.h"
 
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
 // #include "physics/PhysicsEngine.hpp"
-#include "bases.h"
-#include "Object.hpp"
-#include "Character.hpp"
 #include "Camera.hpp"
+#include "Character.hpp"
+#include "Object.hpp"
 #include "ShaderProgram.hpp"
+#include "bases.h"
 #include "saver/Level.hpp"
 
 #define WAYLAND
@@ -36,8 +36,7 @@
 namespace fe {
 
 class Game : public Renderer {
-public:
-
+   public:
 	int lastX, lastY;
 
 	std::shared_ptr<Character> player;
@@ -61,8 +60,7 @@ public:
 	std::unique_ptr<Networker> client = nullptr;
 #endif
 
-	std::unordered_map<unsigned char, std::shared_ptr<Character>> players =
-	std::unordered_map<unsigned char, std::shared_ptr<Character>>();
+	std::unordered_map<unsigned char, std::shared_ptr<Character>> players = std::unordered_map<unsigned char, std::shared_ptr<Character>>();
 
 	bool isConnectedToServer = false;
 
@@ -75,10 +73,10 @@ public:
 
 	Game();
 
-	typedef void* (* GLADloadproc)(const char *name);
+	typedef void* (*GLADloadproc)(const char* name);
 
-	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-    Game(F loadProc) : Game(reinterpret_cast<GLADloadproc>(loadProc)) {}
+	template <typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
+	Game(F loadProc) : Game(reinterpret_cast<GLADloadproc>(loadProc)) {}
 
 	Game(GLADloadproc loadProc);
 
@@ -86,29 +84,22 @@ public:
 
 	Game(RendererOptions options);
 
-
 	void Init();
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
 
-	PhysicsFactory *GetPhysicsEngine();
+	PhysicsFactory* GetPhysicsEngine();
 
-	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
-		Renderer::LoadShaders(vertexShaderPath, fragmentShaderPath);
-	}
+	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) { Renderer::LoadShaders(vertexShaderPath, fragmentShaderPath); }
 
 	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
 		this->shader = std::make_unique<fe::ShaderProgram>();
 		return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
 	}
 
-	void MovePlayer(Direction direction) {
-		this->player->Move(direction, camera.get());
-	}
+	void MovePlayer(Direction direction) { this->player->Move(direction, camera.get()); }
 
-	void MoveCamera(Direction direction, float dt = 1.0f) {
-		this->camera->Move(direction, dt);
-	}
+	void MoveCamera(Direction direction, float dt = 1.0f) { this->camera->Move(direction, dt); }
 
 	void MouseMove(int x, int y) {
 		const float sensitivity = 0.1f;
@@ -126,9 +117,7 @@ public:
 		this->camera->setFront(glm::normalize(direction));
 	}
 
-	void SaveLevel(std::string fileName = "level.fes") {
-		this->level->Save(this->scene->GetFilteredObjects(player), fileName);
-	}
+	void SaveLevel(std::string fileName = "level.fes") { this->level->Save(this->scene->GetFilteredObjects(player), fileName); }
 
 	void LoadLevel(std::string fileName = "level.fes") {
 		auto objects = this->level->Load(fileName);
@@ -138,9 +127,7 @@ public:
 	}
 
 #ifndef EXCLUDE_NETWORKING
-	void connectToServer(std::string address, unsigned short port, std::string username) {
-		this->client->Connect(address, port, username);
-	}
+	void connectToServer(std::string address, unsigned short port, std::string username) { this->client->Connect(address, port, username); }
 #endif
 
 	void loadMap(int index) {
@@ -176,9 +163,7 @@ public:
 
 	void LoadModel(const std::string& path);
 
-	std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) {
-		return std::make_shared<fe::Object>(path, scale);
-	}
+	std::shared_ptr<fe::Object> loadOBJButDontAdd(std::string path, float scale = 1.0f) { return std::make_shared<fe::Object>(path, scale); }
 
 	std::shared_ptr<fe::Object> LoadStaticOBJ(std::string path, float scale = 1.0f) {
 		std::shared_ptr<fe::Object> model = std::make_shared<fe::Object>(path, scale);
@@ -202,7 +187,6 @@ public:
 		Renderer::Redraw();
 	}
 
-
 	void Update() {
 		double dt = scene->Update();
 		UpdatePhysics(dt);
@@ -212,16 +196,14 @@ public:
 
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
-	virtual void OnDraw() {}
+	// virtual void OnDraw() {}
 
-	template<typename WindowT = IWindow>
+	template <typename WindowT = IWindow>
 	WindowT* GetWindow() {
 		return (WindowT*)this->window.get();
 	}
 
-	double GetFPS() {
-		return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
-	}
+	double GetFPS() { return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0; }
 
 	void UpdateAspect(int width, int height) {
 		if (this->camera) this->camera->SetAspect(width, height);
@@ -237,4 +219,4 @@ public:
 	}
 };
 
-}
+}  // namespace fe
