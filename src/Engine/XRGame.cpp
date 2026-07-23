@@ -555,7 +555,7 @@ void XRGame::LaunchVR() {
 	impl->initSwapchain(renderDevice.get());
 	if (!useVulkan) CheckGLError("after framebuffer setup");
 	impl->CreateActions();
-	window->StopMouseCapture();
+	GetWindow()->StopMouseCapture();
 }
 
 void XRGame::RedrawWindow(uint64_t fbo) {

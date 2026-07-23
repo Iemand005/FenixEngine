@@ -346,7 +346,7 @@ void fe::EditableGame::DrawDebugUI() {
 		static float newObjectScale = 1.0f;
 
 		if (ImGui::Button("Open Model")) {
-			auto* w = static_cast<fe::SDLWindow*>(this->window.get());
+			auto w = this->GetWindow<SDLWindow>();
 			w->OpenFileDialog([this](const std::string& path) { this->LoadModel(path); });
 		}
 		ImGui::SameLine();

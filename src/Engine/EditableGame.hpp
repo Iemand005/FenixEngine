@@ -32,7 +32,7 @@ namespace fe {
 		
 	private:
 		void Init() {
-			InitImGUI();
+			InitImGui();
 			InitUI();
 			bool themed = true;
 			if (themed) ApplyBlackAndOrangeTheme();
@@ -44,7 +44,7 @@ namespace fe {
 		bool leftWasDown_ = false;
 
 		void DetectAndHandleClick();
-		void InitImGUI() {
+		void InitImGui() {
 			auto renderer = (Renderer*)this;
 			auto window = GetWindow<SDLWindow>();
 			const char* glsl_version = "#version 330 core";

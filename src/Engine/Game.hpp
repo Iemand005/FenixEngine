@@ -30,6 +30,8 @@
 
 #include "Renderer.hpp"
 
+#include "physics/PhysicsFactory.hpp"
+
 namespace fe {
 
 class Game : public Renderer {
