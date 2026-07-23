@@ -99,11 +99,18 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string&
 
 			if (prim->material) {
 				auto& pbr = prim->material->pbr_metallic_roughness;
+				float alpha = pbr.base_color_factor[3];
 				mesh.SetColor(glm::vec4(
 					pbr.base_color_factor[0],
 					pbr.base_color_factor[1],
 					pbr.base_color_factor[2],
-					pbr.base_color_factor[3]));
+					alpha));
+
+				if (prim->material->alpha_mode == cgltf_alpha_mode_mask ||
+					prim->material->alpha_mode == cgltf_alpha_mode_blend ||
+					alpha < 1.0f) {
+					mesh.hasTransparency = true;
+				}
 
 				auto* texView = &pbr.base_color_texture;
 				if (texView->texture && texView->texture->image) {

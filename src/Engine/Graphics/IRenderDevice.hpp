@@ -50,6 +50,7 @@ namespace fe {
 		virtual void SetFloat(const char* name, float value) {}
 
 		virtual void SetFrontFace(bool ccw) {}
+		virtual void SetTransparentMode(bool enabled) {}
 
 		virtual void EnableWireframe() {}
 		virtual void DisableWireframe() {}

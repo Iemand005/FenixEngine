@@ -431,11 +431,18 @@ ObjectState PhysicsObject::SyncToRender() {
 void PhysicsObject::Destroy() {
 #ifndef EXCLUDE_JOLT
 	if (!impl || !impl->physicsSystem) return;
-	auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+	if (impl->bodyId.IsInvalid()) {
+        impl->physicsSystem = nullptr;
+        return;
+    }
 
-	bodyInterface->RemoveBody(impl->bodyId);
-	bodyInterface->DestroyBody(impl->bodyId);
-	impl->physicsSystem = nullptr;
+    auto bodyInterface = &this->impl->physicsSystem->GetBodyInterface();
+
+    bodyInterface->RemoveBody(impl->bodyId);
+    bodyInterface->DestroyBody(impl->bodyId);
+    
+    impl->bodyId = JPH::BodyID(); 
+    impl->physicsSystem = nullptr;
 #endif
 }
 

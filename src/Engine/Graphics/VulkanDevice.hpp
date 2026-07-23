@@ -907,6 +907,15 @@ private:
 	VkPipeline graphicsPipelineArrayCW_ = VK_NULL_HANDLE;
 	VkPipeline graphicsPipelineFoxcraftCW_ = VK_NULL_HANDLE;
 
+	VkPipeline graphicsPipelineTransparent_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineArrayTransparent_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineFoxcraftTransparent_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineCWTransparent_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineArrayCWTransparent_ = VK_NULL_HANDLE;
+	VkPipeline graphicsPipelineFoxcraftCWTransparent_ = VK_NULL_HANDLE;
+
+	bool transparentMode_ = false;
+
 	std::vector<VkBuffer> uniformBuffers_;
 	std::vector<VkDeviceMemory> uniformBuffersMemory_;
 	std::vector<void*> uniformBuffersMapped_;
@@ -1338,7 +1347,8 @@ private:
 	// ---------------------------------------------------------------
 	void createGraphicsPipeline(const std::string& vertPath, const std::string& fragPath,
 								VertexFormat format, VkPipeline& outPipeline,
-								VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE) {
+								VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+								VkBool32 depthWriteEnable = VK_TRUE) {
 		auto vertShaderCode = readFile(vertPath);
 		auto fragShaderCode = readFile(fragPath);
 

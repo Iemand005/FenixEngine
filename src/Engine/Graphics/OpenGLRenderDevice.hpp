@@ -77,6 +77,9 @@ class OpenGLRenderDevice : public IRenderDevice {
 		return std::make_unique<OpenGLGPUTexture>();
 	}
 
+	void SetTransparentMode(bool enabled) override {
+		glDepthMask(enabled ? GL_FALSE : GL_TRUE);
+	}
 	void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 	void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
 	void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
