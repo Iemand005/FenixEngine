@@ -285,7 +285,7 @@ public:
 	 }
 
 	void RenderMesh(Mesh<>& mesh);
-	void RenderObject(Object& object);
+	void RenderObject(Object& object, bool transparentPass = false);
 	void RenderScene(Scene *scene);
 	void RenderScene() { RenderScene(scene.get()); }
 

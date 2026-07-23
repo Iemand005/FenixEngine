@@ -36,7 +36,7 @@ void Renderer::RenderMesh(Mesh<>& mesh) {
 	renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
 }
 
-void Renderer::RenderObject(Object& object) {
+void Renderer::RenderObject(Object& object, bool transparentPass) {
 	glm::mat4 model = object.GetModelMatrix();
 	glm::vec3 modelPos = glm::vec3(model[3]);
 	glm::vec3 center = modelPos + object.boundingCenterOffset;
@@ -47,10 +47,14 @@ void Renderer::RenderObject(Object& object) {
 	renderDevice->SetMat4("model", model);
 	renderDevice->SetVec3("objectColor", object.color);
 	if (object.reverseWinding) renderDevice->SetFrontFace(false);
-	object.Render(renderDevice.get());
+	for (auto& mesh : object.meshes) {
+		if (mesh->GetHasTransparency() != transparentPass) continue;
+		mesh->SetDevice(renderDevice.get());
+		renderDevice->DrawMesh(mesh->GetGPUBuffers(), mesh->GetGPUTexture());
+	}
 	if (auto* obj = dynamic_cast<Object*>(&object)) {
 		for (auto& child : obj->GetChildren())
-			RenderObject(*child);
+			RenderObject(*child, transparentPass);
 	}
 	if (object.reverseWinding) renderDevice->SetFrontFace(true);
 }
@@ -70,7 +74,17 @@ void Renderer::RenderScene(Scene *scene) {
 	}
 
 	renderDevice->BeginFrame();
+
+	// Opaque pass (depth write ON)
+	renderDevice->SetTransparentMode(false);
 	for (auto& object : scene->GetObjects()) {
-		RenderObject(*object);
+		RenderObject(*object, false);
 	}
+
+	// Transparent pass (depth write OFF)
+	renderDevice->SetTransparentMode(true);
+	for (auto& object : scene->GetObjects()) {
+		RenderObject(*object, true);
+	}
+	renderDevice->SetTransparentMode(false);
 }
