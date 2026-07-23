@@ -15,7 +15,7 @@
 
 namespace fe {
 
-	enum class GizmoDrawMode { Lines, LineLoop };
+	enum class 	GizmoDrawMode { Lines, LineLoop };
 
 	class IRenderDevice {
 	public:
