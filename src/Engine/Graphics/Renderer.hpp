@@ -382,7 +382,8 @@ public:
 	bool ShouldClose() { return this->GetWindow()->ShouldClose(); }
 
 	void Destroy() {
-		if (window) window->Destroy();
+		for (auto &window : windows)
+			window->Destroy();
 	}
 };
 
