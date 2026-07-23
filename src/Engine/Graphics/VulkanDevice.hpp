@@ -695,6 +695,160 @@ public:
 		return true;
 	}
 
+	void* UploadToImGui(const unsigned char* rgba, int w, int h) override {
+		if (w <= 0 || h <= 0) return nullptr;
+
+		if (depthVizSampler_ == VK_NULL_HANDLE) {
+			VkSamplerCreateInfo si{};
+			si.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			si.magFilter = VK_FILTER_LINEAR;
+			si.minFilter = VK_FILTER_LINEAR;
+			si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			si.maxAnisotropy = 1.0f;
+			if (vkCreateSampler(_device, &si, nullptr, &depthVizSampler_) != VK_SUCCESS)
+				return nullptr;
+		}
+
+		if (depthVizLayout_ == VK_NULL_HANDLE) {
+			VkDescriptorSetLayoutBinding binding{};
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			binding.descriptorCount = 1;
+			VkDescriptorSetLayoutCreateInfo li{};
+			li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			li.bindingCount = 1;
+			li.pBindings = &binding;
+			if (vkCreateDescriptorSetLayout(_device, &li, nullptr, &depthVizLayout_) != VK_SUCCESS)
+				return nullptr;
+		}
+
+		if (depthVizPool_ == VK_NULL_HANDLE) {
+			VkDescriptorPoolSize ps{};
+			ps.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			ps.descriptorCount = 1;
+			VkDescriptorPoolCreateInfo pi{};
+			pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			pi.maxSets = 1;
+			pi.poolSizeCount = 1;
+			pi.pPoolSizes = &ps;
+			if (vkCreateDescriptorPool(_device, &pi, nullptr, &depthVizPool_) != VK_SUCCESS)
+				return nullptr;
+		}
+
+		if (depthVizDescriptorSet_ == VK_NULL_HANDLE) {
+			VkDescriptorSetAllocateInfo ai{};
+			ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			ai.descriptorPool = depthVizPool_;
+			ai.descriptorSetCount = 1;
+			ai.pSetLayouts = &depthVizLayout_;
+			if (vkAllocateDescriptorSets(_device, &ai, &depthVizDescriptorSet_) != VK_SUCCESS)
+				return nullptr;
+		}
+
+		if (w != depthVizW_ || h != depthVizH_ || depthVizImage_ == VK_NULL_HANDLE) {
+			if (depthVizImageView_ != VK_NULL_HANDLE) {
+				vkDestroyImageView(_device, depthVizImageView_, nullptr);
+				depthVizImageView_ = VK_NULL_HANDLE;
+			}
+			if (depthVizImage_ != VK_NULL_HANDLE) {
+				vkDestroyImage(_device, depthVizImage_, nullptr);
+				depthVizImage_ = VK_NULL_HANDLE;
+			}
+			if (depthVizMemory_ != VK_NULL_HANDLE) {
+				vkFreeMemory(_device, depthVizMemory_, nullptr);
+				depthVizMemory_ = VK_NULL_HANDLE;
+			}
+			createImage(w, h, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthVizImage_, depthVizMemory_);
+			depthVizImageView_ = createImageView(depthVizImage_, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+			depthVizW_ = w; depthVizH_ = h;
+
+			VkDescriptorImageInfo ii{};
+			ii.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			ii.imageView = depthVizImageView_;
+			ii.sampler = depthVizSampler_;
+			VkWriteDescriptorSet wd{};
+			wd.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			wd.dstSet = depthVizDescriptorSet_;
+			wd.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			wd.descriptorCount = 1;
+			wd.pImageInfo = &ii;
+			vkUpdateDescriptorSets(_device, 1, &wd, 0, nullptr);
+		}
+
+		VkDeviceSize imgSize = static_cast<VkDeviceSize>(w) * h * 4;
+		VkBuffer stageBuf;
+		VkDeviceMemory stageMem;
+		createBuffer(imgSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stageBuf, stageMem);
+		void* mapped;
+		vkMapMemory(_device, stageMem, 0, imgSize, 0, &mapped);
+		memcpy(mapped, rgba, static_cast<size_t>(imgSize));
+		vkUnmapMemory(_device, stageMem);
+
+		VkCommandBufferAllocateInfo ai{};
+		ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		ai.commandPool = commandPool_;
+		ai.commandBufferCount = 1;
+		VkCommandBuffer cmd;
+		vkAllocateCommandBuffers(_device, &ai, &cmd);
+
+		VkCommandBufferBeginInfo bi{};
+		bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		vkBeginCommandBuffer(cmd, &bi);
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = depthVizImage_;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.layerCount = 1;
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		VkBufferImageCopy region{};
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.layerCount = 1;
+		region.imageExtent = {static_cast<uint32_t>(w), static_cast<uint32_t>(h), 1};
+		vkCmdCopyBufferToImage(cmd, stageBuf, depthVizImage_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		vkEndCommandBuffer(cmd);
+
+		VkSubmitInfo si{};
+		si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		si.commandBufferCount = 1;
+		si.pCommandBuffers = &cmd;
+		VkFence fence;
+		VkFenceCreateInfo fi{};
+		fi.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		vkCreateFence(_device, &fi, nullptr, &fence);
+		vkQueueSubmit(graphicsQueue_, 1, &si, fence);
+		vkWaitForFences(_device, 1, &fence, VK_TRUE, UINT64_MAX);
+		vkDestroyFence(_device, fence, nullptr);
+		vkFreeCommandBuffers(_device, commandPool_, 1, &cmd);
+
+		vkDestroyBuffer(_device, stageBuf, nullptr);
+		vkFreeMemory(_device, stageMem, nullptr);
+
+		return (void*)depthVizDescriptorSet_;
+	}
+
 	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
 		VkImage colorImage = colorFormat != 0
 			? reinterpret_cast<VkImage>(nativeImage)
@@ -1029,6 +1183,15 @@ private:
 	bool depthReadbackAvailable_ = false;
 	std::vector<float> cachedDepthData_;
 	int cachedDepthW_ = 0, cachedDepthH_ = 0;
+
+	VkImage depthVizImage_ = VK_NULL_HANDLE;
+	VkDeviceMemory depthVizMemory_ = VK_NULL_HANDLE;
+	VkImageView depthVizImageView_ = VK_NULL_HANDLE;
+	VkSampler depthVizSampler_ = VK_NULL_HANDLE;
+	VkDescriptorPool depthVizPool_ = VK_NULL_HANDLE;
+	VkDescriptorSetLayout depthVizLayout_ = VK_NULL_HANDLE;
+	VkDescriptorSet depthVizDescriptorSet_ = VK_NULL_HANDLE;
+	int depthVizW_ = 0, depthVizH_ = 0;
 
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers_;
@@ -2242,6 +2405,16 @@ private:
 			vkDestroyImage(_device, depthImage_, nullptr);
 		if (depthImageMemory_ != VK_NULL_HANDLE)
 			vkFreeMemory(_device, depthImageMemory_, nullptr);
+
+		if (depthStagingBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(_device, depthStagingBuffer_, nullptr); depthStagingBuffer_ = VK_NULL_HANDLE; }
+		if (depthStagingMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthStagingMemory_, nullptr); depthStagingMemory_ = VK_NULL_HANDLE; }
+
+		if (depthVizImageView_ != VK_NULL_HANDLE) vkDestroyImageView(_device, depthVizImageView_, nullptr);
+		if (depthVizImage_ != VK_NULL_HANDLE) vkDestroyImage(_device, depthVizImage_, nullptr);
+		if (depthVizMemory_ != VK_NULL_HANDLE) vkFreeMemory(_device, depthVizMemory_, nullptr);
+		if (depthVizSampler_ != VK_NULL_HANDLE) vkDestroySampler(_device, depthVizSampler_, nullptr);
+		if (depthVizPool_ != VK_NULL_HANDLE) vkDestroyDescriptorPool(_device, depthVizPool_, nullptr);
+		if (depthVizLayout_ != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(_device, depthVizLayout_, nullptr);
 
 		if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
 		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);

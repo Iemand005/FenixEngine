@@ -294,6 +294,23 @@ class OpenGLRenderDevice : public IRenderDevice {
 		return GL_RGBA8;
 	}
 
+	void* UploadToImGui(const unsigned char* rgba, int w, int h) override {
+		static GLuint tex = 0;
+		static int prevW = 0, prevH = 0;
+		if (!tex || w != prevW || h != prevH) {
+			if (tex) glDeleteTextures(1, &tex);
+			glGenTextures(1, &tex);
+			glBindTexture(GL_TEXTURE_2D, tex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			prevW = w; prevH = h;
+		}
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		return (void*)(uintptr_t)tex;
+	}
+
 	const char* GetDeviceName() const override {
 		return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	}

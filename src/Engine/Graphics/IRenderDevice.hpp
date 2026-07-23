@@ -73,6 +73,8 @@ namespace fe {
 
 		virtual bool IsVulkan() const { return false; }
 
+		virtual void* UploadToImGui(const unsigned char* rgba, int w, int h) { return nullptr; }
+
 		virtual const char* GetDeviceName() const = 0;
 	};
 }

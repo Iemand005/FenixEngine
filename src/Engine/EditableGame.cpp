@@ -149,20 +149,10 @@ void fe::EditableGame::DrawDebugUI() {
 
 	static bool showDepthBuffer = false;
 	ImGui::Checkbox("Show Depth Buffer", &showDepthBuffer);
-	if (showDepthBuffer && !useVulkan) {
-		static GLuint depthTex = 0;
-		static int prevW = 0, prevH = 0;
+	if (showDepthBuffer) {
 		std::vector<float> depths;
 		int readW = 0, readH = 0;
 		if (renderDevice->ReadDepthBuffer(depths, readW, readH) && readW > 0 && readH > 0) {
-			if (!depthTex || readW != prevW || readH != prevH) {
-				if (depthTex) glDeleteTextures(1, &depthTex);
-				glGenTextures(1, &depthTex);
-				glBindTexture(GL_TEXTURE_2D, depthTex);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				prevW = readW; prevH = readH;
-			}
 			float mn = 1.0f, mx = 0.0f;
 			for (float d : depths) { if (d < mn) mn = d; if (d > mx) mx = d; }
 			float rng = mx - mn;
@@ -171,12 +161,12 @@ void fe::EditableGame::DrawDebugUI() {
 				unsigned char c = static_cast<unsigned char>(((rng > 0.001f ? (depths[i] - mn) / rng : 0.5f)) * 255.0f);
 				img[i*4] = c; img[i*4+1] = c; img[i*4+2] = c; img[i*4+3] = 255;
 			}
-			glBindTexture(GL_TEXTURE_2D, depthTex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, readW, readH, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
-			glBindTexture(GL_TEXTURE_2D, 0);
-			ImGui::Begin("Depth Buffer");
-			ImGui::Image((ImTextureID)(uintptr_t)depthTex, ImVec2(static_cast<float>(readW), static_cast<float>(readH)));
-			ImGui::End();
+			void* tex = renderDevice->UploadToImGui(img.data(), readW, readH);
+			if (tex) {
+				ImGui::Begin("Depth Buffer");
+				ImGui::Image(tex, ImVec2(static_cast<float>(readW), static_cast<float>(readH)));
+				ImGui::End();
+			}
 		}
 	}
 	
