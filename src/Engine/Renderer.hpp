@@ -15,20 +15,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <type_traits>
-#include <array>
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "engine.h"
 #ifndef EXCLUDE_NETWORKING
 #include "networking/networking.hpp"
 #endif
-// #include "../physics/PhysicsEngine.hpp"
-#include "bases.h"
+
 #include "Object.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
