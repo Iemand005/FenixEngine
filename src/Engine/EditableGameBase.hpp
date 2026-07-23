@@ -3,54 +3,50 @@
 #include "XRGame.hpp"
 
 namespace fe {
-	class EditableGameBase : public XRGame {
+class EditableGameBase : public XRGame {
+	fe::Object* selectedObject = nullptr;
+	int lighselecIndex = -1;
 
-		fe::Object *selectedObject = nullptr;
-		int lighselecIndex = -1;
+	void DrawGizmo(const glm::vec3& position) {
+		if (!scene) return;
+		scene->DrawCircle(position, 10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+		scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
+		scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
+		scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
+	}
 
-		void DrawGizmo(const glm::vec3& position) {
-			if (!scene) return;
-			scene->DrawCircle(position, 10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
-			scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
-			scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
-			scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
-		}
+   public:
+	EditableGameBase() {}
 
-	public:
-		EditableGameBase() {}
+	EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {}
 
-		EditableGameBase(GLADloadproc loadProc) : XRGame(loadProc) {}
+	EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {}
 
-		EditableGameBase(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) {}
+	EditableGameBase(XRGameOptions options) : XRGame(options) {}
 
-		EditableGameBase(XRGameOptions options) : XRGame(options) {}
+	void OnDraw() override {
+		// auto lights = scene->GetLights();
+		// if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
+		// 	DrawGizmo(lights[lighselecIndex].position);
 
-		void OnDraw() override {
-			// auto lights = scene->GetLights();
-			// if (lighselecIndex >=0 && lighselecIndex < kMaxPointLights)
-			// 	DrawGizmo(lights[lighselecIndex].position);
+		// if (selectedObject) DrawGizmo(selectedObject->state.position);
 
-			// if (selectedObject) DrawGizmo(selectedObject->state.position);
-		}
+		auto physics = GetPhysicsEngine();
+		if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+	}
 
-		void SelectObjectByIndex(int index) {
-			// this->geto
-			auto objs = scene->GetObjects();
-			auto objec = objs[index];
-			selectedObject = objec.get();
-		}
+	void SelectObjectByIndex(int index) {
+		// this->geto
+		auto objs = scene->GetObjects();
+		auto objec = objs[index];
+		selectedObject = objec.get();
+	}
 
-		void UnselectObject() {
-			selectedObject = nullptr;
-		}
+	void UnselectObject() { selectedObject = nullptr; }
 
-		void SelectLightByIndex(int index) {
-			lighselecIndex = index;
-		}
+	void SelectLightByIndex(int index) { lighselecIndex = index; }
 
-		void UnselectLight() {
-			lighselecIndex = -1;
-		}
-	};
-	
-} // namespace fe
+	void UnselectLight() { lighselecIndex = -1; }
+};
+
+}  // namespace fe
