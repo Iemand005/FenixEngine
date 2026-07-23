@@ -19,17 +19,19 @@
 using namespace fe;
 
 void fe::EditableGame::DetectAndHandleClick() {
-	if (!scene || !camera || !window) return;
+	if (!scene || !camera) return;
 
-	float mx, my;
-	Uint32 buttons = SDL_GetMouseState(&mx, &my);
-	bool leftDown = (buttons & SDL_BUTTON_LMASK) != 0;
+	for (auto &window : windows) {
+		float mx, my;
+		Uint32 buttons = SDL_GetMouseState(&mx, &my);
+		bool leftDown = (buttons & SDL_BUTTON_LMASK) != 0;
 
-	if (leftDown && !leftWasDown_ && !ImGui::GetIO().WantCaptureMouse) {
-		RaycastSelect(static_cast<int>(mx), static_cast<int>(my), window->width, window->height);
+		if (leftDown && !leftWasDown_ && !ImGui::GetIO().WantCaptureMouse) {
+			RaycastSelect(static_cast<int>(mx), static_cast<int>(my), window->width, window->height);
+		}
+
+		leftWasDown_ = leftDown;
 	}
-
-	leftWasDown_ = leftDown;
 }
 
 void fe::EditableGame::OnDraw() {

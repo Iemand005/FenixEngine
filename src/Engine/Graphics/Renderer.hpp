@@ -72,7 +72,7 @@ namespace fe {
 
 class Renderer {
 public:
-	std::unique_ptr<IWindow> window = nullptr;
+	std::vector<std::unique_ptr<IWindow>> windows;
 	std::unique_ptr<Scene> scene;
 	std::unique_ptr<Camera> camera;
 	std::unique_ptr<ShaderProgram> shader;
@@ -198,9 +198,10 @@ public:
 	
 #ifdef FE_HAS_WINDOW
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		this->window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
+		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
 		PushShaderPathsToVulkanDevice();
 		renderDevice->Init(window.get());
+		windows.push_back(std::move(window));
 	}
 
 	template<typename WindowT = DefaultWindow>
