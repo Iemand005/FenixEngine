@@ -53,7 +53,7 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 	WheeledVehicleControllerSettings* controllerSettings = new WheeledVehicleControllerSettings;
 	vehicleSettings.mController = controllerSettings;
 
-	controllerSettings->mEngine.mMaxTorque = 1200.0f;
+	controllerSettings->mEngine.mMaxTorque = 2200.0f;
 	controllerSettings->mEngine.mMinRPM = 1000.0f;
 	controllerSettings->mEngine.mMaxRPM = 8000.0f;
 	controllerSettings->mEngine.mInertia = 0.3f;
