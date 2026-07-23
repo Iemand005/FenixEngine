@@ -45,9 +45,8 @@ namespace fe {
 
 		void DetectAndHandleClick();
 		void InitImGUI() {
-			// rENDE
 			auto renderer = (Renderer*)this;
-			fe::SDLWindow *window = (fe::SDLWindow*)renderer->window.get();
+			auto window = GetWindow<SDLWindow>();
 			const char* glsl_version = "#version 330 core";
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
