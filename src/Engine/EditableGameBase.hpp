@@ -2,6 +2,8 @@
 
 #include "XRGame.hpp"
 
+#include "physics/PhysicsFactory.hpp"
+
 namespace fe {
 class EditableGameBase : public XRGame {
 	fe::Object* selectedObject = nullptr;

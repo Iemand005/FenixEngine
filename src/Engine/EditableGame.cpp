@@ -290,10 +290,11 @@ void fe::EditableGame::DrawDebugUI() {
 			if (this->player) {
 				this->player->gravityEnabled = physicsGravityEnabled;
 			}
-			if (physicsGravityEnabled) {
-				if (GetPhysicsFactory()) GetPhysicsFactory()->EnableGravity();
-			} else {
-				if (GetPhysicsFactory()) GetPhysicsFactory()->DisableGravity();
+			auto physics = GetPhysicsFactory();
+			if (physics) {
+				if (physicsGravityEnabled)
+					physics->EnableGravity();
+				else physics->DisableGravity();
 			}
 		}
 
