@@ -123,6 +123,11 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string&
 							ImageData img;
 							img.width = w; img.height = h; img.channels = 4;
 							img.pixels.assign(pixels, pixels + w * h * 4);
+							if (!mesh.hasTransparency && n == 4) {
+								for (int i = 3; i < w * h * 4; i += 4) {
+									if (pixels[i] < 255) { mesh.hasTransparency = true; break; }
+								}
+							}
 							stbi_image_free(pixels);
 							mesh.loadTexture(img);
 						}
