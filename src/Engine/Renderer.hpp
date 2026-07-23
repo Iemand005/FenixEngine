@@ -9,7 +9,7 @@
 #endif
 
 #include <glad/glad.h>
-#include "../../stdafx.h"
+// #include "../stdafx.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,30 +23,30 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../engine.h"
+#include "engine.h"
 #ifndef EXCLUDE_NETWORKING
-#include "../networking/networking.hpp"
+#include "networking/networking.hpp"
 #endif
 // #include "../physics/PhysicsEngine.hpp"
-#include "../bases.h"
-#include "../Object.hpp"
-#include "../Camera.hpp"
-#include "../ShaderProgram.hpp"
-#include "../ScreenSaverMode.hpp"
-#include "../Timer.hpp"
-#include "../Scene.hpp"
+#include "bases.h"
+#include "Object.hpp"
+#include "Camera.hpp"
+#include "ShaderProgram.hpp"
+#include "ScreenSaverMode.hpp"
+#include "Timer.hpp"
+#include "Scene.hpp"
 class Character;
 
-#include "IRenderDevice.hpp"
-#include "OpenGLRenderDevice.hpp"
-#include "VulkanDevice.hpp"
+#include "Graphics/IRenderDevice.hpp"
+#include "Graphics/OpenGLRenderDevice.hpp"
+#include "Graphics/VulkanDevice.hpp"
 
-#include "../window/IWindow.hpp"
+#include "window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
-#include "../window/SDLWindow.hpp"
+#include "window/SDLWindow.hpp"
 #endif
 #ifndef FE_EXCLUDE_GLFW
-#include "../window/GLFW3Window.hpp"
+#include "window/GLFW3Window.hpp"
 #endif
 
 #ifndef FE_EXCLUDE_SDL
