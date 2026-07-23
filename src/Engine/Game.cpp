@@ -7,7 +7,7 @@ using namespace fe;
 
 struct Game::Impl {
 #ifndef EXCLUDE_JOLT
-	std::unique_ptr<PhysicsFactory> physicsEngine = nullptr;
+	std::unique_ptr<PhysicsFactory> PhysicsFactory = nullptr;
 #endif
 };
 
@@ -30,9 +30,9 @@ Game::Game(RendererOptions options) : Renderer(options) {
 }
 
 
-PhysicsFactory *Game::GetPhysicsEngine() {
+PhysicsFactory *Game::GetPhysicsFactory() {
 #ifndef EXCLUDE_JOLT
-	return impl->physicsEngine.get();
+	return impl->PhysicsFactory.get();
 #endif
 }
 
@@ -42,7 +42,7 @@ void Game::Init() {
 	SetClearColor(0.0F, 0.0F, 0.0f);
 
 #ifndef EXCLUDE_JOLT
-	impl->physicsEngine = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
+	impl->PhysicsFactory = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
 #endif
 	
 	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
@@ -65,6 +65,6 @@ void Game::LoadModel(const std::string& path) {
 
 void Game::UpdatePhysics(double deltaTime) {
 #ifndef EXCLUDE_JOLT
-	if (impl->physicsEngine) impl->physicsEngine->Update(deltaTime);
+	if (impl->PhysicsFactory) impl->PhysicsFactory->Update(deltaTime);
 #endif
 }

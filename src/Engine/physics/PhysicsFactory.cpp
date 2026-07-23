@@ -25,7 +25,7 @@
 #include <Jolt/RegisterTypes.h>
 #endif
 
-#include "PhysicsEngine.hpp"
+#include "PhysicsFactory.hpp"
 #include "PhysicsVehicle.hpp"
 #include "BasicDebugRenderer.hpp"
 

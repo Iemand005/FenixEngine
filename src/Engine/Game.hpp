@@ -85,7 +85,7 @@ class Game : public Renderer {
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
 
-	PhysicsFactory* GetPhysicsEngine();
+	PhysicsFactory* GetPhysicsFactory();
 
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) { Renderer::LoadShaders(vertexShaderPath, fragmentShaderPath); }
 

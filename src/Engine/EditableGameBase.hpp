@@ -28,7 +28,7 @@ class EditableGameBase : public XRGame {
 	void OnDraw() override {
 		if (selectedObject) DrawGizmo(selectedObject->state.position);
 
-		auto physics = GetPhysicsEngine();
+		auto physics = GetPhysicsFactory();
 		if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 

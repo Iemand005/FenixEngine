@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "physics/PhysicsEngine.hpp"
+#include "physics/PhysicsFactory.hpp"
 
 #ifdef OBJ_LOADER
 #include <OBJ_Loader.h>

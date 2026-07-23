@@ -66,8 +66,8 @@
 		<Unit filename="src/Engine/physics/BasicDebugRenderer.cpp" />
 		<Unit filename="src/Engine/physics/BasicDebugRenderer.hpp" />
 		<Unit filename="src/Engine/physics/IPhysicsObject.hpp" />
-		<Unit filename="src/Engine/physics/PhysicsEngine.cpp" />
-		<Unit filename="src/Engine/physics/PhysicsEngine.hpp" />
+		<Unit filename="src/Engine/physics/PhysicsFactory.cpp" />
+		<Unit filename="src/Engine/physics/PhysicsFactory.hpp" />
 		<Unit filename="src/Engine/physics/PhysicsObject.cpp" />
 		<Unit filename="src/Engine/physics/PhysicsObject.hpp" />
 		<Unit filename="src/Engine/saver/Level.hpp" />
