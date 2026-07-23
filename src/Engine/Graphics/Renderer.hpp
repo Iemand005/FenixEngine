@@ -379,7 +379,7 @@ public:
 		if (this->camera) this->camera->SetAspect(width, height);
 	}
 
-	bool ShouldClose() { return this->window->ShouldClose(); }
+	bool ShouldClose() { return this->GetWindow()->ShouldClose(); }
 
 	void Destroy() {
 		if (window) window->Destroy();
