@@ -64,7 +64,7 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 
 add_library(Renderer STATIC
 	glad/glad.c
-	Graphics/Renderer.cpp
+	Renderer.cpp
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
 	Graphics/VulkanRenderDevice.cpp
