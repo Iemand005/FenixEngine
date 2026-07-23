@@ -41,7 +41,9 @@ namespace fe {
 		ImGuiIO io;
 
 		bool physicsGravityEnabled = true;
+		bool leftWasDown_ = false;
 
+		void DetectAndHandleClick();
 		void InitImGUI() {
 			// rENDE
 			auto renderer = (Renderer*)this;

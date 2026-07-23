@@ -6,6 +6,7 @@ namespace fe {
 class EditableGameBase : public XRGame {
 	fe::Object* selectedObject = nullptr;
 	int lighselecIndex = -1;
+	bool selectModeEnabled_ = false;
 
 	void DrawGizmo(const glm::vec3& position) {
 		if (!scene) return;
@@ -30,6 +31,11 @@ class EditableGameBase : public XRGame {
 		auto physics = GetPhysicsEngine();
 		if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
+
+	bool IsSelectModeEnabled() const { return selectModeEnabled_; }
+	void SetSelectModeEnabled(bool enabled) { selectModeEnabled_ = enabled; }
+
+	void RaycastSelect(int mx, int my, int w, int h);
 
 	void SelectObjectByIndex(int index) {
 		auto objs = scene->GetObjects();

@@ -5,6 +5,11 @@
 #include <imgui.h>
 
 #include <algorithm>
+#include <limits>
+
+#include <SDL3/SDL.h>
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Camera.hpp"
 #include "Object.hpp"
@@ -13,7 +18,101 @@
 
 using namespace fe;
 
-void fe::EditableGame::OnDraw() { EditableGameBase::OnDraw(); }
+void fe::EditableGame::DetectAndHandleClick() {
+	if (!scene || !camera || !window) return;
+
+	float mx, my;
+	Uint32 buttons = SDL_GetMouseState(&mx, &my);
+	bool leftDown = (buttons & SDL_BUTTON_LMASK) != 0;
+
+	if (leftDown && !leftWasDown_ && !ImGui::GetIO().WantCaptureMouse) {
+		RaycastSelect(static_cast<int>(mx), static_cast<int>(my), window->width, window->height);
+	}
+
+	leftWasDown_ = leftDown;
+}
+
+void fe::EditableGame::OnDraw() {
+	if (IsSelectModeEnabled())
+		DetectAndHandleClick();
+	EditableGameBase::OnDraw();
+}
+
+static void RaycastNode(fe::Object* obj, const glm::vec3& rayOrigin, const glm::vec3& rayDir, fe::Object*& hitObject, float& closestT) {
+	glm::mat4 modelMatrix = obj->GetModelMatrix();
+	glm::mat4 invModel = glm::inverse(modelMatrix);
+
+	glm::vec3 localOrigin = glm::vec3(invModel * glm::vec4(rayOrigin, 1.0f));
+	glm::vec3 localDir = glm::normalize(glm::vec3(invModel * glm::vec4(rayDir, 0.0f)));
+
+	for (auto& mesh : obj->meshes) {
+		std::vector<glm::vec3> positions;
+		mesh->GetPositions(positions);
+		const auto& indices = mesh->GetIndices();
+
+		if (indices.empty() || positions.empty()) continue;
+
+		for (size_t i = 0; i + 2 < indices.size(); i += 3) {
+			const glm::vec3& v0 = positions[indices[i]];
+			const glm::vec3& v1 = positions[indices[i + 1]];
+			const glm::vec3& v2 = positions[indices[i + 2]];
+
+			glm::vec3 e1 = v1 - v0;
+			glm::vec3 e2 = v2 - v0;
+			glm::vec3 p = glm::cross(localDir, e2);
+			float det = glm::dot(e1, p);
+
+			if (std::abs(det) < 1e-8f) continue;
+			float invDet = 1.0f / det;
+
+			glm::vec3 tVec = localOrigin - v0;
+			float u = glm::dot(tVec, p) * invDet;
+			if (u < 0.0f || u > 1.0f) continue;
+
+			glm::vec3 q = glm::cross(tVec, e1);
+			float v = glm::dot(localDir, q) * invDet;
+			if (v < 0.0f || u + v > 1.0f) continue;
+
+			float t = glm::dot(e2, q) * invDet;
+			if (t > 0.0f && t < closestT) {
+				closestT = t;
+				hitObject = obj;
+			}
+		}
+	}
+
+	for (auto& child : obj->children)
+		RaycastNode(child.get(), rayOrigin, rayDir, hitObject, closestT);
+}
+
+void fe::EditableGameBase::RaycastSelect(int mx, int my, int w, int h) {
+	if (!scene || !camera) return;
+
+	glm::vec3 nearPos = glm::unProject(
+		glm::vec3(static_cast<float>(mx), static_cast<float>(h - my), 0.0f),
+		camera->GetViewMatrix(),
+		camera->GetProjectionMatrix(),
+		glm::vec4(0, 0, w, h)
+	);
+	glm::vec3 farPos = glm::unProject(
+		glm::vec3(static_cast<float>(mx), static_cast<float>(h - my), 1.0f),
+		camera->GetViewMatrix(),
+		camera->GetProjectionMatrix(),
+		glm::vec4(0, 0, w, h)
+	);
+
+	glm::vec3 rayOrigin = nearPos;
+	glm::vec3 rayDir = glm::normalize(farPos - nearPos);
+
+	Object* hitObject = nullptr;
+	float closestT = std::numeric_limits<float>::max();
+
+	for (auto& obj : scene->GetObjects())
+		RaycastNode(obj.get(), rayOrigin, rayDir, hitObject, closestT);
+
+	if (hitObject)
+		SelectObject(hitObject);
+}
 
 void DrawObjectNode(Object* object, Camera* camera, Scene* scene, EditableGame* game, float step) {
 	ImGui::PushID(object);
@@ -115,6 +214,10 @@ void fe::EditableGame::DrawDebugUI() {
 		ImGui::Text("Vertices: %zu", totalVertices);
 
 		ImGui::Checkbox("Frustum Culling", &frustumCullingEnabled);
+
+		bool selectMode = IsSelectModeEnabled();
+		if (ImGui::Checkbox("Select Mode (click 3D objects)", &selectMode))
+			SetSelectModeEnabled(selectMode);
 
 		if (ImGui::Button("Enable VR!", ImVec2(100, 20))) {
 			this->EnableXR();
