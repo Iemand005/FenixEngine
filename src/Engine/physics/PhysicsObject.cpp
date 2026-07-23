@@ -132,7 +132,7 @@ struct PhysicsObject::Impl {
 		);
 		
 		// Configure body properties
-		bodySettings.mFriction = 0.5f;
+		bodySettings.mFriction = 1.0f;
 		bodySettings.mRestitution = 0.1f;
 		bodySettings.mLinearDamping = 0.05f;
 		bodySettings.mAngularDamping = 0.05f;

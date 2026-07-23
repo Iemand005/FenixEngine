@@ -21,14 +21,12 @@ PhysicsVehicle::PhysicsVehicle() = default;
 
 PhysicsVehicle::~PhysicsVehicle() {
 #ifndef EXCLUDE_JOLT
-	if (constraint) {
-		if (physicsSystem) {
-			physicsSystem->RemoveStepListener(constraint);
-			physicsSystem->RemoveConstraint(constraint);
-		}
-		constraint->Release();
-		constraint = nullptr;
+	if (!constraint) return;
+	if (physicsSystem) {
+		physicsSystem->RemoveStepListener(constraint);
+		physicsSystem->RemoveConstraint(constraint);
 	}
+	constraint->Release();
 #endif
 }
 
