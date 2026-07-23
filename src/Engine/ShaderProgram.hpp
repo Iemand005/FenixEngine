@@ -1,12 +1,9 @@
 #pragma once
 #include <glad/glad.h>
 
-#include <chrono>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <string>
+\#include <cstdio>
+\#include <iostream>
+\#include <string>
 #include <unordered_set>
 
 #include <glm/glm.hpp>

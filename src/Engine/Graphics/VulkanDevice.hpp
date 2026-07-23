@@ -157,6 +157,42 @@ public:
 
 		vkCmdEndRenderPass(cmd);
 
+		if (depthReadbackRequested_) {
+			auto extent = swapChainExtent_;
+			VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
+			if (depthStagingBuffer_ == VK_NULL_HANDLE) {
+				createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+					depthStagingBuffer_, depthStagingMemory_);
+			}
+
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.image = depthImage_;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+			VkBufferImageCopy copyRegion{};
+			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			copyRegion.imageSubresource.layerCount = 1;
+			copyRegion.imageExtent = {extent.width, extent.height, 1};
+			vkCmdCopyImageToBuffer(cmd, depthImage_, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, depthStagingBuffer_, 1, &copyRegion);
+
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+			depthReadbackAvailable_ = false;
+		}
+
 		if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer.");
 		}
@@ -198,6 +234,27 @@ public:
 
 	void Clear() override {
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+
+		if (depthReadbackRequested_ && depthStagingBuffer_ != VK_NULL_HANDLE && !depthReadbackAvailable_) {
+			void* data;
+			vkMapMemory(_device, depthStagingMemory_, 0, VK_WHOLE_SIZE, 0, &data);
+			VkFormat depthFormat = findDepthFormat();
+			size_t pixelCount = static_cast<size_t>(swapChainExtent_.width) * swapChainExtent_.height;
+			cachedDepthData_.resize(pixelCount);
+			cachedDepthW_ = static_cast<int>(swapChainExtent_.width);
+			cachedDepthH_ = static_cast<int>(swapChainExtent_.height);
+			if (depthFormat == VK_FORMAT_D24_UNORM_S8_UINT) {
+				const uint32_t* pixels = static_cast<const uint32_t*>(data);
+				for (size_t i = 0; i < pixelCount; i++) {
+					cachedDepthData_[i] = static_cast<float>(pixels[i] & 0x00FFFFFF) / 16777215.0f;
+				}
+			} else {
+				const float* pixels = static_cast<const float*>(data);
+				std::copy(pixels, pixels + pixelCount, cachedDepthData_.begin());
+			}
+			vkUnmapMemory(_device, depthStagingMemory_);
+			depthReadbackAvailable_ = true;
+		}
 
 		VkResult result = vkAcquireNextImageKHR(_device, swapChain_, UINT64_MAX,
 			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
@@ -625,6 +682,19 @@ public:
 		transparentMode_ = enabled;
 	}
 
+	bool ReadDepthBuffer(std::vector<float>& outDepths, int& outW, int& outH) override {
+		if (!depthReadbackRequested_) {
+			depthReadbackRequested_ = true;
+		}
+		if (!depthReadbackAvailable_) {
+			return false;
+		}
+		outDepths = cachedDepthData_;
+		outW = cachedDepthW_;
+		outH = cachedDepthH_;
+		return true;
+	}
+
 	uint64_t CreateFramebuffer(uint64_t nativeImage, uint32_t w, uint32_t h, uint32_t layer = 0, uint64_t depthFormat = 0, uint64_t colorFormat = 0) override {
 		VkImage colorImage = colorFormat != 0
 			? reinterpret_cast<VkImage>(nativeImage)
@@ -952,6 +1022,13 @@ private:
 	VkImage depthImage_ = VK_NULL_HANDLE;
 	VkDeviceMemory depthImageMemory_ = VK_NULL_HANDLE;
 	VkImageView depthImageView_ = VK_NULL_HANDLE;
+
+	VkBuffer depthStagingBuffer_ = VK_NULL_HANDLE;
+	VkDeviceMemory depthStagingMemory_ = VK_NULL_HANDLE;
+	bool depthReadbackRequested_ = false;
+	bool depthReadbackAvailable_ = false;
+	std::vector<float> cachedDepthData_;
+	int cachedDepthW_ = 0, cachedDepthH_ = 0;
 
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers_;
@@ -2053,6 +2130,11 @@ private:
 		if (depthImageView_ != VK_NULL_HANDLE) { vkDestroyImageView(_device, depthImageView_, nullptr); depthImageView_ = VK_NULL_HANDLE; }
 		if (depthImage_ != VK_NULL_HANDLE) { vkDestroyImage(_device, depthImage_, nullptr); depthImage_ = VK_NULL_HANDLE; }
 		if (depthImageMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthImageMemory_, nullptr); depthImageMemory_ = VK_NULL_HANDLE; }
+
+		if (depthStagingBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(_device, depthStagingBuffer_, nullptr); depthStagingBuffer_ = VK_NULL_HANDLE; }
+		if (depthStagingMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthStagingMemory_, nullptr); depthStagingMemory_ = VK_NULL_HANDLE; }
+		depthReadbackAvailable_ = false;
+		cachedDepthData_.clear();
 
 		if (swapChain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, swapChain_, nullptr); swapChain_ = VK_NULL_HANDLE; }
 	}

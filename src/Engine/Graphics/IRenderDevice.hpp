@@ -51,6 +51,7 @@ namespace fe {
 
 		virtual void SetFrontFace(bool ccw) {}
 		virtual void SetTransparentMode(bool enabled) {}
+		virtual bool ReadDepthBuffer(std::vector<float>& outDepths, int& outW, int& outH) { return false; }
 
 		virtual void EnableWireframe() {}
 		virtual void DisableWireframe() {}

@@ -80,6 +80,18 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void SetTransparentMode(bool enabled) override {
 		glDepthMask(enabled ? GL_FALSE : GL_TRUE);
 	}
+
+	bool ReadDepthBuffer(std::vector<float>& outDepths, int& outW, int& outH) override {
+		GLint vp[4];
+		glGetIntegerv(GL_VIEWPORT, vp);
+		int fbW = vp[2], fbH = vp[3];
+		if (fbW <= 0 || fbH <= 0) return false;
+		outW = std::min(fbW, 640);
+		outH = fbH * outW / fbW;
+		outDepths.resize(static_cast<size_t>(outW) * outH);
+		glReadPixels(0, 0, outW, outH, GL_DEPTH_COMPONENT, GL_FLOAT, outDepths.data());
+		return true;
+	}
 	void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
 	void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
 	void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
