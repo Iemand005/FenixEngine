@@ -365,6 +365,8 @@ void fe::EditableGame::DrawDebugUI() {
 
 		if (ImGui::Button("Clear objects")) this->scene->ClearObjects();
 
+		if (ImGui::Button("New Window!")) NewWindow(500, 500);
+
 		static bool snapToGrid = true;
 		ImGui::Checkbox("Snap to grid", &snapToGrid);
 		float step = snapToGrid ? 0.1f : 0.0001f;
