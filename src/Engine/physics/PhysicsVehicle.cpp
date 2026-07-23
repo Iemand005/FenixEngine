@@ -129,13 +129,8 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 
 void PhysicsVehicle::SetDriverInput(float forward, float right, float brake, float handbrake) {
 #ifndef EXCLUDE_JOLT
-	if (controller) {
+	if (controller)
 		controller->SetDriverInput(forward, right, brake, handbrake);
-	}
-	
-	if (body && physicsSystem && (forward != 0.0f || brake != 0.0f || handbrake != 0.0f)) {
-    	physicsSystem->GetBodyInterface().ActivateBody(body->GetBodyID());
-	}
 #endif
 }
 
