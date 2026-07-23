@@ -366,7 +366,7 @@ public:
 
 	template<typename WindowT = IWindow>
 	WindowT* GetWindow() {
-		return (WindowT*)this->window.get();
+		return (WindowT*)this->windows.front().get();
 	}
 
 	double GetFPS() {
