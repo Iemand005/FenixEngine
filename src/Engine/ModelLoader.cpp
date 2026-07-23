@@ -125,7 +125,8 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string&
 							img.pixels.assign(pixels, pixels + w * h * 4);
 							if (!mesh.hasTransparency && n == 4) {
 								for (int i = 3; i < w * h * 4; i += 4) {
-									if (pixels[i] < 255) { mesh.hasTransparency = true; break; }
+									uint8_t a = pixels[i];
+									if (a > 0 && a < 255) { mesh.hasTransparency = true; break; }
 								}
 							}
 							stbi_image_free(pixels);
