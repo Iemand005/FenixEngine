@@ -27,6 +27,7 @@ public:
 	glm::mat4 modelMatrix{1.0f};
 	float boundingRadius = 0.0f;
 	glm::vec3 boundingCenterOffset{0.0f};
+	glm::vec3 visualOffset{0.0f};
 
 	bool isStatic = false;
 	bool touchedGround = false;
@@ -56,7 +57,7 @@ public:
 	virtual size_t GetTotalVertexCount() const { return 0; }
 
 	virtual glm::mat4 GetModelMatrix() {
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position);
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position + this->visualOffset);
 		if (glm::length(this->state.orientation - glm::quat(1, 0, 0, 0)) > 0.001f) {
 			model = model * glm::mat4_cast(this->state.orientation);
 		} else {
@@ -162,6 +163,7 @@ public:
 		}
 		newObj->state = this->state;
 		newObj->state.scale = this->state.scale;
+		newObj->visualOffset = this->visualOffset;
 		newObj->name = this->name;
 		newObj->sourcePath = this->sourcePath;
 		newObj->isStatic = this->isStatic;
