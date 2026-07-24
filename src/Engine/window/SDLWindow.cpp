@@ -193,16 +193,14 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
 		}
 
-		if (sharedContext) {
-			SDL_GL_MakeCurrent(impl->window, sharedContext);
-		}
-
 		impl->gl_context = SDL_GL_CreateContext(impl->window);
 		if (!impl->gl_context) {
 			CheckError();
 			SDL_DestroyWindow(impl->window);
 			SDL_Quit();
 		}
+
+		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
 
 		if (!sharedContext) {
 			if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
