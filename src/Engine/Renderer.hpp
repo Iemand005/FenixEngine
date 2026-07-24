@@ -398,8 +398,8 @@ public:
 			if (vw > 0 && vh > 0)
 				d->Resize(vw, vh);
 
-			d->EnableDepthTest();
-			d->EnableFaceCulling();
+			// d->EnableDepthTest();
+			// d->EnableFaceCulling();
 
 			d->Clear();
 
