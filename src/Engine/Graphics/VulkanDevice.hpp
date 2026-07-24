@@ -66,9 +66,20 @@ struct SwapChainSupportDetails {
 struct VulkanWindowResources {
     VkSurfaceKHR surface;
     VkSwapchainKHR swapchain;
+    std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> imageViews;
-	
-	std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<VkFramebuffer> framebuffers;
+    VkFormat imageFormat = VK_FORMAT_UNDEFINED;
+    VkExtent2D extent{};
+
+    VkImage depthImage = VK_NULL_HANDLE;
+    VkDeviceMemory depthImageMemory = VK_NULL_HANDLE;
+    VkImageView depthImageView = VK_NULL_HANDLE;
+
+    VkBuffer depthStagingBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory depthStagingMemory = VK_NULL_HANDLE;
+
+    std::vector<VkCommandBuffer> commandBuffers;
 };
 
 
@@ -124,23 +135,10 @@ public:
 
 	void Init(IWindow *window) override {
 		CreateInstance(window);
-		
-		VulkanWindowResources resources;
-		
-		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
-		_surface = resources.surface;
-		
+		currentWindow_ = window;
+
 		PickPhysicalDevice();
-
-		
-		// RegisterWindow(window);
 		createLogicalDevice();
-		
-		resources.swapchain = createSwapChain(resources.surface);
-		swapChain_ = resources.swapchain;
-		windowRegistry[window] = resources;
-
-		createImageViews();
 		createRenderPass();
 		createDescriptorSetLayout();
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
@@ -156,16 +154,15 @@ public:
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
 		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
 		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
-		createDepthResources();
-		createFramebuffers();
 		createCommandPool();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDefaultTexture();
 		createDescriptorSets();
 		createFrameDescriptorSets();
-		createCommandBuffers();
 		createSyncObjects();
+
+		setupWindowResources(window);
 	}
 	// VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
 	//     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
@@ -258,17 +255,7 @@ public:
 	}
 
 	void RegisterWindow(IWindow* window) override {
-		// void* nativeHandle = window->GetWindow();
-		
-		VulkanWindowResources resources;
-		// Create your VkSurfaceKHR using the nativeHandle here...
-		// Create your VkSwapchainKHR...
-
-		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
-
-		resources.swapchain = createSwapChain(resources.surface);
-		
-		windowRegistry[window] = resources;
+		setupWindowResources(window);
 	}
 
 	void UnregisterWindow(const IWindow* window) override {
@@ -1181,20 +1168,15 @@ private:
 	static inline bool preferIntegratedGPU_ = false;
 
 	VkInstance _instance = VK_NULL_HANDLE;
-	VkSurfaceKHR _surface = VK_NULL_HANDLE;
 	std::unordered_map<const IWindow*, VulkanWindowResources> windowRegistry;
+	const IWindow* currentWindow_ = nullptr;
 	VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 	VkDevice _device = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
 	VkQueue presentQueue_ = VK_NULL_HANDLE;
 	uint32_t graphicsQueueFamily_ = 0;
 
-	VkSwapchainKHR swapChain_ = VK_NULL_HANDLE;
-	std::vector<VkImage> swapChainImages_;
-	std::vector<VkImageView> swapChainImageViews_;
-	std::vector<VkFramebuffer> swapChainFramebuffers_;
 	VkFormat swapChainImageFormat_ = VK_FORMAT_UNDEFINED;
-	VkExtent2D swapChainExtent_{};
 
 	VkRenderPass renderPass_ = VK_NULL_HANDLE;
 	VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
@@ -1227,12 +1209,6 @@ private:
 	VkImageView defaultImageView_ = VK_NULL_HANDLE;
 	VkSampler defaultSampler_ = VK_NULL_HANDLE;
 
-	VkImage depthImage_ = VK_NULL_HANDLE;
-	VkDeviceMemory depthImageMemory_ = VK_NULL_HANDLE;
-	VkImageView depthImageView_ = VK_NULL_HANDLE;
-
-	VkBuffer depthStagingBuffer_ = VK_NULL_HANDLE;
-	VkDeviceMemory depthStagingMemory_ = VK_NULL_HANDLE;
 	bool depthReadbackRequested_ = false;
 	bool depthReadbackAvailable_ = false;
 	std::vector<float> cachedDepthData_;
@@ -1325,22 +1301,22 @@ private:
 		return requiredExtensions.empty();
 	}
 
-	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev) {
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice dev, VkSurfaceKHR surface) {
 		SwapChainSupportDetails details;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, _surface, &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, surface, &details.capabilities);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &formatCount, nullptr);
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, _surface, &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &formatCount, details.formats.data());
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface, &presentModeCount, nullptr);
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, _surface, &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(dev, surface, &presentModeCount, details.presentModes.data());
 		}
 
 		return details;
@@ -1418,12 +1394,11 @@ private:
 	}
 
 	void createSwapChain(IWindow *window) {
-		// if (@windowRegistry[windo)
-		windowRegistry[window].swapchain = createSwapChain(windowRegistry[window].surface);
+		createSwapChain(windowRegistry[window].surface, windowRegistry[window]);
 	}
 
-	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface) {
-		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice);
+	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface, VulkanWindowResources& res) {
+		SwapChainSupportDetails support = querySwapChainSupport(surface);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
