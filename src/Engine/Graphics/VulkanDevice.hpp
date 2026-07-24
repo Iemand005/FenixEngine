@@ -2355,11 +2355,12 @@ private:
 		for (auto& fence : inFlightFences_) vkDestroyFence(_device, fence, nullptr);
 		inFlightFences_.clear();
 
-		swapChain_ = createSwapChain(surface); // TODO return this and blablaaaa do the right oneee
+		auto swappain = createSwapChain(surface);
 		createImageViews();
 		createDepthResources();
 		createFramebuffers();
 		createSyncObjects();
+		return swappain;
 	}
 
 	// ---------------------------------------------------------------
