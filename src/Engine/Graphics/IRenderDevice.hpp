@@ -29,8 +29,8 @@ namespace fe {
 		virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
 		virtual void SubmitFrame() = 0;
 
-		virtual void RegisterWindow(IWindow* window);
-		virtual void UnregisterWindow(const IWindow* window);
+		virtual void RegisterWindow(IWindow* window) {}
+		virtual void UnregisterWindow(const IWindow* window) {}
 
 		virtual std::unique_ptr<IGPUBuffers> CreateGPUBuffers() { return nullptr; }
 		virtual std::unique_ptr<IGPUTexture> CreateGPUTexture() { return nullptr; }
