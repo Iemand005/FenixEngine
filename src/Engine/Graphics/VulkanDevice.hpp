@@ -238,12 +238,14 @@ public:
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	}
 
-	void RegisterWindow(const IWindow* window) override {
+	void RegisterWindow(IWindow* window) override {
 			// void* nativeHandle = window->GetWindow();
 			
 			VulkanWindowResources resources;
 			// Create your VkSurfaceKHR using the nativeHandle here...
 			// Create your VkSwapchainKHR...
+
+			resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
 			
 			windowRegistry[window] = resources;
 		}

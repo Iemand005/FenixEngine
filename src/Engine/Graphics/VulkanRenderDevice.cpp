@@ -39,7 +39,8 @@ void VulkanDevice::CreateInstance() {
 
 // void VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR
 void VulkanDevice::CreateSurface(IWindow *window) {
-	_surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+	auto surface  = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+	RegisterWindow(const IWindow *window)
 }
 
 void VulkanDevice::PickPhysicalDevice() {
