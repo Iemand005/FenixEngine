@@ -116,11 +116,7 @@ public:
 
 	void PushShaderPathsToVulkanDevice() {
 		if (!renderDevice) return;
-		auto* vkDev = dynamic_cast<VulkanDevice*>(renderDevice.get());
-		if (!vkDev) return;
-		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
-		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
-		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+		PushShaderPathsToDevice(renderDevice.get());
 	}
 
 	void PushShaderPathsToDevice(IRenderDevice* device) {
