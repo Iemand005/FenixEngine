@@ -273,7 +273,7 @@ public:
 	void UnregisterWindow(const IWindow* window) override {
 		auto it = windowRegistry.find(window);
 		if (it != windowRegistry.end()) {
-			// Destroy Vulkan resources using vkDestroySwapchainKHR, vkDestroySurfaceKHR
+			cleanupWindowResources(it->second);
 			windowRegistry.erase(it);
 		}
 	}
@@ -1283,7 +1283,6 @@ private:
 	int depthVizW_ = 0, depthVizH_ = 0;
 
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
-	// std::vector<VkCommandBuffer> commandBuffers_;
 
 	std::vector<VkSemaphore> imageAvailableSemaphores_;
 	std::vector<VkSemaphore> renderFinishedSemaphores_;
@@ -2426,6 +2425,8 @@ private:
 	// Cleanup
 	// ---------------------------------------------------------------
 	void cleanup() {
+		vkDeviceWaitIdle(_device);
+
 		if (xrRenderPass_ != VK_NULL_HANDLE) {
 			vkDestroyRenderPass(_device, xrRenderPass_, nullptr);
 			xrRenderPass_ = VK_NULL_HANDLE;
@@ -2442,12 +2443,15 @@ private:
 			if (inFlightFences_[i] != VK_NULL_HANDLE)
 				vkDestroyFence(_device, inFlightFences_[i], nullptr);
 		}
+		inFlightFences_.clear();
 
 		if (commandPool_ != VK_NULL_HANDLE)
 			vkDestroyCommandPool(_device, commandPool_, nullptr);
 
-		for (auto framebuffer : swapChainFramebuffers_)
-			vkDestroyFramebuffer(_device, framebuffer, nullptr);
+		for (auto& [window, res] : windowRegistry) {
+			cleanupWindowResources(res);
+		}
+		windowRegistry.clear();
 
 		if (graphicsPipeline_ != VK_NULL_HANDLE)
 			vkDestroyPipeline(_device, graphicsPipeline_, nullptr);
@@ -2478,11 +2482,6 @@ private:
 		if (renderPass_ != VK_NULL_HANDLE)
 			vkDestroyRenderPass(_device, renderPass_, nullptr);
 
-		for (auto imageView : swapChainImageViews_)
-			vkDestroyImageView(_device, imageView, nullptr);
-		if (swapChain_ != VK_NULL_HANDLE)
-			vkDestroySwapchainKHR(_device, swapChain_, nullptr);
-
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (uniformBuffers_[i] != VK_NULL_HANDLE)
 				vkDestroyBuffer(_device, uniformBuffers_[i], nullptr);
@@ -2500,16 +2499,6 @@ private:
 		if (defaultImage_ != VK_NULL_HANDLE) vkDestroyImage(_device, defaultImage_, nullptr);
 		if (defaultImageMemory_ != VK_NULL_HANDLE) vkFreeMemory(_device, defaultImageMemory_, nullptr);
 
-		if (depthImageView_ != VK_NULL_HANDLE)
-			vkDestroyImageView(_device, depthImageView_, nullptr);
-		if (depthImage_ != VK_NULL_HANDLE)
-			vkDestroyImage(_device, depthImage_, nullptr);
-		if (depthImageMemory_ != VK_NULL_HANDLE)
-			vkFreeMemory(_device, depthImageMemory_, nullptr);
-
-		if (depthStagingBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(_device, depthStagingBuffer_, nullptr); depthStagingBuffer_ = VK_NULL_HANDLE; }
-		if (depthStagingMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthStagingMemory_, nullptr); depthStagingMemory_ = VK_NULL_HANDLE; }
-
 		if (depthVizImageView_ != VK_NULL_HANDLE) vkDestroyImageView(_device, depthVizImageView_, nullptr);
 		if (depthVizImage_ != VK_NULL_HANDLE) vkDestroyImage(_device, depthVizImage_, nullptr);
 		if (depthVizMemory_ != VK_NULL_HANDLE) vkFreeMemory(_device, depthVizMemory_, nullptr);
@@ -2518,7 +2507,6 @@ private:
 		if (depthVizLayout_ != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(_device, depthVizLayout_, nullptr);
 
 		if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
-		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);
 		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
 	}
 };
