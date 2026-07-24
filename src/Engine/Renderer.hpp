@@ -373,6 +373,7 @@ public:
 #ifdef FE_HAS_WINDOW
 		for (auto& [w, d] : windowDeviceMap) {
 			if (d->IsVulkan()) continue;
+			if (w == windows.front().get()) continue;
 
 			auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
 			if (!sdlWin) continue;
@@ -395,11 +396,11 @@ public:
 
 			d->SetTransparentMode(false);
 			for (auto& object : scene->GetObjects())
-				RenderObjectOnDevice(*object, d.get(), false);
+				RenderObjectOnDevice(*object, d, false);
 
 			d->SetTransparentMode(true);
 			for (auto& object : scene->GetObjects())
-				RenderObjectOnDevice(*object, d.get(), true);
+				RenderObjectOnDevice(*object, d, true);
 
 			d->SetTransparentMode(false);
 			d->SubmitFrame();
