@@ -134,7 +134,7 @@ public:
 		// RegisterWindow(window);
 		createLogicalDevice();
 		
-		resources.swapchain = createSwapChain(windowRegistry[window].surface);
+		resources.swapchain = createSwapChain(resources.surface);
 		swapChain_ = resources.swapchain;
 		windowRegistry[window] = resources;
 
