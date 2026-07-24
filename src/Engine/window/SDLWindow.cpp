@@ -109,7 +109,8 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
     }
 
 	auto windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-	if (!useVulkan) windowFlags |= SDL_WINDOW_OPENGL;
+	if (useVulkan) windowFlags |= SDL_WINDOW_VULKAN;
+	else windowFlags |= SDL_WINDOW_OPENGL;
 	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
 
 	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
