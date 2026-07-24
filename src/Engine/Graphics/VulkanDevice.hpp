@@ -122,11 +122,11 @@ public:
 
 	void Init(IWindow *window) override {
 		CreateInstance(window);
-		RegisterWindow(window);
-		_surface = windowRegistry[window].surface;
 		PickPhysicalDevice();
 		createLogicalDevice();
-		createSwapChain();
+		RegisterWindow(window);
+		_surface = windowRegistry[window].surface;
+		swapChain_ = windowRegistry[widnow].swapchain;
 
 		createImageViews();
 		createRenderPass();
@@ -247,6 +247,8 @@ public:
 			// Create your VkSwapchainKHR...
 
 			resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+
+			resources.swapchain = createSwapChain(windowRegistry[window].surface);
 			
 			windowRegistry[window] = resources;
 		}
@@ -1391,7 +1393,7 @@ private:
 		graphicsQueueFamily_ = indices.graphicsFamily.value();
 	}
 
-	void createSwapChain(VkSurfaceKHR surface) {
+	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface) {
 		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
@@ -1433,12 +1435,14 @@ private:
 			throw std::runtime_error("Failed to create swap chain.");
 		}
 
-		vkGetSwapchainImagesKHR(_device, swapChain_, &imageCount, nullptr);
+		VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, nullptr);
 		swapChainImages_.resize(imageCount);
-		vkGetSwapchainImagesKHR(_device, swapChain_, &imageCount, swapChainImages_.data());
+		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, swapChainImages_.data());
 
 		swapChainImageFormat_ = surfaceFormat.format;
 		swapChainExtent_ = extent;
+		return swapChain;
 	}
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats) {
