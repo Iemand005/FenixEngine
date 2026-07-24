@@ -1262,6 +1262,8 @@ public:
 
 	bool IsVulkan() const override { return true; }
 
+	void SetActiveWindow(IWindow* window) override {}
+
 	uint64_t CreateColorAttachment(uint32_t w, uint32_t h) override {
 		VkImage image;
 		VkDeviceMemory memory;

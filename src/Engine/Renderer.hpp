@@ -379,6 +379,8 @@ public:
 			if (!sdlWin) continue;
 			sdlWin->MakeCurrentGLContext();
 
+			d->SetActiveWindow(sdlWin);
+
 			int vw = 0, vh = 0;
 			sdlWin->GetSize(&vw, &vh);
 			if (vw > 0 && vh > 0)

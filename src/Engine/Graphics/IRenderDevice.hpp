@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <memory>
@@ -78,6 +77,8 @@ namespace fe {
 		virtual void DestroyColorAttachment(uint64_t image) {}
 
 		virtual bool IsVulkan() const { return false; }
+
+		virtual void SetActiveWindow(IWindow* window) {}
 
 		virtual void* UploadToImGui(const unsigned char* rgba, int w, int h) { return nullptr; }
 
