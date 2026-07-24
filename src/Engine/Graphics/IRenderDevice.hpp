@@ -20,7 +20,7 @@ namespace fe {
 	class IRenderDevice {
 	public:
 		virtual ~IRenderDevice() = default;
-		virtual void Init(fe::IWindow *window) = 0;
+		virtual void Init() = 0;
 		virtual void Clear() = 0;
 		virtual void SetClearColor(float r, float g, float b, float a = 1) = 0;
 		virtual void Resize(int width, int height) = 0;
@@ -28,6 +28,9 @@ namespace fe {
 		virtual void BeginFrame() = 0;
 		virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
 		virtual void SubmitFrame() = 0;
+
+		virtual void RegisterWindow(const IWindow* window);
+		virtual void UnregisterWindow(const IWindow* window);
 
 		virtual std::unique_ptr<IGPUBuffers> CreateGPUBuffers() { return nullptr; }
 		virtual std::unique_ptr<IGPUTexture> CreateGPUTexture() { return nullptr; }

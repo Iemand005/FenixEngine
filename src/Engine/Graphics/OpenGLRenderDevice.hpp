@@ -163,7 +163,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 		else glDisable(GL_DEPTH_TEST);
 	}
 
-	void Init(fe::IWindow *window) override {
+	void Init() override {
 		glGenTextures(1, &defaultTextureId_);
 		glBindTexture(GL_TEXTURE_2D, defaultTextureId_);
 		unsigned char whitePixel[4] = {255, 255, 255, 255};
