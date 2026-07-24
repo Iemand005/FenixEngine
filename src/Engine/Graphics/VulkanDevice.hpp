@@ -150,8 +150,13 @@ public:
 
 		PickPhysicalDevice();
 		createLogicalDevice();
-		createRenderPass();
 		createDescriptorSetLayout();
+
+		createSwapChain(window);
+		createImageViews(windowRegistry[window]);
+		createDepthResources(windowRegistry[window]);
+
+		createRenderPass();
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
 		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArray_);
 		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraft_);
@@ -165,6 +170,7 @@ public:
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
 		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
 		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE);
+
 		createCommandPool();
 		createUniformBuffers();
 		createDescriptorPool();
@@ -172,9 +178,6 @@ public:
 		createDescriptorSets();
 		createFrameDescriptorSets();
 
-		createSwapChain(window);
-		createImageViews(windowRegistry[window]);
-		createDepthResources(windowRegistry[window]);
 		createFramebuffers(windowRegistry[window]);
 		createCommandBuffers(windowRegistry[window]);
 		createPerWindowSemaphores(windowRegistry[window]);
@@ -1996,9 +1999,9 @@ private:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = VK_FALSE;
-		depthStencil.depthWriteEnable = VK_FALSE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = depthWriteEnable;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
