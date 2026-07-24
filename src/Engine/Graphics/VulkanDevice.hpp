@@ -123,6 +123,7 @@ public:
 	void Init(IWindow *window) override {
 		CreateInstance(window);
 		RegisterWindow(window);
+		_surface = windowRegistry[window].surface;
 		// CreateSurface();
 		PickPhysicalDevice();
 		createLogicalDevice();
