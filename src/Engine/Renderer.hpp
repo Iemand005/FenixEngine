@@ -248,7 +248,7 @@ public:
 			PushShaderPathsToVulkanDevice();
 			device->Init(window.get());
 		} else {
-			device = CreateDevice(useVulkan);
+			device = CreateDevice(useVulkan, window.get());
 			if (useVulkan) {
 				PushShaderPathsToDevice(device);
 				device->RegisterWindow(window.get());
