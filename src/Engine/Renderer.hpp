@@ -228,7 +228,13 @@ public:
 	}
 
 	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
-		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
+		SDL_GLContext sharedContext = nullptr;
+		if (!useVulkan && !windows.empty()) {
+			auto* firstWin = dynamic_cast<SDLWindow*>(windows.front().get());
+			if (firstWin) sharedContext = firstWin->GetSDLGLContext();
+		}
+
+		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan, sharedContext);
 		
 		IRenderDevice* device = nullptr;
 		if (windowDeviceMap.empty()) {
@@ -252,9 +258,14 @@ public:
 	}
 
 	template<typename WindowT = DefaultWindow>
-	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false) {
+	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false, SDL_GLContext sharedContext = nullptr) {
 		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
-		std::unique_ptr<WindowT> window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
+		std::unique_ptr<WindowT> window;
+		if constexpr (std::is_same_v<WindowT, SDLWindow>) {
+			window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan, sharedContext);
+		} else {
+			window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
+		}
 
 		window->resizeEvent = [this](int width, int height) {
 			this->Resize(width, height);
