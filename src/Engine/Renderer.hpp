@@ -370,8 +370,13 @@ public:
 		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
 		for (auto& dev : renderDevices) {
-			dev->SetMat4("view", camera->GetViewMatrix());
-			dev->SetMat4("projection", camera->GetProjectionMatrix());
+			if (!dev->IsVulkan() && shader) {
+				dev->SetMat4("view", camera->GetViewMatrix());
+				dev->SetMat4("projection", camera->GetProjectionMatrix());
+			} else {
+				dev->SetMat4("view", camera->GetViewMatrix());
+				dev->SetMat4("projection", camera->GetProjectionMatrix());
+			}
 		}
 
 		scene->SetRenderDevice(renderDevice.get());
@@ -392,13 +397,13 @@ public:
 #ifdef FE_HAS_WINDOW
 		if (!useVulkan) {
 			window->SwapBuffers();
-			for (auto& dev : renderDevices) {
-				if (!dev->IsVulkan()) {
-					for (auto& [w, d] : windowDeviceMap) {
-						if (d == dev.get()) {
-							auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
-							if (sdlWin) sdlWin->SwapBuffers();
-						}
+		}
+		for (auto& dev : renderDevices) {
+			if (!dev->IsVulkan()) {
+				for (auto& [w, d] : windowDeviceMap) {
+					if (d == dev.get()) {
+						auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
+						if (sdlWin) sdlWin->SwapBuffers();
 					}
 				}
 			}

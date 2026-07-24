@@ -76,7 +76,7 @@ class SDLWindow : public IWindow {
 
   WindowSize GetFramebufferSize() override;
 
-  void MakeCurrentGLContext() oveerride;
+  void MakeCurrentGLContext() override;
 
 
 // struct SDL_Window;

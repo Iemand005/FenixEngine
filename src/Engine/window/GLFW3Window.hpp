@@ -56,6 +56,8 @@ public:
 
 	void AttachToNativeParent(void* parent);
 
+	void MakeCurrentGLContext();
+
 	VulkanExtensions GetVulkanExtensions() override;
 	void *CreateVulkanSurface(void *instance) override;
 	  

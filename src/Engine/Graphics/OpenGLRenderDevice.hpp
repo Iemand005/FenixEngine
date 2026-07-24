@@ -219,6 +219,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (prog) glUniform3f(glGetUniformLocation(prog, name), value.x, value.y, value.z);
 	}
 
+	void SetMat4(const char* name, const glm::mat4& value) override {
+		MakeCurrent();
+		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+		if (prog) glUniformMatrix4fv(glGetUniformLocation(prog, name), 1, GL_FALSE, glm::value_ptr(value));
+	}
+
 	void SetInt(const char* name, int value) override {
 		MakeCurrent();
 		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);

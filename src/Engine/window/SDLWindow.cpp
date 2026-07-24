@@ -486,6 +486,11 @@ fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
 	return m;
 }
 
+void fe::SDLWindow::MakeCurrentGLContext() {
+	SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
+}
+
+
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
 	SDL_PropertiesID props = SDL_GetWindowProperties(impl->window);
