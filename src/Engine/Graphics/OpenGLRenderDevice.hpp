@@ -24,10 +24,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void MakeCurrent() {
 		if (!registeredWindows_.empty()) {
-			auto* sdlWin = dynamic_cast<SDLWindow*>(registeredWindows_.front());
-			if (sdlWin && sdlWin->GetSDLGLContext()) {
-				SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
-			}
+			registeredWindows_.front()->MakeCurrentGLContext();
 		}
 	}
 
@@ -176,10 +173,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void Init(IWindow *window) override {
 		if (window) {
-			auto* sdlWin = dynamic_cast<SDLWindow*>(window);
-			if (sdlWin && sdlWin->GetSDLGLContext()) {
-				SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
-			}
+			window->MakeCurrentGLContext();
 			registeredWindows_.push_back(window);
 		}
 
@@ -200,10 +194,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 		for (auto* w : registeredWindows_) {
 			if (w == window) return;
 		}
-		auto* sdlWin = dynamic_cast<SDLWindow*>(window);
-		if (sdlWin && sdlWin->GetSDLGLContext()) {
-			SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
-		}
+		window->MakeCurrentGLContext();
 		registeredWindows_.push_back(window);
 	}
 
