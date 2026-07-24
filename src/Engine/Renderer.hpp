@@ -162,7 +162,7 @@ public:
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
 
-	IRenderDevice* CreateDevice(bool useVulkan) {
+	IRenderDevice* CreateDevice(bool useVulkan, IWindow *window = nullptr) {
 		if (renderDevice && renderDevice->IsVulkan() == useVulkan) return renderDevice.get();
 		for (auto& dev : renderDevices) {
 			if (dev->IsVulkan() == useVulkan) return dev.get();
@@ -170,6 +170,7 @@ public:
 		std::unique_ptr<IRenderDevice> dev;
 		if (useVulkan) dev = std::make_unique<VulkanDevice>();
 		else dev = std::make_unique<OpenGLRenderDevice>();
+		if (window) dev->Init(window);
 		IRenderDevice* ptr = dev.get();
 		renderDevices.push_back(std::move(dev));
 		return ptr;
