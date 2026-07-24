@@ -160,6 +160,12 @@ public:
 	// }
 
 	void SubmitFrame() override {
+		for (auto &window : windowRegistry) {
+			SubmitFrame(window.first);
+		}
+	}
+
+	void SubmitFrame(const IWindow *window) {
 		auto cmd = commandBuffers_[currentFrame_];
 
 		vkCmdEndRenderPass(cmd);
@@ -233,7 +239,7 @@ public:
 
 		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-			recreateSwapChain();
+			recreateSwapChain(windowRegistry[window].swapchain);
 		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
@@ -267,7 +273,7 @@ public:
 		}
 	}
 
-	void Clear(IWindow *window) {
+	void Clear(const IWindow *window) {
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
 		if (depthReadbackRequested_ && depthStagingBuffer_ != VK_NULL_HANDLE && !depthReadbackAvailable_) {
@@ -295,7 +301,7 @@ public:
 			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			recreateSwapChain();
+			recreateSwapChain(window);
 			vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 			result = vkAcquireNextImageKHR(_device, swapChain_, UINT64_MAX,
 				imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
@@ -2345,7 +2351,7 @@ private:
 		if (swapChain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, swapChain_, nullptr); swapChain_ = VK_NULL_HANDLE; }
 	}
 
-	void recreateSwapChain(IWindow *window) {
+	void recreateSwapChain(const IWindow *window) {
 		recreateSwapChain(windowRegistry[window].surface);
 	}
 
