@@ -150,7 +150,7 @@ public:
 	Renderer(RendererOptions options) {
 		CreateRenderDevice(options.useVulkan);
 #ifdef FE_HAS_WINDOW
-		NewWindow(options.width, options.height, options.hidden, options.fullscreen);
+		NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan);
 #endif
 	}
 
