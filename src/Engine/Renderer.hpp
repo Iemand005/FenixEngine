@@ -170,6 +170,7 @@ public:
 		std::unique_ptr<IRenderDevice> dev;
 		if (useVulkan) dev = std::make_unique<VulkanDevice>();
 		else dev = std::make_unique<OpenGLRenderDevice>();
+		if (useVulkan) PushShaderPathsToVulkanDevice();
 		if (window) dev->Init(window);
 		IRenderDevice* ptr = dev.get();
 		renderDevices.push_back(std::move(dev));
@@ -252,7 +253,7 @@ public:
 			device = CreateDevice(useVulkan, window.get());
 			if (useVulkan) {
 				PushShaderPathsToDevice(device);
-				device->RegisterWindow(window.get());
+				// device->RegisterWindow(window.get());
 			} else {
 				device->RegisterWindow(window.get());
 			}
