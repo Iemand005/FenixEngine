@@ -379,6 +379,11 @@ public:
 			if (!sdlWin) continue;
 			sdlWin->MakeCurrentGLContext();
 
+			int vw = 0, vh = 0;
+			sdlWin->GetSize(&vw, &vh);
+			if (vw > 0 && vh > 0)
+				d->Resize(vw, vh);
+
 			d->Clear();
 
 			if (shader) {
