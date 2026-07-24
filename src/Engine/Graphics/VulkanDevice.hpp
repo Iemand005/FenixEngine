@@ -248,7 +248,7 @@ public:
 			cmds.push_back(res.commandBuffers[currentFrame_]);
 			waitSemaphores.push_back(res.imageAvailableSemaphores[currentFrame_]);
 			waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-			signalSemaphores.push_back(res.renderFinishedSemaphores[res.currentImageIndex]);
+			signalSemaphores.push_back(res.renderFinishedSemaphores[currentFrame_]);
 		}
 
 		VkSubmitInfo submitInfo{};
@@ -271,7 +271,7 @@ public:
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[res.currentImageIndex];
+			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[currentFrame_];
 			VkSwapchainKHR swapChains[] = {res.swapchain};
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = swapChains;
@@ -334,7 +334,7 @@ public:
 
 		VkSemaphore waitSemaphores[] = {res.imageAvailableSemaphores[currentFrame_]};
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[res.currentImageIndex]};
+		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[currentFrame_]};
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -2535,8 +2535,8 @@ private:
 				throw std::runtime_error("Failed to create image available semaphore.");
 		}
 
-		res.renderFinishedSemaphores.resize(res.swapChainImages.size());
-		for (size_t i = 0; i < res.swapChainImages.size(); i++) {
+		res.renderFinishedSemaphores.resize(kMaxFramesInFlight);
+		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &res.renderFinishedSemaphores[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create render finished semaphore.");
 		}
