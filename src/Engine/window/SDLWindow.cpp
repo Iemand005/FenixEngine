@@ -204,9 +204,11 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 			SDL_Quit();
 		}
 
-		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-			std::cout << "Failed to initialize GLAD" << std::endl;
-			return;
+		if (!sharedContext) {
+			if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+				std::cout << "Failed to initialize GLAD" << std::endl;
+				return;
+			}
 		}
 	}
 
