@@ -2340,6 +2340,10 @@ private:
 	}
 
 	void recreateSwapChain(IWindow *window) {
+		recreateSwapChain(windowRegistry[window].surface);
+	}
+
+	void recreateSwapChain(VkSurfaceKHR surface) {
 		vkDeviceWaitIdle(_device);
 
 		cleanupSwapChain();
@@ -2351,7 +2355,7 @@ private:
 		for (auto& fence : inFlightFences_) vkDestroyFence(_device, fence, nullptr);
 		inFlightFences_.clear();
 
-		createSwapChain(windowRegistry[window].surface);
+		swapChain_ = createSwapChain(surface); // TODO return this and blablaaaa do the right oneee
 		createImageViews();
 		createDepthResources();
 		createFramebuffers();
