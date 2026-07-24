@@ -1532,15 +1532,7 @@ private:
 		if (capabilities.currentExtent.width != UINT32_MAX) {
 			return capabilities.currentExtent;
 		}
-		// int width, height;
-		// glfwGetFramebufferSize(window_, &width, &height);
-		// auto fbs = window->GetFramebufferSize();
-		// VkExtent2D actualExtent = {static_cast<uint32_t>(fbs.width), static_cast<uint32_t>(fbs.height)};
-		// actualExtent.width = std::clamp(actualExtent.width,
-		// 	capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		// actualExtent.height = std::clamp(actualExtent.height,
-		// 	capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-		// return actualExtent;
+		return capabilities.currentExtent;
 	}
 
 	void createImageViews(VulkanWindowResources& res) {
