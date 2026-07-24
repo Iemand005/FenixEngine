@@ -137,6 +137,13 @@ public:
 		CreateInstance(window);
 		currentWindow_ = window;
 
+		// Surface must exist before device selection (used for queue family / swapchain support queries)
+		{
+			VulkanWindowResources res{};
+			res.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+			windowRegistry[window] = res;
+		}
+
 		PickPhysicalDevice();
 		createLogicalDevice();
 		createRenderPass();
@@ -162,7 +169,11 @@ public:
 		createFrameDescriptorSets();
 		createSyncObjects();
 
-		setupWindowResources(window);
+		createSwapChain(window);
+		createImageViews(windowRegistry[window]);
+		createDepthResources(windowRegistry[window]);
+		createFramebuffers(windowRegistry[window]);
+		createCommandBuffers(windowRegistry[window]);
 	}
 	// VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
 	//     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
@@ -1323,11 +1334,12 @@ private:
 	}
 
 	int rateDeviceSuitability(VkPhysicalDevice dev) {
-		QueueFamilyIndices indices = findQueueFamilies(dev, _surface);
+		auto surf = windowRegistry.begin()->second.surface;
+		QueueFamilyIndices indices = findQueueFamilies(dev, surf);
 		if (!indices.isComplete()) return -1;
 		if (!checkDeviceExtensionSupport(dev)) return -1;
 
-		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(dev);
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(dev, surf);
 		if (swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return -1;
 
 		VkPhysicalDeviceFeatures features;
@@ -1355,7 +1367,8 @@ private:
 	void PickPhysicalDevice();
 
 	void createLogicalDevice() {
-		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, _surface);
+		auto surf = windowRegistry.begin()->second.surface;
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, surf);
 
 		std::set<uint32_t> uniqueQueueFamilies = {
 			indices.graphicsFamily.value(),
@@ -1398,7 +1411,7 @@ private:
 	}
 
 	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface, VulkanWindowResources& res) {
-		SwapChainSupportDetails support = querySwapChainSupport(surface);
+		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice, surface);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
@@ -1441,11 +1454,13 @@ private:
 		}
 
 		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, nullptr);
-		swapChainImages_.resize(imageCount);
-		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, swapChainImages_.data());
+		res.swapChainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, res.swapChainImages.data());
 
+		res.swapchain = swapChain;
+		res.imageFormat = surfaceFormat.format;
+		res.extent = extent;
 		swapChainImageFormat_ = surfaceFormat.format;
-		swapChainExtent_ = extent;
 		return swapChain;
 	}
 
@@ -1481,14 +1496,14 @@ private:
 		// return actualExtent;
 	}
 
-	void createImageViews() {
-		swapChainImageViews_.resize(swapChainImages_.size());
-		for (size_t i = 0; i < swapChainImages_.size(); ++i) {
+	void createImageViews(VulkanWindowResources& res) {
+		res.imageViews.resize(res.swapChainImages.size());
+		for (size_t i = 0; i < res.swapChainImages.size(); ++i) {
 			VkImageViewCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = swapChainImages_[i];
+			createInfo.image = res.swapChainImages[i];
 			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = swapChainImageFormat_;
+			createInfo.format = res.imageFormat;
 			createInfo.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
 									VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1497,7 +1512,7 @@ private:
 			createInfo.subresourceRange.baseArrayLayer = 0;
 			createInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(_device, &createInfo, nullptr, &swapChainImageViews_[i]) != VK_SUCCESS) {
+			if (vkCreateImageView(_device, &createInfo, nullptr, &res.imageViews[i]) != VK_SUCCESS) {
 				throw std::runtime_error("Failed to create image view.");
 			}
 		}
@@ -1808,12 +1823,12 @@ private:
 	// ---------------------------------------------------------------
 	// Depth resources
 	// ---------------------------------------------------------------
-	void createDepthResources() {
+	void createDepthResources(VulkanWindowResources& res) {
 		VkFormat depthFormat = findDepthFormat();
-		createImage(swapChainExtent_.width, swapChainExtent_.height, depthFormat,
+		createImage(res.extent.width, res.extent.height, depthFormat,
 			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage_, depthImageMemory_);
-		depthImageView_ = createImageView(depthImage_, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, res.depthImage, res.depthImageMemory);
+		res.depthImageView = createImageView(res.depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	}
 
 	void createImage(uint32_t width, uint32_t height, VkFormat format,
@@ -1900,7 +1915,8 @@ private:
 	// Command pool + buffers
 	// ---------------------------------------------------------------
 	void createCommandPool() {
-		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, _surface);
+		auto surf = windowRegistry.begin()->second.surface;
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, surf);
 
 		VkCommandPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -2459,8 +2475,4 @@ private:
 
 		if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
 		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);
-		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
-	}
-};
-
-}
+		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instan
