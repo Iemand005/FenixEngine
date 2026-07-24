@@ -67,6 +67,8 @@ struct VulkanWindowResources {
     VkSurfaceKHR surface;
     VkSwapchainKHR swapchain;
     std::vector<VkImageView> imageViews;
+	
+	std::vector<VkCommandBuffer> commandBuffers;
 };
 
 
@@ -327,9 +329,9 @@ public:
 		updateUniformBuffer(currentFrame_);
 
 		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
-		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+		vkResetCommandBuffer(windowRegistry[window].commandBuffers[currentFrame_], 0);
 
-		auto cmd = commandBuffers_[currentFrame_];
+		auto cmd = windowRegistry[window].commandBuffers[currentFrame_];
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1246,7 +1248,7 @@ private:
 	int depthVizW_ = 0, depthVizH_ = 0;
 
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
-	std::vector<VkCommandBuffer> commandBuffers_;
+	// std::vector<VkCommandBuffer> commandBuffers_;
 
 	std::vector<VkSemaphore> imageAvailableSemaphores_;
 	std::vector<VkSemaphore> renderFinishedSemaphores_;
