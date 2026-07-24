@@ -103,7 +103,7 @@ public:
 
 	bool isConnectedToServer = false;
 
-	bool useVulkan = false;
+	// bool useVulkan = false;
 	bool frustumCullingEnabled = false;
 
 	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
@@ -115,7 +115,7 @@ public:
 	std::string fragFoxcraftShaderPath_;
 
 	void PushShaderPathsToVulkanDevice() {
-		if (!useVulkan || !renderDevice) return;
+		if (!renderDevice) return;
 		auto* vkDev = dynamic_cast<VulkanDevice*>(renderDevice.get());
 		if (!vkDev) return;
 		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
@@ -157,7 +157,7 @@ public:
 	void CreateRenderDevice(bool useVulkan = false) {
 		if (renderDevice) return; // TODO: throwerror?kaykay
 
-		this->useVulkan = useVulkan;
+		// this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
@@ -228,7 +228,8 @@ public:
 	
 #ifdef FE_HAS_WINDOW
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		NewWindow(width, height, hidden, fullscreen, useVulkan);
+		throw new std::exception("deprecatfucker");
+		// NewWindow(width, height, hidden, fullscreen, useVulkan);
 	}
 
 	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
@@ -467,7 +468,7 @@ public:
 		auto window = GetWindow<DefaultWindow>();
 #endif
 		if (!scene || !camera) return;
-		if (!useVulkan && !shader) return;
+		if (!shader) return;
 
 		Clear();
 
@@ -503,7 +504,8 @@ public:
 
 		fpsCounter.update();
 #ifdef FE_HAS_WINDOW
-		if (!useVulkan) window->SwapBuffers();
+		// if (!useVulkan)
+		window->SwapBuffers();
 #endif
 
 		RenderAdditionalGLWindows();
@@ -514,7 +516,7 @@ public:
 	}
 
 	void CheckErrors(const char* label) {
-		if (useVulkan) return;
+		// if (useVulkan) return;
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
