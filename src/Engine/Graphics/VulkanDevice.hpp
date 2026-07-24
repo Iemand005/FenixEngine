@@ -1703,7 +1703,8 @@ private:
 		createInfo.clipped = VK_TRUE;
 
 		VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-		if (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+		VkResult result = vkCreateSwapchainKHR(_device, &createInfo, nullptr, &swapChain);
+		if (result != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create swap chain.");
 		}
 
