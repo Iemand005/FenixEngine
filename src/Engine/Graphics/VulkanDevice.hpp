@@ -1458,11 +1458,11 @@ private:
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
 
-		if (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &swapChain_) != VK_SUCCESS) {
+		VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+		if (vkCreateSwapchainKHR(_device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create swap chain.");
 		}
 
-		VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, nullptr);
 		swapChainImages_.resize(imageCount);
 		vkGetSwapchainImagesKHR(_device, swapChain, &imageCount, swapChainImages_.data());
