@@ -239,7 +239,7 @@ public:
 
 		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-			recreateSwapChain(windowRegistry[window].swapchain);
+			recreateSwapChain(windowRegistry[window].surface);
 		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
