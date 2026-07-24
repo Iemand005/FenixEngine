@@ -380,7 +380,9 @@ public:
 	}
 
 	void Clear() override {
+		std::cerr << "[DBG] Clear() start, currentFrame_=" << currentFrame_ << ", registry size=" << windowRegistry.size() << std::endl;
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+		std::cerr << "[DBG] Clear() fence wait done" << std::endl;
 
 		if (currentWindow_ && windowRegistry.count(currentWindow_)) {
 			auto& primaryRes = windowRegistry[currentWindow_];
@@ -413,15 +415,19 @@ public:
 		for (auto& [window, res] : windowRegistry) {
 			VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 				res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
+			std::cerr << "[DBG] Clear() acquire result=" << result << " imageIndex=" << res.currentImageIndex << " swapchainImages=" << res.swapChainImages.size() << std::endl;
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+				std::cerr << "[DBG] Clear() OUT_OF_DATE, recreating..." << std::endl;
 				recreateSwapChain(window);
 				result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 					res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
 				if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+					std::cerr << "[DBG] Clear() acquire after recreate failed: " << result << std::endl;
 					continue;
 				}
 			} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+				std::cerr << "[DBG] Clear() acquire failed: " << result << std::endl;
 				continue;
 			}
 
