@@ -126,7 +126,7 @@ public:
 		createLogicalDevice();
 		RegisterWindow(window);
 		_surface = windowRegistry[window].surface;
-		swapChain_ = windowRegistry[widnow].swapchain;
+		swapChain_ = windowRegistry[window].swapchain;
 
 		createImageViews();
 		createRenderPass();
@@ -2334,7 +2334,7 @@ private:
 		if (swapChain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, swapChain_, nullptr); swapChain_ = VK_NULL_HANDLE; }
 	}
 
-	void recreateSwapChain() {
+	void recreateSwapChain(IWindow *window) {
 		vkDeviceWaitIdle(_device);
 
 		cleanupSwapChain();
@@ -2346,7 +2346,7 @@ private:
 		for (auto& fence : inFlightFences_) vkDestroyFence(_device, fence, nullptr);
 		inFlightFences_.clear();
 
-		createSwapChain();
+		createSwapChain(windowRegistry[window].surface);
 		createImageViews();
 		createDepthResources();
 		createFramebuffers();
