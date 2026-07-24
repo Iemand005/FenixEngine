@@ -189,7 +189,6 @@ public:
 	// }
 
 	void SubmitFrame() override {
-		std::cerr << "[DBG] SubmitFrame() start, currentFrame_=" << currentFrame_ << " drawCallCount_=" << drawCallCount_ << std::endl;
 		std::vector<const IWindow*> orderedWindows;
 		orderedWindows.reserve(windowRegistry.size());
 		for (auto& [window, res] : windowRegistry) {
@@ -272,9 +271,7 @@ public:
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
 		submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-		std::cerr << "[DBG] SubmitFrame() about to vkQueueSubmit, cmds=" << cmds.size() << " waitSems=" << waitSemaphores.size() << " signalSems=" << signalSemaphores.size() << std::endl;
 		VkResult submitResult = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
-		std::cerr << "[DBG] SubmitFrame() vkQueueSubmit result=" << submitResult << std::endl;
 		if (submitResult != VK_SUCCESS) {
 			throw std::runtime_error("Failed to submit draw command buffer.");
 		}
@@ -292,14 +289,12 @@ public:
 			presentInfo.pImageIndices = &res.currentImageIndex;
 
 			VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
-			std::cerr << "[DBG] SubmitFrame() vkQueuePresentKHR result=" << presentResult << " imageIndex=" << res.currentImageIndex << std::endl;
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
 				recreateSwapChain(window);
 			}
 		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-		std::cerr << "[DBG] SubmitFrame() done, currentFrame_ now=" << currentFrame_ << std::endl;
 	}
 
 	void SubmitFrame(const IWindow *window) {
@@ -399,9 +394,7 @@ public:
 	}
 
 	void Clear() override {
-		std::cerr << "[DBG] Clear() start, currentFrame_=" << currentFrame_ << ", registry size=" << windowRegistry.size() << std::endl;
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
-		std::cerr << "[DBG] Clear() fence wait done" << std::endl;
 
 		if (currentWindow_ && windowRegistry.count(currentWindow_)) {
 			auto& primaryRes = windowRegistry[currentWindow_];
@@ -434,19 +427,15 @@ public:
 		for (auto& [window, res] : windowRegistry) {
 			VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 				res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
-			std::cerr << "[DBG] Clear() acquire result=" << result << " imageIndex=" << res.currentImageIndex << " swapchainImages=" << res.swapChainImages.size() << std::endl;
 
 			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-				std::cerr << "[DBG] Clear() OUT_OF_DATE, recreating..." << std::endl;
 				recreateSwapChain(window);
 				result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 					res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
 				if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-					std::cerr << "[DBG] Clear() acquire after recreate failed: " << result << std::endl;
 					continue;
 				}
 			} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-				std::cerr << "[DBG] Clear() acquire failed: " << result << std::endl;
 				continue;
 			}
 
@@ -663,7 +652,6 @@ public:
 	}
 
 	void BeginFrame() override {
-		std::cerr << "[DBG] BeginFrame() start, drawCallCount_=" << drawCallCount_ << " currentFrame_=" << currentFrame_ << std::endl;
 		for (auto& [window, res] : windowRegistry) {
 			auto cmd = res.commandBuffers[currentFrame_];
 			if (!cmd) {
@@ -690,7 +678,7 @@ public:
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
-		if (!buffers) { std::cerr << "[DBG] DrawMesh: buffers is null" << std::endl; return; }
+		if (!buffers) { return; }
 
 		const auto* vkBuffers = dynamic_cast<const VulkanGPUBuffers*>(buffers);
 		if (!vkBuffers) {
@@ -775,7 +763,7 @@ public:
 
 		for (auto& [window, res] : windowRegistry) {
 			auto cmd = res.commandBuffers[currentFrame_];
-			if (!cmd) { std::cerr << "[DBG] DrawMesh: cmd is null for window!" << std::endl; continue; }
+			if (!cmd) { continue; }
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
@@ -789,7 +777,6 @@ public:
 			vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushData), &pushData);
-			std::cerr << "[DBG] DrawMesh #" << drawCallCount_ << " indices=" << vkBuffers->indexCount << " pipeline=" << (requiredPipeline != VK_NULL_HANDLE ? "valid" : "NULL") << " frame=" << currentFrame_ << std::endl;
 			vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 		}
 	}
@@ -2581,7 +2568,6 @@ private:
 
 		static bool projLogged = false;
 		if (!projLogged) {
-			std::cerr << "[DBG] PROJ BEFORE remap:\n";
 			for (int r = 0; r < 4; r++)
 				std::cerr << "  [" << ubo.proj[0][r] << ", " << ubo.proj[1][r] << ", " << ubo.proj[2][r] << ", " << ubo.proj[3][r] << "]\n";
 		}
@@ -2590,7 +2576,6 @@ private:
 		ubo.proj[3][2] *= 0.5f;
 
 		if (!projLogged) {
-			std::cerr << "[DBG] PROJ AFTER remap:\n";
 			for (int r = 0; r < 4; r++)
 				std::cerr << "  [" << ubo.proj[0][r] << ", " << ubo.proj[1][r] << ", " << ubo.proj[2][r] << ", " << ubo.proj[3][r] << "]\n";
 			projLogged = true;
