@@ -266,7 +266,11 @@ public:
 		static_assert(std::is_base_of_v<IWindow, WindowT>, "WindowT must derive from IWindow");
 		std::unique_ptr<WindowT> window;
 		if constexpr (std::is_same_v<WindowT, SDLWindow>) {
-			window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan, sharedContext);
+			if (!useVulkan) {
+				window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan, sharedContext);
+			} else {
+				window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
+			}
 		} else {
 			window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 		}
