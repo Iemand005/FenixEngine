@@ -64,8 +64,8 @@ struct SwapChainSupportDetails {
 };
 
 struct VulkanWindowResources {
-    VkSurfaceKHR surface;
-    VkSwapchainKHR swapchain;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
     std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> imageViews;
     std::vector<VkFramebuffer> framebuffers;
@@ -80,6 +80,10 @@ struct VulkanWindowResources {
     VkDeviceMemory depthStagingMemory = VK_NULL_HANDLE;
 
     std::vector<VkCommandBuffer> commandBuffers;
+
+    uint32_t currentImageIndex = 0;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
 };
 
 
@@ -1284,8 +1288,6 @@ private:
 
 	VkCommandPool commandPool_ = VK_NULL_HANDLE;
 
-	std::vector<VkSemaphore> imageAvailableSemaphores_;
-	std::vector<VkSemaphore> renderFinishedSemaphores_;
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
 	uint32_t currentImageIndex_ = 0;
