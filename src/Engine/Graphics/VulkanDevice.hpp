@@ -82,6 +82,7 @@ struct VulkanWindowResources {
     std::vector<VkCommandBuffer> commandBuffers;
 
     uint32_t currentImageIndex = 0;
+    bool renderPassActive = false;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
 };
@@ -462,10 +463,7 @@ public:
 			renderPassInfo.pClearValues = clearValues.data();
 
 			vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			std::cerr << "[DBG] Clear() renderpass begun, framebuffer=" << (res.framebuffers[res.currentImageIndex] != VK_NULL_HANDLE ? "valid" : "NULL")
-				<< " pipeline_=" << (graphicsPipeline_ != VK_NULL_HANDLE ? "valid" : "NULL")
-				<< " renderPass_=" << (renderPass_ != VK_NULL_HANDLE ? "valid" : "NULL")
-				<< " extent=" << res.extent.width << "x" << res.extent.height << std::endl;
+			res.renderPassActive = true;
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
 			VkViewport viewport{};
@@ -551,6 +549,7 @@ public:
 		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		res.renderPassActive = true;
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
 		VkViewport viewport{};
