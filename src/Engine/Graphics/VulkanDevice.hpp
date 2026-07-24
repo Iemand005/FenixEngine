@@ -200,7 +200,13 @@ public:
 			auto& res = windowRegistry[window];
 			auto cmd = res.commandBuffers[currentFrame_];
 
+			if (!res.renderPassActive) {
+				vkEndCommandBuffer(cmd);
+				continue;
+			}
+
 			vkCmdEndRenderPass(cmd);
+			res.renderPassActive = false;
 
 			if (depthReadbackRequested_) {
 				auto extent = res.extent;
@@ -300,7 +306,10 @@ public:
 		auto& res = windowRegistry[window];
 		auto cmd = res.commandBuffers[currentFrame_];
 
-		vkCmdEndRenderPass(cmd);
+		if (res.renderPassActive) {
+			vkCmdEndRenderPass(cmd);
+			res.renderPassActive = false;
+		}
 
 		if (depthReadbackRequested_) {
 			auto extent = res.extent;
