@@ -103,7 +103,7 @@ public:
 
 	bool isConnectedToServer = false;
 
-	// bool useVulkan = false;
+	bool useVulkan = false;
 	bool frustumCullingEnabled = false;
 
 	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
@@ -157,7 +157,7 @@ public:
 	void CreateRenderDevice(bool useVulkan = false) {
 		if (renderDevice) return; // TODO: throwerror?kaykay
 
-		// this->useVulkan = useVulkan;
+		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
@@ -516,7 +516,7 @@ public:
 	}
 
 	void CheckErrors(const char* label) {
-		// if (useVulkan) return;
+		if (useVulkan) return;
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;

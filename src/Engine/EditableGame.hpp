@@ -61,9 +61,9 @@ namespace fe {
 				ImGui::GetStyle().ScaleAllSizes(scale);
 			}
 
-			if (!useVulkan)ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
+			if (!useVulkan) ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
 			else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
-			if (!useVulkan)ImGui_ImplOpenGL3_Init(glsl_version);
+			if (!useVulkan) ImGui_ImplOpenGL3_Init(glsl_version);
 			else {
 				auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
 				if (!vkDevice) return;
