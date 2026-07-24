@@ -124,7 +124,6 @@ public:
 		CreateInstance(window);
 		RegisterWindow(window);
 		_surface = windowRegistry[window].surface;
-		// CreateSurface();
 		PickPhysicalDevice();
 		createLogicalDevice();
 		createSwapChain();
@@ -1264,7 +1263,7 @@ private:
 	
 
 
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev) {
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev, VkSurfaceKHR surface) {
 		QueueFamilyIndices indices;
 
 		uint32_t queueFamilyCount = 0;
@@ -1277,7 +1276,7 @@ private:
 				indices.graphicsFamily = i;
 			}
 			VkBool32 presentSupport = VK_FALSE;
-			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, _surface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface, &presentSupport);
 			if (presentSupport) {
 				indices.presentFamily = i;
 			}
@@ -1322,7 +1321,7 @@ private:
 	}
 
 	int rateDeviceSuitability(VkPhysicalDevice dev) {
-		QueueFamilyIndices indices = findQueueFamilies(dev);
+		QueueFamilyIndices indices = findQueueFamilies(dev, _surface);
 		if (!indices.isComplete()) return -1;
 		if (!checkDeviceExtensionSupport(dev)) return -1;
 
@@ -1354,7 +1353,7 @@ private:
 	void PickPhysicalDevice();
 
 	void createLogicalDevice() {
-		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, _surface);
 
 		std::set<uint32_t> uniqueQueueFamilies = {
 			indices.graphicsFamily.value(),
@@ -1392,7 +1391,7 @@ private:
 		graphicsQueueFamily_ = indices.graphicsFamily.value();
 	}
 
-	void createSwapChain() {
+	void createSwapChain(VkSurfaceKHR surface) {
 		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
@@ -1406,7 +1405,7 @@ private:
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		createInfo.surface = _surface;
+		createInfo.surface = surface;
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = surfaceFormat.format;
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -1414,7 +1413,7 @@ private:
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, surface);
 		uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
 		if (indices.graphicsFamily != indices.presentFamily) {
@@ -1893,7 +1892,7 @@ private:
 	// Command pool + buffers
 	// ---------------------------------------------------------------
 	void createCommandPool() {
-		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
+		QueueFamilyIndices indices = findQueueFamilies(_physicalDevice, _surface);
 
 		VkCommandPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
