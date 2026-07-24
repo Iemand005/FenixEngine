@@ -456,25 +456,27 @@ public:
 	}
 
 	void BeginFrame() override {
-		auto cmd = commandBuffers_[currentFrame_];
-		if (!cmd) {
-			std::cerr << "[VulkanDevice] BeginFrame: command buffer is null" << std::endl;
-			return;
+		for (auto& [window, res] : windowRegistry) {
+			auto cmd = res.commandBuffers[currentFrame_];
+			if (!cmd) {
+				std::cerr << "[VulkanDevice] BeginFrame: command buffer is null" << std::endl;
+				continue;
+			}
+
+			VkViewport viewport{};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width  = static_cast<float>(res.extent.width);
+			viewport.height = static_cast<float>(res.extent.height);
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+			VkRect2D scissor{};
+			scissor.offset = {0, 0};
+			scissor.extent = res.extent;
+			vkCmdSetScissor(cmd, 0, 1, &scissor);
 		}
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width  = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
 		drawCallCount_ = 0;
 		currentBoundPipeline_ = VK_NULL_HANDLE;
 	}
@@ -489,12 +491,6 @@ public:
 		}
 		if (vkBuffers->vertexBuffer == VK_NULL_HANDLE || vkBuffers->indexBuffer == VK_NULL_HANDLE) {
 			std::cerr << "[VulkanDevice] DrawMesh: vertexBuffer or indexBuffer is VK_NULL_HANDLE" << std::endl;
-			return;
-		}
-
-		auto cmd = commandBuffers_[currentFrame_];
-		if (!cmd) {
-			std::cerr << "[VulkanDevice] DrawMesh: command buffer is null" << std::endl;
 			return;
 		}
 
@@ -548,12 +544,6 @@ public:
 
 		vkUpdateDescriptorSets(_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 
-		VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
-		VkDeviceSize offsets[] = {0};
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
-
 		VkPipeline requiredPipeline;
 		if (transparentMode_) {
 			if (vkBuffers->vertexFormat == VertexFormat::Array) {
@@ -572,47 +562,59 @@ public:
 				requiredPipeline = reverseWinding_ ? graphicsPipelineCW_ : graphicsPipeline_;
 			}
 		}
-		if (requiredPipeline != currentBoundPipeline_) {
+
+		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{currentModel_, currentObjectColor_};
+
+		for (auto& [window, res] : windowRegistry) {
+			auto cmd = res.commandBuffers[currentFrame_];
+			if (!cmd) continue;
+
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
-		}
 
-		vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{currentModel_, currentObjectColor_};
-		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushData), &pushData);
-		vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
+			VkBuffer vertexBuffers[] = {vkBuffers->vertexBuffer};
+			VkDeviceSize offsets[] = {0};
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
+
+			vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushData), &pushData);
+			vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
+		}
 	}
 
 	void DrawIndirect(VkBuffer vertexBuffer, VkBuffer indexBuffer,
 		VkBuffer indirectBuffer, VkDeviceSize indirectOffset,
 		uint32_t drawCount, uint32_t stride,
 		VkDescriptorSet descriptorSet) {
-		auto cmd = commandBuffers_[currentFrame_];
-		if (!cmd || drawCount == 0) return;
+		if (drawCount == 0) return;
 
 		VkPipeline requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCW_ : graphicsPipelineFoxcraft_;
-		if (requiredPipeline != currentBoundPipeline_) {
+		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{glm::mat4(1.0f), glm::vec4(1.0f)};
+
+		for (auto& [window, res] : windowRegistry) {
+			auto cmd = res.commandBuffers[currentFrame_];
+			if (!cmd) continue;
+
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
+
+			VkBuffer vb = vertexBuffer;
+			VkDeviceSize vbOffset = 0;
+			vkCmdBindVertexBuffers(cmd, 0, 1, &vb, &vbOffset);
+			vkCmdBindIndexBuffer(cmd, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
+
+			vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+				0, sizeof(PushData), &pushData);
+
+			vkCmdDrawIndexedIndirect(cmd, indirectBuffer, indirectOffset,
+				drawCount, stride);
 		}
-
-		VkBuffer vb = vertexBuffer;
-		VkDeviceSize vbOffset = 0;
-		vkCmdBindVertexBuffers(cmd, 0, 1, &vb, &vbOffset);
-		vkCmdBindIndexBuffer(cmd, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSet, 0, nullptr);
-
-		glm::mat4 identity(1.0f);
-		glm::vec4 defaultColor(1.0f, 1.0f, 1.0f, 1.0f);
-		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{identity, defaultColor};
-		vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-			0, sizeof(PushData), &pushData);
-
-		vkCmdDrawIndexedIndirect(cmd, indirectBuffer, indirectOffset,
-			drawCount, stride);
 	}
 
 	void UpdateIndirectDescriptorSet(VkDescriptorSet set, VkImageView textureView, VkSampler sampler) {
