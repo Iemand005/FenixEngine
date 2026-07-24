@@ -374,7 +374,7 @@ public:
 	}
 
 	void Resize(int width, int height) override {
-		swapChain_ = recreateSwapChain(_surface);
+		// Per-window resize is handled via recreateSwapChain on the specific window
 	}
 
 	VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler) {
@@ -703,8 +703,15 @@ public:
 	}
 	VkCommandPool GetCommandPool() const { return commandPool_; }
 	VkDescriptorPool GetDescriptorPool() const { return descriptorPool_; }
-	VkCommandBuffer GetCurrentCommandBuffer() const { return commandBuffers_[currentFrame_]; }
-	size_t GetSwapChainImageCount() const { return swapChainImages_.size(); }
+	VkCommandBuffer GetCurrentCommandBuffer() const {
+		if (currentWindow_) return windowRegistry.at(currentWindow_).commandBuffers[currentFrame_];
+		return VK_NULL_HANDLE;
+	}
+	size_t GetSwapChainImageCount() const {
+		if (currentWindow_ && windowRegistry.count(currentWindow_))
+			return windowRegistry.at(currentWindow_).swapChainImages.size();
+		return 0;
+	}
 	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline_; }
 	const glm::mat4& GetViewMatrix() const { return currentView_; }
 	const glm::mat4& GetProjectionMatrix() const { return currentProj_; }
@@ -978,18 +985,19 @@ public:
 	}
 
 	void BeginVRFrame() override {
+		auto& res = windowRegistry[currentWindow_];
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
-		vkResetCommandBuffer(commandBuffers_[currentFrame_], 0);
+		vkResetCommandBuffer(res.commandBuffers[currentFrame_], 0);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(commandBuffers_[currentFrame_], &beginInfo);
+		vkBeginCommandBuffer(res.commandBuffers[currentFrame_], &beginInfo);
 	}
 
 	void BeginEyeFrame(uint64_t fb, uint32_t w, uint32_t h) override {
 		ExternalFramebuffer* ext = reinterpret_cast<ExternalFramebuffer*>(fb);
-		auto cmd = commandBuffers_[currentFrame_];
+		auto cmd = windowRegistry[currentWindow_].commandBuffers[currentFrame_];
 
 		VkRenderPass rp = getOrCreateXrRenderPass(ext->colorFormat != VK_FORMAT_UNDEFINED ? ext->colorFormat : swapChainImageFormat_, ext->depthFormat);
 
@@ -1028,11 +1036,11 @@ public:
 	}
 
 	void EndEyeFrame() override {
-		vkCmdEndRenderPass(commandBuffers_[currentFrame_]);
+		vkCmdEndRenderPass(windowRegistry[currentWindow_].commandBuffers[currentFrame_]);
 	}
 
 	void EndVRFrame() override {
-		auto cmd = commandBuffers_[currentFrame_];
+		auto cmd = windowRegistry[currentWindow_].commandBuffers[currentFrame_];
 		vkEndCommandBuffer(cmd);
 
 		VkSubmitInfo submitInfo{};
@@ -2373,35 +2381,32 @@ private:
 	// ---------------------------------------------------------------
 	// Swapchain recreation (for resize)
 	// ---------------------------------------------------------------
-	void cleanupSwapChain() {
-		for (auto framebuffer : swapChainFramebuffers_)
+	void cleanupSwapChain(VulkanWindowResources& res) {
+		for (auto framebuffer : res.framebuffers)
 			vkDestroyFramebuffer(_device, framebuffer, nullptr);
-		swapChainFramebuffers_.clear();
+		res.framebuffers.clear();
 
-		for (auto imageView : swapChainImageViews_)
+		for (auto imageView : res.imageViews)
 			vkDestroyImageView(_device, imageView, nullptr);
-		swapChainImageViews_.clear();
+		res.imageViews.clear();
 
-		if (depthImageView_ != VK_NULL_HANDLE) { vkDestroyImageView(_device, depthImageView_, nullptr); depthImageView_ = VK_NULL_HANDLE; }
-		if (depthImage_ != VK_NULL_HANDLE) { vkDestroyImage(_device, depthImage_, nullptr); depthImage_ = VK_NULL_HANDLE; }
-		if (depthImageMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthImageMemory_, nullptr); depthImageMemory_ = VK_NULL_HANDLE; }
+		if (res.depthImageView != VK_NULL_HANDLE) { vkDestroyImageView(_device, res.depthImageView, nullptr); res.depthImageView = VK_NULL_HANDLE; }
+		if (res.depthImage != VK_NULL_HANDLE) { vkDestroyImage(_device, res.depthImage, nullptr); res.depthImage = VK_NULL_HANDLE; }
+		if (res.depthImageMemory != VK_NULL_HANDLE) { vkFreeMemory(_device, res.depthImageMemory, nullptr); res.depthImageMemory = VK_NULL_HANDLE; }
 
-		if (depthStagingBuffer_ != VK_NULL_HANDLE) { vkDestroyBuffer(_device, depthStagingBuffer_, nullptr); depthStagingBuffer_ = VK_NULL_HANDLE; }
-		if (depthStagingMemory_ != VK_NULL_HANDLE) { vkFreeMemory(_device, depthStagingMemory_, nullptr); depthStagingMemory_ = VK_NULL_HANDLE; }
+		if (res.depthStagingBuffer != VK_NULL_HANDLE) { vkDestroyBuffer(_device, res.depthStagingBuffer, nullptr); res.depthStagingBuffer = VK_NULL_HANDLE; }
+		if (res.depthStagingMemory != VK_NULL_HANDLE) { vkFreeMemory(_device, res.depthStagingMemory, nullptr); res.depthStagingMemory = VK_NULL_HANDLE; }
 		depthReadbackAvailable_ = false;
 		cachedDepthData_.clear();
 
-		if (swapChain_ != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, swapChain_, nullptr); swapChain_ = VK_NULL_HANDLE; }
+		if (res.swapchain != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, res.swapchain, nullptr); res.swapchain = VK_NULL_HANDLE; }
 	}
 
 	void recreateSwapChain(const IWindow *window) {
-		recreateSwapChain(windowRegistry[window].surface);
-	}
-
-	VkSwapchainKHR recreateSwapChain(VkSurfaceKHR surface) {
+		auto& res = windowRegistry[window];
 		vkDeviceWaitIdle(_device);
 
-		cleanupSwapChain();
+		cleanupSwapChain(res);
 
 		for (auto& sem : imageAvailableSemaphores_) vkDestroySemaphore(_device, sem, nullptr);
 		imageAvailableSemaphores_.clear();
@@ -2410,12 +2415,11 @@ private:
 		for (auto& fence : inFlightFences_) vkDestroyFence(_device, fence, nullptr);
 		inFlightFences_.clear();
 
-		auto swappain = createSwapChain(surface);
-		createImageViews();
-		createDepthResources();
-		createFramebuffers();
+		createSwapChain(res.surface, res);
+		createImageViews(res);
+		createDepthResources(res);
+		createFramebuffers(res);
 		createSyncObjects();
-		return swappain;
 	}
 
 	// ---------------------------------------------------------------
