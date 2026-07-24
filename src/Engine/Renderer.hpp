@@ -398,12 +398,29 @@ public:
 			if (vw > 0 && vh > 0)
 				d->Resize(vw, vh);
 
+			d->EnableDepthTest();
+			d->EnableFaceCulling();
+
 			d->Clear();
 
 			if (shader) {
 				shader->Use();
 				float elapsedTime = (float)sdlWin->GetTime();
 				shader->SetFloat("time", elapsedTime);
+
+				if (scene) {
+					int count = scene->GetLightCount();
+					auto pointLights = scene->GetLights();
+					shader->SetInt("lightCount", count);
+					for (int i = 0; i < count; ++i) {
+						const auto& l = pointLights[i];
+						shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
+						shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
+						shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
+						shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+					}
+				}
+
 				shader->SetMat4("view", camera->GetViewMatrix());
 				shader->SetMat4("projection", camera->GetProjectionMatrix());
 			}
