@@ -200,6 +200,24 @@ public:
 			depthReadbackAvailable_ = false;
 		}
 
+		void RegisterWindow(const IWindow* window) override {
+			void* nativeHandle = window->GetNativeWindowHandle();
+			
+			VulkanWindowResources resources;
+			// Create your VkSurfaceKHR using the nativeHandle here...
+			// Create your VkSwapchainKHR...
+			
+			m_WindowRegistry[window] = resources;
+		}
+
+		void UnregisterWindow(const IWindow* window) override {
+			auto it = m_WindowRegistry.find(window);
+			if (it != m_WindowRegistry.end()) {
+				// Destroy Vulkan resources using vkDestroySwapchainKHR, vkDestroySurfaceKHR
+				m_WindowRegistry.erase(it);
+			}
+		}
+
 		if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer.");
 		}
