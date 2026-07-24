@@ -79,7 +79,7 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		wheel->mSuspensionMaxLength = wc.suspensionMaxLength;
 		wheel->mSuspensionSpring.mFrequency = wc.suspensionFrequency;
 		wheel->mSuspensionSpring.mDamping = wc.suspensionDamping;
-		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(60.0f) : 0.0f;
+		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(35.0f) : 0.0f;
 		wheel->mMaxBrakeTorque = 1500.0f;
 		wheel->mMaxHandBrakeTorque = 4000.0f;
 
@@ -96,6 +96,8 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		if (wc.isDriven) {
 			if (leftDrivenIndex < 0) leftDrivenIndex = index;
 			else rightDrivenIndex = index;
+			
+			rearWheelSettings.push_back(wheel);
 		}
 
 		index++;
@@ -129,8 +131,47 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 
 void PhysicsVehicle::SetDriverInput(float forward, float right, float brake, float handbrake) {
 #ifndef EXCLUDE_JOLT
+	bool wasDrifting = driftValue > 0.1f;
+
 	if (controller)
 		controller->SetDriverInput(forward, right, brake, handbrake);
+
+	if (constraint) {
+		float linear = constraint->GetVehicleBody()->GetLinearVelocity().Length();
+		float angular = constraint->GetVehicleBody()->GetAngularVelocity().Length();
+		
+		driftValue = std::min(
+			// if handbrake is pressed then driftValue gets lifted up to handbrake value
+			std::max(driftValue, handbrake),
+			// raise driftValue when at higher speeds (up to 65 m/s)
+			linear / 65.0f * (
+				// if handbrake is still held down then drift should continue
+				// else we measure if drift should keep happening or come to stop
+				handbrake >= 0.1f ? 1.01f : std::max(
+					0.0f,
+					// `(1.5f - angular) / 1.5f` -- decrease drift when getting into spin (above 1.5 "radians(?)" or something idk?)
+					// `std::min(...) * 4.0f` -- decrease drift when not turning at all (under 0.25 "radians(?)")
+					// this pretty much: 1. prevents getting into a very slippery spin and 2. has the effect that when you're not turning anymore you get your traction back
+					(1.5f - angular) / 1.5f * std::min(
+						0.25f,
+						angular
+					) * 4.0f
+				) + 0.01f
+			)
+		);
+		bool isDrifting = driftValue > 0.1f;
+
+		if (isDrifting != wasDrifting) {
+			float lateralFriction = isDrifting ? 0.3f : 1.0f;
+
+			for (auto* settings : rearWheelSettings) {
+				settings->mLateralFriction.Clear();
+				settings->mLateralFriction.AddPoint(0.0f, 0.0f);
+				settings->mLateralFriction.AddPoint(5.0f, lateralFriction);
+				settings->mLateralFriction.AddPoint(30.0f, lateralFriction * 0.8f);
+			}
+		}
+	}
 #endif
 }
 
