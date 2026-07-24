@@ -347,6 +347,67 @@ public:
 	void RenderScene(Scene *scene);
 	void RenderScene() { RenderScene(scene.get()); }
 
+	void RenderObjectOnDevice(Object& object, IRenderDevice* dev, bool transparentPass) {
+		if (frustumCullingEnabled) {
+			glm::vec3 modelPos = glm::vec3(object.GetModelMatrix()[3]);
+			glm::vec3 center = modelPos + object.boundingCenterOffset;
+			glm::vec3 toCenter = center - camera->GetPos();
+			if (glm::dot(toCenter, camera->front) < -object.boundingRadius)
+				return;
+		}
+		glm::mat4 model = object.GetModelMatrix();
+		dev->SetMat4("model", model);
+		dev->SetVec3("objectColor", object.color);
+		if (object.reverseWinding) dev->SetFrontFace(false);
+		for (auto& mesh : object.meshes) {
+			if (mesh->GetHasTransparency() != transparentPass) continue;
+			dev->DrawMesh(mesh->GetGPUBuffersFor(dev), mesh->GetGPUTextureFor(dev));
+		}
+		if (object.reverseWinding) dev->SetFrontFace(true);
+
+		for (auto& child : object.GetChildren())
+			RenderObjectOnDevice(*child, dev, transparentPass);
+	}
+
+	void RenderAdditionalGLWindows() {
+#ifdef FE_HAS_WINDOW
+		for (auto& [w, d] : windowDeviceMap) {
+			if (d->IsVulkan()) continue;
+
+			auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
+			if (!sdlWin) continue;
+			sdlWin->MakeCurrentGLContext();
+
+			d->Clear();
+
+			if (shader) {
+				shader->Use();
+				float elapsedTime = (float)sdlWin->GetTime();
+				shader->SetFloat("time", elapsedTime);
+				shader->SetMat4("view", camera->GetViewMatrix());
+				shader->SetMat4("projection", camera->GetProjectionMatrix());
+			}
+
+			d->SetMat4("view", camera->GetViewMatrix());
+			d->SetMat4("projection", camera->GetProjectionMatrix());
+
+			d->BeginFrame();
+
+			d->SetTransparentMode(false);
+			for (auto& object : scene->GetObjects())
+				RenderObjectOnDevice(*object, d.get(), false);
+
+			d->SetTransparentMode(true);
+			for (auto& object : scene->GetObjects())
+				RenderObjectOnDevice(*object, d.get(), true);
+
+			d->SetTransparentMode(false);
+			d->SubmitFrame();
+			sdlWin->SwapBuffers();
+		}
+#endif
+	}
+
 	void Redraw() {
 #ifdef FE_HAS_WINDOW
 		auto window = GetWindow<DefaultWindow>();
@@ -370,16 +431,6 @@ public:
 		renderDevice->SetMat4("view", camera->GetViewMatrix());
 		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
-		for (auto& dev : renderDevices) {
-			if (!dev->IsVulkan() && shader) {
-				dev->SetMat4("view", camera->GetViewMatrix());
-				dev->SetMat4("projection", camera->GetProjectionMatrix());
-			} else {
-				dev->SetMat4("view", camera->GetViewMatrix());
-				dev->SetMat4("projection", camera->GetProjectionMatrix());
-			}
-		}
-
 		scene->SetRenderDevice(renderDevice.get());
 		scene->SetCameraMatrices(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 
@@ -392,24 +443,16 @@ public:
 		OnPreSwap();
 
 		renderDevice->SubmitFrame();
-		for (auto& dev : renderDevices) dev->SubmitFrame();
+		for (auto& dev : renderDevices) {
+			if (dev->IsVulkan()) dev->SubmitFrame();
+		}
 
 		fpsCounter.update();
 #ifdef FE_HAS_WINDOW
-		if (!useVulkan) {
-			window->SwapBuffers();
-		}
-		for (auto& dev : renderDevices) {
-			if (!dev->IsVulkan()) {
-				for (auto& [w, d] : windowDeviceMap) {
-					if (d == dev.get()) {
-						auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
-						if (sdlWin) sdlWin->SwapBuffers();
-					}
-				}
-			}
-		}
+		if (!useVulkan) window->SwapBuffers();
 #endif
+
+		RenderAdditionalGLWindows();
 	}
 
 	void CheckErrors() {
