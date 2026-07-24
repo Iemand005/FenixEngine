@@ -122,11 +122,21 @@ public:
 
 	void Init(IWindow *window) override {
 		CreateInstance(window);
+		
+		VulkanWindowResources resources;
+		
+		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+		
 		PickPhysicalDevice();
-		RegisterWindow(window);
+
+		
+		// RegisterWindow(window);
 		_surface = windowRegistry[window].surface;
 		swapChain_ = windowRegistry[window].swapchain;
 		createLogicalDevice();
+		
+		resources.swapchain = createSwapChain(windowRegistry[window].surface);
+		windowRegistry[window] = resources;
 
 		createImageViews();
 		createRenderPass();
