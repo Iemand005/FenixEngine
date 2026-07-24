@@ -2572,20 +2572,8 @@ private:
 		ubo.proj = currentProj_;
 		ubo.proj[1][1] *= -1;
 
-		static bool projLogged = false;
-		if (!projLogged) {
-			for (int r = 0; r < 4; r++)
-				std::cerr << "  [" << ubo.proj[0][r] << ", " << ubo.proj[1][r] << ", " << ubo.proj[2][r] << ", " << ubo.proj[3][r] << "]\n";
-		}
-
 		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
 		ubo.proj[3][2] *= 0.5f;
-
-		if (!projLogged) {
-			for (int r = 0; r < 4; r++)
-				std::cerr << "  [" << ubo.proj[0][r] << ", " << ubo.proj[1][r] << ", " << ubo.proj[2][r] << ", " << ubo.proj[3][r] << "]\n";
-			projLogged = true;
-		}
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	}
