@@ -177,6 +177,7 @@ public:
 		createDepthResources(windowRegistry[window]);
 		createFramebuffers(windowRegistry[window]);
 		createCommandBuffers(windowRegistry[window]);
+		createPerWindowSemaphores(windowRegistry[window]);
 		createSyncObjects();
 	}
 	// VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
@@ -1474,7 +1475,6 @@ private:
 
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
-	uint32_t currentImageIndex_ = 0;
 	uint32_t drawCallCount_ = 0;
 
 	glm::mat4 currentModel_ = glm::mat4(1.0f);
@@ -2586,18 +2586,18 @@ private:
 
 		cleanupSwapChain(res);
 
-		for (auto& sem : imageAvailableSemaphores_) vkDestroySemaphore(_device, sem, nullptr);
-		imageAvailableSemaphores_.clear();
-		for (auto& sem : renderFinishedSemaphores_) vkDestroySemaphore(_device, sem, nullptr);
-		renderFinishedSemaphores_.clear();
-		for (auto& fence : inFlightFences_) vkDestroyFence(_device, fence, nullptr);
-		inFlightFences_.clear();
+		for (auto& sem : res.imageAvailableSemaphores)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
+		res.imageAvailableSemaphores.clear();
+		for (auto& sem : res.renderFinishedSemaphores)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
+		res.renderFinishedSemaphores.clear();
 
 		createSwapChain(res.surface, res);
 		createImageViews(res);
 		createDepthResources(res);
 		createFramebuffers(res);
-		createSyncObjects();
+		createPerWindowSemaphores(res);
 	}
 
 	// ---------------------------------------------------------------
@@ -2610,13 +2610,6 @@ private:
 			vkDestroyRenderPass(_device, xrRenderPass_, nullptr);
 			xrRenderPass_ = VK_NULL_HANDLE;
 		}
-
-		for (auto& sem : imageAvailableSemaphores_)
-			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
-		imageAvailableSemaphores_.clear();
-		for (auto& sem : renderFinishedSemaphores_)
-			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
-		renderFinishedSemaphores_.clear();
 
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (inFlightFences_[i] != VK_NULL_HANDLE)
