@@ -35,6 +35,7 @@ class SDLWindow : public IWindow {
  public:
 
   SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
+  SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan, SDL_GLContext sharedContext);
   ~SDLWindow();
 
   void SetSwapInterval(int interval) override;
