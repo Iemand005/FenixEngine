@@ -186,24 +186,25 @@ public:
 	}
 
 	void SubmitFrame(const IWindow *window) {
-		auto cmd = commandBuffers_[currentFrame_];
+		auto& res = windowRegistry[window];
+		auto cmd = res.commandBuffers[currentFrame_];
 
 		vkCmdEndRenderPass(cmd);
 
 		if (depthReadbackRequested_) {
-			auto extent = swapChainExtent_;
+			auto extent = res.extent;
 			VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
-			if (depthStagingBuffer_ == VK_NULL_HANDLE) {
+			if (res.depthStagingBuffer == VK_NULL_HANDLE) {
 				createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-					depthStagingBuffer_, depthStagingMemory_);
+					res.depthStagingBuffer, res.depthStagingMemory);
 			}
 
 			VkImageMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.image = depthImage_;
+			barrier.image = res.depthImage;
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 			barrier.subresourceRange.levelCount = 1;
 			barrier.subresourceRange.layerCount = 1;
@@ -215,7 +216,7 @@ public:
 			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 			copyRegion.imageSubresource.layerCount = 1;
 			copyRegion.imageExtent = {extent.width, extent.height, 1};
-			vkCmdCopyImageToBuffer(cmd, depthImage_, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, depthStagingBuffer_, 1, &copyRegion);
+			vkCmdCopyImageToBuffer(cmd, res.depthImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, res.depthStagingBuffer, 1, &copyRegion);
 
 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 			barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -252,14 +253,14 @@ public:
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
 		presentInfo.pWaitSemaphores = signalSemaphores;
-		VkSwapchainKHR swapChains[] = {swapChain_};
+		VkSwapchainKHR swapChains[] = {res.swapchain};
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &currentImageIndex_;
 
 		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-			recreateSwapChain(windowRegistry[window].surface);
+			recreateSwapChain(window);
 		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
@@ -284,16 +285,18 @@ public:
 	}
 
 	void Clear(const IWindow *window) {
+		auto& res = windowRegistry[window];
+
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
-		if (depthReadbackRequested_ && depthStagingBuffer_ != VK_NULL_HANDLE && !depthReadbackAvailable_) {
+		if (depthReadbackRequested_ && res.depthStagingBuffer != VK_NULL_HANDLE && !depthReadbackAvailable_) {
 			void* data;
-			vkMapMemory(_device, depthStagingMemory_, 0, VK_WHOLE_SIZE, 0, &data);
+			vkMapMemory(_device, res.depthStagingMemory, 0, VK_WHOLE_SIZE, 0, &data);
 			VkFormat depthFormat = findDepthFormat();
-			size_t pixelCount = static_cast<size_t>(swapChainExtent_.width) * swapChainExtent_.height;
+			size_t pixelCount = static_cast<size_t>(res.extent.width) * res.extent.height;
 			cachedDepthData_.resize(pixelCount);
-			cachedDepthW_ = static_cast<int>(swapChainExtent_.width);
-			cachedDepthH_ = static_cast<int>(swapChainExtent_.height);
+			cachedDepthW_ = static_cast<int>(res.extent.width);
+			cachedDepthH_ = static_cast<int>(res.extent.height);
 			if (depthFormat == VK_FORMAT_D24_UNORM_S8_UINT) {
 				const uint32_t* pixels = static_cast<const uint32_t*>(data);
 				for (size_t i = 0; i < pixelCount; i++) {
@@ -303,17 +306,17 @@ public:
 				const float* pixels = static_cast<const float*>(data);
 				std::copy(pixels, pixels + pixelCount, cachedDepthData_.begin());
 			}
-			vkUnmapMemory(_device, depthStagingMemory_);
+			vkUnmapMemory(_device, res.depthStagingMemory);
 			depthReadbackAvailable_ = true;
 		}
 
-		VkResult result = vkAcquireNextImageKHR(_device, swapChain_, UINT64_MAX,
+		VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 			imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			recreateSwapChain(window);
 			vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
-			result = vkAcquireNextImageKHR(_device, swapChain_, UINT64_MAX,
+			result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
 				imageAvailableSemaphores_[currentFrame_], VK_NULL_HANDLE, &currentImageIndex_);
 			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 				return;
@@ -327,9 +330,9 @@ public:
 		updateUniformBuffer(currentFrame_);
 
 		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
-		vkResetCommandBuffer(windowRegistry[window].commandBuffers[currentFrame_], 0);
+		vkResetCommandBuffer(res.commandBuffers[currentFrame_], 0);
 
-		auto cmd = windowRegistry[window].commandBuffers[currentFrame_];
+		auto cmd = res.commandBuffers[currentFrame_];
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -342,9 +345,9 @@ public:
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = renderPass_;
-		renderPassInfo.framebuffer = swapChainFramebuffers_[currentImageIndex_];
+		renderPassInfo.framebuffer = res.framebuffers[currentImageIndex_];
 		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = swapChainExtent_;
+		renderPassInfo.renderArea.extent = res.extent;
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
@@ -354,15 +357,15 @@ public:
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent_.width);
-		viewport.height = static_cast<float>(swapChainExtent_.height);
+		viewport.width = static_cast<float>(res.extent.width);
+		viewport.height = static_cast<float>(res.extent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(cmd, 0, 1, &viewport);
 
 		VkRect2D scissor{};
 		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent_;
+		scissor.extent = res.extent;
 		vkCmdSetScissor(cmd, 0, 1, &scissor);
 	}
 
@@ -1080,6 +1083,41 @@ public:
 	}
 
 private:
+
+	void setupWindowResources(IWindow* window) {
+		VulkanWindowResources res{};
+		res.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+		windowRegistry[window] = res;
+
+		createSwapChain(window);
+		createImageViews(windowRegistry[window]);
+		createDepthResources(windowRegistry[window]);
+		createFramebuffers(windowRegistry[window]);
+		createCommandBuffers(windowRegistry[window]);
+	}
+
+	void cleanupWindowResources(VulkanWindowResources& res) {
+		vkDeviceWaitIdle(_device);
+
+		for (auto fb : res.framebuffers)
+			vkDestroyFramebuffer(_device, fb, nullptr);
+		res.framebuffers.clear();
+
+		for (auto iv : res.imageViews)
+			vkDestroyImageView(_device, iv, nullptr);
+		res.imageViews.clear();
+
+		if (res.depthImageView != VK_NULL_HANDLE) { vkDestroyImageView(_device, res.depthImageView, nullptr); res.depthImageView = VK_NULL_HANDLE; }
+		if (res.depthImage != VK_NULL_HANDLE) { vkDestroyImage(_device, res.depthImage, nullptr); res.depthImage = VK_NULL_HANDLE; }
+		if (res.depthImageMemory != VK_NULL_HANDLE) { vkFreeMemory(_device, res.depthImageMemory, nullptr); res.depthImageMemory = VK_NULL_HANDLE; }
+
+		if (res.depthStagingBuffer != VK_NULL_HANDLE) { vkDestroyBuffer(_device, res.depthStagingBuffer, nullptr); res.depthStagingBuffer = VK_NULL_HANDLE; }
+		if (res.depthStagingMemory != VK_NULL_HANDLE) { vkFreeMemory(_device, res.depthStagingMemory, nullptr); res.depthStagingMemory = VK_NULL_HANDLE; }
+
+		if (res.swapchain != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, res.swapchain, nullptr); res.swapchain = VK_NULL_HANDLE; }
+
+		if (res.surface != VK_NULL_HANDLE) { vkDestroySurfaceKHR(_instance, res.surface, nullptr); res.surface = VK_NULL_HANDLE; }
+	}
 
 	struct ColorAttachment {
 		VkImage image;
@@ -1890,22 +1928,22 @@ private:
 	// ---------------------------------------------------------------
 	// Framebuffers (with depth attachment)
 	// ---------------------------------------------------------------
-	void createFramebuffers() {
-		swapChainFramebuffers_.resize(swapChainImageViews_.size());
-		for (size_t i = 0; i < swapChainImageViews_.size(); ++i) {
-			std::array<VkImageView, 2> attachments = {swapChainImageViews_[i], depthImageView_};
+	void createFramebuffers(VulkanWindowResources& res) {
+		res.framebuffers.resize(res.imageViews.size());
+		for (size_t i = 0; i < res.imageViews.size(); ++i) {
+			std::array<VkImageView, 2> attachments = {res.imageViews[i], res.depthImageView};
 
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = renderPass_;
 			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 			framebufferInfo.pAttachments = attachments.data();
-			framebufferInfo.width = swapChainExtent_.width;
-			framebufferInfo.height = swapChainExtent_.height;
+			framebufferInfo.width = res.extent.width;
+			framebufferInfo.height = res.extent.height;
 			framebufferInfo.layers = 1;
 
 			if (vkCreateFramebuffer(_device, &framebufferInfo, nullptr,
-									&swapChainFramebuffers_[i]) != VK_SUCCESS) {
+									&res.framebuffers[i]) != VK_SUCCESS) {
 				throw std::runtime_error("Failed to create framebuffer.");
 			}
 		}
@@ -1928,16 +1966,16 @@ private:
 		}
 	}
 
-	void createCommandBuffers() {
-		commandBuffers_.resize(kMaxFramesInFlight);
+	void createCommandBuffers(VulkanWindowResources& res) {
+		res.commandBuffers.resize(kMaxFramesInFlight);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool_;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers_.size());
+		allocInfo.commandBufferCount = static_cast<uint32_t>(res.commandBuffers.size());
 
-		if (vkAllocateCommandBuffers(_device, &allocInfo, commandBuffers_.data()) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(_device, &allocInfo, res.commandBuffers.data()) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to allocate command buffers.");
 		}
 	}
@@ -2288,7 +2326,7 @@ private:
 	// Sync objects
 	// ---------------------------------------------------------------
 	void createSyncObjects() {
-		size_t imageCount = swapChainImages_.size();
+		size_t imageCount = windowRegistry.begin()->second.swapChainImages.size();
 		imageAvailableSemaphores_.resize(kMaxFramesInFlight);
 		renderFinishedSemaphores_.resize(imageCount);
 		inFlightFences_.resize(kMaxFramesInFlight);
@@ -2475,4 +2513,8 @@ private:
 
 		if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
 		if (_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(_instance, _surface, nullptr);
-		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instan
+		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
+	}
+};
+
+}
