@@ -382,9 +382,10 @@ public:
 
 	void RenderAdditionalGLWindows() {
 #ifdef FE_HAS_WINDOW
+		IWindow* primaryWindow = windows.front().get();
 		for (auto& [w, d] : windowDeviceMap) {
 			if (d->IsVulkan()) continue;
-			if (w == windows.front().get()) continue;
+			if (w == primaryWindow) continue;
 
 			auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
 			if (!sdlWin) continue;
@@ -424,6 +425,8 @@ public:
 			d->SubmitFrame();
 			sdlWin->SwapBuffers();
 		}
+		auto* primaryDev = GetDeviceForWindow(primaryWindow);
+		if (primaryDev) primaryDev->SetActiveWindow(primaryWindow);
 #endif
 	}
 
