@@ -240,28 +240,34 @@ public:
 	}
 
 	void RegisterWindow(IWindow* window) override {
-			// void* nativeHandle = window->GetWindow();
-			
-			VulkanWindowResources resources;
-			// Create your VkSurfaceKHR using the nativeHandle here...
-			// Create your VkSwapchainKHR...
+		// void* nativeHandle = window->GetWindow();
+		
+		VulkanWindowResources resources;
+		// Create your VkSurfaceKHR using the nativeHandle here...
+		// Create your VkSwapchainKHR...
 
-			resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
 
-			resources.swapchain = createSwapChain(windowRegistry[window].surface);
-			
-			windowRegistry[window] = resources;
+		resources.swapchain = createSwapChain(windowRegistry[window].surface);
+		
+		windowRegistry[window] = resources;
+	}
+
+	void UnregisterWindow(const IWindow* window) override {
+		auto it = windowRegistry.find(window);
+		if (it != windowRegistry.end()) {
+			// Destroy Vulkan resources using vkDestroySwapchainKHR, vkDestroySurfaceKHR
+			windowRegistry.erase(it);
 		}
-
-		void UnregisterWindow(const IWindow* window) override {
-			auto it = windowRegistry.find(window);
-			if (it != windowRegistry.end()) {
-				// Destroy Vulkan resources using vkDestroySwapchainKHR, vkDestroySurfaceKHR
-				windowRegistry.erase(it);
-			}
-		}
+	}
 
 	void Clear() override {
+		for (auto ting : windowRegistry) {
+			Clear(ting.first);
+		}
+	}
+
+	void Clear(IWindow *window) {
 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
 		if (depthReadbackRequested_ && depthStagingBuffer_ != VK_NULL_HANDLE && !depthReadbackAvailable_) {
