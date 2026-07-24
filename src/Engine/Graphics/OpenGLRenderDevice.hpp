@@ -20,6 +20,17 @@ class OpenGLRenderDevice : public IRenderDevice {
 	GLuint debugVAO_ = 0;
 	GLuint debugVBO_ = 0;
 
+	std::vector<IWindow*> registeredWindows_;
+
+	void MakeCurrent() {
+		if (!registeredWindows_.empty()) {
+			auto* sdlWin = dynamic_cast<SDLWindow*>(registeredWindows_.front());
+			if (sdlWin && sdlWin->GetSDLGLContext()) {
+				SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
+			}
+		}
+	}
+
 	void InitDebugRenderer()
 	{
 		if (debugShaderProgram_ != 0) return;
@@ -164,6 +175,14 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void Init(IWindow *window) override {
+		if (window) {
+			auto* sdlWin = dynamic_cast<SDLWindow*>(window);
+			if (sdlWin && sdlWin->GetSDLGLContext()) {
+				SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
+			}
+			registeredWindows_.push_back(window);
+		}
+
 		glGenTextures(1, &defaultTextureId_);
 		glBindTexture(GL_TEXTURE_2D, defaultTextureId_);
 		unsigned char whitePixel[4] = {255, 255, 255, 255};
@@ -174,6 +193,24 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 		EnableDepthTest();
 		EnableFaceCulling();
+	}
+
+	void RegisterWindow(IWindow* window) override {
+		if (!window) return;
+		for (auto* w : registeredWindows_) {
+			if (w == window) return;
+		}
+		auto* sdlWin = dynamic_cast<SDLWindow*>(window);
+		if (sdlWin && sdlWin->GetSDLGLContext()) {
+			SDL_GL_MakeCurrent(sdlWin->GetWindow(), sdlWin->GetSDLGLContext());
+		}
+		registeredWindows_.push_back(window);
+	}
+
+	void UnregisterWindow(const IWindow* window) override {
+		registeredWindows_.erase(
+			std::remove(registeredWindows_.begin(), registeredWindows_.end(), window),
+			registeredWindows_.end());
 	}
 
 	void SetVec3(const char* name, const glm::vec3& value) override {
@@ -208,14 +245,17 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void Clear() override {
+		MakeCurrent();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void SetClearColor(float r, float g, float b, float a = 1) override {
+		MakeCurrent();
 		glClearColor(r, g, b, a);
 	}
 
 	void Resize(int width, int height) override {
+		MakeCurrent();
 		glViewport(0, 0, width, height);
 	}
 
@@ -289,11 +329,13 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void BeginFrame() override {
-
+		MakeCurrent();
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) override {
 		if (!buffers) return;
+
+		MakeCurrent();
 
 		GLint currentProgram = 0;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
@@ -362,6 +404,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 
 	void SubmitFrame() override {
+		MakeCurrent();
 		glFlush();
 	}
 
@@ -464,6 +507,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 	const char* GetDeviceName() const override {
 		return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 	}
+
+	bool IsVulkan() const override { return false; }
+
+	size_t GetWindowCount() const override { return registeredWindows_.size(); }
 };
 
 }

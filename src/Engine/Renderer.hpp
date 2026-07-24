@@ -76,6 +76,8 @@ public:
 	fe::Timer fpsCounter;
 
 	std::unique_ptr<IRenderDevice> renderDevice = nullptr;
+	std::vector<std::unique_ptr<IRenderDevice>> renderDevices;
+	std::unordered_map<const IWindow*, IRenderDevice*> windowDeviceMap;
 
 	float yaw = -90.0f, pitch = 0.0f;
 
@@ -119,6 +121,14 @@ public:
 		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
 	}
 
+	void PushShaderPathsToDevice(IRenderDevice* device) {
+		auto* vkDev = dynamic_cast<VulkanDevice*>(device);
+		if (!vkDev) return;
+		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
+		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
+		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+	}
+
 	Renderer(bool useVulkan = false) {
 		CreateRenderDevice(useVulkan);
 	}
@@ -148,7 +158,24 @@ public:
 		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
-		// renderDevice->Init();
+	}
+
+	IRenderDevice* CreateDevice(bool useVulkan) {
+		for (auto& dev : renderDevices) {
+			if (dev->IsVulkan() == useVulkan) return dev.get();
+		}
+		std::unique_ptr<IRenderDevice> dev;
+		if (useVulkan) dev = std::make_unique<VulkanDevice>();
+		else dev = std::make_unique<OpenGLRenderDevice>();
+		IRenderDevice* ptr = dev.get();
+		renderDevices.push_back(std::move(dev));
+		return ptr;
+	}
+
+	IRenderDevice* GetDeviceForWindow(const IWindow* w) {
+		auto it = windowDeviceMap.find(w);
+		if (it != windowDeviceMap.end()) return it->second;
+		return renderDevice.get();
 	}
 
 #ifdef FE_HAS_WINDOW
@@ -196,13 +223,30 @@ public:
 	
 #ifdef FE_HAS_WINDOW
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
+		NewWindow(width, height, hidden, fullscreen, useVulkan);
+	}
+
+	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
 		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
-		PushShaderPathsToVulkanDevice();
-		if (windows.size() > 0) {
-			renderDevice->RegisterWindow(window.get());
+		
+		IRenderDevice* device = nullptr;
+		if (windowDeviceMap.empty()) {
+			if (!renderDevice) {
+				CreateRenderDevice(useVulkan);
+			}
+			device = renderDevice.get();
+			PushShaderPathsToVulkanDevice();
+			device->Init(window.get());
 		} else {
-			renderDevice->Init(window.get());
+			device = CreateDevice(useVulkan);
+			if (useVulkan) {
+				PushShaderPathsToDevice(device);
+				device->RegisterWindow(window.get());
+			} else {
+				device->RegisterWindow(window.get());
+			}
 		}
+		windowDeviceMap[window.get()] = device;
 		windows.push_back(std::move(window));
 	}
 
@@ -269,6 +313,7 @@ public:
 
 	void SetClearColor(float r, float g, float b, float a = 1) {
 		renderDevice->SetClearColor(r, g, b, a);
+		for (auto& dev : renderDevices) dev->SetClearColor(r, g, b, a);
 	}
 
 	void Resize() {
@@ -278,6 +323,7 @@ public:
 	void Resize(int width, int height) {
 		// glViewport(0, 0, width, height);
 		renderDevice->Resize(width, height);
+		for (auto& dev : renderDevices) dev->Resize(width, height);
 		this->UpdateAspect(width, height);
 	}
 
@@ -288,6 +334,7 @@ public:
 
 	void Clear() { 
 		renderDevice->Clear();
+		for (auto& dev : renderDevices) dev->Clear();
 	 }
 
 	void SetTransparentMode(bool enabled) {
@@ -322,6 +369,11 @@ public:
 		renderDevice->SetMat4("view", camera->GetViewMatrix());
 		renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
+		for (auto& dev : renderDevices) {
+			dev->SetMat4("view", camera->GetViewMatrix());
+			dev->SetMat4("projection", camera->GetProjectionMatrix());
+		}
+
 		scene->SetRenderDevice(renderDevice.get());
 		scene->SetCameraMatrices(camera->GetViewMatrix(), camera->GetProjectionMatrix());
 
@@ -334,10 +386,23 @@ public:
 		OnPreSwap();
 
 		renderDevice->SubmitFrame();
+		for (auto& dev : renderDevices) dev->SubmitFrame();
 
 		fpsCounter.update();
 #ifdef FE_HAS_WINDOW
-		if (!useVulkan) window->SwapBuffers();
+		if (!useVulkan) {
+			window->SwapBuffers();
+			for (auto& dev : renderDevices) {
+				if (!dev->IsVulkan()) {
+					for (auto& [w, d] : windowDeviceMap) {
+						if (d == dev.get()) {
+							auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
+							if (sdlWin) sdlWin->SwapBuffers();
+						}
+					}
+				}
+			}
+		}
 #endif
 	}
 

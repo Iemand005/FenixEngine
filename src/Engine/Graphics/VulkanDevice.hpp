@@ -890,6 +890,7 @@ public:
 	VkDevice GetDevice() const { return _device; }
 	VkQueue GetGraphicsQueue() const { return graphicsQueue_; }
 	const char* GetDeviceName() const override { return _deviceName.c_str(); }
+	size_t GetWindowCount() const override { return windowRegistry.size(); }
 	uint32_t GetGraphicsQueueFamily() const { return graphicsQueueFamily_; }
 	VkRenderPass GetRenderPass() const { return renderPass_; }
 

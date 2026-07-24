@@ -31,6 +31,7 @@ namespace fe {
 
 		virtual void RegisterWindow(IWindow* window) {}
 		virtual void UnregisterWindow(const IWindow* window) {}
+		virtual size_t GetWindowCount() const { return 0; }
 
 		virtual std::unique_ptr<IGPUBuffers> CreateGPUBuffers() { return nullptr; }
 		virtual std::unique_ptr<IGPUTexture> CreateGPUTexture() { return nullptr; }
