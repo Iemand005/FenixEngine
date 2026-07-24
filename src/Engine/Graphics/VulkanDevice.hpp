@@ -185,7 +185,7 @@ public:
 	// }
 
 	void SubmitFrame() override {
-		std::cerr << "[DBG] SubmitFrame() start, currentFrame_=" << currentFrame_ << std::endl;
+		std::cerr << "[DBG] SubmitFrame() start, currentFrame_=" << currentFrame_ << " drawCallCount_=" << drawCallCount_ << std::endl;
 		std::vector<const IWindow*> orderedWindows;
 		orderedWindows.reserve(windowRegistry.size());
 		for (auto& [window, res] : windowRegistry) {
@@ -249,7 +249,7 @@ public:
 			cmds.push_back(res.commandBuffers[currentFrame_]);
 			waitSemaphores.push_back(res.imageAvailableSemaphores[currentFrame_]);
 			waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-			signalSemaphores.push_back(res.renderFinishedSemaphores[currentFrame_]);
+			signalSemaphores.push_back(res.renderFinishedSemaphores[res.currentImageIndex]);
 		}
 
 		VkSubmitInfo submitInfo{};
@@ -275,7 +275,7 @@ public:
 			VkPresentInfoKHR presentInfo{};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[currentFrame_];
+			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[res.currentImageIndex];
 			VkSwapchainKHR swapChains[] = {res.swapchain};
 			presentInfo.swapchainCount = 1;
 			presentInfo.pSwapchains = swapChains;
@@ -340,7 +340,7 @@ public:
 
 		VkSemaphore waitSemaphores[] = {res.imageAvailableSemaphores[currentFrame_]};
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[currentFrame_]};
+		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[res.currentImageIndex]};
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -459,6 +459,10 @@ public:
 			renderPassInfo.pClearValues = clearValues.data();
 
 			vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			std::cerr << "[DBG] Clear() renderpass begun, framebuffer=" << (res.framebuffers[res.currentImageIndex] != VK_NULL_HANDLE ? "valid" : "NULL")
+				<< " pipeline_=" << (graphicsPipeline_ != VK_NULL_HANDLE ? "valid" : "NULL")
+				<< " renderPass_=" << (renderPass_ != VK_NULL_HANDLE ? "valid" : "NULL")
+				<< " extent=" << res.extent.width << "x" << res.extent.height << std::endl;
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
 
 			VkViewport viewport{};
@@ -675,7 +679,7 @@ public:
 	}
 
 	void DrawMesh(const IGPUBuffers* buffers, const fe::IGPUTexture* texture = nullptr) override {
-		if (!buffers) return;
+		if (!buffers) { std::cerr << "[DBG] DrawMesh: buffers is null" << std::endl; return; }
 
 		const auto* vkBuffers = dynamic_cast<const VulkanGPUBuffers*>(buffers);
 		if (!vkBuffers) {
@@ -760,7 +764,7 @@ public:
 
 		for (auto& [window, res] : windowRegistry) {
 			auto cmd = res.commandBuffers[currentFrame_];
-			if (!cmd) continue;
+			if (!cmd) { std::cerr << "[DBG] DrawMesh: cmd is null for window!" << std::endl; continue; }
 
 			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, requiredPipeline);
 			currentBoundPipeline_ = requiredPipeline;
@@ -774,6 +778,7 @@ public:
 			vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(cmd, vkBuffers->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdPushConstants(cmd, pipelineLayout_, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushData), &pushData);
+			std::cerr << "[DBG] DrawMesh #" << drawCallCount_ << " indices=" << vkBuffers->indexCount << " pipeline=" << (requiredPipeline != VK_NULL_HANDLE ? "valid" : "NULL") << " frame=" << currentFrame_ << std::endl;
 			vkCmdDrawIndexed(cmd, vkBuffers->indexCount, 1, 0, 0, 0);
 		}
 	}
@@ -1991,9 +1996,9 @@ private:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencil{};
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = depthWriteEnable;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthTestEnable = VK_FALSE;
+		depthStencil.depthWriteEnable = VK_FALSE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_ALWAYS;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
@@ -2548,8 +2553,8 @@ private:
 				throw std::runtime_error("Failed to create image available semaphore.");
 		}
 
-		res.renderFinishedSemaphores.resize(kMaxFramesInFlight);
-		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+		res.renderFinishedSemaphores.resize(res.swapChainImages.size());
+		for (size_t i = 0; i < res.swapChainImages.size(); i++) {
 			if (vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &res.renderFinishedSemaphores[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create render finished semaphore.");
 		}
