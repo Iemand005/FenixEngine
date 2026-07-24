@@ -214,21 +214,25 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void SetVec3(const char* name, const glm::vec3& value) override {
+		MakeCurrent();
 		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
 		if (prog) glUniform3f(glGetUniformLocation(prog, name), value.x, value.y, value.z);
 	}
 
 	void SetInt(const char* name, int value) override {
+		MakeCurrent();
 		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
 		if (prog) glUniform1i(glGetUniformLocation(prog, name), value);
 	}
 
 	void SetFloat(const char* name, float value) override {
+		MakeCurrent();
 		GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
 		if (prog) glUniform1f(glGetUniformLocation(prog, name), value);
 	}
 
 	void SetFrontFace(bool ccw) override {
+		MakeCurrent();
 		glFrontFace(ccw ? GL_CCW : GL_CW);
 	}
 
@@ -268,6 +272,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	void SetTransparentMode(bool enabled) override {
+		MakeCurrent();
 		glDepthMask(enabled ? GL_FALSE : GL_TRUE);
 	}
 
