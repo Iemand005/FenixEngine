@@ -349,7 +349,7 @@ public:
 	}
 
 	void Resize(int width, int height) override {
-		recreateSwapChain();
+		swapChain_ = recreateSwapChain(_surface);
 	}
 
 	VkDescriptorSet GetOrCreateTextureDescriptorSet(VkImageView imageView, VkSampler sampler) {
@@ -1391,6 +1391,11 @@ private:
 		vkGetDeviceQueue(_device, indices.graphicsFamily.value(), 0, &graphicsQueue_);
 		vkGetDeviceQueue(_device, indices.presentFamily.value(), 0, &presentQueue_);
 		graphicsQueueFamily_ = indices.graphicsFamily.value();
+	}
+
+	void createSwapChain(IWindow *window) {
+		// if (@windowRegistry[windo)
+		windowRegistry[window].swapchain = createSwapChain(windowRegistry[window].surface);
 	}
 
 	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface) {
