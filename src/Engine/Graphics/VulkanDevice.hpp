@@ -126,16 +126,16 @@ public:
 		VulkanWindowResources resources;
 		
 		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
+		_surface = resources.surface;
 		
 		PickPhysicalDevice();
 
 		
 		// RegisterWindow(window);
-		_surface = windowRegistry[window].surface;
-		swapChain_ = windowRegistry[window].swapchain;
 		createLogicalDevice();
 		
 		resources.swapchain = createSwapChain(windowRegistry[window].surface);
+		swapChain_ = resources.swapchain;
 		windowRegistry[window] = resources;
 
 		createImageViews();
@@ -2486,4 +2486,4 @@ private:
 	}
 };
 
-}
+}  
