@@ -2343,7 +2343,7 @@ private:
 		recreateSwapChain(windowRegistry[window].surface);
 	}
 
-	void recreateSwapChain(VkSurfaceKHR surface) {
+	VkSwapchainKHR recreateSwapChain(VkSurfaceKHR surface) {
 		vkDeviceWaitIdle(_device);
 
 		cleanupSwapChain();
