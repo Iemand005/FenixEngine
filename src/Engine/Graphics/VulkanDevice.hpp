@@ -184,9 +184,105 @@ public:
 	// }
 
 	void SubmitFrame() override {
-		for (auto &window : windowRegistry) {
-			SubmitFrame(window.first);
+		std::vector<const IWindow*> orderedWindows;
+		orderedWindows.reserve(windowRegistry.size());
+		for (auto& [window, res] : windowRegistry) {
+			orderedWindows.push_back(window);
 		}
+
+		for (auto* window : orderedWindows) {
+			auto& res = windowRegistry[window];
+			auto cmd = res.commandBuffers[currentFrame_];
+
+			vkCmdEndRenderPass(cmd);
+
+			if (depthReadbackRequested_) {
+				auto extent = res.extent;
+				VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
+				if (res.depthStagingBuffer == VK_NULL_HANDLE) {
+					createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+						res.depthStagingBuffer, res.depthStagingMemory);
+				}
+
+				VkImageMemoryBarrier barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.image = res.depthImage;
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				barrier.subresourceRange.levelCount = 1;
+				barrier.subresourceRange.layerCount = 1;
+				barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+				VkBufferImageCopy copyRegion{};
+				copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				copyRegion.imageSubresource.layerCount = 1;
+				copyRegion.imageExtent = {extent.width, extent.height, 1};
+				vkCmdCopyImageToBuffer(cmd, res.depthImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, res.depthStagingBuffer, 1, &copyRegion);
+
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+				depthReadbackAvailable_ = false;
+			}
+
+			if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
+				throw std::runtime_error("Failed to record command buffer.");
+			}
+		}
+
+		std::vector<VkCommandBuffer> cmds;
+		std::vector<VkSemaphore> waitSemaphores;
+		std::vector<VkPipelineStageFlags> waitStages;
+		std::vector<VkSemaphore> signalSemaphores;
+
+		for (auto* window : orderedWindows) {
+			auto& res = windowRegistry[window];
+			cmds.push_back(res.commandBuffers[currentFrame_]);
+			waitSemaphores.push_back(res.imageAvailableSemaphores[currentFrame_]);
+			waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+			signalSemaphores.push_back(res.renderFinishedSemaphores[res.currentImageIndex]);
+		}
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+		submitInfo.pWaitSemaphores = waitSemaphores.data();
+		submitInfo.pWaitDstStageMask = waitStages.data();
+		submitInfo.commandBufferCount = static_cast<uint32_t>(cmds.size());
+		submitInfo.pCommandBuffers = cmds.data();
+		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+		submitInfo.pSignalSemaphores = signalSemaphores.data();
+
+		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to submit draw command buffer.");
+		}
+
+		for (auto* window : orderedWindows) {
+			auto& res = windowRegistry[window];
+
+			VkPresentInfoKHR presentInfo{};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[res.currentImageIndex];
+			VkSwapchainKHR swapChains[] = {res.swapchain};
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = swapChains;
+			presentInfo.pImageIndices = &res.currentImageIndex;
+
+			VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
+			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+				recreateSwapChain(window);
+			}
+		}
+
+		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	}
 
 	void SubmitFrame(const IWindow *window) {
@@ -235,9 +331,9 @@ public:
 			throw std::runtime_error("Failed to record command buffer.");
 		}
 
-		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores_[currentFrame_]};
+		VkSemaphore waitSemaphores[] = {res.imageAvailableSemaphores[currentFrame_]};
 		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore signalSemaphores[] = {renderFinishedSemaphores_[currentImageIndex_]};
+		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[res.currentImageIndex]};
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -260,7 +356,7 @@ public:
 		VkSwapchainKHR swapChains[] = {res.swapchain};
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &currentImageIndex_;
+		presentInfo.pImageIndices = &res.currentImageIndex;
 
 		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
 		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
