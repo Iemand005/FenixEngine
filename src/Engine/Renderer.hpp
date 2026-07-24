@@ -81,6 +81,8 @@ public:
 
 	float yaw = -90.0f, pitch = 0.0f;
 
+	float clearColorR_ = 0.0f, clearColorG_ = 0.0f, clearColorB_ = 0.0f, clearColorA_ = 1.0f;
+
 	int lastX, lastY;
 
 	double lastUpdateTime = 0.0f;
@@ -324,6 +326,7 @@ public:
 	}
 
 	void SetClearColor(float r, float g, float b, float a = 1) {
+		clearColorR_ = r; clearColorG_ = g; clearColorB_ = b; clearColorA_ = a;
 		renderDevice->SetClearColor(r, g, b, a);
 		for (auto& dev : renderDevices) dev->SetClearColor(r, g, b, a);
 	}
@@ -398,10 +401,15 @@ public:
 			if (vw > 0 && vh > 0)
 				d->Resize(vw, vh);
 
-			// d->EnableDepthTest();
-			// d->EnableFaceCulling();
+			d->EnableDepthTest();
+			d->EnableFaceCulling();
 
+			d->SetClearColor(clearColorR_, clearColorG_, clearColorB_, clearColorA_);
 			d->Clear();
+
+			glm::mat4 perWindowProj = camera->GetProjectionMatrix();
+			if (vw > 0 && vh > 0)
+				perWindowProj = glm::perspective(glm::radians(camera->fov), (float)vw / (float)vh, camera->nearDist, camera->farDist);
 
 			if (shader) {
 				shader->Use();
@@ -422,11 +430,11 @@ public:
 				}
 
 				shader->SetMat4("view", camera->GetViewMatrix());
-				shader->SetMat4("projection", camera->GetProjectionMatrix());
+				shader->SetMat4("projection", perWindowProj);
 			}
 
 			d->SetMat4("view", camera->GetViewMatrix());
-			d->SetMat4("projection", camera->GetProjectionMatrix());
+			d->SetMat4("projection", perWindowProj);
 
 			d->BeginFrame();
 
