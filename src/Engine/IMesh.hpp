@@ -33,6 +33,9 @@ public:
     virtual IGPUBuffers* GetGPUBuffers() const = 0;
     virtual IGPUTexture* GetGPUTexture() const = 0;
 
+    virtual IGPUBuffers* GetGPUBuffersFor(IRenderDevice* dev) { return GetGPUBuffers(); }
+    virtual IGPUTexture* GetGPUTextureFor(IRenderDevice* dev) { return GetGPUTexture(); }
+
     virtual bool loadTexture(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) = 0;
     virtual bool loadTexture(const ImageData& image, TextureScaling scaling = TextureScaling::Linear) = 0;
     virtual bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) = 0;
