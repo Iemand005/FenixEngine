@@ -122,7 +122,7 @@ public:
 	void PushShaderPathsToDevice(IRenderDevice* device) {
 		auto* vkDev = dynamic_cast<VulkanDevice*>(device);
 		if (!vkDev) return;
-7		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
+		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
 		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
 		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
 	}
