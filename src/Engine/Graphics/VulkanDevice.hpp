@@ -122,10 +122,10 @@ public:
 
 	void Init(IWindow *window) override {
 		CreateInstance(window);
-		PickPhysicalDevice();
 		RegisterWindow(window);
 		_surface = windowRegistry[window].surface;
 		swapChain_ = windowRegistry[window].swapchain;
+		PickPhysicalDevice();
 		createLogicalDevice();
 
 		createImageViews();
