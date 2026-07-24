@@ -150,6 +150,69 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
     keyboardState = SDL_GetKeyboardState(NULL);
 }
 
+fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan, SDL_GLContext sharedContext) : IWindow(width, height) {
+	impl = std::make_unique<Impl>();
+	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK));
+
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+
+	bool forceX11 = true;
+
+	if (!IsWayland() || forceX11)
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		std::cout << "Failed to initialize video driver uhm" << std::endl;
+		return;
+    }
+
+	auto windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+	if (!useVulkan) windowFlags |= SDL_WINDOW_OPENGL;
+	if (hidden) windowFlags |= SDL_WINDOW_HIDDEN;
+
+	impl->window = SDL_CreateWindow(title.c_str(), width, height, windowFlags);
+
+	if (!impl->window) {
+		CheckError();
+		SDL_Quit();
+	}
+
+	if (!useVulkan) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
+		if (options.tenBit) {
+			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
+			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 2);
+		}
+
+		if (sharedContext) {
+			SDL_GL_MakeCurrent(impl->window, sharedContext);
+		}
+
+		impl->gl_context = SDL_GL_CreateContext(impl->window);
+		if (!impl->gl_context) {
+			CheckError();
+			SDL_DestroyWindow(impl->window);
+			SDL_Quit();
+		}
+
+		if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+			std::cout << "Failed to initialize GLAD" << std::endl;
+			return;
+		}
+	}
+
+    keyboardState = SDL_GetKeyboardState(NULL);
+}
+
 void fe::SDLWindow::SwapBuffers() {  // TOOD: this 
 	// TODO: return if vulkan or weell do vulkan impl not gl
 	// if (true) return;
