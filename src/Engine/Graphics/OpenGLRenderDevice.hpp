@@ -21,12 +21,23 @@ class OpenGLRenderDevice : public IRenderDevice {
 	GLuint debugVBO_ = 0;
 
 	std::vector<IWindow*> registeredWindows_;
+	IWindow* activeWindow_ = nullptr;
 
 	void MakeCurrent() {
-		if (!registeredWindows_.empty()) {
+		if (activeWindow_) {
+			activeWindow_->MakeCurrentGLContext();
+		} else if (!registeredWindows_.empty()) {
 			registeredWindows_.front()->MakeCurrentGLContext();
 		}
 	}
+
+	void SetActiveWindow(IWindow* w) {
+		activeWindow_ = w;
+		MakeCurrent();
+	}
+
+	IWindow* GetActiveWindow() const { return activeWindow_; }
+	const std::vector<IWindow*>& GetRegisteredWindows() const { return registeredWindows_; }
 
 	void InitDebugRenderer()
 	{
