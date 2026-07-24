@@ -19,12 +19,14 @@ void Renderer::ToggleWireframe(bool enabled) {
 }
 
 Renderer::Renderer(GLADloadproc loadProc) {
-  renderDevice = std::make_unique<OpenGLRenderDevice>();
-  if (!gladLoadGLLoader(loadProc)) {
-    std::cerr << "Failed to load OpenGL functions (GLAD)";
-  }
-  renderDevice->Init(nullptr);
-  this->SetClearColor(0.1f, 0.4f, 1.0f);
+	if (!gladLoadGLLoader(loadProc)) {
+		std::cerr << "Failed to load OpenGL functions (GLAD)";
+	}
+	CreateRenderDevice(false);
+	// renderDevice = std::make_unique<OpenGLRenderDevice>();
+
+	// renderDevice->Init();
+	// this->SetClearColor(0.1f, 0.4f, 1.0f);
 }
 
 void Renderer::BindFrameBuffer(int bufferIndex) {

@@ -148,6 +148,7 @@ public:
 		this->useVulkan = useVulkan;
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+		renderDevice->Init();
 	}
 
 #ifdef FE_HAS_WINDOW
@@ -197,7 +198,7 @@ public:
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
 		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan);
 		PushShaderPathsToVulkanDevice();
-		renderDevice->Init(window.get());
+		renderDevice->RegisterWindow(window.get());
 		windows.push_back(std::move(window));
 	}
 
