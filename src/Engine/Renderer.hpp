@@ -464,7 +464,7 @@ public:
 		auto window = GetWindow<DefaultWindow>();
 #endif
 		if (!scene || !camera) return;
-		if (!shader) return;
+		if (!useVulkan && !shader) return;
 
 		Clear();
 
