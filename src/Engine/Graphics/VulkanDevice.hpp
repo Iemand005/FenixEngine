@@ -167,13 +167,13 @@ public:
 		createDefaultTexture();
 		createDescriptorSets();
 		createFrameDescriptorSets();
-		createSyncObjects();
 
 		createSwapChain(window);
 		createImageViews(windowRegistry[window]);
 		createDepthResources(windowRegistry[window]);
 		createFramebuffers(windowRegistry[window]);
 		createCommandBuffers(windowRegistry[window]);
+		createSyncObjects();
 	}
 	// VertexBuffer* CreateVertexBuffer(void* data, size_t size) override {
 	//     return new VulkanVertexBuffer(data, size); // Uses vkCreateBuffer, vkBindBufferMemory
