@@ -1236,7 +1236,7 @@ private:
 
 	void CreateInstance();
 
-	void CreateSurface(const IWindow *window);
+	void CreateSurface(IWindow *window);
 
 	bool checkValidationLayerSupport() {
 		uint32_t layerCount;
