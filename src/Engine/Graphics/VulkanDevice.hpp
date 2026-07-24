@@ -185,6 +185,7 @@ public:
 	// }
 
 	void SubmitFrame() override {
+		std::cerr << "[DBG] SubmitFrame() start, currentFrame_=" << currentFrame_ << std::endl;
 		std::vector<const IWindow*> orderedWindows;
 		orderedWindows.reserve(windowRegistry.size());
 		for (auto& [window, res] : windowRegistry) {
@@ -261,7 +262,10 @@ public:
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
 		submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
+		std::cerr << "[DBG] SubmitFrame() about to vkQueueSubmit, cmds=" << cmds.size() << " waitSems=" << waitSemaphores.size() << " signalSems=" << signalSemaphores.size() << std::endl;
+		VkResult submitResult = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
+		std::cerr << "[DBG] SubmitFrame() vkQueueSubmit result=" << submitResult << std::endl;
+		if (submitResult != VK_SUCCESS) {
 			throw std::runtime_error("Failed to submit draw command buffer.");
 		}
 
@@ -278,12 +282,14 @@ public:
 			presentInfo.pImageIndices = &res.currentImageIndex;
 
 			VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
+			std::cerr << "[DBG] SubmitFrame() vkQueuePresentKHR result=" << presentResult << " imageIndex=" << res.currentImageIndex << std::endl;
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
 				recreateSwapChain(window);
 			}
 		}
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+		std::cerr << "[DBG] SubmitFrame() done, currentFrame_ now=" << currentFrame_ << std::endl;
 	}
 
 	void SubmitFrame(const IWindow *window) {
@@ -642,6 +648,7 @@ public:
 	}
 
 	void BeginFrame() override {
+		std::cerr << "[DBG] BeginFrame() start, drawCallCount_=" << drawCallCount_ << " currentFrame_=" << currentFrame_ << std::endl;
 		for (auto& [window, res] : windowRegistry) {
 			auto cmd = res.commandBuffers[currentFrame_];
 			if (!cmd) {
