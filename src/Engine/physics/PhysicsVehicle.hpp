@@ -9,6 +9,7 @@ namespace JPH {
 class PhysicsSystem;
 class VehicleConstraint;
 class WheeledVehicleController;
+class WheelSettingsWV;
 }
 
 namespace fe {
@@ -47,6 +48,8 @@ private:
     std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
     JPH::VehicleConstraint* constraint = nullptr;
     JPH::WheeledVehicleController* controller = nullptr;
+    std::vector<JPH::WheelSettingsWV*> rearWheelSettings;
+    float driftValue = 0.0f;
 };
 
 }
