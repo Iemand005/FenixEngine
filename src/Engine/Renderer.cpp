@@ -36,6 +36,11 @@ void Renderer::BindFrameBuffer(int bufferIndex) {
 void Renderer::RenderMesh(Mesh<>& mesh) {
 	mesh.SetDevice(renderDevice.get());
 	renderDevice->DrawMesh(mesh.gpuBuffers.get(), mesh.gpuTexture.get());
+	for (auto& dev : renderDevices) {
+		dev->SetMat4("model", mesh.modelMatrix);
+		dev->SetVec3("objectColor", mesh.color);
+		dev->DrawMesh(mesh.GetGPUBuffersFor(dev.get()), mesh.GetGPUTextureFor(dev.get()));
+	}
 }
 
 void Renderer::RenderObject(Object& object, bool transparentPass) {
@@ -54,11 +59,23 @@ void Renderer::RenderObject(Object& object, bool transparentPass) {
 		mesh->SetDevice(renderDevice.get());
 		renderDevice->DrawMesh(mesh->GetGPUBuffers(), mesh->GetGPUTexture());
 	}
+	if (object.reverseWinding) renderDevice->SetFrontFace(true);
+
+	for (auto& dev : renderDevices) {
+		dev->SetMat4("model", model);
+		dev->SetVec3("objectColor", object.color);
+		if (object.reverseWinding) dev->SetFrontFace(false);
+		for (auto& mesh : object.meshes) {
+			if (mesh->GetHasTransparency() != transparentPass) continue;
+			dev->DrawMesh(mesh->GetGPUBuffersFor(dev.get()), mesh->GetGPUTextureFor(dev.get()));
+		}
+		if (object.reverseWinding) dev->SetFrontFace(true);
+	}
+
 	if (auto* obj = dynamic_cast<Object*>(&object)) {
 		for (auto& child : obj->GetChildren())
 			RenderObject(*child, transparentPass);
 	}
-	if (object.reverseWinding) renderDevice->SetFrontFace(true);
 }
 
 void Renderer::RenderScene(Scene *scene) {
@@ -76,17 +93,21 @@ void Renderer::RenderScene(Scene *scene) {
 	}
 
 	renderDevice->BeginFrame();
+	for (auto& dev : renderDevices) dev->BeginFrame();
 
 	// Opaque pass (depth write ON)
 	renderDevice->SetTransparentMode(false);
+	for (auto& dev : renderDevices) dev->SetTransparentMode(false);
 	for (auto& object : scene->GetObjects()) {
 		RenderObject(*object, false);
 	}
 
 	// Transparent pass (depth write OFF)
 	renderDevice->SetTransparentMode(true);
+	for (auto& dev : renderDevices) dev->SetTransparentMode(true);
 	for (auto& object : scene->GetObjects()) {
 		RenderObject(*object, true);
 	}
 	renderDevice->SetTransparentMode(false);
+	for (auto& dev : renderDevices) dev->SetTransparentMode(false);
 }

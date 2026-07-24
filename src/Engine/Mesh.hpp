@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #include "IMesh.hpp"
@@ -35,6 +36,9 @@ namespace fe {
 
 		std::unique_ptr<IGPUBuffers> gpuBuffers = nullptr;
 		std::unique_ptr<IGPUTexture> gpuTexture = nullptr;
+
+		std::unordered_map<IRenderDevice*, std::unique_ptr<IGPUBuffers>> extraBuffers_;
+		std::unordered_map<IRenderDevice*, std::unique_ptr<IGPUTexture>> extraTextures_;
 
 		bool hasTransparency = false;
 
@@ -385,6 +389,43 @@ namespace fe {
 
 		IGPUBuffers* GetGPUBuffers() const override { return gpuBuffers.get(); }
 		IGPUTexture* GetGPUTexture() const override { return gpuTexture.get(); }
+
+		IGPUBuffers* GetGPUBuffersFor(IRenderDevice* dev) {
+			if (dev == device_ || !dev) return gpuBuffers.get();
+			auto& buf = extraBuffers_[dev];
+			if (!buf && !vertices.empty() && !indices.empty()) {
+				buf = dev->CreateGPUBuffers();
+				if (buf) {
+					if constexpr (std::is_same_v<VertexType, VertexArray>)
+						buf->vertexFormat = VertexFormat::Array;
+					else
+						buf->vertexFormat = VertexFormat::Standard;
+					dev->UploadBuffers(buf.get(),
+						vertices.data(), sizeof(VertexType), vertices.size(),
+						indices.data(), static_cast<uint32_t>(indices.size()),
+						VertexType::getLayout());
+				}
+			}
+			return buf ? buf.get() : gpuBuffers.get();
+		}
+
+		IGPUTexture* GetGPUTextureFor(IRenderDevice* dev) {
+			if (dev == device_ || !dev) return gpuTexture.get();
+			auto& tex = extraTextures_[dev];
+			if (!tex) {
+				tex = dev->CreateGPUTexture();
+				if (tex) {
+					if (hasPendingTextureArray) {
+						dev->UploadTextureArray(tex.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+					} else if (hasPendingImageData) {
+						dev->UploadTexture(tex.get(), pendingImageData, pendingImageScaling);
+					} else if (hasPendingTexture) {
+						dev->UploadTexture(tex.get(), pendingTexturePath, pendingTextureScaling);
+					}
+				}
+			}
+			return tex ? tex.get() : gpuTexture.get();
+		}
 
 		size_t GetVertexCount() const override { return vertices.size(); }
 		size_t GetIndexCount() const override { return indices.size(); }

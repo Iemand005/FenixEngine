@@ -367,6 +367,9 @@ void fe::EditableGame::DrawDebugUI() {
 
 		if (ImGui::Button("New Window!")) NewWindow(500, 500);
 
+		if (ImGui::Button("New Vulkan Window", ImVec2(150, 0))) NewWindow(800, 600, false, false, true);
+		if (ImGui::Button("New OpenGL Window", ImVec2(150, 0))) NewWindow(800, 600, false, false, false);
+
 		static bool snapToGrid = true;
 		ImGui::Checkbox("Snap to grid", &snapToGrid);
 		float step = snapToGrid ? 0.1f : 0.0001f;
