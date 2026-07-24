@@ -264,7 +264,7 @@ public:
 
 		resources.surface = (VkSurfaceKHR)window->CreateVulkanSurface(_instance);
 
-		resources.swapchain = createSwapChain(windowRegistry[window].surface);
+		resources.swapchain = createSwapChain(resources.surface);
 		
 		windowRegistry[window] = resources;
 	}
