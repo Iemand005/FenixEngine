@@ -1283,6 +1283,7 @@ private:
 		createDepthResources(windowRegistry[window]);
 		createFramebuffers(windowRegistry[window]);
 		createCommandBuffers(windowRegistry[window]);
+		createPerWindowSemaphores(windowRegistry[window]);
 	}
 
 	void cleanupWindowResources(VulkanWindowResources& res) {
@@ -1302,6 +1303,14 @@ private:
 
 		if (res.depthStagingBuffer != VK_NULL_HANDLE) { vkDestroyBuffer(_device, res.depthStagingBuffer, nullptr); res.depthStagingBuffer = VK_NULL_HANDLE; }
 		if (res.depthStagingMemory != VK_NULL_HANDLE) { vkFreeMemory(_device, res.depthStagingMemory, nullptr); res.depthStagingMemory = VK_NULL_HANDLE; }
+
+		for (auto sem : res.imageAvailableSemaphores)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
+		res.imageAvailableSemaphores.clear();
+
+		for (auto sem : res.renderFinishedSemaphores)
+			if (sem != VK_NULL_HANDLE) vkDestroySemaphore(_device, sem, nullptr);
+		res.renderFinishedSemaphores.clear();
 
 		if (res.swapchain != VK_NULL_HANDLE) { vkDestroySwapchainKHR(_device, res.swapchain, nullptr); res.swapchain = VK_NULL_HANDLE; }
 
@@ -2513,6 +2522,23 @@ private:
 		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
 			if (vkCreateFence(_device, &fenceInfo, nullptr, &inFlightFences_[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects.");
+		}
+	}
+
+	void createPerWindowSemaphores(VulkanWindowResources& res) {
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		res.imageAvailableSemaphores.resize(kMaxFramesInFlight);
+		for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+			if (vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &res.imageAvailableSemaphores[i]) != VK_SUCCESS)
+				throw std::runtime_error("Failed to create image available semaphore.");
+		}
+
+		res.renderFinishedSemaphores.resize(res.swapChainImages.size());
+		for (size_t i = 0; i < res.swapChainImages.size(); i++) {
+			if (vkCreateSemaphore(_device, &semaphoreInfo, nullptr, &res.renderFinishedSemaphores[i]) != VK_SUCCESS)
+				throw std::runtime_error("Failed to create render finished semaphore.");
 		}
 	}
 
