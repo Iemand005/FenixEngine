@@ -120,8 +120,9 @@ public:
 		fragShaderArrayPath_ = fragPath;
 	}
 
-	void Init() override {
-		CreateInstance();
+	void Init(IWindow *window) override {
+		CreateInstance(window);
+		RegisterWindow(window);
 		// CreateSurface();
 		PickPhysicalDevice();
 		createLogicalDevice();
@@ -1236,7 +1237,7 @@ private:
 	glm::vec4 currentObjectColor_ = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	bool reverseWinding_ = false;
 
-	void CreateInstance();
+	void CreateInstance(IWindow *window);
 
 	// void CreateSurface(IWindow *window);
 

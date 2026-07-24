@@ -3,7 +3,7 @@
 
 using namespace fe;
 
-void VulkanDevice::CreateInstance() {
+void VulkanDevice::CreateInstance(IWindow *window) {
 	if (kEnableValidationLayers && !checkValidationLayerSupport()) {
 		throw std::runtime_error(
 			"Validation layers requested but not available. "
