@@ -32,6 +32,7 @@ constexpr bool kEnableValidationLayers = false;
 constexpr bool kEnableValidationLayers = true;
 #endif
 
+namespace fe {
 const std::vector<const char*> kValidationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -60,6 +61,12 @@ struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities{};
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct VulkanWindowResources {
+    VkSurfaceKHR surface;
+    VkSwapchainKHR swapchain;
+    std::vector<VkImageView> imageViews;
 };
 
 
@@ -1129,6 +1136,7 @@ private:
 
 	VkInstance _instance = VK_NULL_HANDLE;
 	VkSurfaceKHR _surface = VK_NULL_HANDLE;
+	std::unordered_map<const IWindow*, VulkanWindowResources> windowRegistry;
 	VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 	VkDevice _device = VK_NULL_HANDLE;
 	VkQueue graphicsQueue_ = VK_NULL_HANDLE;
@@ -2421,3 +2429,5 @@ private:
 		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
 	}
 };
+
+}
