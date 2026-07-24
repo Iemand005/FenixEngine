@@ -565,6 +565,10 @@ void fe::SDLWindow::MakeCurrentGLContext() {
 	SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
 }
 
+void fe::SDLWindow::UnbindGLContext() {
+	SDL_GL_MakeCurrent(nullptr, nullptr);
+}
+
 
 #ifdef _WIN32
 HWND fe::SDLWindow::GetNativeWindow() {
