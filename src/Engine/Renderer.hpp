@@ -251,6 +251,7 @@ public:
 			device = CreateDevice(useVulkan, window.get());
 			if (useVulkan) {
 				PushShaderPathsToDevice(device);
+				window->UnbindGLContext();
 				device->RegisterWindow(window.get());
 			} else {
 				device->RegisterWindow(window.get());
