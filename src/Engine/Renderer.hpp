@@ -161,6 +161,7 @@ public:
 	}
 
 	IRenderDevice* CreateDevice(bool useVulkan) {
+		if (renderDevice && renderDevice->IsVulkan() == useVulkan) return renderDevice.get();
 		for (auto& dev : renderDevices) {
 			if (dev->IsVulkan() == useVulkan) return dev.get();
 		}

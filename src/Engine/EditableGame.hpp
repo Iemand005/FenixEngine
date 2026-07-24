@@ -109,7 +109,13 @@ namespace fe {
 		void OnDraw() override;
 
 		void BeginFrame() {
-			if (!useVulkan) ImGui_ImplOpenGL3_NewFrame();
+			if (!useVulkan) {
+				auto renderer = (Renderer*)this;
+				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
+				if (primaryWindow && primaryWindow->GetSDLGLContext())
+					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
+				ImGui_ImplOpenGL3_NewFrame();
+			}
 			else ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplSDL3_NewFrame();
 			ImGui::NewFrame();
@@ -123,7 +129,13 @@ namespace fe {
 				if (vkDevice)
 					ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkDevice->GetCurrentCommandBuffer());
 			}
-			else ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			else {
+				auto renderer = (Renderer*)this;
+				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
+				if (primaryWindow && primaryWindow->GetSDLGLContext())
+					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
+				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			}
 		}
 
 		void DrawDebugUI();
