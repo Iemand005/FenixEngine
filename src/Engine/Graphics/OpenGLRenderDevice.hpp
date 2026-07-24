@@ -295,10 +295,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glReadPixels(0, 0, outW, outH, GL_DEPTH_COMPONENT, GL_FLOAT, outDepths.data());
 		return true;
 	}
-	void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
-	void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
-	void EnableFaceCulling() { glEnable(GL_CULL_FACE); }
-	void DisableFaceCulling() { glDisable(GL_CULL_FACE); }
+	void EnableDepthTest() override { glEnable(GL_DEPTH_TEST); }
+	void DisableDepthTest() override { glDisable(GL_DEPTH_TEST); }
+	void EnableFaceCulling() override { glEnable(GL_CULL_FACE); }
+	void DisableFaceCulling() override { glDisable(GL_CULL_FACE); }
 
 	void UploadBuffers(IGPUBuffers* buffers,
 		const void* vertices, size_t vertexStride, size_t vertexCount,

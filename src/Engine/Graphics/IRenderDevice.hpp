@@ -79,6 +79,10 @@ namespace fe {
 		virtual bool IsVulkan() const { return false; }
 
 		virtual void SetActiveWindow(IWindow* window) {}
+		virtual void EnableDepthTest() {}
+		virtual void DisableDepthTest() {}
+		virtual void EnableFaceCulling() {}
+		virtual void DisableFaceCulling() {}
 
 		virtual void* UploadToImGui(const unsigned char* rgba, int w, int h) { return nullptr; }
 
