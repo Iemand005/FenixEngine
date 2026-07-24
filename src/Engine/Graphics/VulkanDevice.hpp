@@ -1142,7 +1142,7 @@ private:
 	// XR/external rendering resources
 	VkRenderPass xrRenderPass_ = VK_NULL_HANDLE;
 	VkFormat xrRenderPassFormat_ = VK_FORMAT_UNDEFINED;
-	fe::IWindow *window;
+	// fe::IWindow *window;
 
 	std::string vertShaderPath_;
 	std::string fragShaderPath_;
@@ -1237,7 +1237,7 @@ private:
 
 	void CreateInstance();
 
-	void CreateSurface();
+	void CreateSurface(const IWindow *window);
 
 	bool checkValidationLayerSupport() {
 		uint32_t layerCount;
