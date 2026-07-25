@@ -442,4 +442,5 @@ void fe::EditableGame::DrawDebugUI() {
 	}
 	ImGui::End();
 
-	if (this->client) DrawN
+	if (this->client) DrawNetworkDebugUI();
+}
