@@ -35,7 +35,7 @@ public:
 
 
 
-  Chizzle(int width, int height, bool vr = false) : Chizzle(fe::XRGameOptions(width, height, false)) {}
+  Chizzle(int width, int height, bool vr = false) : Chizzle(fe::XRGameOptions(false, width, height)) {}
   
   Chizzle(fe::XRGameOptions options) : fe::EditableGame(options) {
 
