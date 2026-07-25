@@ -42,13 +42,14 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 	if (vehicleBody.GetMotionProperties()) {
 		MassProperties mp = vehicleBody.GetShape()->GetMassProperties();
 		mp.ScaleToMass(1500.0f);
+		mp.Translate(Vec3(0, -0.3f, 0));
 		vehicleBody.GetMotionProperties()->SetMassProperties(vehicleBody.GetMotionProperties()->GetAllowedDOFs(), mp);
 	}
 
 	VehicleConstraintSettings vehicleSettings;
 	vehicleSettings.mUp = Vec3(0, 1, 0);
 	vehicleSettings.mForward = Vec3(0, 0, 1);
-	vehicleSettings.mMaxPitchRollAngle = DegreesToRadians(60.0f);
+	vehicleSettings.mMaxPitchRollAngle = DegreesToRadians(25.0f);
 
 	WheeledVehicleControllerSettings* controllerSettings = new WheeledVehicleControllerSettings;
 	vehicleSettings.mController = controllerSettings;
@@ -79,17 +80,17 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		wheel->mSuspensionMaxLength = wc.suspensionMaxLength;
 		wheel->mSuspensionSpring.mFrequency = wc.suspensionFrequency;
 		wheel->mSuspensionSpring.mDamping = wc.suspensionDamping;
-		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(35.0f) : 0.0f;
+		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(25.0f) : 0.0f;
 		wheel->mMaxBrakeTorque = 1500.0f;
 		wheel->mMaxHandBrakeTorque = 4000.0f;
 
 		wheel->mLongitudinalFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLongitudinalFriction.AddPoint(0.1f, 1.0f);
-		wheel->mLongitudinalFriction.AddPoint(1.0f, 0.8f);
+		wheel->mLongitudinalFriction.AddPoint(0.05f, 1.2f);
+		wheel->mLongitudinalFriction.AddPoint(0.5f, 1.0f);
 
 		wheel->mLateralFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLateralFriction.AddPoint(5.0f, 1.0f);
-		wheel->mLateralFriction.AddPoint(30.0f, 0.8f);
+		wheel->mLateralFriction.AddPoint(3.0f, 1.5f);
+		wheel->mLateralFriction.AddPoint(20.0f, 1.0f);
 
 		vehicleSettings.mWheels.push_back(wheel);
 
@@ -109,10 +110,18 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		diff.mRightWheel = rightDrivenIndex;
 		diff.mDifferentialRatio = 3.42f;
 		diff.mLeftRightSplit = 0.5f;
-		diff.mLimitedSlipRatio = FLT_MAX;
+		diff.mLimitedSlipRatio = 1.4f;
 		diff.mEngineTorqueRatio = 1.0f;
 		controllerSettings->mDifferentials.push_back(diff);
 	}
+
+	vehicleSettings.mAntiRollBars.resize(2);
+	vehicleSettings.mAntiRollBars[0].mLeftWheel = 0;
+	vehicleSettings.mAntiRollBars[0].mRightWheel = 1;
+	vehicleSettings.mAntiRollBars[0].mStiffness = 10000.0f;
+	vehicleSettings.mAntiRollBars[1].mLeftWheel = 2;
+	vehicleSettings.mAntiRollBars[1].mRightWheel = 3;
+	vehicleSettings.mAntiRollBars[1].mStiffness = 10000.0f;
 
 	constraint = new VehicleConstraint(vehicleBody, vehicleSettings);
 
