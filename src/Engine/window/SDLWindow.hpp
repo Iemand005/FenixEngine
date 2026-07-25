@@ -77,7 +77,7 @@ class SDLWindow : public IWindow {
 
   WindowSize GetFramebufferSize() override;
 
-  void MakeCurrentGLContext() override;
+  void MakeCurrentGLContext() const override;
   void UnbindGLContext() override;
 
 
@@ -95,9 +95,9 @@ class SDLWindow : public IWindow {
   // struct SDL_Window;
   // struct SDL_GLContext;
 
-  SDL_Window* GetWindow();
+  SDL_Window* GetWindow() const;
 
-  SDL_GLContext GetSDLGLContext();
+  SDL_GLContext GetSDLGLContext() const;
 
   static void SDLCALL OnFileDialogResult(void* userdata, const char* const* files, int filter);
 

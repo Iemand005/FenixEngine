@@ -294,9 +294,9 @@ void fe::SDLWindow::Destroy() {
 	SDL_Quit();
 }
 
-SDL_Window* fe::SDLWindow::GetWindow() { return impl->window; }
+SDL_Window* fe::SDLWindow::GetWindow() const { return impl->window; }
 
-SDL_GLContext fe::SDLWindow::GetSDLGLContext() { return impl->gl_context; }
+SDL_GLContext fe::SDLWindow::GetSDLGLContext() const { return impl->gl_context; }
 
 bool fe::SDLWindow::IsKeyDown(SDL_Scancode key) { return keyboardState[key]; }
 
@@ -562,7 +562,7 @@ fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
 	return m;
 }
 
-void fe::SDLWindow::MakeCurrentGLContext() {
+void fe::SDLWindow::MakeCurrentGLContext() const {
 	SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
 }
 

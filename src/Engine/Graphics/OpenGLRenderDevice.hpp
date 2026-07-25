@@ -272,9 +272,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 	}
 
 	std::vector<const IWindow*> GetWindows() override {
-		// std::vector<IWindow*> windows;
-		// windows.reserve(registeredWindows_)
+		std::vector<IWindow*> windows;
+		windows.reserve(registeredWindows_.size());
 		// return registeredWindows_;
+		return {};
 	}
 
 	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
@@ -424,6 +425,11 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	void SubmitFrame() override {
 		MakeCurrent();
+		glFlush();
+	}
+
+	void SubmitFrame(const IWindow *window) override {
+		window->MakeCurrentGLContext();
 		glFlush();
 	}
 
