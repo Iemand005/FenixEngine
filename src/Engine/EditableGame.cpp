@@ -399,6 +399,8 @@ void fe::EditableGame::DrawDebugUI() {
 		ImGui::SameLine();
 		ImGui::Text("%zu joystick(s)", joysticks.size());
 
+		static std::vector<float> joystickStrengths;
+		joystickStrengths.resize(joysticks.size());
 		for (size_t i = 0; i < joysticks.size(); ++i) {
 			ImGui::Text("%zu: %s", i, joysticks[i].GetName().c_str());
 			auto axis = joysticks[i].GetAxis();
@@ -408,6 +410,9 @@ void fe::EditableGame::DrawDebugUI() {
 			ImGui::ProgressBar((axis.y + 1.0f) * 0.5f, ImVec2(0.0f, 0.0f), "");
 			ImGui::SameLine();
 			ImGui::Text("Y: %.2f", axis.y);
+			if (ImGui::SliderFloat(("Force##joy" + std::to_string(i)).c_str(), &joystickStrengths[i], 0.0f, 1.0f)) {
+				SetJoystickForceFeedback(i, joystickStrengths[i]);
+			}
 		}
 	}
 	ImGui::End();

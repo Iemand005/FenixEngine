@@ -58,6 +58,14 @@ class Game : public Renderer {
 		}
 	}
 
+	void SetJoystickForceFeedback(size_t index, float strength) {
+		if (index < joysticks.size()) joysticks[index].Rumble(strength);
+	}
+
+	void StopJoystickForceFeedback(size_t index) {
+		if (index < joysticks.size()) joysticks[index].StopRumble();
+	}
+
 	double lastUpdateTime = 0.0f;
 
 	bool canJump = true;
