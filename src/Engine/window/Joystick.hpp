@@ -65,10 +65,15 @@ public:
 		std::string GetName() const {
 			return SDL_GetJoystickNameForID(id);
 		}
-
 		glm::vec2 GetAxis() {
 			if (!handle) return glm::vec2(0.0f);
+
 			return glm::vec2(SDL_GetJoystickAxis(handle, 0), SDL_GetJoystickAxis(handle, 1)) / 32768.0f;
+		}
+
+		float GetAxis(int index) {
+			if (!handle) return 0.0f;
+			return SDL_GetJoystickAxis(handle, index) / 32768.0f;
 		}
 
 		void Rumble(float strength, Uint32 duration_ms = UINT32_MAX) {
