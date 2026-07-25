@@ -182,3 +182,35 @@ void PhysicsVehicle::SetMaxPitchRollAngle(float angle) {
 	}
 #endif
 }
+
+PhysicsVehicle::WheelForceData PhysicsVehicle::GetWheelForce(uint index) {
+	WheelForceData data;
+#ifndef EXCLUDE_JOLT
+	if (constraint && index < constraint->GetWheels().size()) {
+		const Wheel* w = constraint->GetWheel(index);
+		data.lateralLambda = w->GetLateralLambda();
+		data.longitudinalLambda = w->GetLongitudinalLambda();
+		data.suspensionLambda = w->GetSuspensionLambda();
+		data.hasContact = w->HasContact();
+	}
+#endif
+	return data;
+}
+
+int PhysicsVehicle::GetNumWheels() {
+#ifndef EXCLUDE_JOLT
+	return constraint ? (int)constraint->GetWheels().size() : 0;
+#else
+	return 0;
+#endif
+}
+
+float PhysicsVehicle::GetEngineRPM() {
+#ifndef EXCLUDE_JOLT
+	if (controller)
+		return controller->GetEngine().GetCurrentRPM();
+	return 0.0f;
+#else
+	return 0.0f;
+#endif
+}

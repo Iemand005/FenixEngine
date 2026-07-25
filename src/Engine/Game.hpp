@@ -116,7 +116,7 @@ class Game : public Renderer {
 		}
 	}
 
-	void UpdateJoystickPeriodicEffect(size_t index, Sint16 magnitude) {
+	void UpdateJoystickPeriodicEffect(size_t index, Sint16 magnitude, Uint16 period = 5000) {
 		if (index < joysticks.size()) {
 			auto& j = joysticks[index];
 			if (j.periodicEffectId < 0) return;
@@ -125,7 +125,7 @@ class Game : public Renderer {
 			effect.periodic.direction.type = SDL_HAPTIC_CARTESIAN;
 			effect.periodic.direction.dir[0] = 1;
 			effect.periodic.length = SDL_HAPTIC_INFINITY;
-			effect.periodic.period = 5000;
+			effect.periodic.period = period;
 			effect.periodic.magnitude = magnitude;
 			j.UpdateEffect(j.periodicEffectId, effect);
 		}

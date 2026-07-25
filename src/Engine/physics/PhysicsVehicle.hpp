@@ -41,6 +41,17 @@ public:
     void SetDriverInput(float forward, float right, float brake, float handbrake);
     void SetMaxPitchRollAngle(float angle);
 
+    struct WheelForceData {
+        float lateralLambda = 0.0f;
+        float longitudinalLambda = 0.0f;
+        float suspensionLambda = 0.0f;
+        bool hasContact = false;
+    };
+
+    WheelForceData GetWheelForce(uint index);
+    int GetNumWheels();
+    float GetEngineRPM();
+
     PhysicsObject* GetBody() { return body; }
 
 private:
