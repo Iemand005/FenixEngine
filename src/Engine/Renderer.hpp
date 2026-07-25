@@ -495,11 +495,14 @@ public:
 
 		renderDevice->SubmitFrame();
 		for (auto& dev : renderDevices) {
-			if (dev->IsVulkan()) dev->SubmitFrame();
+			// if (dev->IsVulkan()) dev->SubmitFrame();
 			// camera.
 			auto windows = dev->GetWindows();
 			for (auto &window : windows) {
-				// dev->SubmitFrame();
+				camera->SetAspect(window->width, window->height);
+				renderDevice->SetMat4("view", camera->GetViewMatrix());
+				renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+				dev->SubmitFrame(window);
 			}
 		}
 
