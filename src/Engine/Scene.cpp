@@ -109,6 +109,7 @@ void Scene::ResolveCollisions() {
 	}
 }
 
+// TODO: these draw functions should go into renderer, not in scene!!
 void Scene::DrawCircle(const glm::vec3& position, float radius, int segments, const glm::vec3& rotationDegrees, const glm::vec3& color) {
 	if (radius <= 0.0f) return;
 	segments = std::max(segments, 3);

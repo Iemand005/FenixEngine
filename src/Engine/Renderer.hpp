@@ -496,6 +496,7 @@ public:
 		renderDevice->SubmitFrame();
 		for (auto& dev : renderDevices) {
 			if (dev->IsVulkan()) dev->SubmitFrame();
+			// camera.
 		}
 
 		fpsCounter.update();
