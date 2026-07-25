@@ -65,6 +65,7 @@ namespace fe {
 		RendererOptions() = default; 
 
 		RendererOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen) {}
+		RendererOptions(int w, int h, bool useVulkan, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen), useVulkan(useVulkan) {}
 	};
 
 class Renderer {

@@ -33,7 +33,11 @@ public:
 
   Chizzle() : Chizzle(800, 640) {}
 
-  Chizzle(int width, int height, bool vr = false) : fe::EditableGame(width, height, vr) {
+
+
+  Chizzle(int width, int height, bool vr = false) : Chizzle(fe::XRGameOptions(width, height, false)) {}
+  
+  Chizzle(fe::XRGameOptions options) : fe::EditableGame(options) {
 
     LoadModels();
 

@@ -35,6 +35,8 @@ namespace fe {
 
     	XRGameOptions(int width, int height) : fe::RendererOptions(width, height) {}
 
+    	XRGameOptions(int width, int height, bool useVulkan) : fe::RendererOptions(width, height, false, false, useVulkan) {}
+
 		XRGameOptions(int width, int height, bool launchVR, bool drawWindow = true) : fe::RendererOptions(width, height), launchVR(launchVR), drawWindow(drawWindow) {}
 	};
 
