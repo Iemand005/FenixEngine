@@ -297,7 +297,7 @@ public:
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	}
 
-	void SubmitFrame(const IWindow *window) {
+	void SubmitFrame(const IWindow *window) override {
 		auto& res = windowRegistry[window];
 		auto cmd = res.commandBuffers[currentFrame_];
 

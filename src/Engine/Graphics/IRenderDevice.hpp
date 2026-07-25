@@ -27,6 +27,7 @@ namespace fe {
 		virtual void BeginFrame() = 0;
 		virtual void DrawMesh(const IGPUBuffers* buffers, const IGPUTexture* texture = nullptr) = 0;
 		virtual void SubmitFrame() = 0;
+		virtual void SubmitFrame(const IWindow *) = 0;
 
 		virtual void RegisterWindow(IWindow* window) {}
 		virtual void UnregisterWindow(const IWindow* window) {}
