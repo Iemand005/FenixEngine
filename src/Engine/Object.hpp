@@ -24,7 +24,8 @@ class Mesh;
 class ObjectBase {
    public:
 	ObjectState state{};
-	glm::mat4 modelMatrix{1.0f};
+	mutable bool modelMatrixDirty = true;
+	glm::mat4 cachedModelMatrix{1.0f};
 	float boundingRadius = 0.0f;
 	glm::vec3 boundingCenterOffset{0.0f};
 	glm::vec3 visualOffset{0.0f};
@@ -48,6 +49,7 @@ class ObjectBase {
 		if (this->physicsObject && !this->isStatic) {
 			auto s = this->physicsObject->SyncToRender();
 			this->state = s;
+			modelMatrixDirty = true;
 		}
 	}
 
@@ -57,16 +59,24 @@ class ObjectBase {
 	virtual size_t GetTotalVertexCount() const { return 0; }
 
 	virtual glm::mat4 GetModelMatrix() {
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), this->state.position + this->visualOffset);
-		if (glm::length(this->state.orientation - glm::quat(1, 0, 0, 0)) > 0.001f) {
-			model = model * glm::mat4_cast(this->state.orientation);
-		} else {
-			model = glm::rotate(model, glm::radians(this->state.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, glm::radians(this->state.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		if (modelMatrixDirty) {
+			cachedModelMatrix = glm::translate(glm::mat4(1.0f), this->state.position + this->visualOffset);
+			if (glm::length(this->state.orientation - glm::quat(1, 0, 0, 0)) > 0.001f) {
+				cachedModelMatrix = cachedModelMatrix * glm::mat4_cast(this->state.orientation);
+			} else {
+				cachedModelMatrix = glm::rotate(cachedModelMatrix, glm::radians(this->state.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+				cachedModelMatrix = glm::rotate(cachedModelMatrix, glm::radians(this->state.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			}
+			cachedModelMatrix = glm::scale(cachedModelMatrix, this->state.scale);
+			modelMatrixDirty = false;
 		}
-		model = glm::scale(model, this->state.scale);
-		return model;
+		return cachedModelMatrix;
 	}
+
+	void SetPosition(const glm::vec3& pos) { state.position = pos; modelMatrixDirty = true; }
+	void SetRotation(const glm::vec3& rot) { state.rotation = rot; modelMatrixDirty = true; }
+	void SetScale(const glm::vec3& s) { state.scale = s; modelMatrixDirty = true; }
+	void SetOrientation(const glm::quat& orient) { state.orientation = orient; modelMatrixDirty = true; }
 
 	void SetPhysicsObject(std::unique_ptr<PhysicsObject> obj) { physicsObject = std::move(obj); }
 };
@@ -97,6 +107,7 @@ class Object : public ObjectBase {
 	Object(std::string objFilePath, ObjectState state) : ObjectBase() {
 		LoadObj(objFilePath);
 		this->state = state;
+		modelMatrixDirty = true;
 		sourcePath = objFilePath;
 	}
 
@@ -176,6 +187,7 @@ class Object : public ObjectBase {
 		float yaw = glm::degrees(atan2(direction.x, direction.z));
 		this->state.rotation.x = pitch;
 		this->state.rotation.y = yaw - 180;
+		modelMatrixDirty = true;
 	}
 
 	std::string GetName() { return name; }

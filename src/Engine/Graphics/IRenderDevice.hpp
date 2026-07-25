@@ -94,6 +94,9 @@ namespace fe {
 
 		virtual void DrawGizmoLines(const float* vertices, int vertexCount, GizmoDrawMode mode, const glm::vec3& color, float lineWidth, const glm::mat4& view, const glm::mat4& proj) {}
 
+		virtual void SetVSync(bool enabled) {}
+		virtual bool IsVSyncEnabled() const { return true; }
+
 		virtual const char* GetDeviceName() const = 0;
 	};
 }

@@ -25,6 +25,12 @@ Renderer::Renderer(GLADloadproc loadProc) {
 	CreateRenderDevice(false);
 }
 
+void Renderer::SetVSync(bool enabled) {
+	vsyncEnabled = enabled;
+	if (renderDevice) renderDevice->SetVSync(enabled);
+	for (auto& dev : renderDevices) dev->SetVSync(enabled);
+}
+
 void Renderer::BindFrameBuffer(int bufferIndex) {
 	renderDevice->BindFramebuffer(bufferIndex);
 }

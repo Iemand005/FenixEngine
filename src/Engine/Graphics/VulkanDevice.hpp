@@ -942,6 +942,15 @@ public:
 		transparentMode_ = enabled;
 	}
 
+	void SetVSync(bool enabled) override {
+		vsyncEnabled_ = enabled;
+		for (auto& [window, _] : windowRegistry) {
+			recreateSwapChain(window);
+		}
+	}
+
+	bool IsVSyncEnabled() const override { return vsyncEnabled_; }
+
 	bool ReadDepthBuffer(std::vector<float>& outDepths, int& outW, int& outH) override {
 		if (!depthReadbackRequested_) {
 			depthReadbackRequested_ = true;
@@ -1464,6 +1473,7 @@ private:
 	VkPipeline graphicsPipelineFoxcraftCWTransparent_ = VK_NULL_HANDLE;
 
 	bool transparentMode_ = false;
+	bool vsyncEnabled_ = true;
 
 	std::vector<VkBuffer> uniformBuffers_;
 	std::vector<VkDeviceMemory> uniformBuffersMemory_;
@@ -1676,7 +1686,7 @@ private:
 		SwapChainSupportDetails support = querySwapChainSupport(_physicalDevice, surface);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(support.formats);
-		VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes);
+		VkPresentModeKHR presentMode = chooseSwapPresentMode(support.presentModes, vsyncEnabled_);
 		VkExtent2D extent = chooseSwapExtent(support.capabilities);
 
 		uint32_t imageCount = support.capabilities.minImageCount + 1;
@@ -1739,7 +1749,12 @@ private:
 		return formats[0];
 	}
 
-	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes) {
+	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& modes, bool vsync) {
+		if (!vsync) {
+			for (const auto& mode : modes) {
+				if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR) return mode;
+			}
+		}
 		for (const auto& mode : modes) {
 			if (mode == VK_PRESENT_MODE_MAILBOX_KHR) return mode;
 		}

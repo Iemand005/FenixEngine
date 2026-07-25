@@ -45,6 +45,7 @@ bool Object::LoadObj(std::string path, float scale) {
   }
 
   this->state.scale = glm::vec3(scale);
+  modelMatrixDirty = true;
 
   return true;
 }

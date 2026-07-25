@@ -105,6 +105,7 @@ public:
 
 	bool useVulkan = false;
 	bool frustumCullingEnabled = false;
+	bool vsyncEnabled = true;
 
 	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
 	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
@@ -538,6 +539,8 @@ public:
 	void EnableWireframe();
 	void DisableWireframe();
 	void ToggleWireframe(bool enabled = false);
+
+	void SetVSync(bool enabled);
 
 	template<typename WindowT = IWindow>
 	WindowT* GetWindow() {

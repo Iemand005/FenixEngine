@@ -241,6 +241,10 @@ void fe::EditableGame::DrawDebugUI() {
 			std::cout << "Button clicked!" << std::endl;
 		}
 
+		if (ImGui::Checkbox("VSync", &vsyncEnabled)) {
+			SetVSync(vsyncEnabled);
+		}
+
 		static bool wireframe = false;
 		if (ImGui::Checkbox("Enable Wireframe", &wireframe)) {
 			if (wireframe)
