@@ -289,6 +289,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void SetTransparentMode(bool enabled) override {
 		MakeCurrent();
 		glDepthMask(enabled ? GL_FALSE : GL_TRUE);
+		if (enabled) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		} else {
+			glDisable(GL_BLEND);
+		}
 	}
 
 	bool ReadDepthBuffer(std::vector<float>& outDepths, int& outW, int& outH) override {

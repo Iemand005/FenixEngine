@@ -3,6 +3,10 @@
 #include "Scene.hpp"
 
 #include <algorithm>
+#include <vector>
+
+#define GLM_ENABLE_EXPERIMENTAL 
+#include <glm/gtx/norm.hpp>
 
 using namespace fe;
 
@@ -63,6 +67,19 @@ void Renderer::RenderObject(Object& object, bool transparentPass) {
 	if (object.reverseWinding) renderDevice->SetFrontFace(true);
 }
 
+static bool HasTransparentMesh(const Object& obj) {
+	for (auto& mesh : obj.meshes) {
+		if (mesh->GetHasTransparency()) return true;
+	}
+	return false;
+}
+
+static void CollectObjects(Object& obj, std::vector<Object*>& out) {
+	out.push_back(&obj);
+	for (auto& child : obj.GetChildren())
+		CollectObjects(*child, out);
+}
+
 void Renderer::RenderScene(Scene *scene) {
 	if (shader) {
 		int count = scene->GetLightCount();
@@ -85,10 +102,38 @@ void Renderer::RenderScene(Scene *scene) {
 		RenderObject(*object, false);
 	}
 
-	// Transparent pass (depth write OFF)
+	// Transparent pass (depth write OFF, sorted back-to-front)
 	renderDevice->SetTransparentMode(true);
-	for (auto& object : scene->GetObjects()) {
-		RenderObject(*object, true);
+	{
+		std::vector<Object*> transparentObjs;
+		for (auto& object : scene->GetObjects()) {
+			std::vector<Object*> children;
+			CollectObjects(*object, children);
+			for (auto* o : children) {
+				if (HasTransparentMesh(*o))
+					transparentObjs.push_back(o);
+			}
+		}
+		glm::vec3 camPos = camera ? camera->GetPos() : glm::vec3(0.0f);
+		std::sort(transparentObjs.begin(), transparentObjs.end(),
+			[&camPos](const Object* a, const Object* b) {
+				float da = glm::length2(a->state.position - camPos);
+				float db = glm::length2(b->state.position - camPos);
+				return da > db;
+			});
+		for (auto* obj : transparentObjs) {
+			glm::mat4 model = obj->GetModelMatrix();
+			if (shader) shader->SetMat4("model", model);
+			renderDevice->SetMat4("model", model);
+			renderDevice->SetVec3("objectColor", obj->color);
+			if (obj->reverseWinding) renderDevice->SetFrontFace(false);
+			for (auto& mesh : obj->meshes) {
+				if (!mesh->GetHasTransparency()) continue;
+				mesh->SetDevice(renderDevice.get());
+				renderDevice->DrawMesh(mesh->GetGPUBuffers(), mesh->GetGPUTexture());
+			}
+			if (obj->reverseWinding) renderDevice->SetFrontFace(true);
+		}
 	}
 	renderDevice->SetTransparentMode(false);
 }

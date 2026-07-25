@@ -106,9 +106,10 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string&
 					pbr.base_color_factor[2],
 					alpha));
 
-				if (prim->material->alpha_mode == cgltf_alpha_mode_mask ||
-					prim->material->alpha_mode == cgltf_alpha_mode_blend ||
-					alpha < 1.0f) {
+				auto alphaMode = prim->material->alpha_mode;
+				if (alphaMode == cgltf_alpha_mode_blend) {
+					mesh.hasTransparency = true;
+				} else if (alphaMode != cgltf_alpha_mode_opaque && alpha < 0.99f) {
 					mesh.hasTransparency = true;
 				}
 
@@ -123,7 +124,7 @@ static void ProcessGLTFNode(cgltf_node* node, Object* parent, const std::string&
 							ImageData img;
 							img.width = w; img.height = h; img.channels = 4;
 							img.pixels.assign(pixels, pixels + w * h * 4);
-							if (!mesh.hasTransparency && n == 4) {
+							if (!mesh.hasTransparency && alphaMode == cgltf_alpha_mode_blend && n == 4) {
 								for (int i = 3; i < w * h * 4; i += 4) {
 									uint8_t a = pixels[i];
 									if (a > 0 && a < 255) { mesh.hasTransparency = true; break; }
