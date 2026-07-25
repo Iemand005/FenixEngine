@@ -79,17 +79,17 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		wheel->mSuspensionMaxLength = wc.suspensionMaxLength;
 		wheel->mSuspensionSpring.mFrequency = wc.suspensionFrequency;
 		wheel->mSuspensionSpring.mDamping = wc.suspensionDamping;
-		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(35.0f) : 0.0f;
+		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(30.0f) : 0.0f;
 		wheel->mMaxBrakeTorque = 1500.0f;
 		wheel->mMaxHandBrakeTorque = 4000.0f;
 
 		wheel->mLongitudinalFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLongitudinalFriction.AddPoint(0.05f, 1.0f);
-		wheel->mLongitudinalFriction.AddPoint(0.5f, 0.85f);
+		wheel->mLongitudinalFriction.AddPoint(0.1f, 1.0f);
+		wheel->mLongitudinalFriction.AddPoint(1.0f, 0.85f);
 
 		wheel->mLateralFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLateralFriction.AddPoint(6.0f, 0.65f);
-		wheel->mLateralFriction.AddPoint(30.0f, 0.55f);
+		wheel->mLateralFriction.AddPoint(2.0f, 0.8f);
+		wheel->mLateralFriction.AddPoint(30.0f, 0.8f);
 
 		vehicleSettings.mWheels.push_back(wheel);
 
@@ -164,13 +164,13 @@ void PhysicsVehicle::SetDriverInput(float forward, float right, float brake, flo
 		bool isDrifting = driftValue > 0.1f;
 
 		if (isDrifting != wasDrifting) {
-			float latFriction = isDrifting ? 0.2f : 0.65f;
+			float latFriction = isDrifting ? 0.25f : 0.8f;
 
 			for (auto* settings : rearWheelSettings) {
 				settings->mLateralFriction.Clear();
 				settings->mLateralFriction.AddPoint(0.0f, 0.0f);
-				settings->mLateralFriction.AddPoint(6.0f, latFriction);
-				settings->mLateralFriction.AddPoint(30.0f, latFriction * 0.85f);
+				settings->mLateralFriction.AddPoint(2.0f, latFriction);
+				settings->mLateralFriction.AddPoint(30.0f, latFriction);
 			}
 		}
 	}
