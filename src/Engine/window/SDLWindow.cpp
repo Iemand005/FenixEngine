@@ -93,8 +93,10 @@ fe::SDLWindow::~SDLWindow() {
 }
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan) : IWindow(width, height) {
+	SDL_SetHint(SDL_HINT_JOYSTICK_DIRECTINPUT, "1");
+	
 	impl = std::make_unique<Impl>();
-	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK));
+	CheckError(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC));
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
