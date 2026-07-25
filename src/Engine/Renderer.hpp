@@ -225,8 +225,8 @@ public:
 	
 #ifdef FE_HAS_WINDOW
 	void NewWindow(int width, int height, bool hidden = false, bool fullscreen = false) {
-		throw new std::exception("deprecatfucker");
-		// NewWindow(width, height, hidden, fullscreen, useVulkan);
+		// throw new std::exception("deprecatfucker");
+		NewWindow(width, height, hidden, fullscreen, useVulkan);
 	}
 
 	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
