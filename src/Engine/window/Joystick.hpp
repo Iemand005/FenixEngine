@@ -152,3 +152,5 @@ private:
 		SDL_HapticEffectID periodicEffectId = -1;
 		SDL_HapticEffectID springEffectId = -1;
 }
+
+}
