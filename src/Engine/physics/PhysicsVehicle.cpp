@@ -42,14 +42,13 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 	if (vehicleBody.GetMotionProperties()) {
 		MassProperties mp = vehicleBody.GetShape()->GetMassProperties();
 		mp.ScaleToMass(1500.0f);
-		mp.Translate(Vec3(0, -0.3f, 0));
 		vehicleBody.GetMotionProperties()->SetMassProperties(vehicleBody.GetMotionProperties()->GetAllowedDOFs(), mp);
 	}
 
 	VehicleConstraintSettings vehicleSettings;
 	vehicleSettings.mUp = Vec3(0, 1, 0);
 	vehicleSettings.mForward = Vec3(0, 0, 1);
-	vehicleSettings.mMaxPitchRollAngle = DegreesToRadians(25.0f);
+	vehicleSettings.mMaxPitchRollAngle = DegreesToRadians(45.0f);
 
 	WheeledVehicleControllerSettings* controllerSettings = new WheeledVehicleControllerSettings;
 	vehicleSettings.mController = controllerSettings;
@@ -80,17 +79,17 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		wheel->mSuspensionMaxLength = wc.suspensionMaxLength;
 		wheel->mSuspensionSpring.mFrequency = wc.suspensionFrequency;
 		wheel->mSuspensionSpring.mDamping = wc.suspensionDamping;
-		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(25.0f) : 0.0f;
+		wheel->mMaxSteerAngle = wc.isSteering ? DegreesToRadians(35.0f) : 0.0f;
 		wheel->mMaxBrakeTorque = 1500.0f;
 		wheel->mMaxHandBrakeTorque = 4000.0f;
 
 		wheel->mLongitudinalFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLongitudinalFriction.AddPoint(0.05f, 1.2f);
-		wheel->mLongitudinalFriction.AddPoint(0.5f, 1.0f);
+		wheel->mLongitudinalFriction.AddPoint(0.05f, 1.0f);
+		wheel->mLongitudinalFriction.AddPoint(0.5f, 0.85f);
 
 		wheel->mLateralFriction.AddPoint(0.0f, 0.0f);
-		wheel->mLateralFriction.AddPoint(3.0f, 1.5f);
-		wheel->mLateralFriction.AddPoint(20.0f, 1.0f);
+		wheel->mLateralFriction.AddPoint(6.0f, 0.65f);
+		wheel->mLateralFriction.AddPoint(30.0f, 0.55f);
 
 		vehicleSettings.mWheels.push_back(wheel);
 
@@ -115,13 +114,7 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 		controllerSettings->mDifferentials.push_back(diff);
 	}
 
-	vehicleSettings.mAntiRollBars.resize(2);
-	vehicleSettings.mAntiRollBars[0].mLeftWheel = 0;
-	vehicleSettings.mAntiRollBars[0].mRightWheel = 1;
-	vehicleSettings.mAntiRollBars[0].mStiffness = 10000.0f;
-	vehicleSettings.mAntiRollBars[1].mLeftWheel = 2;
-	vehicleSettings.mAntiRollBars[1].mRightWheel = 3;
-	vehicleSettings.mAntiRollBars[1].mStiffness = 10000.0f;
+	vehicleSettings.mAntiRollBars.resize(0);
 
 	constraint = new VehicleConstraint(vehicleBody, vehicleSettings);
 
@@ -171,13 +164,13 @@ void PhysicsVehicle::SetDriverInput(float forward, float right, float brake, flo
 		bool isDrifting = driftValue > 0.1f;
 
 		if (isDrifting != wasDrifting) {
-			float lateralFriction = isDrifting ? 0.3f : 1.0f;
+			float latFriction = isDrifting ? 0.2f : 0.65f;
 
 			for (auto* settings : rearWheelSettings) {
 				settings->mLateralFriction.Clear();
 				settings->mLateralFriction.AddPoint(0.0f, 0.0f);
-				settings->mLateralFriction.AddPoint(5.0f, lateralFriction);
-				settings->mLateralFriction.AddPoint(30.0f, lateralFriction * 0.8f);
+				settings->mLateralFriction.AddPoint(6.0f, latFriction);
+				settings->mLateralFriction.AddPoint(30.0f, latFriction * 0.85f);
 			}
 		}
 	}
