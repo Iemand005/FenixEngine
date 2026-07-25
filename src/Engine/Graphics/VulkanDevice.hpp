@@ -1435,6 +1435,7 @@ private:
 	static inline bool preferIntegratedGPU_ = false;
 
 	VkInstance _instance = VK_NULL_HANDLE;
+	std::vector<IWindow*> registeredWindows;
 	std::unordered_map<const IWindow*, VulkanWindowResources> windowRegistry;
 	const IWindow* currentWindow_ = nullptr;
 	VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
@@ -1660,6 +1661,15 @@ private:
 
 	void createSwapChain(IWindow *window) {
 		createSwapChain(windowRegistry[window].surface, windowRegistry[window]);
+	}
+
+	std::vector<const IWindow*> GetWindows() override {
+		std::vector<const IWindow*> windows;
+		windows.reserve(windowRegistry.size());;
+		// windows.push_back()
+		for (auto &[window, _] : windowRegistry) windows.push_back(window);
+
+		return windows;
 	}
 
 	VkSwapchainKHR createSwapChain(VkSurfaceKHR surface, VulkanWindowResources& res) {

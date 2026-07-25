@@ -271,6 +271,12 @@ class OpenGLRenderDevice : public IRenderDevice {
 		glViewport(0, 0, width, height);
 	}
 
+	std::vector<const IWindow*> GetWindows() override {
+		// std::vector<IWindow*> windows;
+		// windows.reserve(registeredWindows_)
+		// return registeredWindows_;
+	}
+
 	std::unique_ptr<IGPUBuffers> CreateGPUBuffers() override {
 		return std::make_unique<OpenGLGPUBuffers>();
 	}

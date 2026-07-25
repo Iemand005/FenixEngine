@@ -84,6 +84,8 @@ namespace fe {
 		virtual void EnableFaceCulling() {}
 		virtual void DisableFaceCulling() {}
 
+		virtual std::vector<const IWindow*> GetWindows() { return {}; }
+
 		virtual void* UploadToImGui(const unsigned char* rgba, int w, int h) { return nullptr; }
 
 		virtual void DrawDebugLines(const float* vertices, int vertexCount, const glm::mat4& view, const glm::mat4& proj) {}
