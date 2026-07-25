@@ -399,10 +399,14 @@ void fe::EditableGame::DrawDebugUI() {
 		ImGui::SameLine();
 		ImGui::Text("%zu joystick(s)", joysticks.size());
 
-		static std::vector<float> joystickStrengths;
-		joystickStrengths.resize(joysticks.size());
+		static std::vector<float> constForceLevels, shakeMagnitudes, springCoeffs;
+		constForceLevels.resize(joysticks.size());
+		shakeMagnitudes.resize(joysticks.size());
+		springCoeffs.resize(joysticks.size());
 		for (size_t i = 0; i < joysticks.size(); ++i) {
 			ImGui::Text("%zu: %s", i, joysticks[i].GetName().c_str());
+			ImGui::SameLine();
+			ImGui::TextColored(joysticks[i].IsHaptic() ? ImVec4(0,1,0,1) : ImVec4(1,0,0,1), joysticks[i].IsHaptic() ? "[Haptic]" : "[No Haptic]");
 			auto axis = joysticks[i].GetAxis();
 			ImGui::ProgressBar((axis.x + 1.0f) * 0.5f, ImVec2(0.0f, 0.0f), "");
 			ImGui::SameLine();
@@ -410,12 +414,32 @@ void fe::EditableGame::DrawDebugUI() {
 			ImGui::ProgressBar((axis.y + 1.0f) * 0.5f, ImVec2(0.0f, 0.0f), "");
 			ImGui::SameLine();
 			ImGui::Text("Y: %.2f", axis.y);
-			if (ImGui::SliderFloat(("Force##joy" + std::to_string(i)).c_str(), &joystickStrengths[i], 0.0f, 1.0f)) {
-				SetJoystickForceFeedback(i, joystickStrengths[i]);
+
+			ImGui::Indent();
+			if (ImGui::SliderFloat(("Const Force##c" + std::to_string(i)).c_str(), &constForceLevels[i], -1.0f, 1.0f)) {
+				Sint16 level = static_cast<Sint16>(constForceLevels[i] * 32767.0f);
+				SDL_HapticDirection dir{};
+				dir.type = SDL_HAPTIC_CARTESIAN;
+				dir.dir[0] = 1;
+				SetJoystickConstantForce(i, level, dir);
 			}
+			if (ImGui::SliderFloat(("Shake##p" + std::to_string(i)).c_str(), &shakeMagnitudes[i], 0.0f, 1.0f)) {
+				Sint16 mag = static_cast<Sint16>(shakeMagnitudes[i] * 32767.0f);
+				SetJoystickPeriodicEffect(i, SDL_HAPTIC_SINE, mag, 5000);
+			}
+			if (ImGui::SliderFloat(("Spring##s" + std::to_string(i)).c_str(), &springCoeffs[i], -1.0f, 1.0f)) {
+				Sint16 coeff = static_cast<Sint16>(springCoeffs[i] * 32767.0f);
+				SetJoystickSpringForce(i, coeff, coeff);
+			}
+			if (ImGui::SmallButton(("Stop##h" + std::to_string(i)).c_str())) {
+				StopJoystickHaptic(i);
+				constForceLevels[i] = 0.0f;
+				shakeMagnitudes[i] = 0.0f;
+				springCoeffs[i] = 0.0f;
+			}
+			ImGui::Unindent();
 		}
 	}
 	ImGui::End();
 
-	if (this->client) DrawNetworkDebugUI();
-}
+	if (this->client) DrawN

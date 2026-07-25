@@ -66,6 +66,71 @@ class Game : public Renderer {
 		if (index < joysticks.size()) joysticks[index].StopRumble();
 	}
 
+	void SetJoystickConstantForce(size_t index, Sint16 level, const SDL_HapticDirection& dir) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			j.DestroyEffect(j.constEffectId);
+			j.constEffectId = j.CreateConstantEffect(level, dir);
+			if (j.constEffectId >= 0) j.RunEffect(j.constEffectId);
+		}
+	}
+
+	void SetJoystickPeriodicEffect(size_t index, Uint16 type, Sint16 magnitude, Uint16 period) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			j.DestroyEffect(j.periodicEffectId);
+			j.periodicEffectId = j.CreatePeriodicEffect(type, magnitude, period);
+			if (j.periodicEffectId >= 0) j.RunEffect(j.periodicEffectId);
+		}
+	}
+
+	void SetJoystickSpringForce(size_t index, Sint16 right_coeff, Sint16 left_coeff) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			j.DestroyEffect(j.springEffectId);
+			j.springEffectId = j.CreateSpringEffect(right_coeff, left_coeff);
+			if (j.springEffectId >= 0) j.RunEffect(j.springEffectId);
+		}
+	}
+
+	void StopJoystickHaptic(size_t index) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			if (j.constEffectId >= 0) { j.StopEffect(j.constEffectId); j.DestroyEffect(j.constEffectId); j.constEffectId = -1; }
+			if (j.periodicEffectId >= 0) { j.StopEffect(j.periodicEffectId); j.DestroyEffect(j.periodicEffectId); j.periodicEffectId = -1; }
+			if (j.springEffectId >= 0) { j.StopEffect(j.springEffectId); j.DestroyEffect(j.springEffectId); j.springEffectId = -1; }
+		}
+	}
+
+	void UpdateJoystickConstantForce(size_t index, Sint16 level) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			if (j.constEffectId < 0) return;
+			SDL_HapticEffect effect{};
+			effect.type = SDL_HAPTIC_CONSTANT;
+			effect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
+			effect.constant.direction.dir[0] = 1;
+			effect.constant.length = SDL_HAPTIC_INFINITY;
+			effect.constant.level = level;
+			j.UpdateEffect(j.constEffectId, effect);
+		}
+	}
+
+	void UpdateJoystickPeriodicEffect(size_t index, Sint16 magnitude) {
+		if (index < joysticks.size()) {
+			auto& j = joysticks[index];
+			if (j.periodicEffectId < 0) return;
+			SDL_HapticEffect effect{};
+			effect.type = SDL_HAPTIC_SINE;
+			effect.periodic.direction.type = SDL_HAPTIC_CARTESIAN;
+			effect.periodic.direction.dir[0] = 1;
+			effect.periodic.length = SDL_HAPTIC_INFINITY;
+			effect.periodic.period = 5000;
+			effect.periodic.magnitude = magnitude;
+			j.UpdateEffect(j.periodicEffectId, effect);
+		}
+	}
+
 	double lastUpdateTime = 0.0f;
 
 	bool canJump = true;
