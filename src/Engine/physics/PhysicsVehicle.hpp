@@ -48,7 +48,7 @@ public:
         bool hasContact = false;
     };
 
-    WheelForceData GetWheelForce(uint index);
+    WheelForceData GetWheelForce(unsigned int index);
     int GetNumWheels();
     float GetEngineRPM();
 

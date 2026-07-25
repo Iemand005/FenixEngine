@@ -183,7 +183,7 @@ void PhysicsVehicle::SetMaxPitchRollAngle(float angle) {
 #endif
 }
 
-PhysicsVehicle::WheelForceData PhysicsVehicle::GetWheelForce(uint index) {
+PhysicsVehicle::WheelForceData PhysicsVehicle::GetWheelForce(unsigned int index) {
 	WheelForceData data;
 #ifndef EXCLUDE_JOLT
 	if (constraint && index < constraint->GetWheels().size()) {
