@@ -414,6 +414,12 @@ void fe::EditableGame::DrawDebugUI() {
 			ImGui::ProgressBar((axis.y + 1.0f) * 0.5f, ImVec2(0.0f, 0.0f), "");
 			ImGui::SameLine();
 			ImGui::Text("Y: %.2f", axis.y);
+			if (joysticks[i].GetNumAxes() > 2) {
+				float z = joysticks[i].GetAxis(2);
+				ImGui::ProgressBar((z + 1.0f) * 0.5f, ImVec2(0.0f, 0.0f), "");
+				ImGui::SameLine();
+				ImGui::Text("Z: %.2f", z);
+			}
 
 			ImGui::Indent();
 			if (ImGui::SliderFloat(("Const Force##c" + std::to_string(i)).c_str(), &constForceLevels[i], -1.0f, 1.0f)) {

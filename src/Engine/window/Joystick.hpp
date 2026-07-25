@@ -65,6 +65,11 @@ public:
 		std::string GetName() const {
 			return SDL_GetJoystickNameForID(id);
 		}
+
+		int GetNumAxes() const {
+			if (!handle) return 0;
+			return SDL_GetNumJoystickAxes(handle);
+		}
 		glm::vec2 GetAxis() {
 			if (!handle) return glm::vec2(0.0f);
 
