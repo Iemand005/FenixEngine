@@ -49,6 +49,15 @@ class Game : public Renderer {
 
 	std::vector<Joystick> joysticks;
 
+	void RefreshJoysticks() {
+		joysticks.clear();
+		auto* window = GetWindow<SDLWindow>();
+		if (window) {
+			auto newJoysticks = window->GetJoysticks();
+			joysticks = std::move(newJoysticks);
+		}
+	}
+
 	double lastUpdateTime = 0.0f;
 
 	bool canJump = true;
