@@ -1,4 +1,6 @@
 
+#ifndef FE_EXCLUDE_GLFW
+
 #include "IWindow.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -253,3 +255,5 @@ HGLRC fe::GLFW3Window::GetOpenGLRenderingContext() {
 	return glfwGetWGLContext(impl->window);
 }
 #endif
+
+#endif // !FE_EXCLUDE_GLFW

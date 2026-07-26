@@ -3,7 +3,7 @@
 #include "Joystick.hpp"
 #ifdef _WIN32
 #include <windows.h>
-#else
+#elif !defined(EMSCRIPTEN)
 #include <X11/Xlib.h>
 
 //#include <GL/glx.h>

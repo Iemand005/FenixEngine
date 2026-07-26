@@ -82,7 +82,7 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 )
 
 
-add_library(Renderer STATIC
+set(RENDERER_SOURCES
 	glad/glad.c
 	Renderer.cpp
 	window/SDLWindow.cpp
@@ -90,6 +90,16 @@ add_library(Renderer STATIC
 	Graphics/VulkanRenderDevice.cpp
 	ModelLoader.cpp
 )
+
+if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
+	list(REMOVE_ITEM RENDERER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp)
+endif()
+
+if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
+	list(REMOVE_ITEM RENDERER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp)
+endif()
+
+add_library(Renderer STATIC ${RENDERER_SOURCES})
 
 target_include_directories(Renderer PRIVATE
 	../../include
@@ -157,6 +167,14 @@ if(NOT FE_EXCLUDE_VULKAN)
 endif()
 
 set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
+
+# Exclude XR/OpenXR-specific sources for Emscripten builds
+if(EMSCRIPTEN)
+	list(REMOVE_ITEM ENGINE_SOURCE_FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/XRGame.cpp
+	)
+endif()
+
 if(FE_INCLUDE_OPENVR)
 	list(APPEND ENGINE_SOURCE_FILES openvr/OpenVR.cpp)
 endif()
@@ -200,9 +218,13 @@ target_include_directories(Engine PRIVATE
 target_include_directories(Engine PUBLIC
 	${EXTERNAL_DIR}/glm
 	${EXTERNAL_DIR}/imgui
-
-	${EXTERNAL_DIR}/glfw/include
 )
+
+if(NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
+	target_include_directories(Engine PUBLIC
+		${EXTERNAL_DIR}/glfw/include
+	)
+endif()
 
 if(NOT FE_EXCLUDE_JOLT)
 	target_include_directories(Engine PUBLIC
