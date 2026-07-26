@@ -241,7 +241,10 @@ public:
 
 		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan, sharedContext);
 		window->UnbindGLContext();
-		
+#else
+		auto window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
+#endif
+
 		IRenderDevice* device = nullptr;
 		if (windowDeviceMap.empty()) {
 			if (!renderDevice) {
@@ -261,7 +264,6 @@ public:
 		}
 		windowDeviceMap[window.get()] = device;
 		windows.push_back(std::move(window));
-#endif
 	}
 #ifndef FE_EXCLUDE_SDL
 
