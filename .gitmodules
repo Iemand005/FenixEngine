@@ -28,3 +28,5 @@
 [submodule "external/cgltf"]
 	path = external/cgltf
 	url = https://github.com/jkuhlmann/cgltf
+[submodule "external/JoltPhysics"]
+	url = https://github.com/Iemand005/JoltPhysics
