@@ -35,9 +35,9 @@ add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
 if (NOT FE_EXCLUDE_VULKAN)
     find_package(Vulkan REQUIRED)
-    add_definitions(FE_HAS_VULKAN)
+    add_definitions(-DFE_HAS_VULKAN)
 else()
-    add_definitions(FE_EXCLUDE_VULKAN)
+    add_definitions(-DFE_EXCLUDE_VULKAN)
 endif()
 
 if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
@@ -107,11 +107,13 @@ else()
 	find_package(OpenGL REQUIRED)
 	target_link_libraries(Renderer PRIVATE OpenGL::GL)
 
-	find_package(X11 REQUIRED)
+	if(NOT EMSCRIPTEN)
+		find_package(X11 REQUIRED)
 
-	target_link_libraries(Renderer PRIVATE
-		X11::X11
-	)
+		target_link_libraries(Renderer PRIVATE
+			X11::X11
+		)
+	endif()
 endif()
 
 
