@@ -174,7 +174,6 @@ if(EMSCRIPTEN)
 		${CMAKE_CURRENT_SOURCE_DIR}/XRGame.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsObject.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
@@ -196,7 +195,7 @@ endif()
 
 if(FE_EXCLUDE_JOLT)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsObject.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp

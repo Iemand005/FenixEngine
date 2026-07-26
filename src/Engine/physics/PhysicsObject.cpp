@@ -446,10 +446,8 @@ void PhysicsObject::Destroy() {
 #endif
 }
 
-JPH::BodyID PhysicsObject::GetBodyID() const {
 #ifndef EXCLUDE_JOLT
+JPH::BodyID PhysicsObject::GetBodyID() const {
 	return impl->bodyId;
-#else
-	return JPH::BodyID();
-#endif
 }
+#endif

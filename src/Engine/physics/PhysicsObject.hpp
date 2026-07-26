@@ -68,7 +68,9 @@ public:
 
 	void Destroy();
 
+#ifndef EXCLUDE_JOLT
 	JPH::BodyID GetBodyID() const;
+#endif
 
 private:
 	void BindPhysicsSystem(std::shared_ptr<JPH::PhysicsSystem> physicsSystem);
