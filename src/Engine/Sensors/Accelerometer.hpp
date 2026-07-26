@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+#ifdef FE_ACCELEROMETER
 #ifdef _WIN32
 #define WINRT_LEAN_AND_MEAN
 #define NOMINMAX
@@ -8,6 +10,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Devices.Sensors.h>
 #include <winrt/Windows.Devices.Enumeration.h>
+#endif
 #endif
 
 #include <glm/glm.hpp>
@@ -21,6 +24,8 @@ namespace fe {
 
 	class Accelerometer {
 	public:
+		struct Impl;
+
 		using ReadingCallback = std::function<void(const glm::vec3& acceleration)>;
 
 		Accelerometer();
@@ -52,15 +57,12 @@ namespace fe {
 		std::string name;
 		std::string id;
 
-#ifdef _WIN32
-		winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
-		winrt::event_token token{};
-		std::atomic<bool> running{false};
-		ReadingCallback userCallback;
+		std::unique_ptr<Impl> impl;
 
-		void HandleReading(
-			winrt::Windows::Foundation::IInspectable const& sender,
-			winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args);
+#ifdef FE_ACCELEROMETER
+#ifdef _WIN32
+		
+#endif
 #endif
 	};
 

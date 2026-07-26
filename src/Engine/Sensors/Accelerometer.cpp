@@ -8,7 +8,39 @@ using namespace fe;
 
 #ifdef _WIN32
 
+#ifdef FE_ACCELEROMETER
+void HandleReading(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args)
+{
+	auto reading = args.Reading();
+	if (!reading) return;
+
+	{
+		std::lock_guard lock(mutex);
+		lastReading = glm::vec3(
+			static_cast<float>(reading.AccelerationX()),
+			static_cast<float>(reading.AccelerationY()),
+			static_cast<float>(reading.AccelerationZ())
+		) - calibrationOffset;
+	}
+
+	if (userCallback) {
+		userCallback(lastReading);
+	}
+}
+#endif
+
+Accelerometer::Impl {
+winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
+		winrt::event_token token{};
+		std::atomic<bool> running{false};
+		ReadingCallback userCallback;
+
+		// void HandleReading(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args);
+};
+
 Accelerometer::Accelerometer() {
+#ifdef FE_ACCELEROMETER
+
 	try {
 		sensor = winrt::Windows::Devices::Sensors::Accelerometer::GetDefault();
 		if (sensor) {
@@ -22,6 +54,7 @@ Accelerometer::Accelerometer() {
 		std::cerr << "[Accelerometer] Init failed: "
 		          << winrt::to_string(ex.message()) << std::endl;
 	}
+#endif
 }
 
 Accelerometer::~Accelerometer() {
@@ -34,17 +67,21 @@ Accelerometer::Accelerometer(Accelerometer&& other) noexcept
 	, calibrationOffset(other.calibrationOffset)
 	, name(std::move(other.name))
 	, id(std::move(other.id))
-	, sensor(std::move(other.sensor))
-	, token(other.token)
-	, running(other.running.load())
-	, userCallback(std::move(other.userCallback))
+	// , sensor(std::move(other.sensor))
+	// , token(other.token)
+	// , running(other.running.load())
+	// , userCallback(std::move(other.userCallback))
 {
 	other.available = false;
+#ifdef FE_ACCELEROMETER
+
 	other.running = false;
 	other.sensor = nullptr;
+#endif
 }
 
 Accelerometer& Accelerometer::operator=(Accelerometer&& other) noexcept {
+	
 	if (this != &other) {
 		Stop();
 		available = other.available.load();
@@ -52,18 +89,22 @@ Accelerometer& Accelerometer::operator=(Accelerometer&& other) noexcept {
 		calibrationOffset = other.calibrationOffset;
 		name = std::move(other.name);
 		id = std::move(other.id);
+		#ifdef FE_ACCELEROMETER
 		sensor = std::move(other.sensor);
-		token = other.token;
 		running = other.running.load();
 		userCallback = std::move(other.userCallback);
 		other.available = false;
 		other.running = false;
+		token = other.token;
 		other.sensor = nullptr;
+#endif
 	}
 	return *this;
 }
 
 glm::vec3 Accelerometer::GetAcceleration() {
+#ifdef FE_ACCELEROMETER
+
 	if (!available || !sensor) return glm::vec3(0.0f);
 
 	auto reading = sensor.GetCurrentReading();
@@ -74,6 +115,7 @@ glm::vec3 Accelerometer::GetAcceleration() {
 		lastReading.z = static_cast<float>(reading.AccelerationZ());
 		return lastReading - calibrationOffset;
 	}
+#endif
 	return glm::vec3(0.0f);
 }
 
@@ -92,6 +134,8 @@ void Accelerometer::Start(ReadingCallback callback) {
 	running = true;
 	userCallback = std::move(callback);
 
+#ifdef FE_ACCELEROMETER
+
 	token = sensor.ReadingChanged(
 		[this](winrt::Windows::Foundation::IInspectable const& sender,
 		       winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args)
@@ -99,41 +143,26 @@ void Accelerometer::Start(ReadingCallback callback) {
 		HandleReading(sender, args);
 	});
 
+#endif
+
 	std::cout << "[Accelerometer] Started: " << name << std::endl;
 }
 
 void Accelerometer::Stop() {
 	if (!running || !sensor) return;
+#ifdef FE_ACCELEROMETER
 
 	sensor.ReadingChanged(token);
+#endif
 	running = false;
 	userCallback = nullptr;
 	std::cout << "[Accelerometer] Stopped: " << name << std::endl;
 }
 
-void Accelerometer::HandleReading(
-	winrt::Windows::Foundation::IInspectable const& sender,
-	winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args)
-{
-	auto reading = args.Reading();
-	if (!reading) return;
-
-	{
-		std::lock_guard lock(mutex);
-		lastReading = glm::vec3(
-			static_cast<float>(reading.AccelerationX()),
-			static_cast<float>(reading.AccelerationY()),
-			static_cast<float>(reading.AccelerationZ())
-		) - calibrationOffset;
-	}
-
-	if (userCallback) {
-		userCallback(lastReading);
-	}
-}
-
 std::vector<Accelerometer> Accelerometer::EnumerateAll() {
 	std::vector<Accelerometer> result;
+
+#ifdef FE_ACCELEROMETER
 
 	// WinRT async .get() requires MTA - spawn a thread with MTA apartment
 	std::mutex mtx;
@@ -201,6 +230,7 @@ std::vector<Accelerometer> Accelerometer::EnumerateAll() {
 			result.push_back(std::move(def));
 		}
 	}
+#endif
 
 	return result;
 }
