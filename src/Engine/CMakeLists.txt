@@ -3,6 +3,7 @@ project(Engine LANGUAGES CXX C)
 
 option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
 option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
+option(FE_EXCLUDE_VULKAN "Exclude Vulkan from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
@@ -32,7 +33,12 @@ set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 
 add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
-find_package(Vulkan REQUIRED)
+if (NOT FE_EXCLUDE_VULKAN)
+    find_package(Vulkan REQUIRED)
+    add_definitions(FE_HAS_VULKAN)
+else()
+    add_definitions(FE_EXCLUDE_VULKAN)
+endif()
 
 # if(NOT FE_EXCLUDE_GLFW)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)

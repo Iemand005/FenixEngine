@@ -45,6 +45,10 @@ class Character;
 #include "window/GLFW3Window.hpp"
 #endif
 
+#ifdef FE_HAS_VULKAN
+#include "Graphics/VulkanDevice.hpp"
+#endif
+
 #ifndef FE_EXCLUDE_SDL
 using DefaultWindow = fe::SDLWindow;
 #define FE_HAS_WINDOW
@@ -118,15 +122,19 @@ public:
 
 	void PushShaderPathsToVulkanDevice() {
 		if (!renderDevice) return;
+#ifdef FE_HAS_VULKAN
 		PushShaderPathsToDevice(renderDevice.get());
+#endif
 	}
 
 	void PushShaderPathsToDevice(IRenderDevice* device) {
+#ifdef FE_HAS_VULKAN
 		auto* vkDev = dynamic_cast<VulkanDevice*>(device);
 		if (!vkDev) return;
 		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
 		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
 		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+#endif
 	}
 
 	Renderer(bool useVulkan = false) {
@@ -156,8 +164,12 @@ public:
 		if (renderDevice) return; // TODO: throwerror?kaykay
 
 		this->useVulkan = useVulkan;
+#ifdef FE_HAS_VULKAN
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+#else
+		renderDevice = std::make_unique<OpenGLRenderDevice>();
+#endif
 	}
 
 	IRenderDevice* CreateDevice(bool useVulkan, IWindow *window = nullptr) {
@@ -166,8 +178,15 @@ public:
 			if (dev->IsVulkan() == useVulkan) return dev.get();
 		}
 		std::unique_ptr<IRenderDevice> dev;
-		if (useVulkan) dev = std::make_unique<VulkanDevice>();
-		else dev = std::make_unique<OpenGLRenderDevice>();
+		if (useVulkan) {
+#ifdef FE_HAS_VULKAN
+			dev = std::make_unique<VulkanDevice>();
+#else
+			dev = std::make_unique<OpenGLRenderDevice>();
+#endif
+		} else {
+			dev = std::make_unique<OpenGLRenderDevice>();
+		}
 		if (useVulkan) PushShaderPathsToDevice(dev.get());
 		if (window) dev->Init(window);
 		IRenderDevice* ptr = dev.get();
@@ -318,21 +337,27 @@ public:
 	}
 
 	void LoadVulkanShaders(const std::string& vertPath, const std::string& fragPath) {
+#ifdef FE_HAS_VULKAN
 		vertShaderPath_ = vertPath;
 		fragShaderPath_ = fragPath;
 		PushShaderPathsToVulkanDevice();
+#endif
 	}
 
 	void LoadArrayShaders(const std::string& vertPath, const std::string& fragPath) {
+#ifdef FE_HAS_VULKAN
 		vertArrayShaderPath_ = vertPath;
 		fragArrayShaderPath_ = fragPath;
 		PushShaderPathsToVulkanDevice();
+#endif
 	}
 
 	void LoadFoxcraftShaders(const std::string& vertPath, const std::string& fragPath) {
+#ifdef FE_HAS_VULKAN
 		vertFoxcraftShaderPath_ = vertPath;
 		fragFoxcraftShaderPath_ = fragPath;
 		PushShaderPathsToVulkanDevice();
+#endif
 	}
 
 	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
