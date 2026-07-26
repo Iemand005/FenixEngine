@@ -231,6 +231,8 @@ public:
 	}
 
 	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
+#ifndef FE_EXCLUDE_SDL
+
 		SDL_GLContext sharedContext = nullptr;
 		if (!useVulkan && !windows.empty()) {
 			auto* firstWin = dynamic_cast<SDLWindow*>(windows.front().get());
@@ -259,7 +261,9 @@ public:
 		}
 		windowDeviceMap[window.get()] = device;
 		windows.push_back(std::move(window));
+#endif
 	}
+#ifndef FE_EXCLUDE_SDL
 
 	template<typename WindowT = DefaultWindow>
 	std::unique_ptr<WindowT> MakeWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, bool useVulkan = false, SDL_GLContext sharedContext = nullptr) {
@@ -285,6 +289,9 @@ public:
 		return std::move(window);
 	}
 #endif
+
+#endif
+
 
 	void LoadShaders(Shader vertexShader, Shader fragmentShader) {
 		this->shader = std::make_unique<fe::ShaderProgram>(vertexShader, fragmentShader);
