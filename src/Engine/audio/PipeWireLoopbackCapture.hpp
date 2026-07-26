@@ -23,6 +23,20 @@
 //   target_link_libraries(<target> PRIVATE ${PIPEWIRE_LIBRARIES})
 //   target_compile_options(<target> PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
 
+#if defined(__EMSCRIPTEN__) || defined(_WIN32)
+
+class PipeWireLoopbackCapture {
+public:
+    bool Init(int = 0, int = 0) { return false; }
+    void Shutdown() {}
+    bool IsCapturing() const { return false; }
+    std::vector<float> GetPendingSamples() { return {}; }
+};
+
+inline PipeWireLoopbackCapture g_pwLoopback;
+
+#else
+
 #include <vector>
 #include <mutex>
 #include <iostream>
@@ -190,3 +204,5 @@ private:
 
 // Global instance, mirroring the pattern used by g_loopback on Windows.
 inline PipeWireLoopbackCapture g_pwLoopback;
+
+#endif // !__EMSCRIPTEN__ && !_WIN32

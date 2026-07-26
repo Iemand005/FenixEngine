@@ -92,11 +92,11 @@ set(RENDERER_SOURCES
 )
 
 if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES window/GLFW3Window.cpp)
 endif()
 
 if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES Graphics/VulkanRenderDevice.cpp)
 endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
@@ -231,11 +231,11 @@ endif()
 
 
 if(FE_EXCLUDE_GLFW)
-	target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
+	add_compile_definitions(FE_EXCLUDE_GLFW)
 endif()
 
 if(FE_EXCLUDE_VULKAN)
-	target_compile_definitions(Engine PRIVATE FE_EXCLUDE_VULKAN)
+	add_compile_definitions(FE_EXCLUDE_VULKAN)
 endif()
 
 target_include_directories(Engine PRIVATE

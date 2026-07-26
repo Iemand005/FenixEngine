@@ -39,6 +39,12 @@ set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
 add_subdirectory(src/Engine)
 
+if(EMSCRIPTEN)
+    # When building for Emscripten, only build the Engine library
+    message(STATUS "Emscripten build: skipping game targets")
+    return()
+endif()
+
 if(MSVC)
     add_compile_options(/EHsc /FS /nologo)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
