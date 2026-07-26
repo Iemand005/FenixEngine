@@ -242,7 +242,7 @@ public:
 		auto window = MakeWindow("Fenix Engine", width, height, hidden, fullscreen, useVulkan, sharedContext);
 		window->UnbindGLContext();
 #else
-		auto window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
+		auto window = std::make_unique<DefaultWindow>("Fenix Engine", width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 #endif
 
 		IRenderDevice* device = nullptr;

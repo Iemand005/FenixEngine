@@ -183,9 +183,13 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 
 }
 
-void GLFW3Window::MakeCurrentGLContext() {
+void GLFW3Window::MakeCurrentGLContext() const {
 	// SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
 	// glfwGL
+}
+
+void GLFW3Window::UnbindGLContext() const {
+	SDL_GL_MakeCurrent(nullptr, nullptr);
 }
 
 fe::VulkanExtensions fe::GLFW3Window::GetVulkanExtensions() {

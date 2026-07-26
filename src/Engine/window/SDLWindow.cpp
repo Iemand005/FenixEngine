@@ -567,11 +567,11 @@ fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
 	return m;
 }
 
-void fe::SDLWindow::MakeCurrentGLContext() const {
+void SDLWindow::MakeCurrentGLContext() const {
 	SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
 }
 
-void fe::SDLWindow::UnbindGLContext() {
+void SDLWindow::UnbindGLContext() const {
 	SDL_GL_MakeCurrent(nullptr, nullptr);
 }
 

@@ -94,7 +94,7 @@ public:
 		virtual WindowSize GetFramebufferSize() = 0;
 
 		virtual void MakeCurrentGLContext() const = 0;
-		virtual void UnbindGLContext() = 0;
+		virtual void UnbindGLContext() const = 0;
 
 		void ActivateScreenSaverMode() {
 			GetMousePosition(&startX, &startY);

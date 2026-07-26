@@ -29,91 +29,91 @@ class SDLWindow : public IWindow {
 
 	const bool* keyboardState = nullptr;
 
-  bool capturingMouse = false;
+	bool capturingMouse = false;
 
 
- public:
+public:
 
-  SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
-  SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan, SDL_GLContext sharedContext);
-  ~SDLWindow();
+	SDLWindow(std::string title, int width, int height, bool hidden = false, bool fullscreen = false, WindowOptions options = {}, bool useVulkan = false);
+	SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan, SDL_GLContext sharedContext);
+	~SDLWindow();
 
-  void SetSwapInterval(int interval) override;
+	void SetSwapInterval(int interval) override;
 
-  void SetMouseCapture(bool captureMouse = true);
+	void SetMouseCapture(bool captureMouse = true);
 
-  void StartMouseCapture() override;
+	void StartMouseCapture() override;
 
-  void StopMouseCapture() override;
+	void StopMouseCapture() override;
 
-  bool IsCapturingMouse();
+	bool IsCapturingMouse();
 
-  // void SetMouseCapture(bool captureMouse = true);
+	// void SetMouseCapture(bool captureMouse = true);
 
-  void GetSize(int* w, int* h);
-  void Resize(int w, int h);
+	void GetSize(int* w, int* h);
+	void Resize(int w, int h);
 
-  void Move(int x, int y);
+	void Move(int x, int y);
 
 	void SetBordered(bool enabled);
 	void SetFullscreen(bool enabled = false) override;
-  
+	
 
 	void SetBorderless() {
 		SetBordered(false);
 	}
 
-  void SetTitle(const char *newTitle) override;
+	void SetTitle(const char *newTitle) override;
 
 	void GoBorderlessFullscreen() override;
 
-  void Hide();
-  void Show();
+	void Hide();
+	void Show();
 
-  void SwapBuffers() const override;
+	void SwapBuffers() const override;
 
-  VulkanExtensions GetVulkanExtensions() override;
-  void *CreateVulkanSurface(void *instance) override;
+	VulkanExtensions GetVulkanExtensions() override;
+	void *CreateVulkanSurface(void *instance) override;
 
-  WindowSize GetFramebufferSize() override;
+	WindowSize GetFramebufferSize() override;
 
-  void MakeCurrentGLContext() const override;
-  void UnbindGLContext() override;
+	void MakeCurrentGLContext() const override;
+	void UnbindGLContext() const override;
 
 
 // struct SDL_Window;
 // enum SDL_Scancode;
-  bool IsKeyDown(SDL_Scancode key);
+	bool IsKeyDown(SDL_Scancode key);
 
-  	void GetMousePosition(double *x, double *y);
+		void GetMousePosition(double *x, double *y);
 
-  // union SDL_Event;
+	// union SDL_Event;
 
-  bool PollSDLEvent(SDL_Event* event, bool getKeyboardState = true);
-  
+	bool PollSDLEvent(SDL_Event* event, bool getKeyboardState = true);
+	
 
-  // struct SDL_Window;
-  // struct SDL_GLContext;
+	// struct SDL_Window;
+	// struct SDL_GLContext;
 
-  SDL_Window* GetWindow() const;
+	SDL_Window* GetWindow() const;
 
-  SDL_GLContext GetSDLGLContext() const;
+	SDL_GLContext GetSDLGLContext() const;
 
-  static void SDLCALL OnFileDialogResult(void* userdata, const char* const* files, int filter);
+	static void SDLCALL OnFileDialogResult(void* userdata, const char* const* files, int filter);
 
-  void Destroy() override;
+	void Destroy() override;
 
-  void OpenFileDialog(FileDialogCallback callback, const char* filterName = "Model Files", const char* filterPattern = "glb") override;
+	void OpenFileDialog(FileDialogCallback callback, const char* filterName = "Model Files", const char* filterPattern = "glb") override;
 
-  double GetTime() override;
+	double GetTime() override;
 
-  // WindowSize GetFramebufferSize() override;
+	// WindowSize GetFramebufferSize() override;
 
-  bool HideMouse();
+	bool HideMouse();
 
-  std::vector<Joystick> GetJoysticks();
+	std::vector<Joystick> GetJoysticks();
 
-  void UpdateJoysticks();
+	void UpdateJoysticks();
 
 	void AttachToNativeParent(void* parent);
 #ifdef _WIN32
@@ -121,11 +121,11 @@ class SDLWindow : public IWindow {
 	HDC GetDrawingContext();
 	HGLRC GetOpenGLRenderingContext();
 #else
-  void* GetWaylandSurface();
-  void* GetWaylandDisplay();
+	void* GetWaylandSurface();
+	void* GetWaylandDisplay();
 
-  void* GetX11Display();
-  unsigned long GetGLXDrawable();
+	void* GetX11Display();
+	unsigned long GetGLXDrawable();
 #endif
 };
 
