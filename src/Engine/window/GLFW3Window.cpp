@@ -40,7 +40,7 @@ bool fe::GLFW3Window::InitGlfw(std::string title, bool fullscreen, bool tenBit) 
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
 	} else {
 		printf("Setting GLFW platform hint to X11\n");
-		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+		// glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 	}
 
 	glfwInit();
@@ -184,7 +184,7 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 }
 
 void GLFW3Window::MakeCurrentGLContext() const {
-	glfwMakeContextCurrent(GetWindow());
+	// glfwMakeContextCurrent(GetWindow());
 }
 
 void GLFW3Window::UnbindGLContext() const {

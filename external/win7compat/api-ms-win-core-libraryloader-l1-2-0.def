@@ -1,0 +1,35 @@
+LIBRARY "api-ms-win-core-libraryloader-l1-2-0"
+EXPORTS
+    ; All exports forwarded to kernel32.dll
+    ; Only functions that exist on Windows 7 SP1 are listed here.
+    ; Win8+ functions (AddDllDirectory, SetDefaultDllDirectories, etc.)
+    ; are never imported when _WIN32_WINNT=0x0601 is set.
+    LoadLibraryA=kernel32.LoadLibraryA
+    LoadLibraryW=kernel32.LoadLibraryW
+    LoadLibraryExA=kernel32.LoadLibraryExA
+    LoadLibraryExW=kernel32.LoadLibraryExW
+    GetModuleHandleA=kernel32.GetModuleHandleA
+    GetModuleHandleW=kernel32.GetModuleHandleW
+    GetModuleHandleExA=kernel32.GetModuleHandleExA
+    GetModuleHandleExW=kernel32.GetModuleHandleExW
+    GetModuleFileNameA=kernel32.GetModuleFileNameA
+    GetModuleFileNameW=kernel32.GetModuleFileNameW
+    GetProcAddress=kernel32.GetProcAddress
+    FreeLibrary=kernel32.FreeLibrary
+    FreeLibraryAndExitThread=kernel32.FreeLibraryAndExitThread
+    DisableThreadLibraryCalls=kernel32.DisableThreadLibraryCalls
+    FindResourceA=kernel32.FindResourceA
+    FindResourceW=kernel32.FindResourceW
+    FindResourceExA=kernel32.FindResourceExA
+    FindResourceExW=kernel32.FindResourceExW
+    FindStringOrdinal=kernel32.FindStringOrdinal
+    LoadResource=kernel32.LoadResource
+    LockResource=kernel32.LockResource
+    SizeofResource=kernel32.SizeofResource
+    FreeResource=kernel32.FreeResource
+    EnumResourceLanguagesA=kernel32.EnumResourceLanguagesA
+    EnumResourceLanguagesW=kernel32.EnumResourceLanguagesW
+    EnumResourceTypesA=kernel32.EnumResourceTypesA
+    EnumResourceTypesW=kernel32.EnumResourceTypesW
+    EnumResourceNamesA=kernel32.EnumResourceNamesA
+    EnumResourceNamesW=kernel32.EnumResourceNamesW
