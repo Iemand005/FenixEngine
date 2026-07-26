@@ -44,7 +44,8 @@ class OpenGLRenderDevice : public IRenderDevice {
 		if (debugShaderProgram_ != 0) return;
 
 		const char* vertexShaderSource = R"(
-			#version 330 core
+			#version 300 es
+			precision mediump float;
 			layout(location = 0) in vec3 aPos;
 			layout(location = 1) in vec4 aColor;
 
@@ -61,7 +62,8 @@ class OpenGLRenderDevice : public IRenderDevice {
 		)";
 
 		const char* fragmentShaderSource = R"(
-			#version 330 core
+			#version 300 es
+			precision mediump float;
 			in vec4 vColor;
 			out vec4 FragColor;
 
