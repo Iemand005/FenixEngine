@@ -47,10 +47,6 @@ class Character;
 #include "window/GLFW3Window.hpp"
 #endif
 
-#ifdef FE_HAS_VULKAN
-#include "Graphics/VulkanDevice.hpp"
-#endif
-
 #ifndef FE_EXCLUDE_SDL
 using DefaultWindow = fe::SDLWindow;
 #define FE_HAS_WINDOW
