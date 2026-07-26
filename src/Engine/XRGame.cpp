@@ -5,8 +5,10 @@
 #define XR_USE_PLATFORM_XLIB
 #endif
 
+#ifndef FE_EXCLUDE_OPENXR
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
+#endif
 
 #ifdef WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -40,6 +42,7 @@ void CheckGLError(const char* location) {
 }
 
 struct fe::XRGame::Impl {
+#ifndef FE_EXCLUDE_OPENXR
 
 	bool useVulkan = false;
 
@@ -79,8 +82,13 @@ struct fe::XRGame::Impl {
 	XrFrameState frameState{XR_TYPE_FRAME_STATE};
 	XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
 	XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+	
+#endif
 
 	void initSwapchain(IRenderDevice* renderDevice) {
+
+		#ifndef FE_EXCLUDE_OPENXR
+
 		uint32_t configCount;
 		xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
 		std::vector<XrViewConfigurationView> configViews(configCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
@@ -167,7 +175,10 @@ struct fe::XRGame::Impl {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 		}
+		#endif
+
 	}
+#ifndef FE_EXCLUDE_OPENXR
 
 	void CreateAction(XrActionType type, std::string name, XrAction* action) {
 		XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
@@ -176,8 +187,11 @@ struct fe::XRGame::Impl {
 		strcpy(actionInfo.localizedActionName, name.c_str());
 		outputError(xrCreateAction(actionSet, &actionInfo, action));
 	}
+#endif
 
 	void CreateActions() {
+		#ifndef FE_EXCLUDE_OPENXR
+
 		XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
 		strcpy(actionSetInfo.actionSetName, "gameplay");
 		strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
@@ -203,16 +217,23 @@ struct fe::XRGame::Impl {
 		attachInfo.actionSets = &actionSet;
 		attachInfo.countActionSets = 1;
 		xrAttachSessionActionSets(session, &attachInfo);
+		#endif
+
 	}
 
 	void Log(const std::string& message) { std::cout << message << std::endl; }
 
 	void BeginSession() {
+		#ifndef FE_EXCLUDE_OPENXR
+
 		XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
 		beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 
 		outputError(xrBeginSession(session, &beginInfo));
+		#endif
+
 	}
+ #ifndef FE_EXCLUDE_OPENXR
 
 	void HandleSessionStateChange(XrSessionState state, XrTime time) {
 		switch (state) {
@@ -239,8 +260,11 @@ struct fe::XRGame::Impl {
 				break;
 		}
 	}
+#endif
 
 	void PollEvents() {
+		#ifndef FE_EXCLUDE_OPENXR
+
 		if (instance == XR_NULL_HANDLE) return;
 
 		XrEventDataBuffer event = {XR_TYPE_EVENT_DATA_BUFFER};
@@ -256,13 +280,19 @@ struct fe::XRGame::Impl {
 			}
 			event = {XR_TYPE_EVENT_DATA_BUFFER};
 		}
+		#endif
+
 	}
+
+	#ifndef FE_EXCLUDE_OPENXR
 
 	void outputError(XrResult result) {
 		if (XR_SUCCEEDED(result)) return;
 		char buf[XR_MAX_RESULT_STRING_SIZE];
 		if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
 	}
+	#endif
+
 }; // Impl
 
 XRGame::XRGame(bool launchVR) : XRGame(0, 0, launchVR, true) {}
