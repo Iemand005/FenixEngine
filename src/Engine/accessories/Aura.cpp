@@ -83,6 +83,7 @@ struct Aura::Impl {
 		return nullptr;
 	}
 #else
+#if !defined(EMSCRIPTEN)
 	hid_device* OpenAura(uint16_t vid, uint16_t pid, uint16_t page, uint16_t usage)
     {
         struct hid_device_info* devs = hid_enumerate(vid, pid);
@@ -105,6 +106,7 @@ struct Aura::Impl {
         hid_free_enumeration(devs);
         return handle;
     }
+#endif
 #endif
 
 	bool SetFeature(void* dev, void* data, size_t size) {
