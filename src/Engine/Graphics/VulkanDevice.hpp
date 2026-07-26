@@ -141,6 +141,12 @@ public:
 	void SetFoxcraftShaderPaths(const std::string& vertPath, const std::string& fragPath) {
 		vertShaderFoxcraftPath_ = vertPath;
 		fragShaderArrayPath_ = fragPath;
+
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraft_);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCW_, VK_FRONT_FACE_CLOCKWISE);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
+
 	}
 
 	void Init(IWindow *window) override {
@@ -166,14 +172,10 @@ public:
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCW_, VK_FRONT_FACE_CLOCKWISE);
 		
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraft_);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCW_, VK_FRONT_FACE_CLOCKWISE);
-
+		
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
 		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-
+		
 		createCommandPool();
 		createUniformBuffers();
 		createDescriptorPool();
