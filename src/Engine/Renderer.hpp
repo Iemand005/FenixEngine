@@ -396,14 +396,12 @@ public:
 			if (d->IsVulkan()) continue;
 			if (w == primaryWindow) continue;
 
-			auto* sdlWin = dynamic_cast<SDLWindow*>(const_cast<IWindow*>(w));
-			if (!sdlWin) continue;
-			sdlWin->MakeCurrentGLContext();
+			w->MakeCurrentGLContext();
 
-			d->SetActiveWindow(sdlWin);
+			// d->SetActiveWindow(w);
 
 			int vw = 0, vh = 0;
-			sdlWin->GetSize(&vw, &vh);
+			// w->GetSize(&vw, &vh);
 			if (vw > 0 && vh > 0)
 				d->Resize(vw, vh);
 
@@ -419,7 +417,7 @@ public:
 
 			if (shader) {
 				shader->Use();
-				float elapsedTime = (float)sdlWin->GetTime();
+				float elapsedTime = (float)GetWindow()->GetTime();
 				shader->SetFloat("time", elapsedTime);
 
 				if (scene) {
@@ -454,7 +452,7 @@ public:
 
 			d->SetTransparentMode(false);
 			d->SubmitFrame();
-			sdlWin->SwapBuffers();
+			w->SwapBuffers();
 		}
 		auto* primaryDev = GetDeviceForWindow(primaryWindow);
 		if (primaryDev) primaryDev->SetActiveWindow(primaryWindow);

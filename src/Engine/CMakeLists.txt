@@ -57,9 +57,14 @@ if (FE_INCLUDE_OPENVR)
 	add_compile_definitions(FE_INCLUDE_OPENVR)
 endif()
 
-# Match Qt's /MD(/MDd) runtime to avoid LNK2038 with Jolt
-if(MSVC AND TARGET Jolt)
-set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+# Match static MSVC runtime to avoid LNK2038 across all subprojects
+if(MSVC)
+    if(TARGET Jolt)
+        set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+    if(TARGET openxr_loader)
+        set_property(TARGET openxr_loader PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
 endif()
 
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
