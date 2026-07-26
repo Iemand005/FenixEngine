@@ -8,7 +8,7 @@
 #include <windows.h>
 #include <setupapi.h>
 #include <hidsdi.h>
-#else
+#elif !defined(EMSCRIPTEN)
 #include <hidapi/hidapi.h>
 #endif
 
