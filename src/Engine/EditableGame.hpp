@@ -63,6 +63,7 @@ namespace fe {
 				ImGui::GetStyle().ScaleAllSizes(scale);
 			}
 
+#ifdef FE_HAS_VULKAN
 			if (!useVulkan) ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
 			else ImGui_ImplSDL3_InitForVulkan(window->GetWindow());
 			if (!useVulkan) ImGui_ImplOpenGL3_Init(glsl_version);
@@ -85,7 +86,7 @@ namespace fe {
 				}
 
 				ImGui_ImplVulkan_InitInfo init_info = {};
-				init_info.ApiVersion = VK_API_VERSION_1_2; // Of VK_API_VERSION_1_3 afhankelijk van je setup
+				init_info.ApiVersion = VK_API_VERSION_1_2;
 				init_info.Instance = vkDevice->GetInstance();
 				init_info.PhysicalDevice = vkDevice->GetPhysicalDevice();
 				init_info.Device = vkDevice->GetDevice();
@@ -96,14 +97,15 @@ namespace fe {
 				init_info.ImageCount = static_cast<uint32_t>(vkDevice->GetSwapChainImageCount());
 
 				init_info.PipelineInfoMain.RenderPass = vkDevice->GetRenderPass();
-				init_info.PipelineInfoMain.Subpass = 0; 
-				init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT; 
+				init_info.PipelineInfoMain.Subpass = 0;
+				init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
 				ImGui_ImplVulkan_Init(&init_info);
-
-
-				// ImGui_ImplVulkan_CreateFontsTexture();
 			}
+#else
+			ImGui_ImplSDL3_InitForOpenGL(window->GetWindow(), window->GetSDLGLContext());
+			ImGui_ImplOpenGL3_Init(glsl_version);
+#endif
 		}
 
 	public:
@@ -111,20 +113,29 @@ namespace fe {
 		void OnDraw() override;
 
 		void BeginFrame() {
+#ifdef FE_HAS_VULKAN
 			if (!useVulkan) {
+#else
+			{
+#endif
 				auto renderer = (Renderer*)this;
 				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
 				if (primaryWindow && primaryWindow->GetSDLGLContext())
 					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
 				ImGui_ImplOpenGL3_NewFrame();
+#ifdef FE_HAS_VULKAN
 			}
 			else ImGui_ImplVulkan_NewFrame();
+#else
+			}
+#endif
 			ImGui_ImplSDL3_NewFrame();
 			ImGui::NewFrame();
 		}
 
 		void EndFrame() {
 			ImGui::Render();
+#ifdef FE_HAS_VULKAN
 			if (useVulkan) {
 				auto renderer = (Renderer*)this;
 				auto* vkDevice = dynamic_cast<VulkanDevice*>(renderer->renderDevice.get());
@@ -138,6 +149,15 @@ namespace fe {
 					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
 				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			}
+#else
+			{
+				auto renderer = (Renderer*)this;
+				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
+				if (primaryWindow && primaryWindow->GetSDLGLContext())
+					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
+				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			}
+#endif
 		}
 
 		void DrawDebugUI();
