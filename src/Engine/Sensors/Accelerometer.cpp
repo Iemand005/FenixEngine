@@ -29,13 +29,14 @@ void HandleReading(winrt::Windows::Foundation::IInspectable const& sender, winrt
 }
 #endif
 
-Accelerometer::Impl {
-winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
-		winrt::event_token token{};
-		std::atomic<bool> running{false};
-		ReadingCallback userCallback;
+struct Accelerometer::Impl {
+#ifdef FE_ACCELEROMETER
 
-		// void HandleReading(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args);
+	winrt::Windows::Devices::Sensors::Accelerometer sensor{nullptr};
+	winrt::event_token token{};
+	std::atomic<bool> running{false};
+	ReadingCallback userCallback;
+#endif
 };
 
 Accelerometer::Accelerometer() {
@@ -129,12 +130,12 @@ void Accelerometer::Calibrate() {
 }
 
 void Accelerometer::Start(ReadingCallback callback) {
+	#ifdef FE_ACCELEROMETER
 	if (!available || !sensor || running) return;
 
 	running = true;
 	userCallback = std::move(callback);
 
-#ifdef FE_ACCELEROMETER
 
 	token = sensor.ReadingChanged(
 		[this](winrt::Windows::Foundation::IInspectable const& sender,
@@ -149,13 +150,13 @@ void Accelerometer::Start(ReadingCallback callback) {
 }
 
 void Accelerometer::Stop() {
-	if (!running || !sensor) return;
 #ifdef FE_ACCELEROMETER
+	if (!running || !sensor) return;
 
 	sensor.ReadingChanged(token);
-#endif
 	running = false;
 	userCallback = nullptr;
+#endif
 	std::cout << "[Accelerometer] Stopped: " << name << std::endl;
 }
 
