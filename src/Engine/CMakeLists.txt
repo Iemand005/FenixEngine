@@ -84,9 +84,13 @@ add_library(Renderer STATIC
 	Renderer.cpp
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
-	Graphics/VulkanRenderDevice.cpp
+	Graphics/OpenGLRenderDevice.cpp
 	ModelLoader.cpp
 )
+
+if(NOT FE_EXCLUDE_VULKAN)
+    target_sources(Renderer PRIVATE Graphics/VulkanRenderDevice.cpp)
+endif()
 
 target_include_directories(Renderer PRIVATE
 	../../include
@@ -116,9 +120,11 @@ endif()
 target_link_libraries(Renderer PUBLIC
 	glfw
 	SDL3::SDL3
-
-	Vulkan::Vulkan
 )
+
+if(NOT FE_EXCLUDE_VULKAN)
+	target_link_libraries(Renderer PUBLIC Vulkan::Vulkan)
+endif()
 
 if(MSVC)
 	target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
@@ -136,12 +142,15 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/backends/imgui_impl_sdlgpu3.cpp
 	${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
 	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-	${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
 	${IMGUI_DIR}/imgui_tables.cpp
 	${IMGUI_DIR}/imgui_widgets.cpp
 	${IMGUI_DIR}/imgui_demo.cpp
 	${IMGUI_DIR}/imgui_draw.cpp
 )
+
+if(NOT FE_EXCLUDE_VULKAN)
+	list(APPEND IMGUI_SOURCE_FILES ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp)
+endif()
 
 set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 if(FE_INCLUDE_OPENVR)
@@ -173,6 +182,10 @@ endif()
 
 if(FE_EXCLUDE_GLFW)
 	target_compile_definitions(Engine PRIVATE FE_EXCLUDE_GLFW)
+endif()
+
+if(FE_EXCLUDE_VULKAN)
+	target_compile_definitions(Engine PRIVATE FE_EXCLUDE_VULKAN)
 endif()
 
 target_include_directories(Engine PRIVATE

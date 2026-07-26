@@ -13,7 +13,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_opengl3.h>
+#ifdef FE_HAS_VULKAN
 #include <backends/imgui_impl_vulkan.h>
+#endif
 
 #include "EditableGameBase.hpp"
 

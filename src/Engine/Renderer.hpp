@@ -35,7 +35,9 @@ class Character;
 
 #include "Graphics/IRenderDevice.hpp"
 #include "Graphics/OpenGLRenderDevice.hpp"
+#ifdef FE_HAS_VULKAN
 #include "Graphics/VulkanDevice.hpp"
+#endif
 
 #include "window/IWindow.hpp"
 #ifndef FE_EXCLUDE_SDL
