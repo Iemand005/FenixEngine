@@ -5,7 +5,9 @@
 #include <cstdint>
 
 #include <glm/glm.hpp>
+#ifdef FE_HAS_VULKAN
 #include <vulkan/vulkan.h>
+#endif
 
 
 namespace fe {
@@ -42,14 +44,15 @@ public:
 		this->uv = glm::vec2(u, v);
 	}
 
-	static std::vector<VertexAttribute> getLayout() {
+static std::vector<VertexAttribute> getLayout() {
 			return {
 					{ 0, 3, offsetof(Vertex, position), VertexAttribType::Float },
 					{ 1, 3, offsetof(Vertex, normal), VertexAttribType::Float },
 					{ 2, 2, offsetof(Vertex, uv), VertexAttribType::Float }
 			};
-	}
+		}
 
+#ifdef FE_HAS_VULKAN
 	static VkVertexInputBindingDescription getBindingDescription() {
 		VkVertexInputBindingDescription binding{};
 		binding.binding = 0;
@@ -77,6 +80,7 @@ public:
 
 		return attrs;
 	}
+#endif
 };
 
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef FE_EXCLUDE_GLFW
+
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -27,6 +29,53 @@ public:
 	void PollGLFWEvents() { glfwPollEvents(); }
 
 	void SetSwapInterval(int interval) override { glfwSwapInterval(interval); }
+
+	void GetSize(int* w, int* h) override { glfwGetWindowSize(impl->window, w, h); }
+	void Resize(int w, int h) override { glfwSetWindowSize(impl->window, w, h); }
+	void Move(int x, int y) override { glfwSetWindowPos(impl->window, x, y); }
+	void SetBordered(bool enabled) override;
+	void SetFullscreen(bool enabled = false) override;
+
+	void SetVSync(bool enabled) override;
+
+	void SetTitle(const std::string& title) override { glfwSetWindowTitle(impl->window, title.c_str()); }
+	void SetMouseCapture(bool captureMouse = true) override;
+
+	void SetCursorVisible(bool visible) override { glfwSetInputMode(impl->window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED); }
+	bool IsCursorVisible() const override { return impl->cursorVisible; }
+
+	void Show() override { glfwShowWindow(impl->window); }
+	void Hide() override { glfwHideWindow(impl->window); }
+	bool IsVisible() override { return glfwGetWindowAttrib(impl->window, GLFW_VISIBLE); }
+
+	void Focus() override { glfwFocusWindow(impl->window); }
+	bool IsFocused() override { return glfwGetWindowAttrib(impl->window, GLFW_FOCUSED); }
+
+	void SetIcon(const std::string& path) override;
+
+	void* GetNativeHandle() override { return glfwGetWin32Window(impl->window); }
+	void* GetSDLGLContext() override { return nullptr; }
+
+	GLFWwindow* GetWindow() { return impl->window; }
+
+	VulkanExtensions GetVulkanExtensions() override;
+	void* CreateVulkanSurface(void* instance) override;
+
+	bool ShouldClose() override { return glfwWindowShouldClose(impl->window); }
+
+	~GLFW3Window() override;
+
+private:
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+	bool shouldClose = false;
+	bool capturingMouse = false;
+	bool cursorVisible = true;
+};
+
+}
+
+#endif // FE_EXCLUDE_GLFW
 
 	void SwapBuffers() const override;
 

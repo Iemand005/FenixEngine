@@ -4,6 +4,7 @@ project(Engine LANGUAGES CXX C)
 option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
 option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
 option(FE_EXCLUDE_VULKAN "Exclude Vulkan from the build" OFF)
+option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
@@ -55,7 +56,7 @@ else()
 	add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
-if (NOT EMSCRIPTEN)
+if (NOT EMSCRIPTEN AND NOT FE_EXCLUDE_OPENXR)
 	add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
 	add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
 endif()
@@ -70,7 +71,7 @@ if(MSVC)
     if(TARGET Jolt)
         set_property(TARGET Jolt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
-    if(TARGET openxr_loader)
+    if(TARGET openxr_loader AND NOT FE_EXCLUDE_OPENXR)
         set_property(TARGET openxr_loader PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
 endif()
@@ -118,9 +119,12 @@ endif()
 
 
 target_link_libraries(Renderer PUBLIC
-	glfw
 	SDL3::SDL3
 )
+
+if(NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
+	target_link_libraries(Renderer PUBLIC glfw)
+endif()
 
 if(NOT FE_EXCLUDE_VULKAN)
 	target_link_libraries(Renderer PUBLIC Vulkan::Vulkan)
@@ -219,35 +223,41 @@ else()
 	find_package(OpenGL REQUIRED)
 	target_link_libraries(Engine PRIVATE OpenGL::GL)
 
-	find_package(X11 REQUIRED)
+	if(NOT EMSCRIPTEN)
+		find_package(X11 REQUIRED)
 
-	target_link_libraries(Engine PRIVATE
-		X11::X11
-	)
+		target_link_libraries(Engine PRIVATE
+			X11::X11
+		)
 
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
+		find_package(PkgConfig REQUIRED)
+		pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
 
-	target_link_libraries(Engine INTERFACE ${HIDAPI_LIBRARIES})
-	target_include_directories(Engine PUBLIC ${HIDAPI_INCLUDE_DIRS})
-
+		target_link_libraries(Engine INTERFACE ${HIDAPI_LIBRARIES})
+		target_include_directories(Engine PUBLIC ${HIDAPI_INCLUDE_DIRS})
+	endif()
 endif()
 
 
 target_link_libraries(Engine PUBLIC
 	Renderer
 	SDL3::SDL3
-	OpenXR::openxr_loader
 )
 
-if(NOT FE_EXCLUDE_JOLT)
+if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)
+	target_link_libraries(Engine PUBLIC OpenXR::openxr_loader)
+endif()
+
+if(NOT FE_EXCLUDE_JOLT AND NOT EMSCRIPTEN)
 	target_link_libraries(Engine PUBLIC Jolt::Jolt)
 endif()
 
-# TODO: Make the engine only include kiss if audio visualizer engine is requested
-target_link_libraries(Engine PRIVATE
-	kissfft::kissfft-float
-)
+# kissfft only if not Emscripten (not built for WebAssembly)
+if(NOT EMSCRIPTEN)
+	target_link_libraries(Engine PRIVATE
+		kissfft::kissfft-float
+	)
+endif()
 
 if(FE_INCLUDE_OPENVR)
 	target_include_directories(Engine PRIVATE "${EXTERNAL_DIR}/openvr/headers")
