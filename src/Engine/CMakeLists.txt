@@ -40,10 +40,10 @@ else()
     add_definitions(FE_EXCLUDE_VULKAN)
 endif()
 
-# if(NOT FE_EXCLUDE_GLFW)
+if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
-# endif()
-if (NOT FE_EXCLUDE_JOLT)
+endif()
+if (NOT FE_EXCLUDE_JOLT AND NOT EMSCRIPTEN)
 	set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
 	set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
 	if(MSVC)
@@ -55,8 +55,10 @@ else()
 	add_compile_definitions(EXCLUDE_JOLT)
 endif()
 add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
-add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
-add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
+if (NOT EMSCRIPTEN)
+	add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
+	add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
+endif()
 
 if (FE_INCLUDE_OPENVR)
 	add_subdirectory(${EXTERNAL_DIR}/openvr ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openvr)
@@ -84,13 +86,9 @@ add_library(Renderer STATIC
 	Renderer.cpp
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
-	Graphics/OpenGLRenderDevice.cpp
+	Graphics/VulkanRenderDevice.cpp
 	ModelLoader.cpp
 )
-
-if(NOT FE_EXCLUDE_VULKAN)
-    target_sources(Renderer PRIVATE Graphics/VulkanRenderDevice.cpp)
-endif()
 
 target_include_directories(Renderer PRIVATE
 	../../include
