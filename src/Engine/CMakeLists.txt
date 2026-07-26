@@ -20,6 +20,8 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
+set(SDL_WASAPI OFF CACHE BOOL "" FORCE)
+
 # set(EXTERNAL_DIR "${EXTERNAL_DIR}")
 set(EXTERNAL_DIR "../../external")
 
