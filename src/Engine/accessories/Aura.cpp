@@ -1,6 +1,15 @@
 
 #include "Aura.hpp"
 
+#if defined(__EMSCRIPTEN__)
+// Aura is not supported on Emscripten/Web
+struct Aura::Impl { void* dev = nullptr; };
+Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {}
+Aura::~Aura() {}
+bool Aura::IsOpen() const { return false; }
+bool Aura::SetColor(char, char, char, bool) { return false; }
+#else
+
 #include <vector>
 #include <cstdint>
 
@@ -8,7 +17,7 @@
 #include <windows.h>
 #include <setupapi.h>
 #include <hidsdi.h>
-#elif !defined(EMSCRIPTEN)
+#else
 #include <hidapi/hidapi.h>
 #endif
 
@@ -150,3 +159,5 @@ bool Aura::SetColor(char r, char g, char b, bool force) {
 	report.b = b;
 	return impl->SetFeature(impl->dev, &report, sizeof(report));
 }
+
+#endif // !__EMSCRIPTEN__

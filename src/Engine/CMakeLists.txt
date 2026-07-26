@@ -168,10 +168,38 @@ endif()
 
 set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 
-# Exclude XR/OpenXR-specific sources for Emscripten builds
+# Exclude incompatible sources for Emscripten builds
 if(EMSCRIPTEN)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
 		${CMAKE_CURRENT_SOURCE_DIR}/XRGame.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsObject.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/Sensors/Accelerometer.cpp
+	)
+endif()
+
+if(FE_EXCLUDE_VULKAN)
+	list(REMOVE_ITEM ENGINE_SOURCE_FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
+	)
+endif()
+
+if(FE_EXCLUDE_GLFW)
+	list(REMOVE_ITEM ENGINE_SOURCE_FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
+	)
+endif()
+
+if(FE_EXCLUDE_JOLT)
+	list(REMOVE_ITEM ENGINE_SOURCE_FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsObject.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
 	)
 endif()
 

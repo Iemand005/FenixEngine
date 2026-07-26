@@ -1,5 +1,6 @@
 #pragma once
 #include <exception>
+#include <stdexcept>
 #ifdef FE_EXCLUDE_GLFW
 #define GLFW_INCLUDE_NONE
 #endif
@@ -370,7 +371,7 @@ public:
 	}
 
 	void Resize() {
-		throw new std::exception("Please implement");
+		throw std::runtime_error("Please implement");
 		// Resize(this->window->width, this->window->height);
 	}
 	void Resize(int width, int height) {
