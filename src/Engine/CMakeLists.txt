@@ -30,6 +30,8 @@ set(EXTERNAL_DIR "../../external")
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 
+add_definitions(-D_ENABLE_EXTENDED_ALIGNED_STORAGE)
+
 find_package(Vulkan REQUIRED)
 
 # if(NOT FE_EXCLUDE_GLFW)
