@@ -70,7 +70,7 @@ class SDLWindow : public IWindow {
   void Hide();
   void Show();
 
-  void SwapBuffers() override;
+  void SwapBuffers() const override;
 
   VulkanExtensions GetVulkanExtensions() override;
   void *CreateVulkanSurface(void *instance) override;

@@ -231,7 +231,7 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
     keyboardState = SDL_GetKeyboardState(NULL);
 }
 
-void fe::SDLWindow::SwapBuffers() {  // TOOD: this 
+void fe::SDLWindow::SwapBuffers() const {  // TOOD: this 
 	// TODO: return if vulkan or weell do vulkan impl not gl
 	// if (true) return;
 	SDL_GL_SwapWindow(impl->window);

@@ -109,7 +109,7 @@ public:
 
 		virtual void GoBorderlessFullscreen() = 0;
 		
-		virtual void SwapBuffers() = 0;
+		virtual void SwapBuffers() const = 0;
 
 		virtual double GetTime() = 0;
 

@@ -122,7 +122,7 @@ void fe::GLFW3Window::StopMouseCapture() {
 	glfwSetInputMode(impl->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void fe::GLFW3Window::SwapBuffers() { glfwSwapBuffers(impl->window); }
+void fe::GLFW3Window::SwapBuffers() const { glfwSwapBuffers(impl->window); }
 
 void fe::GLFW3Window::Destroy() {
 	glfwDestroyWindow(impl->window);

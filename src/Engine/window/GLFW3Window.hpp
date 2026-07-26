@@ -28,7 +28,7 @@ public:
 
 	void SetSwapInterval(int interval) override { glfwSwapInterval(interval); }
 
-	void SwapBuffers() override;
+	void SwapBuffers() const override;
 
 	void Destroy() override;
 
