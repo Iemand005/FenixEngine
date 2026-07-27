@@ -107,9 +107,17 @@ public:
 	}
 };
 
-namespace detail {
-	inline glm::vec3 extractPosition(const Vertex& v) { return v.position; }
-	inline glm::vec3 extractPosition(const VertexArray& v) { return v.position; }
-}
+template<typename T>
+struct VertexTraits;
+
+template<>
+struct VertexTraits<Vertex> {
+	static glm::vec3 getPosition(const Vertex& v) { return v.position; }
+};
+
+template<>
+struct VertexTraits<VertexArray> {
+	static glm::vec3 getPosition(const VertexArray& v) { return v.position; }
+};
 
 }

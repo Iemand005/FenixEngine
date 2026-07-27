@@ -12,7 +12,6 @@
 
 #include "IMesh.hpp"
 #include "Vertex.hpp"
-#include "PackedVertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
 #include "Graphics/IGPUBuffers.hpp"
@@ -442,7 +441,7 @@ namespace fe {
 		void GetPositions(std::vector<glm::vec3>& out) const override {
 			out.resize(vertices.size());
 			for (size_t i = 0; i < vertices.size(); ++i) {
-				out[i] = detail::extractPosition(vertices[i]);
+				out[i] = VertexTraits<VertexType>::getPosition(vertices[i]);
 			}
 		}
 
