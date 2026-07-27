@@ -79,7 +79,6 @@ private:
 
 }
 
-#endif // FE_EXCLUDE_GLFW
 
 	void SwapBuffers() const override;
 
@@ -134,3 +133,4 @@ private:
 };
 
 } // namespace fe
+#endif // FE_EXCLUDE_GLFW
