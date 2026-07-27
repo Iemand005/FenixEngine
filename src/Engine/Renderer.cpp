@@ -10,23 +10,23 @@
 
 using namespace fe;
 
-void Renderer::EnableWireframe() {
-  renderDevice->EnableWireframe();
-}
-void Renderer::DisableWireframe() {
-  renderDevice->DisableWireframe();
-}
-
-void Renderer::ToggleWireframe(bool enabled) {
-  if (enabled) renderDevice->EnableWireframe();
-  else renderDevice->DisableWireframe();
-}
-
 Renderer::Renderer(GLADloadproc loadProc) {
 	if (!gladLoadGLLoader(loadProc)) {
 		std::cerr << "Failed to load OpenGL functions (GLAD)";
 	}
 	CreateRenderDevice(false);
+}
+
+void Renderer::EnableWireframe() {
+	renderDevice->EnableWireframe();
+}
+void Renderer::DisableWireframe() {
+	renderDevice->DisableWireframe();
+}
+
+void Renderer::ToggleWireframe(bool enabled) {
+	if (enabled) renderDevice->EnableWireframe();
+	else renderDevice->DisableWireframe();
 }
 
 void Renderer::SetVSync(bool enabled) {

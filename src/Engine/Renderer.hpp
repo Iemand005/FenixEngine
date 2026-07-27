@@ -159,6 +159,10 @@ public:
 #endif
 	}
 
+	void Init(GLADloadproc loadProc) {
+		
+	}
+
 	void CreateRenderDevice(bool useVulkan = false) {
 		if (renderDevice) return; // TODO: throwerror?kaykay
 
