@@ -41,50 +41,50 @@ void CheckGLError(const char* location) {
 }
 
 struct fe::XRGame::Impl {
-#ifndef FE_EXCLUDE_OPENXR
+		bool useVulkan = false;
 
-	bool useVulkan = false;
+	#ifndef FE_EXCLUDE_OPENXR
 
-	XrInstance instance = XR_NULL_HANDLE;
-	XrSession session = XR_NULL_HANDLE;
+		XrInstance instance = XR_NULL_HANDLE;
+		XrSession session = XR_NULL_HANDLE;
 
-	XrSystemId systemId;
+		XrSystemId systemId;
 
-	XrSpace appSpace = XR_NULL_HANDLE;
+		XrSpace appSpace = XR_NULL_HANDLE;
 
-	XrSwapchain swapchain;
+		XrSwapchain swapchain;
 
-	// API-specific swapchain image storage
-	std::vector<XrSwapchainImageOpenGLKHR> swapchainImagesGL;
-	std::vector<XrSwapchainImageVulkanKHR> swapchainImagesVK;
+		// API-specific swapchain image storage
+		std::vector<XrSwapchainImageOpenGLKHR> swapchainImagesGL;
+		std::vector<XrSwapchainImageVulkanKHR> swapchainImagesVK;
 
-	// Framebuffer handles from renderDevice, indexed [eye][swapchainImage]
-	std::vector<std::vector<uint64_t>> framebuffers;
+		// Framebuffer handles from renderDevice, indexed [eye][swapchainImage]
+		std::vector<std::vector<uint64_t>> framebuffers;
 
-	// OpenGL-only depth textures (2D array, one per swapchain image)
-	std::vector<GLuint> depthTextures;
+		// OpenGL-only depth textures (2D array, one per swapchain image)
+		std::vector<GLuint> depthTextures;
 
-	uint32_t viewCount = 2;
-	int32_t swapchainWidth, swapchainHeight;
+		uint32_t viewCount = 2;
+		int32_t swapchainWidth, swapchainHeight;
 
-	bool drawVR = false;
-	bool drawOpenVR = false;
+		bool drawVR = false;
+		bool drawOpenVR = false;
 
-	XrActionSet actionSet = XR_NULL_HANDLE;
-	XrAction moveAction = XR_NULL_HANDLE;
-	XrAction orientAction = XR_NULL_HANDLE;
-	XrAction poseAction = XR_NULL_HANDLE;
-	XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
-	XrSpace headSpace = XR_NULL_HANDLE;
+		XrActionSet actionSet = XR_NULL_HANDLE;
+		XrAction moveAction = XR_NULL_HANDLE;
+		XrAction orientAction = XR_NULL_HANDLE;
+		XrAction poseAction = XR_NULL_HANDLE;
+		XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
+		XrSpace headSpace = XR_NULL_HANDLE;
 
-	XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
-	XrFrameState frameState{XR_TYPE_FRAME_STATE};
-	XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
-	XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-	
-#endif
+		XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
+		XrFrameState frameState{XR_TYPE_FRAME_STATE};
+		XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
+		XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+		
+	#endif
 
-	void initSwapchain(IRenderDevice* renderDevice) {
+		void initSwapchain(IRenderDevice* renderDevice) {
 
 		#ifndef FE_EXCLUDE_OPENXR
 
@@ -313,6 +313,7 @@ XRGame::~XRGame() {
 };
 
 void XRGame::initOpenXR() {
+	#ifndef FE_EXCLUDE_OPENXR
 	impl->useVulkan = useVulkan;
 
 	if (useVulkan) {
@@ -370,6 +371,7 @@ void XRGame::initOpenXR() {
 			}
 		#endif
 	}
+	#endif
 }
 
 void XRGame::initOpenXR(void *next) {
@@ -539,7 +541,9 @@ void XRGame::DrawUI() {
 		return;
 	}
 
+	#ifndef FE_EXCLUDE_OPENXR
 	if (impl->drawVR) return;
+	#endif
 
 	ImGui::Begin("XR");
 	if (ImGui::Button("Start OpenVR HMD")) {
