@@ -554,6 +554,8 @@ void XRGame::DrawUI() {
 }
 
 void XRGame::DestroyXR() {
+	#ifndef FE_EXCLUDE_OPENXR
+
 	impl->drawVR = false;
 
 	// Destroy framebuffers via renderDevice
@@ -573,7 +575,6 @@ void XRGame::DestroyXR() {
 	impl->swapchainImagesGL.clear();
 	impl->swapchainImagesVK.clear();
 
-	#ifndef FE_EXCLUDE_OPENXR
 	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
 	impl->session = XR_NULL_HANDLE;
