@@ -65,6 +65,8 @@ namespace fe {
 	struct RendererOptions : WindowOptions {
 		bool useVulkan = true;
 
+		GLADloadproc loadProc;
+
 		RendererOptions() = default; 
 
 		RendererOptions(int w, int h, bool hidden = false, bool fullscreen = false) : WindowOptions(w, h, hidden, fullscreen) {}
@@ -143,7 +145,11 @@ public:
 	template<typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
 	Renderer(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {}
 
-	Renderer(GLADloadproc loadProc);
+	// Deprecated!!!
+	Renderer(GLADloadproc loadProc) {
+		Init(loadProc);
+		CreateRenderDevice(false);
+	}
 
 	Renderer(int width, int height, bool skipInit = false, bool hidden = false, bool fullscreen = false) : Renderer() {
 		CreateRenderDevice(false);
@@ -153,15 +159,14 @@ public:
 	}
 
 	Renderer(RendererOptions options) {
+		if (options.loadProc) Init(options.loadProc);
 		CreateRenderDevice(options.useVulkan);
 #ifdef FE_HAS_WINDOW
 		NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan);
 #endif
 	}
 
-	void Init(GLADloadproc loadProc) {
-		
-	}
+	void Init(GLADloadproc loadProc);
 
 	void CreateRenderDevice(bool useVulkan = false) {
 		if (renderDevice) return; // TODO: throwerror?kaykay

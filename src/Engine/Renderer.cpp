@@ -3,6 +3,8 @@
 #include "Scene.hpp"
 
 #include <algorithm>
+#include <exception>
+#include <stdexcept>
 #include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL 
@@ -10,11 +12,9 @@
 
 using namespace fe;
 
-Renderer::Renderer(GLADloadproc loadProc) {
-	if (!gladLoadGLLoader(loadProc)) {
-		std::cerr << "Failed to load OpenGL functions (GLAD)";
-	}
-	CreateRenderDevice(false);
+void Renderer::Init(GLADloadproc loadProc) {
+	if (!gladLoadGLLoader(loadProc))
+		throw std::runtime_error("Failed to load OpenGL functions (GLAD)");
 }
 
 void Renderer::EnableWireframe() {
