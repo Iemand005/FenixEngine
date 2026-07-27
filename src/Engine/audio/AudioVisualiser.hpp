@@ -40,10 +40,12 @@ public:
 	}
 
 	void Poll() {
-		#ifdef _WIN32
+#ifdef _WIN32
     g_loopback.Poll(audioSamples);
 #else
+#ifndef __EMSCRIPTEN__
     g_pwLoopback.Poll(audioSamples);
+#endif
 #endif
     if (audioSamples.size() > FFT_SIZE) {
         audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
