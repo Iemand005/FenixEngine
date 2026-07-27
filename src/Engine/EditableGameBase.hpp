@@ -2,7 +2,9 @@
 
 #include "XRGame.hpp"
 
+#ifndef EXCLUDE_JOLT
 #include "physics/PhysicsFactory.hpp"
+#endif
 
 namespace fe {
 class EditableGameBase : public XRGame {
@@ -30,8 +32,10 @@ class EditableGameBase : public XRGame {
 	void OnDraw() override {
 		if (selectedObject) DrawGizmo(selectedObject->state.position);
 
+#ifndef EXCLUDE_JOLT
 		auto physics = GetPhysicsFactory();
 		if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+#endif
 	}
 
 	bool IsSelectModeEnabled() const { return selectModeEnabled_; }
