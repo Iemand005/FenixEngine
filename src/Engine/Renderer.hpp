@@ -63,7 +63,11 @@ using DefaultWindow = fe::GLFW3Window;
 namespace fe {
 
 	struct RendererOptions : WindowOptions {
+#ifndef __EMSCRIPTEN__
 		bool useVulkan = true;
+		#else
+		bool useVulkan = false;
+#endif
 
 		GLADloadproc loadProc = nullptr;
 
@@ -258,6 +262,9 @@ public:
 	}
 
 	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
+#ifdef __EMSCRIPTEN__
+		useVulkan = false;
+#endif
 #ifndef FE_EXCLUDE_SDL
 
 		SDL_GLContext sharedContext = nullptr;
