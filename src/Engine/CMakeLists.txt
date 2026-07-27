@@ -65,6 +65,12 @@ if (FE_EXCLUDE_KISSFFT)
     add_definitions(-DFE_EXCLUDE_KISSFFT)
 endif()
 
+if(TARGET Engine)
+    if(FE_EXCLUDE_KISSFFT)
+        target_compile_definitions(Engine PUBLIC FE_EXCLUDE_KISSFFT)
+    endif()
+endif()
+
 if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 endif()

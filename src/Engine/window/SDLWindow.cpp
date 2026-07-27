@@ -449,7 +449,7 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 
 	w = r.right - r.left;
 	h = r.bottom - r.top;
-#else
+#elif !defined(__EMSCRIPTEN__)
 
 
 	Window sdl_xwindow = (Window)(uintptr_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);

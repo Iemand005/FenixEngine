@@ -25,8 +25,10 @@
 #endif
 
 #include "PhysicsFactory.hpp"
-#include "PhysicsVehicle.hpp"
+
+#ifndef EXCLUDE_JOLT
 #include "BasicDebugRenderer.hpp"
+#endif
 
 // JPH_SUPPRESS_WARNINGS
 
