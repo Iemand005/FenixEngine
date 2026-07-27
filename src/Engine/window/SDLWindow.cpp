@@ -479,6 +479,9 @@ void fe::SDLWindow::AttachToNativeParent(void* parent)
 	};*/
 	XSync(display, False);
 #endif
+#if defined(__EMSCRIPTEN__)
+	return;
+#endif
 	 Resize(w, h);
 }
 

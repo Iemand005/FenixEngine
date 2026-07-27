@@ -65,12 +65,6 @@ if (FE_EXCLUDE_KISSFFT)
     add_definitions(-DFE_EXCLUDE_KISSFFT)
 endif()
 
-if(TARGET Engine)
-    if(FE_EXCLUDE_KISSFFT)
-        target_compile_definitions(Engine PUBLIC FE_EXCLUDE_KISSFFT)
-    endif()
-endif()
-
 if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 endif()
@@ -341,6 +335,10 @@ endif()
 
 if(NOT FE_EXCLUDE_JOLT)
 	target_link_libraries(Engine PUBLIC Jolt::Jolt)
+endif()
+
+if(FE_EXCLUDE_KISSFFT)
+	target_compile_definitions(Engine PUBLIC FE_EXCLUDE_KISSFFT)
 endif()
 
 # kissfft only if not Emscripten and not excluded
