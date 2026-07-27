@@ -512,7 +512,11 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	#endif
 }
 
-bool XRGame::IsInstanceValid() { return impl->instance != XR_NULL_HANDLE; }
+bool XRGame::IsInstanceValid() {
+#ifndef FE_EXCLUDE_OPENXR
+	return impl->instance != XR_NULL_HANDLE;
+#endif
+}
 
 #ifdef FE_INCLUDE_OPENVR
 void XRGame::StartOpenVR() {
