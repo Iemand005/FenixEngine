@@ -323,7 +323,7 @@ if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)
 	target_link_libraries(Engine PUBLIC OpenXR::openxr_loader)
 endif()
 
-if(NOT FE_EXCLUDE_JOLT AND NOT EMSCRIPTEN)
+if(NOT FE_EXCLUDE_JOLT)
 	target_link_libraries(Engine PUBLIC Jolt::Jolt)
 endif()
 
