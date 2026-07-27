@@ -178,6 +178,11 @@ public:
 		
 	}
 
+	virtual void Init() {}
+    virtual void Step() {}
+
+	void Run();
+
 	void Init(GLADloadproc loadProc);
 
 	void CreateRenderDevice(bool useVulkan = false) {

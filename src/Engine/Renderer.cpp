@@ -3,8 +3,6 @@
 #include "Scene.hpp"
 
 #include <algorithm>
-#include <exception>
-#include <stdexcept>
 #include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL 
@@ -12,10 +10,38 @@
 
 using namespace fe;
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+static void EmscriptenLoopWrapper(void* arg) {
+    auto* engine = static_cast<Renderer*>(arg);
+    
+    if (engine->ShouldClose()) {
+        emscripten_cancel_main_loop();
+        engine->Destroy();
+        return;
+    }
+    
+    engine->Step();
+}
+#endif
+
 void Renderer::Init(GLADloadproc loadProc) {
 	if (!gladLoadGLLoader(loadProc))
 		std::cerr << "Failed to load GLAS dhsit" << std::endl;
 		// throw std::runtime_error("Failed to load OpenGL functions (GLAD)");
+}
+
+void Renderer::Run() {
+    Init();
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(EmscriptenLoopWrapper, this, 0, 1);
+#else
+    while (!ShouldClose())
+        Step();
+    Destroy();
+#endif
 }
 
 void Renderer::EnableWireframe() {
