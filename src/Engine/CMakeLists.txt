@@ -64,6 +64,8 @@ if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 endif()
 if (NOT FE_EXCLUDE_JOLT)
+	add_compile_definitions(JPH_DEBUG_RENDERER)
+
 	set(JPH_DEBUG_RENDERER ON CACHE BOOL "Enable debug renderer" FORCE)
 	set(CPP_RTTI_ENABLED ON CACHE BOOL "Enable C++ RTTI" FORCE)
 	if(MSVC)
