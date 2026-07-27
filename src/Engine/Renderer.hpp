@@ -161,9 +161,9 @@ public:
 	Renderer(RendererOptions options) {
 		CreateRenderDevice(options.useVulkan);
 #ifdef FE_HAS_WINDOW
-		NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan);
+		NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan, options.loadProc);
 #endif
-		if (options.loadProc) Init(options.loadProc);
+		
 	}
 
 	void Init(GLADloadproc loadProc);
@@ -257,7 +257,7 @@ public:
 		NewWindow(width, height, hidden, fullscreen, useVulkan);
 	}
 
-	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan) {
+	void NewWindow(int width, int height, bool hidden, bool fullscreen, bool useVulkan, GLADloadproc loadProc = nullptr) {
 #ifndef FE_EXCLUDE_SDL
 
 		SDL_GLContext sharedContext = nullptr;
@@ -271,6 +271,8 @@ public:
 #else
 		auto window = std::make_unique<DefaultWindow>("Fenix Engine", width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 #endif
+
+		if (loadProc) Init(loadProc);
 
 		IRenderDevice* device = nullptr;
 		if (windowDeviceMap.empty()) {
