@@ -74,6 +74,8 @@ namespace fe {
 		#else
 		bool useVulkan = false;
 #endif
+		// GraphicsAPI graphicsApi = Grapics
+		GraphicsAPI graphicsApi = GraphicsAPI::OpenGLES;
 
 		GLADloadproc loadProc = nullptr;
 
