@@ -49,7 +49,9 @@ namespace fe {
 		void InitImGui() {
 			auto renderer = (Renderer*)this;
 			auto window = GetWindow<SDLWindow>();
-			const char* glsl_version = "#version 330 core";
+			bool glES = true;
+			const char* glsl_version = glES ? "#version 300 es" : "#version 330 core";
+			// const char* glsl_version = ;
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
 			io = ImGui::GetIO();
