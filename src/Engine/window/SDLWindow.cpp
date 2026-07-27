@@ -17,6 +17,11 @@
 #include <SDL3/SDL_dialog.h>
 #include <glad/glad.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDLWindow.hpp"
 
 using namespace fe;
@@ -268,10 +273,41 @@ void fe::SDLWindow::GetSize(int* w, int* h) { SDL_GetWindowSize(impl->window, w,
 
 
 void fe::SDLWindow::OpenFileDialog(FileDialogCallback callback, const char* filterName, const char* filterPattern) {
+	#ifdef __EMSCRIPTEN__
+		auto* cb = new FileDialogCallback(std::move(callback));
+		char script[1024];
+		snprintf(script, sizeof(script),
+			"console.log('[FileDialog] Opening file dialog...');"
+			"var input = document.createElement('input');"
+			"input.type = 'file';"
+			"input.accept = '%s,%s';"
+			"input.onchange = function(e) {"
+			"  console.log('[FileDialog] File selected');"
+			"  var file = e.target.files[0];"
+			"  if (file) {"
+			"    console.log('[FileDialog] File:', file.name, file.size);"
+			"    var reader = new FileReader();"
+			"    reader.onload = function() {"
+			"      console.log('[FileDialog] File loaded, writing to FS');"
+			"      var bytes = new Uint8Array(reader.result);"
+			"      var fs = Module.FS;"
+			"      var path = '/tmp/uploaded_' + file.name;"
+			"      fs.writeFile(path, bytes, { encoding: 'binary' });"
+			"      console.log('[FileDialog] File written to:', path);"
+			"      Module._emscripten_file_dialog_callback(%d, path);"
+			"    };"
+			"    reader.readAsArrayBuffer(file);"
+			"  }"
+			"};"
+			"input.click();",
+			filterPattern, filterName, reinterpret_cast<intptr_t>(cb));
+		emscripten_run_script(script);
+	#else
 	auto* cb = new FileDialogCallback(std::move(callback));
 	SDL_DialogFileFilter filters[] = {{ filterName, filterPattern }};
 	SDL_ShowOpenFileDialog(SDLWindow::OnFileDialogResult, cb, impl->window, filters, 1, nullptr, false);
 	SDL_Log("SDL Dialog Error status: %s", SDL_GetError());
+	#endif
 }
 
 void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const* files, int filter) {
@@ -281,6 +317,19 @@ void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const
 	}
 	delete cb;
 }
+
+#ifdef __EMSCRIPTEN__
+extern "C" void emscripten_file_dialog_callback(intptr_t userdata, const char* path) {
+	char script[512];
+	snprintf(script, sizeof(script), "console.log('[FileDialog] C++ callback invoked with path:', UTF8ToString(%p));", path);
+	emscripten_run_script(script);
+	auto cb = reinterpret_cast<fe::IWindow::FileDialogCallback*>(userdata);
+	if (cb && path) {
+		(*cb)(path);
+	}
+	delete cb;
+}
+#endif
 
 void fe::SDLWindow::Destroy() {
 	if (!impl) return;
