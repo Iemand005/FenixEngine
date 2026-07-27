@@ -257,6 +257,10 @@ class Game : public Renderer {
 		Renderer::Redraw();
 	}
 
+	void Redraw() {
+		Renderer::Redraw();
+	}
+
 	void Update() {
 		double dt = scene->Update();
 		UpdatePhysics(dt);
