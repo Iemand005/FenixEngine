@@ -1,15 +1,11 @@
-
 #include "XRGame.hpp"
-
-#ifndef WIN32
-#define XR_USE_PLATFORM_XLIB
-#endif
 
 #ifndef FE_EXCLUDE_OPENXR
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 #endif
 
+#ifndef FE_EXCLUDE_OPENXR
 #ifdef WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -23,9 +19,12 @@
 #include <GL/glx.h>
 
 #endif
+#endif
 
 #ifdef XR_USE_PLATFORM_WAYLAND
+#ifndef FE_EXCLUDE_OPENXR
 #include <wayland-client.h>
+#endif
 #endif
 
 // #include "Graphics/VulkanDevice.hpp"
@@ -233,7 +232,7 @@ struct fe::XRGame::Impl {
 		#endif
 
 	}
- #ifndef FE_EXCLUDE_OPENXR
+#ifndef FE_EXCLUDE_OPENXR
 
 	void HandleSessionStateChange(XrSessionState state, XrTime time) {
 		switch (state) {
@@ -329,51 +328,53 @@ void XRGame::initOpenXR() {
 	} else {
 		auto window = GetWindow<fe::SDLWindow>();
 
-#ifdef WIN32
-		HDC hDC = window->GetDrawingContext();
-		HGLRC hGLRC = window->GetOpenGLRenderingContext();
-		XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
-		gfx.hDC = hDC;
-		gfx.hGLRC = hGLRC;
-		initOpenXR(&gfx);
-#else
-		const char *video_driver = SDL_GetCurrentVideoDriver();
-		if (video_driver != NULL) {
-			std::cout << "Video Driver: " << video_driver << std::endl;
-			if (SDL_strcmp(video_driver, "wayland") == 0) {
-				XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
-				gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
-				gfx.display = (wl_display *)window->GetWaylandDisplay();
-				initOpenXR(&gfx);
-			} else if (SDL_strcmp(video_driver, "x11") == 0) {
-				Display *xDisplay = (Display *)window->GetX11Display();
-				GLXContext glxContext = glXGetCurrentContext();
-				int fb_config_id = 0;
-				glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
-				int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
-				int num_configs = 0;
-				GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
-				GLXFBConfig glxFBConfig = fb_configs[0];
-				XFree(fb_configs);
-				int visual_id_val = 0;
-				glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
-				VisualID visualid = (VisualID)visual_id_val;
-				XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
-				gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
-				gfx.next = NULL;
-				gfx.xDisplay = xDisplay;
-				gfx.glxDrawable = window->GetGLXDrawable();
-				gfx.visualid = visualid;
-				gfx.glxFBConfig = glxFBConfig;
-				gfx.glxContext = glxContext;
-				initOpenXR(&gfx);
+		#ifdef WIN32
+			HDC hDC = window->GetDrawingContext();
+			HGLRC hGLRC = window->GetOpenGLRenderingContext();
+			XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
+			gfx.hDC = hDC;
+			gfx.hGLRC = hGLRC;
+			initOpenXR(&gfx);
+		#else
+			const char *video_driver = SDL_GetCurrentVideoDriver();
+			if (video_driver != NULL) {
+				std::cout << "Video Driver: " << video_driver << std::endl;
+				if (SDL_strcmp(video_driver, "wayland") == 0) {
+					XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
+					gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
+					gfx.display = (wl_display *)window->GetWaylandDisplay();
+					initOpenXR(&gfx);
+				} else if (SDL_strcmp(video_driver, "x11") == 0) {
+					Display *xDisplay = (Display *)window->GetX11Display();
+					GLXContext glxContext = glXGetCurrentContext();
+					int fb_config_id = 0;
+					glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
+					int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
+					int num_configs = 0;
+					GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
+					GLXFBConfig glxFBConfig = fb_configs[0];
+					XFree(fb_configs);
+					int visual_id_val = 0;
+					glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
+					VisualID visualid = (VisualID)visual_id_val;
+					XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
+					gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
+					gfx.next = NULL;
+					gfx.xDisplay = xDisplay;
+					gfx.glxDrawable = window->GetGLXDrawable();
+					gfx.visualid = visualid;
+					gfx.glxFBConfig = glxFBConfig;
+					gfx.glxContext = glxContext;
+					initOpenXR(&gfx);
+				}
 			}
-		}
-#endif
+		#endif
 	}
 }
 
 void XRGame::initOpenXR(void *next) {
+	#ifndef FE_EXCLUDE_OPENXR
+
 	XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
 	const char* extension = useVulkan
@@ -445,17 +446,17 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->Log("OpenXR Session Created");
 
-	impl->BeginSession();
-
 	XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
 	spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
 	spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
 	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
+	#endif
 }
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
+	#ifndef FE_EXCLUDE_OPENXR
 	XrVector2f rightJoystickInput = {0.0f, 0.0f};
 	XrVector2f leftJoystickInput = {0.0f, 0.0f};
 	XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
@@ -506,6 +507,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		positionOffset.x += movement.x;
 		positionOffset.z += movement.z;
 	}
+	#endif
 }
 
 bool XRGame::IsInstanceValid() { return impl->instance != XR_NULL_HANDLE; }
@@ -523,11 +525,13 @@ void XRGame::StartOpenVR() {
 #endif
 
 void XRGame::DisableVR() {
+	#ifndef FE_EXCLUDE_OPENXR
 	impl->outputError(xrRequestExitSession(impl->session));
+	#endif
 }
 
 void XRGame::DrawUI() {
-#ifdef FE_INCLUDE_OPENVR
+	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
 		ImGui::Begin("XR");
 		ImGui::Text("OpenVR HMD active");
@@ -542,7 +546,7 @@ void XRGame::DrawUI() {
 		StartOpenVR();
 	}
 	ImGui::End();
-#endif
+	#endif
 }
 
 void XRGame::DestroyXR() {
@@ -565,27 +569,31 @@ void XRGame::DestroyXR() {
 	impl->swapchainImagesGL.clear();
 	impl->swapchainImagesVK.clear();
 
+	#ifndef FE_EXCLUDE_OPENXR
 	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
 	impl->session = XR_NULL_HANDLE;
 	impl->instance = XR_NULL_HANDLE;
+	#endif
 
-#ifdef FE_INCLUDE_OPENVR
+	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
 		openVR->ShutdownHMD();
 	}
 	openVR.reset();
 	impl->drawOpenVR = false;
-#endif
+	#endif
 }
 
 void XRGame::LaunchVR() {
+	#ifndef FE_EXCLUDE_OPENXR
 	initOpenXR();
 	impl->useVulkan = useVulkan;
 	impl->initSwapchain(renderDevice.get());
 	if (!useVulkan) CheckGLError("after framebuffer setup");
 	impl->CreateActions();
 	GetWindow()->StopMouseCapture();
+	#endif
 }
 
 void XRGame::RedrawWindow(uint64_t fbo) {
@@ -595,15 +603,17 @@ void XRGame::RedrawWindow(uint64_t fbo) {
 }
 
 void XRGame::EnableXR() {
+	#ifndef FE_EXCLUDE_OPENXR
 	if (!IsInstanceValid()) LaunchVR();
 	if (IsInstanceValid()) impl->drawVR = true;
+	#endif
 }
 
 void XRGame::Redraw(uint64_t fbo) {
 	{
 		impl->PollEvents();
 
-#ifdef FE_INCLUDE_OPENVR
+		#ifdef FE_INCLUDE_OPENVR
 		if (impl->drawOpenVR && openVR && openVR->mode == OpenVR::Mode::Scene) {
 			openVR->RenderHMDFrame([this]() {
 				for (auto& object : scene->GetObjects()) {
@@ -611,15 +621,18 @@ void XRGame::Redraw(uint64_t fbo) {
 				}
 			});
 		}
-#endif
+		#endif
 
+		#ifndef FE_EXCLUDE_OPENXR
 		if (impl->drawVR) RedrawVR();
+		#endif
 		if (drawWindow) RedrawWindow(fbo);
 		CheckErrors();
 	}
 }
 
 void XRGame::RedrawVR() {
+	#ifndef FE_EXCLUDE_OPENXR
 	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
 
 	PollActionsAndUpdateMovement(impl->frameState.predictedDisplayTime);
@@ -740,4 +753,5 @@ void XRGame::RedrawVR() {
 	}
 
 	impl->outputError(xrEndFrame(impl->session, &endInfo));
+	#endif
 }

@@ -5,6 +5,7 @@ option(FE_EXCLUDE_GLFW "Exclude GLFW from the build" OFF)
 option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
 option(FE_EXCLUDE_VULKAN "Exclude Vulkan from the build" OFF)
 option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
+option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
@@ -39,6 +40,10 @@ if (NOT FE_EXCLUDE_VULKAN)
     add_definitions(-DFE_HAS_VULKAN)
 else()
     add_definitions(-DFE_EXCLUDE_VULKAN)
+endif()
+
+if (EMSCRIPTEN)
+    add_definitions(-DFE_EXCLUDE_OPENXR)
 endif()
 
 if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
@@ -171,7 +176,6 @@ set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 # Exclude incompatible sources for Emscripten builds
 if(EMSCRIPTEN)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/XRGame.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
@@ -301,8 +305,8 @@ if(NOT FE_EXCLUDE_JOLT AND NOT EMSCRIPTEN)
 	target_link_libraries(Engine PUBLIC Jolt::Jolt)
 endif()
 
-# kissfft only if not Emscripten (not built for WebAssembly)
-if(NOT EMSCRIPTEN)
+# kissfft only if not Emscripten and not excluded
+if(NOT EMSCRIPTEN AND NOT FE_EXCLUDE_KISSFFT)
 	target_link_libraries(Engine PRIVATE
 		kissfft::kissfft-float
 	)
