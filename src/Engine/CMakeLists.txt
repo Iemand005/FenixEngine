@@ -15,6 +15,7 @@ if(EMSCRIPTEN)
     # set(FE_EXCLUDE_JOLT   ON  CACHE BOOL "Exclude JOLT physics from the build" FORCE)
     set(FE_EXCLUDE_VULKAN ON  CACHE BOOL "Exclude Vulkan from the build"     FORCE)
     set(FE_EXCLUDE_OPENXR ON  CACHE BOOL "Exclude OpenXR from the build"     FORCE)
+    set(FE_EXCLUDE_KISSFFT ON CACHE BOOL "Escldue KISS beaowoea ooo "                   FORCE)
     set(FE_INCLUDE_OPENVR OFF CACHE BOOL "Include OpenVR"                   FORCE)
 
     set(SDL_WASAPI    OFF CACHE BOOL "" FORCE)
