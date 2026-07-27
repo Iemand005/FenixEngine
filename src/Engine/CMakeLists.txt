@@ -203,7 +203,7 @@ if(EMSCRIPTEN)
 		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
 		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
 		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/Sensors/Accelerometer.cpp
+		# ${CMAKE_CURRENT_SOURCE_DIR}/Sensors/Accelerometer.cpp
 	)
 endif()
 
