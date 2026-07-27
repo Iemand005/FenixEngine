@@ -321,10 +321,10 @@ void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const
 #ifdef __EMSCRIPTEN__
 extern "C" void emscripten_file_dialog_callback(intptr_t userdata, const char* path) {
 	char script[512];
-	snprintf(script, sizeof(script), "console.log('[FileDialog] C++ callback invoked with path:', UTF8ToString(%p));", path);
+	snprintf(script, sizeof(script), "console.log('[FileDialog] C++ callback invoked, path ptr:', %p, 'is_null:', %d, 'first_char:', %c);", path, (path == nullptr), (path && path[0] != '\0') ? path[0] : 'N');
 	emscripten_run_script(script);
 	auto cb = reinterpret_cast<fe::IWindow::FileDialogCallback*>(userdata);
-	if (cb && path) {
+	if (cb && path && path[0] != '\0') {
 		(*cb)(path);
 	}
 	delete cb;
