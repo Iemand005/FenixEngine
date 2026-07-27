@@ -294,7 +294,7 @@ void fe::SDLWindow::OpenFileDialog(FileDialogCallback callback, const char* filt
 			"      var path = '/tmp/uploaded_' + file.name;"
 			"      fs.writeFile(path, bytes, { encoding: 'binary' });"
 			"      console.log('[FileDialog] File written to:', path);"
-			"      Module._emscripten_file_dialog_callback(%d, path);"
+			"      Module._emscripten_file_dialog_callback(%ld, path);"
 			"    };"
 			"    reader.readAsArrayBuffer(file);"
 			"  }"
