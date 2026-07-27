@@ -287,8 +287,9 @@ void fe::EditableGame::DrawDebugUI() {
 
 // BasicDebugRenderer::DrawImGuiToggle("Show physics debug");
 #ifndef EXCLUDE_JOLT
+#ifndef __EMSCRIPTEN__
 		ImGui::Checkbox("Show physics debug", &BasicDebugRenderer::DebugRenderingEnabled());
-
+#endif
 		if (ImGui::Button(physicsGravityEnabled ? "Disable Gravity" : "Enable Gravity")) {
 			physicsGravityEnabled = !physicsGravityEnabled;
 			if (this->player) {
