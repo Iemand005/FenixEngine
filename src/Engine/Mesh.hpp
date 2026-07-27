@@ -12,6 +12,7 @@
 
 #include "IMesh.hpp"
 #include "Vertex.hpp"
+#include "PackedVertex.hpp"
 #include "physics/PhysicsObject.hpp"
 
 #include "Graphics/IGPUBuffers.hpp"
