@@ -65,7 +65,7 @@ namespace fe {
 	struct RendererOptions : WindowOptions {
 		bool useVulkan = true;
 
-		GLADloadproc loadProc;
+		GLADloadproc loadProc = nullptr;
 
 		RendererOptions() = default; 
 
