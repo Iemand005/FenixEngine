@@ -6,8 +6,6 @@
 
 using namespace fe;
 
-#ifdef _WIN32
-
 #ifdef FE_ACCELEROMETER
 void HandleReading(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs const& args)
 {
@@ -235,33 +233,3 @@ std::vector<Accelerometer> Accelerometer::EnumerateAll() {
 
 	return result;
 }
-
-#else
-
-Accelerometer::Accelerometer() {
-	std::cout << "[Accelerometer] Not available on this platform" << std::endl;
-}
-
-Accelerometer::~Accelerometer() = default;
-
-Accelerometer::Accelerometer(Accelerometer&&) noexcept = default;
-Accelerometer& Accelerometer::operator=(Accelerometer&&) noexcept = default;
-
-glm::vec3 Accelerometer::GetAcceleration() {
-	return glm::vec3(0.0f);
-}
-
-void Accelerometer::Calibrate() {}
-
-void Accelerometer::Start(ReadingCallback callback) {
-	(void)callback;
-	std::cout << "[Accelerometer] Not available on this platform" << std::endl;
-}
-
-void Accelerometer::Stop() {}
-
-std::vector<Accelerometer> Accelerometer::EnumerateAll() {
-	return {};
-}
-
-#endif
