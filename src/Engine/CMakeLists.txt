@@ -151,6 +151,14 @@ if(MSVC)
 	target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 else()
 	target_compile_options(Renderer PRIVATE -g)
+	if(EMSCRIPTEN)
+		target_compile_options(Renderer PRIVATE
+			$<$<CONFIG:Debug>:-fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
+		)
+		target_link_options(Renderer PRIVATE
+			$<$<CONFIG:Debug>:-g -gsource-map>
+		)
+	endif()
 endif()
 
 set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
@@ -343,6 +351,14 @@ if(MSVC)
 	target_link_options(Engine PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 else()
 	target_compile_options(Engine PRIVATE -g)
+	if(EMSCRIPTEN)
+		target_compile_options(Engine PRIVATE
+			$<$<CONFIG:Debug>:-fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
+		)
+		target_link_options(Engine PRIVATE
+			$<$<CONFIG:Debug>:-g -gsource-map>
+		)
+	endif()
 endif()
 
 target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)

@@ -39,11 +39,11 @@ PhysicsFactory *Game::GetPhysicsFactory() {
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
 
-	SetClearColor(0.0F, 0.0F, 0.0f);
+	// SetClearColor moved to after NewWindow() call
 
-#ifndef EXCLUDE_JOLT
+	#ifndef EXCLUDE_JOLT
 	impl->PhysicsFactory = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
-#endif
+	#endif
 	
 	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 	

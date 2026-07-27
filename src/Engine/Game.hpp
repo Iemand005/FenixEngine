@@ -157,7 +157,7 @@ class Game : public Renderer {
 	typedef void* (*GLADloadproc)(const char* name);
 
 	template <typename F, typename = std::enable_if_t<std::is_convertible_v<F, GLADloadproc>>>
-	Game(F loadProc) : Game(reinterpret_cast<GLADloadproc>(loadProc)) {}
+	Game(F loadProc) : Renderer(static_cast<GLADloadproc>(loadProc)) {}
 
 	Game(GLADloadproc loadProc);
 
