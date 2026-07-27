@@ -2,6 +2,8 @@
 
 #include "XRGame.hpp"
 
+#define EXCLUDE_JOLT
+
 #ifndef EXCLUDE_JOLT
 #include "physics/PhysicsFactory.hpp"
 #endif
