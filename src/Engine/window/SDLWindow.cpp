@@ -98,6 +98,9 @@ fe::SDLWindow::~SDLWindow() {
 }
 
 fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan) : IWindow(width, height) {
+
+	std::cout << "Creating window with " << (useVulkan? "Vulkan" : "OpenGL") << std::endl;
+
 	SDL_SetHint(SDL_HINT_JOYSTICK_DIRECTINPUT, "1");
 	SDL_SetHint(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, "0");
 	SDL_SetHint(SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS, "0");
