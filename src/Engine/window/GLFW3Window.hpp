@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __EMSCRIPTEN__
+#define FE_EXCLUDE_GLFW
+#endif
+
 #ifndef FE_EXCLUDE_GLFW
 
 #ifdef _WIN32
