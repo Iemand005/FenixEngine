@@ -63,9 +63,9 @@ using DefaultWindow = fe::GLFW3Window;
 namespace fe {
 
 	enum class GraphicsAPI {
-		OpenGL;
-		OpenGLES;
-		Vulkan;
+		OpenGL,
+		OpenGLES,
+		Vulkan
 	};
 
 	struct RendererOptions : WindowOptions {
