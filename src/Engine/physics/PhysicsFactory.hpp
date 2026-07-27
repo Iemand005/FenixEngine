@@ -40,9 +40,7 @@ namespace fe {
 		void EnableGravity();
 		void DisableGravity();
 		void SetGravity(const glm::vec3& gravity);
-		#ifndef EXCLUDE_JOLT
 		void RenderDebug(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix);
-		#endif
 
 		void Bind(PhysicsObject *obj);
 	};

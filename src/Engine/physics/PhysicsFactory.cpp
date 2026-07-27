@@ -1,5 +1,4 @@
 #include <vector>
-#ifndef EXCLUDE_JOLT
 
 #include <iostream>
 #include <cstdarg>
@@ -250,5 +249,3 @@ void PhysicsFactory::Bind(PhysicsObject *obj) {
 	obj->BindPhysicsSystem(impl->physicsSystem);
 #endif
 }
-
-#endif
