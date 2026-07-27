@@ -61,6 +61,10 @@ if (EMSCRIPTEN)
     add_definitions(-DFE_EXCLUDE_OPENXR)
 endif()
 
+if (FE_EXCLUDE_KISSFFT)
+    add_definitions(-DFE_EXCLUDE_KISSFFT)
+endif()
+
 if (NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	add_subdirectory(${EXTERNAL_DIR}/glfw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/glfw)
 endif()
@@ -229,8 +233,6 @@ endif()
 
 if(FE_EXCLUDE_JOLT)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
 	)

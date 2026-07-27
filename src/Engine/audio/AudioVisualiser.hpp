@@ -4,8 +4,11 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <cmath>
 
+#ifndef FE_EXCLUDE_KISSFFT
 #include "kiss_fftr.h"
+#endif
 
 #ifdef _WIN32
 #include <audio/WasapiLoopbackCapture.hpp>
@@ -19,14 +22,20 @@ const int BINS = (FFT_SIZE / 2) + 1;
 const int NUM_BARS = 32;
 
 std::vector<float> audioSamples;         
+#ifndef FE_EXCLUDE_KISSFFT
 kiss_fftr_cfg      fftConfig;            
+#endif
 float              fftInput[FFT_SIZE];  
+#ifndef FE_EXCLUDE_KISSFFT
 kiss_fft_cpx       fftOutput[BINS]; 
+#endif
 
 class AudioVisualiser {
 public:
 	void Init() {
+#ifndef FE_EXCLUDE_KISSFFT
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
+#endif
 #ifdef _WIN32
 		g_loopback.Init();
 #else
@@ -74,6 +83,7 @@ public:
 	bool smoothed = true;
 
 	void UpdateVisualizerData() {
+#ifndef FE_EXCLUDE_KISSFFT
 		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
 
 		for (int i = 0; i < FFT_SIZE; ++i)
@@ -90,11 +100,10 @@ public:
 
 		ComputeBands(magnitudes, BINS, bandMagnitudes, NUM_BARS);
 
-		// if (!smoothed) return;
-
 		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
 		for (int b = 0; b < NUM_BARS; ++b)
 			bandMagnitudesSmoothed[b] = std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f);
+#endif
 	}
 
 };
