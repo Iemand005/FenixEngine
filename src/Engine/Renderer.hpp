@@ -159,11 +159,11 @@ public:
 	}
 
 	Renderer(RendererOptions options) {
-		if (options.loadProc) Init(options.loadProc);
 		CreateRenderDevice(options.useVulkan);
 #ifdef FE_HAS_WINDOW
 		NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan);
 #endif
+		if (options.loadProc) Init(options.loadProc);
 	}
 
 	void Init(GLADloadproc loadProc);

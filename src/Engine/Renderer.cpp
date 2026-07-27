@@ -14,7 +14,8 @@ using namespace fe;
 
 void Renderer::Init(GLADloadproc loadProc) {
 	if (!gladLoadGLLoader(loadProc))
-		throw std::runtime_error("Failed to load OpenGL functions (GLAD)");
+		std::cerr << "Failed to load GLAS dhsit" << std::endl;
+		// throw std::runtime_error("Failed to load OpenGL functions (GLAD)");
 }
 
 void Renderer::EnableWireframe() {
