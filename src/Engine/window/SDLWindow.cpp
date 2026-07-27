@@ -294,7 +294,7 @@ void fe::SDLWindow::OpenFileDialog(FileDialogCallback callback, const char* filt
 			"      var path = '/tmp/uploaded_' + file.name;"
 			"      fs.writeFile(path, bytes, { encoding: 'binary' });"
 			"      console.log('[FileDialog] File written to:', path);"
-			"      Module._emscripten_file_dialog_callback(%ld, path);"
+			"      Module.ccall('emscripten_file_dialog_callback', 'void', ['number', 'string'], [%ld, path]);"
 			"    };"
 			"    reader.readAsArrayBuffer(file);"
 			"  }"
@@ -321,10 +321,10 @@ void SDLCALL fe::SDLWindow::OnFileDialogResult(void* userdata, const char* const
 #ifdef __EMSCRIPTEN__
 extern "C" void emscripten_file_dialog_callback(intptr_t userdata, const char* path) {
 	char script[512];
-	snprintf(script, sizeof(script), "console.log('[FileDialog] C++ callback invoked, path ptr:', %p, 'is_null:', %d, 'first_char:', %c);", path, (path == nullptr), (path && path[0] != '\0') ? path[0] : 'N');
+	snprintf(script, sizeof(script), "console.log('[FileDialog] C++ callback invoked with path:', UTF8ToString(%p));", path);
 	emscripten_run_script(script);
 	auto cb = reinterpret_cast<fe::IWindow::FileDialogCallback*>(userdata);
-	if (cb && path && path[0] != '\0') {
+	if (cb && path) {
 		(*cb)(path);
 	}
 	delete cb;
