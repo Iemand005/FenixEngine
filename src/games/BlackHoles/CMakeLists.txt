@@ -45,7 +45,7 @@ target_link_libraries(Tunnel PRIVATE
 	Engine
 )
 
-if(NOT WIN32)
+if(NOT WIN32 AND NOT EMSCRIPTEN)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
 target_include_directories(Tunnel PRIVATE ${PIPEWIRE_INCLUDE_DIRS})

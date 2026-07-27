@@ -6,6 +6,10 @@ project(Win7Compat C)
 # path so the linker resolves symbols here first, before hitting the Windows 10 SDK's
 # kernel32.lib which forwards through api-ms-win-core-libraryloader-l1-2-0.dll.
 
+if (EMSCRIPTEN)
+    return()
+endif()
+
 # Find lib.exe (MSVC's library manager)
 find_program(LIB_EXE lib.exe
     HINTS

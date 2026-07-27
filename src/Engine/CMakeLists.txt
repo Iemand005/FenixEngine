@@ -8,6 +8,20 @@ option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
+if(EMSCRIPTEN)
+    message(STATUS "Emscripten build detected — forcing web-compatible feature set")
+
+    set(FE_EXCLUDE_GLFW   ON  CACHE BOOL "Exclude GLFW from the build"       FORCE)
+    set(FE_EXCLUDE_JOLT   ON  CACHE BOOL "Exclude JOLT physics from the build" FORCE)
+    set(FE_EXCLUDE_VULKAN ON  CACHE BOOL "Exclude Vulkan from the build"     FORCE)
+    set(FE_EXCLUDE_OPENXR ON  CACHE BOOL "Exclude OpenXR from the build"     FORCE)
+    set(FE_INCLUDE_OPENVR OFF CACHE BOOL "Include OpenVR"                   FORCE)
+
+    set(SDL_WASAPI    OFF CACHE BOOL "" FORCE)
+    set(SDL_GAMEINPUT OFF CACHE BOOL "" FORCE)
+    set(SDL_JOYSTICK  ON  CACHE BOOL "" FORCE)
+endif()
+
 # set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
