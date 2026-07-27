@@ -378,3 +378,22 @@ endif()
 target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)
 
 
+if(EMSCRIPTEN)
+    target_compile_options(Renderer PRIVATE
+        -g
+        -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}"
+    )
+    target_link_options(Renderer PRIVATE
+        -g
+        -gsource-map
+    )
+
+	target_compile_options(Engine PRIVATE
+        -g
+        -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}"
+    )
+    target_link_options(Engine PRIVATE
+        -g
+        -gsource-map
+    )
+endif()
