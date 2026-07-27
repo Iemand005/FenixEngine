@@ -375,6 +375,7 @@ else()
 	endif()
 endif()
 
+target_compile_definitions(Renderer PRIVATE JPH_DEBUG_RENDERER)
 target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)
 
 
