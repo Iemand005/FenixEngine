@@ -92,6 +92,13 @@ public:
 			SDL_RumbleJoystick(handle, val, val, duration_ms);
 		}
 
+		void Rumble(float lowFrequency, float highFrequency, Uint32 duration_ms = UINT32_MAX) {
+			if (!handle) return;
+			Uint16 low = static_cast<Uint16>(std::clamp(lowFrequency, 0.0f, 1.0f) * 65535.0f);
+			Uint16 high = static_cast<Uint16>(std::clamp(highFrequency, 0.0f, 1.0f) * 65535.0f);
+			SDL_RumbleJoystick(handle, low, high, duration_ms);
+		}
+
 		void StopRumble() { Rumble(0.0f, 0); }
 
 		bool IsHaptic() const { return haptic != nullptr; }
