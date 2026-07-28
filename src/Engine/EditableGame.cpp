@@ -401,9 +401,12 @@ void fe::EditableGame::DrawDebugUI() {
 		ImGui::Text("%zu joystick(s)", joysticks.size());
 
 		static std::vector<float> constForceLevels, shakeMagnitudes, springCoeffs;
+		static std::vector<float> rumbleIntensities, rumbleDurations;
 		constForceLevels.resize(joysticks.size());
 		shakeMagnitudes.resize(joysticks.size());
 		springCoeffs.resize(joysticks.size());
+		rumbleIntensities.resize(joysticks.size(), 0.5f);
+		rumbleDurations.resize(joysticks.size(), 500.0f);
 		for (size_t i = 0; i < joysticks.size(); ++i) {
 			ImGui::Text("%zu: %s", i, joysticks[i].GetName().c_str());
 			ImGui::SameLine();
@@ -423,6 +426,11 @@ void fe::EditableGame::DrawDebugUI() {
 			}
 
 			ImGui::Indent();
+			ImGui::SliderFloat(("Intensity##rumble" + std::to_string(i)).c_str(), &rumbleIntensities[i], 0.0f, 1.0f);
+			ImGui::SliderFloat(("Duration (ms)##rumble" + std::to_string(i)).c_str(), &rumbleDurations[i], 50.0f, 5000.0f, "%.0f ms");
+			if (ImGui::Button(("Rumble##" + std::to_string(i)).c_str())) {
+				joysticks[i].Rumble(rumbleIntensities[i], static_cast<Uint32>(rumbleDurations[i]));
+			}
 			if (ImGui::SliderFloat(("Const Force##c" + std::to_string(i)).c_str(), &constForceLevels[i], -1.0f, 1.0f)) {
 				Sint16 level = static_cast<Sint16>(constForceLevels[i] * 32767.0f);
 				SDL_HapticDirection dir{};
