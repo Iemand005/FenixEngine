@@ -81,6 +81,11 @@ public:
 			return SDL_GetJoystickAxis(handle, index) / 32768.0f;
 		}
 
+		Uint8 GetButton(int index) {
+			if (!handle) return 0;
+			return SDL_GetJoystickButton(handle, index);
+		}
+
 		void Rumble(float strength, Uint32 duration_ms = UINT32_MAX) {
 			if (!handle) return;
 			Uint16 val = static_cast<Uint16>(std::clamp(strength, 0.0f, 1.0f) * 65535.0f);
