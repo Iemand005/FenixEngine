@@ -175,16 +175,8 @@ if(MSVC)
 	target_compile_options(Renderer PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
 	target_link_options(Renderer PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
-else()
+elseif(NOT EMSCRIPTEN)
 	target_compile_options(Renderer PRIVATE -g)
-	if(EMSCRIPTEN)
-		target_compile_options(Renderer PRIVATE
-			$<$<CONFIG:Debug>:-fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
-		)
-		target_link_options(Renderer PRIVATE
-			$<$<CONFIG:Debug>:-g -gsource-map>
-		)
-	endif()
 endif()
 
 set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
@@ -377,16 +369,8 @@ if(MSVC)
 	target_compile_options(Engine PRIVATE $<$<CONFIG:Debug>:/Zi>)
 
 	target_link_options(Engine PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
-else()
+elseif(NOT EMSCRIPTEN)
 	target_compile_options(Engine PRIVATE -g)
-	if(EMSCRIPTEN)
-		target_compile_options(Engine PRIVATE
-			$<$<CONFIG:Debug>:-fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
-		)
-		target_link_options(Engine PRIVATE
-			$<$<CONFIG:Debug>:-g -gsource-map>
-		)
-	endif()
 endif()
 
 target_compile_definitions(Renderer PRIVATE JPH_DEBUG_RENDERER)
@@ -394,21 +378,30 @@ target_compile_definitions(Engine PRIVATE JPH_DEBUG_RENDERER)
 
 
 if(EMSCRIPTEN)
+    # Debug: symbols + source maps
     target_compile_options(Renderer PRIVATE
-        -g
-        -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}"
+        $<$<CONFIG:Debug>:-g -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
     )
     target_link_options(Renderer PRIVATE
-        -g
-        -gsource-map
+        $<$<CONFIG:Debug>:-g -gsource-map>
+    )
+    target_compile_options(Renderer PRIVATE
+        $<$<CONFIG:Release>:-Oz -flto>
+    )
+    target_link_options(Renderer PRIVATE
+        $<$<CONFIG:Release>:-Oz -flto>
     )
 
-	target_compile_options(Engine PRIVATE
-        -g
-        -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}"
+    target_compile_options(Engine PRIVATE
+        $<$<CONFIG:Debug>:-g -fdebug-compilation-dir="${CMAKE_SOURCE_DIR}">
     )
     target_link_options(Engine PRIVATE
-        -g
-        -gsource-map
+        $<$<CONFIG:Debug>:-g -gsource-map>
+    )
+    target_compile_options(Engine PRIVATE
+        $<$<CONFIG:Release>:-Oz -flto>
+    )
+    target_link_options(Engine PRIVATE
+        $<$<CONFIG:Release>:-Oz -flto>
     )
 endif()
