@@ -119,6 +119,7 @@ set(RENDERER_SOURCES
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
 	Graphics/VulkanRenderDevice.cpp
+	Graphics/VulkanDevice.cpp
 	ModelLoader.cpp
 )
 
@@ -127,7 +128,7 @@ if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
 endif()
 
 if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES Graphics/VulkanRenderDevice.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES Graphics/VulkanRenderDevice.cpp Graphics/VulkanDevice.cpp)
 endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
