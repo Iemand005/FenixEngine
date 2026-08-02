@@ -99,7 +99,7 @@ public:
 			SDL_RumbleJoystick(handle, low, high, duration_ms);
 		}
 
-		void StopRumble() { Rumble(0.0f, 0); }
+		void StopRumble() { Rumble(0.0f, 0u); }
 
 		bool IsHaptic() const { return haptic != nullptr; }
 		Uint32 GetHapticFeatures() const { return hapticFeatures; }
