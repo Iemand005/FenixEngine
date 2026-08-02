@@ -107,9 +107,23 @@ if(MSVC)
     endif()
 endif()
 
-file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/*.c
+set(SOURCE_FILES
+	accessories/Aura.cpp
+	EditableGame.cpp
+	engine.cpp
+	Game.cpp
+	Graphics/OpenGLGPUBuffers.cpp
+	Graphics/OpenGLGPUTexture.cpp
+	Graphics/OpenGLRenderDevice.cpp
+	ImageLoader.cpp
+	Mesh.cpp
+	physics/BasicDebugRenderer.cpp
+	physics/PhysicsFactory.cpp
+	physics/PhysicsObject.cpp
+	physics/PhysicsVehicle.cpp
+	Scene.cpp
+	Sensors/Accelerometer.cpp
+	XRGame.cpp
 )
 
 
@@ -186,7 +200,7 @@ endif()
 
 set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
 
-file(GLOB_RECURSE IMGUI_SOURCE_FILES
+set(IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui.cpp
 	${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
 	${IMGUI_DIR}/backends/imgui_impl_sdlgpu3.cpp
@@ -204,34 +218,10 @@ endif()
 
 set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 
-# Exclude incompatible sources for Emscripten builds
-if(EMSCRIPTEN)
-	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
-		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsFactory.cpp
-		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
-		# ${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
-		# ${CMAKE_CURRENT_SOURCE_DIR}/Sensors/Accelerometer.cpp
-	)
-endif()
-
-if(FE_EXCLUDE_VULKAN)
-	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/Graphics/VulkanRenderDevice.cpp
-	)
-endif()
-
-if(FE_EXCLUDE_GLFW)
-	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/window/GLFW3Window.cpp
-	)
-endif()
-
 if(FE_EXCLUDE_JOLT)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/PhysicsVehicle.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/physics/BasicDebugRenderer.cpp
+		physics/PhysicsVehicle.cpp
+		physics/BasicDebugRenderer.cpp
 	)
 endif()
 
