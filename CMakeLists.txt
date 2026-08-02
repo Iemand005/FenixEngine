@@ -131,7 +131,7 @@ file(GLOB_RECURSE POOL_SOURCE_FILES
     src/games/Pool/*.cpp
 )
 
-file(GLOB_RECURSE IMGUI_SOURCE_FILES
+set(IMGUI_SOURCE_FILES
     external/imgui/imgui.cpp
     external/imgui/backends/imgui_impl_sdl3.cpp
     external/imgui/backends/imgui_impl_sdlgpu3.cpp
