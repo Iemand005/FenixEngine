@@ -70,6 +70,10 @@ set(IMGUI_SRC
 
 add_executable(main ${SOURCE_FILES} ${IMGUI_SRC})
 
+target_precompile_headers(main PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
+)
+
 set_property(TARGET main PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # For VSCode CMake Tools specifically
@@ -109,6 +113,10 @@ file(GLOB_RECURSE EDITOR_SOURCE_FILES
 
 add_executable(editor ${EDITOR_SOURCE_FILES})
 
+target_precompile_headers(editor PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
+)
+
 set(FE_EXCLUDE_GLFW ON CACHE BOOL "Exclude GLFW from the build" FORCE)
 
 target_include_directories(editor PRIVATE
@@ -137,6 +145,10 @@ file(GLOB_RECURSE IMGUI_SOURCE_FILES
 )
 
 add_executable(pool ${IMGUI_SOURCE_FILES} ${POOL_SOURCE_FILES})
+
+target_precompile_headers(pool PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
+)
 
 target_include_directories(pool PRIVATE
     include
@@ -192,6 +204,10 @@ target_include_directories(pool PRIVATE
 add_executable(AudioTest
     ${IMGUI_SOURCE_FILES}
     src/games/AudioTest/main.cpp
+)
+
+target_precompile_headers(AudioTest PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
 )
 
 target_include_directories(AudioTest PRIVATE

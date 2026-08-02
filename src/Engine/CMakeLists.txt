@@ -132,6 +132,10 @@ endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
 
+target_precompile_headers(Renderer PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
+)
+
 target_include_directories(Renderer PRIVATE
 	../../include
 )
@@ -236,6 +240,10 @@ endif()
 
 add_library(Engine STATIC ${ENGINE_SOURCE_FILES})
 
+target_precompile_headers(Engine PRIVATE
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
+)
+
 if(WIN32)
     set_target_properties(Engine PROPERTIES
         CXX_STANDARD 17
@@ -245,8 +253,11 @@ if(WIN32)
 	if(MSVC)
         target_compile_options(Engine PRIVATE 
             /permissive-   # Turns off MSVC non-standard extensions
-            /Zc:preprocessor # Forces modern, standard C++ preprocessor
         )
+        # Modern preprocessor needs MSVC 19.25+ (VS2019 16.5+); v141 doesn't support it
+        if(MSVC_VERSION GREATER_EQUAL 1925)
+            target_compile_options(Engine PRIVATE /Zc:preprocessor)
+        endif()
     endif()
 
     target_compile_definitions(Engine PRIVATE
