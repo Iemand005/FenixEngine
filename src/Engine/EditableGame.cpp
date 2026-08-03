@@ -14,7 +14,9 @@
 #include "Camera.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
+#ifndef EXCLUDE_JOLT
 #include "physics/BasicDebugRenderer.hpp"
+#endif
 
 using namespace fe;
 
