@@ -60,7 +60,7 @@ public:
 	// void* GetNativeHandle() override { return glfwGetWin32Window(impl->window); }
 	// void* GetSDLGLContext() override { return nullptr; }
 
-	//GLFWwindow* GetWindow() { return impl->window; }
+	GLFWwindow* GetWindow();
 
 	VulkanExtensions GetVulkanExtensions() override;
 	void* CreateVulkanSurface(void* instance) override;
@@ -69,15 +69,6 @@ public:
 
 	~GLFW3Window() override;
 
-private:
-	struct Impl;
-	std::unique_ptr<Impl> impl;
-	bool shouldClose = false;
-	bool capturingMouse = false;
-	bool cursorVisible = true;
-};
-
-}
 
 
 	void SwapBuffers() const override;
