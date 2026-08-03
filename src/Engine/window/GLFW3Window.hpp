@@ -38,7 +38,7 @@ public:
 	// void Resize(int w, int h) override { glfwSetWindowSize(impl->window, w, h); }
 	// void Move(int x, int y) override { glfwSetWindowPos(impl->window, x, y); }
 	// void SetBordered(bool enabled) override;
-	void SetFullscreen(bool enabled = false) override;
+	// void SetFullscreen(bool enabled = false) override;
 
 	// void SetVSync(bool enabled) override;
 
