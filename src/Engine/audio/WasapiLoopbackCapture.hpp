@@ -68,6 +68,8 @@ public:
         }
     }
 
+    bool IsCapturing() const { return captureClient != nullptr; }
+
     ~WasapiLoopbackCapture() {
         if (audioClient) audioClient->Stop();
         if (captureClient) captureClient->Release();

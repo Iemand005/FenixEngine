@@ -10,7 +10,9 @@
 #include "kiss_fftr.h"
 #endif
 
-#ifdef _WIN32
+#ifdef __EMSCRIPTEN__
+#include <audio/WebAudioCapture.hpp>
+#elif defined(_WIN32)
 #include <audio/WasapiLoopbackCapture.hpp>
 #else
 #include <audio/PipeWireLoopbackCapture.hpp>
@@ -36,7 +38,9 @@ public:
 #ifndef FE_EXCLUDE_KISSFFT
 		fftConfig = kiss_fftr_alloc(FFT_SIZE, 0, nullptr, nullptr);
 #endif
-#ifdef _WIN32
+#ifdef __EMSCRIPTEN__
+		g_webAudio.Init();
+#elif defined(_WIN32)
 		g_loopback.Init();
 #else
 		g_pwLoopback.Init();
@@ -49,16 +53,16 @@ public:
 	}
 
 	void Poll() {
-#ifdef _WIN32
-    g_loopback.Poll(audioSamples);
+#ifdef __EMSCRIPTEN__
+		g_webAudio.Poll(audioSamples);
+#elif defined(_WIN32)
+		g_loopback.Poll(audioSamples);
 #else
-#ifndef __EMSCRIPTEN__
-    g_pwLoopback.Poll(audioSamples);
+		g_pwLoopback.Poll(audioSamples);
 #endif
-#endif
-    if (audioSamples.size() > FFT_SIZE) {
-        audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
-    }
+		if (audioSamples.size() > FFT_SIZE) {
+			audioSamples.erase(audioSamples.begin(), audioSamples.end() - FFT_SIZE);
+		}
 	}
 
 	
@@ -83,6 +87,26 @@ public:
 	bool smoothed = true;
 
 	void UpdateVisualizerData() {
+#ifdef __EMSCRIPTEN__
+		// The browser (AnalyserNode) already computed the FFT; reuse its bins
+		// directly instead of compiling kissfft into the wasm. The browser
+		// reports near-full-scale (0..1) magnitudes, so calibrate them down to
+		// roughly match the kissfft path's sqrt(r*r+i*i)/FFT_SIZE scale.
+		const float WEB_BIN_SCALE = 0.35f;
+		int binCount = g_webAudio.GetBinCount();
+		if (binCount < 2) return;
+
+		float magnitudes[WebAudioCapture::MAX_BINS];
+		const float* src = g_webAudio.GetMagnitudes();
+		for (int i = 0; i < binCount; ++i)
+			magnitudes[i] = src[i] * WEB_BIN_SCALE;
+
+		ComputeBands(magnitudes, binCount, bandMagnitudes, NUM_BARS);
+
+		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
+		for (int b = 0; b < NUM_BARS; ++b)
+			bandMagnitudesSmoothed[b] = std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f);
+#else
 #ifndef FE_EXCLUDE_KISSFFT
 		if (audioSamples.size() < FFT_SIZE || !fftConfig) return;
 
@@ -103,6 +127,52 @@ public:
 		// Smooth: jump up instantly, decay slowly — the classic "VU meter" feel
 		for (int b = 0; b < NUM_BARS; ++b)
 			bandMagnitudesSmoothed[b] = std::max(bandMagnitudes[b], bandMagnitudesSmoothed[b] * 0.85f);
+#endif
+#endif
+	}
+
+	// Cross-platform accessors so games can read bins + waveform regardless of
+	// the backend (WASAPI/PipeWire FFT on desktop, browser AnalyserNode on web).
+
+	bool IsCapturing() const {
+#ifdef __EMSCRIPTEN__
+		return g_webAudio.IsCapturing();
+#elif defined(_WIN32)
+		return g_loopback.IsCapturing();
+#else
+		return g_pwLoopback.IsCapturing();
+#endif
+	}
+
+	int GetFrequencyBinCount() const {
+#ifdef __EMSCRIPTEN__
+		return g_webAudio.GetBinCount();
+#else
+		return BINS;
+#endif
+	}
+
+	const float* GetFrequencyMagnitudes() const {
+#ifdef __EMSCRIPTEN__
+		return g_webAudio.GetMagnitudes();
+#else
+		return nullptr;
+#endif
+	}
+
+	int GetTimeDomainCount() const {
+#ifdef __EMSCRIPTEN__
+		return g_webAudio.GetTimeCount();
+#else
+		return 0;
+#endif
+	}
+
+	const float* GetTimeDomainSamples() const {
+#ifdef __EMSCRIPTEN__
+		return g_webAudio.GetTimeDomain();
+#else
+		return nullptr;
 #endif
 	}
 
