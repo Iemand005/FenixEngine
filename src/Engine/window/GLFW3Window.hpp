@@ -60,14 +60,14 @@ public:
 	// void* GetNativeHandle() override { return glfwGetWin32Window(impl->window); }
 	// void* GetSDLGLContext() override { return nullptr; }
 
-	GLFWwindow* GetWindow();
+	// GLFWwindow* GetWindow();
 
-	VulkanExtensions GetVulkanExtensions() override;
-	void* CreateVulkanSurface(void* instance) override;
+	// VulkanExtensions GetVulkanExtensions() override;
+	// void* CreateVulkanSurface(void* instance) override;
 
-	bool ShouldClose() override { return glfwWindowShouldClose(impl->window); }
+	// bool ShouldClose() override { return glfwWindowShouldClose(impl->window); }
 
-	~GLFW3Window() override;
+	// ~GLFW3Window() override;
 
 
 
