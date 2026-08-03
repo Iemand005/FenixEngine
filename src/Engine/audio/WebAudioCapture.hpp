@@ -19,8 +19,8 @@
 
 class WebAudioCapture {
 public:
-	static const int MAX_BINS = 1024;
-	static const int MAX_TIME = 2048;
+	static constexpr int MAX_BINS = 1024;
+	static constexpr int MAX_TIME = 2048;
 
 	bool Init(int = 0, int = 0) {
 		std::fill(m_magnitudes, m_magnitudes + MAX_BINS, 0.0f);
