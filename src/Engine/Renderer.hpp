@@ -557,8 +557,6 @@ public:
 
 		renderDevice->SubmitFrame();
 		for (auto& dev : renderDevices) {
-			// if (dev->IsVulkan()) dev->SubmitFrame();
-			// camera.
 			auto windows = dev->GetWindows();
 			for (auto &window : windows) {
 				camera->SetAspect(window->width, window->height);
