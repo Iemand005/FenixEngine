@@ -14,7 +14,7 @@
 #include "Camera.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
-// #include "physics/BasicDebugRenderer.hpp"
+#include "physics/BasicDebugRenderer.hpp"
 
 using namespace fe;
 
