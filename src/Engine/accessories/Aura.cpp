@@ -6,11 +6,16 @@
 #include <emscripten/emscripten.h>
 
 // Emscripten bridge: forward the requested colour to the host page's WebAura
-// (WebHID) instance. The host registers the target via Module.onAuraColor(r,g,b).
-EM_JS(void, FE_AuraSetColor, (int r, int g, int b), {
-    var m = typeof Module !== 'undefined' ? Module : null;
-    if (m && typeof m.onAuraColor === 'function') m.onAuraColor(r, g, b);
-});
+// (WebHID) instance. The host registers the target via Module["onAuraColor"].
+// String-literal property access survives the Closure Compiler's renaming.
+extern "C" {
+EMSCRIPTEN_KEEPALIVE void FE_AuraSetColor(int r, int g, int b) {
+	EM_ASM({
+		var m = typeof Module !== 'undefined' ? Module : null;
+		if (m && typeof m["onAuraColor"] === 'function') m["onAuraColor"]($0, $1, $2);
+	}, r, g, b);
+}
+}
 
 struct Aura::Impl { void* dev = nullptr; };
 Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {}
