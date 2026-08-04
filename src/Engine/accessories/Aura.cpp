@@ -3,11 +3,24 @@
 
 #if defined(__EMSCRIPTEN__)
 // Aura is not supported on Emscripten/Web
+#include <emscripten/emscripten.h>
+
+// Emscripten bridge: forward the requested colour to the host page's WebAura
+// (WebHID) instance. The host registers the target via Module.onAuraColor(r,g,b).
+EM_JS(void, FE_AuraSetColor, (int r, int g, int b), {
+    var m = typeof Module !== 'undefined' ? Module : null;
+    if (m && typeof m.onAuraColor === 'function') m.onAuraColor(r, g, b);
+});
+
 struct Aura::Impl { void* dev = nullptr; };
 Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {}
 Aura::~Aura() {}
 bool Aura::IsOpen() const { return false; }
-bool Aura::SetColor(char, char, char, bool) { return false; }
+bool Aura::SetColor(char r, char g, char b, bool force) {
+    FE_AuraSetColor((int)(unsigned char)r, (int)(unsigned char)g, (int)(unsigned char)b);
+    auraInitialized = true;
+    return true;
+}
 #else
 
 #include <vector>
