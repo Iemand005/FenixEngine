@@ -117,8 +117,6 @@ target_precompile_headers(editor PRIVATE
 	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
 )
 
-set(FE_EXCLUDE_GLFW ON CACHE BOOL "Exclude GLFW from the build" FORCE)
-
 target_include_directories(editor PRIVATE
     include
     src
