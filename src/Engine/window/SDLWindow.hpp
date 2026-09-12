@@ -55,6 +55,13 @@ public:
 
 	void Move(int x, int y);
 
+	// Windows-only: renders frames while the window is being dragged/resized
+	// (the Win32 modal move/resize loop otherwise freezes the renderer).
+	void EnableLiveResizePump();
+	bool LiveResizePump();
+
+	std::function<void()> onLiveMoveResize;
+
 	void SetBordered(bool enabled);
 	void SetFullscreen(bool enabled = false) override;
 	

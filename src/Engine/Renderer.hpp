@@ -332,6 +332,13 @@ public:
 			this->Resize(width, height);
 		};
 
+		window->onLiveMoveResize = [this]() {
+			this->Redraw();
+		};
+#ifdef _WIN32
+		window->EnableLiveResizePump();
+#endif
+
 		// window->mouseMoveEvent = [this](int x, int y) {
 		//   MouseMove(x, y);
 		// };

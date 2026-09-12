@@ -30,20 +30,55 @@ using namespace fe;
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
+// While the user drags the title bar or the resize border, Windows runs a modal
+// message loop (WM_ENTERSIZEMOVE) that keeps the engine's Step() from running,
+// so rendering freezes for the duration of the drag. We subclass SDL's window
+// proc to keep rendering frames from inside that modal loop.
+namespace {
 
-inline LRESULT CALLBACK CustomWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	WNDPROC ogProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	LRESULT res = CallWindowProc(ogProc, hwnd, msg, wParam, lParam);
-	
+constexpr wchar_t kLivePumpProp[] = L"FenixLivePumpHost";
+constexpr UINT_PTR kLivePumpTimerId = 0x4645;
+
+struct LivePumpHost {
+	fe::SDLWindow* window = nullptr;
+	WNDPROC originalProc = nullptr;
+};
+
+LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	auto* host = static_cast<LivePumpHost*>(GetPropW(hwnd, kLivePumpProp));
+	WNDPROC original = host ? host->originalProc
+		: (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
+	LRESULT result = CallWindowProcW(original, hwnd, msg, wParam, lParam);
+
+	fe::SDLWindow* window = host ? host->window : nullptr;
+	if (!window) return result;
+
+	// SDL uses its own WM_ENTERSIZEMOVE timer (id == SDL_IterateMainCallbacks)
+	// for live resize; ours is separate and never swallows SDL's messages.
 	switch (msg) {
+		case WM_ENTERSIZEMOVE:
+			SetTimer(hwnd, kLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
+			window->LiveResizePump();
+			break;
+		case WM_EXITSIZEMOVE:
+			KillTimer(hwnd, kLivePumpTimerId);
+			break;
 		case WM_MOVING:
-		case WM_TIMER: {
-			DwmFlush();
-		}
+		case WM_SIZING:
+			window->LiveResizePump();
+			break;
+		case WM_TIMER:
+			if (wParam == kLivePumpTimerId) {
+				window->LiveResizePump();
+				return 0;
+			}
+			break;
 	}
-	
-	return res;
+
+	return result;
 }
+
+} // namespace
 #endif
 
 inline void CheckError(bool success = false) {
@@ -78,19 +113,7 @@ struct fe::SDLWindow::Impl {
   SDL_Window* window = nullptr;
   SDL_GLContext gl_context = nullptr;
 
-  void SDL_FlushOnResizeAndMove(SDL_Window* window) {
-#ifdef WIN32
-    HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-    if (hwnd) {
-      WNDPROC ogProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)CustomWndProc);
-      SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(ogProc));
-    }
-#endif
-  }
-
-    
-
-  
+  Uint64 lastLivePumpTick = 0;
 }; // Impl
 
 fe::SDLWindow::~SDLWindow() {
@@ -343,12 +366,58 @@ void fe::SDLWindow::Destroy() {
 		impl->gl_context = nullptr;
 	}
 
+#ifdef _WIN32
+	if (impl->window) {
+		HWND hwnd = GetNativeWindow();
+		if (hwnd) {
+			if (auto* host = static_cast<LivePumpHost*>(RemovePropW(hwnd, kLivePumpProp))) {
+				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)LivePumpWndProc)
+					SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)host->originalProc);
+				delete host;
+			}
+		}
+	}
+#endif
+
 	if (impl->window) {
 		SDL_DestroyWindow(impl->window);
 		impl->window = nullptr;
 	}
 
 	SDL_Quit();
+}
+
+void fe::SDLWindow::EnableLiveResizePump() {
+#ifdef _WIN32
+	HWND hwnd = GetNativeWindow();
+	if (!hwnd) return;
+	if (GetPropW(hwnd, kLivePumpProp)) return;
+
+	auto* host = new LivePumpHost();
+	host->window = this;
+	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)LivePumpWndProc);
+	SetPropW(hwnd, kLivePumpProp, host);
+#endif
+}
+
+bool fe::SDLWindow::LiveResizePump() {
+#ifdef _WIN32
+	Uint64 now = SDL_GetTicks();
+	if (now - impl->lastLivePumpTick < 16) return false;
+	impl->lastLivePumpTick = now;
+
+	int w = 0, h = 0;
+	SDL_GetWindowSize(impl->window, &w, &h);
+	if (w > 0 && h > 0 && (w != width || h != height)) {
+		width = w;
+		height = h;
+		if (resizeEvent) resizeEvent(w, h);
+	}
+	if (onLiveMoveResize) onLiveMoveResize();
+	return true;
+#else
+	return false;
+#endif
 }
 
 SDL_Window* fe::SDLWindow::GetWindow() const { return impl->window; }
