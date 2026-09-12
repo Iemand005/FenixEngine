@@ -163,11 +163,12 @@ bool fe::GLFW3Window::HideMouse() {
 }
 
 void fe::GLFW3Window::Show() {
-	// TODO: impl
+	glfwShowWindow(impl->window);
+	glfwFocusWindow(impl->window);
 }
 
 void fe::GLFW3Window::Hide() {
-	
+	glfwHideWindow(impl->window);
 }
 
 void fe::GLFW3Window::SetTitle(const char *title) {
@@ -186,7 +187,7 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 }
 
 void GLFW3Window::MakeCurrentGLContext() const {
-	// glfwMakeContextCurrent(GetWindow());
+	glfwMakeContextCurrent(GetWindow());
 }
 
 void GLFW3Window::UnbindGLContext() const {
