@@ -187,7 +187,7 @@ void fe::GLFW3Window::GoBorderlessFullscreen() {
 }
 
 void GLFW3Window::MakeCurrentGLContext() const {
-	glfwMakeContextCurrent(GetWindow());
+	glfwMakeContextCurrent(impl->window);
 }
 
 void GLFW3Window::UnbindGLContext() const {
