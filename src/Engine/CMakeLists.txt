@@ -89,6 +89,8 @@ endif()
 add_subdirectory(${EXTERNAL_DIR}/SDL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sdl)
 if (NOT EMSCRIPTEN AND NOT FE_EXCLUDE_OPENXR)
 	add_subdirectory(${EXTERNAL_DIR}/OpenXR-SDK ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/openxr)
+endif()
+if (NOT EMSCRIPTEN AND NOT FE_EXCLUDE_KISSFFT)
 	add_subdirectory(${EXTERNAL_DIR}/kissfft ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kissfft)
 endif()
 
@@ -265,6 +267,10 @@ endif()
 
 if(FE_EXCLUDE_VULKAN)
 	add_compile_definitions(FE_EXCLUDE_VULKAN)
+endif()
+
+if(FE_EXCLUDE_OPENXR)
+	add_compile_definitions(FE_EXCLUDE_OPENXR)
 endif()
 
 target_include_directories(Engine PRIVATE
