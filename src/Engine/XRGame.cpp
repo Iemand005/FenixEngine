@@ -515,6 +515,8 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 bool XRGame::IsInstanceValid() {
 #ifndef FE_EXCLUDE_OPENXR
 	return impl->instance != XR_NULL_HANDLE;
+#else
+	return false;
 #endif
 }
 
