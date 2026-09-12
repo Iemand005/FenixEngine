@@ -114,6 +114,13 @@ public:
 	void SetAnyKeyCallback(std::function<void()> cb) { onAnyKey = std::move(cb); }
 	void SetFramebufferResizeCallback(std::function<void(int width, int height)> cb) { onFramebufferResize = std::move(cb); }
 
+	// Windows-only: renders frames while the window is being dragged/resized
+	// (the Win32 modal move/resize loop otherwise freezes the renderer).
+	void EnableLiveResizePump();
+	bool LiveResizePump();
+
+	std::function<void()> onLiveMoveResize;
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

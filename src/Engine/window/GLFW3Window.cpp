@@ -20,9 +20,60 @@ namespace fe {
 
 struct GLFW3Window::Impl {
     GLFWwindow* window = nullptr;
+    unsigned long long lastLivePumpTick = 0;
 };
 
 }
+
+#if defined(_WIN32)
+// While the user drags the title bar or the resize border, Windows runs a modal
+// message loop (WM_ENTERSIZEMOVE) that keeps the game's render loop from
+// running, so rendering freezes for the duration of the drag. We subclass GLFW's
+// window proc to keep rendering frames from inside that modal loop.
+namespace {
+
+constexpr wchar_t kLivePumpProp[] = L"FenixGLFWLivePumpHost";
+constexpr UINT_PTR kLivePumpTimerId = 0x4646;
+
+struct LivePumpHost {
+    fe::GLFW3Window* window = nullptr;
+    WNDPROC originalProc = nullptr;
+};
+
+LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto* host = static_cast<LivePumpHost*>(GetPropW(hwnd, kLivePumpProp));
+    WNDPROC original = host ? host->originalProc
+        : (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
+    LRESULT result = CallWindowProcW(original, hwnd, msg, wParam, lParam);
+
+    fe::GLFW3Window* window = host ? host->window : nullptr;
+    if (!window) return result;
+
+    switch (msg) {
+        case WM_ENTERSIZEMOVE:
+            SetTimer(hwnd, kLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
+            window->LiveResizePump();
+            break;
+        case WM_EXITSIZEMOVE:
+            KillTimer(hwnd, kLivePumpTimerId);
+            break;
+        case WM_MOVING:
+        case WM_SIZING:
+            window->LiveResizePump();
+            break;
+        case WM_TIMER:
+            if (wParam == kLivePumpTimerId) {
+                window->LiveResizePump();
+                return 0;
+            }
+            break;
+    }
+
+    return result;
+}
+
+} // namespace
+#endif
 fe::GLFW3Window::GLFW3Window(std::string title, int width, int height, bool hidden, bool fullscreen, WindowOptions options, bool useVulkan) : IWindow(width, height), title(title) {
 	impl = std::make_unique<Impl>();
 	InitGlfw(title, fullscreen);
