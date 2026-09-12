@@ -178,8 +178,46 @@ void fe::GLFW3Window::StopMouseCapture() {
 void fe::GLFW3Window::SwapBuffers() const { glfwSwapBuffers(impl->window); }
 
 void fe::GLFW3Window::Destroy() {
+#if defined(_WIN32)
+	if (impl->window) {
+		HWND hwnd = GetNativeWindow();
+		if (hwnd) {
+			if (auto* host = static_cast<LivePumpHost*>(RemovePropW(hwnd, kLivePumpProp))) {
+				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)LivePumpWndProc)
+					SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)host->originalProc);
+				delete host;
+			}
+		}
+	}
+#endif
 	glfwDestroyWindow(impl->window);
 	glfwTerminate();
+}
+
+void fe::GLFW3Window::EnableLiveResizePump() {
+#if defined(_WIN32)
+	HWND hwnd = GetNativeWindow();
+	if (!hwnd) return;
+	if (GetPropW(hwnd, kLivePumpProp)) return;
+
+	auto* host = new LivePumpHost();
+	host->window = this;
+	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)LivePumpWndProc);
+	SetPropW(hwnd, kLivePumpProp, host);
+#endif
+}
+
+bool fe::GLFW3Window::LiveResizePump() {
+#if defined(_WIN32)
+	unsigned long long now = GetTickCount64();
+	if (now - impl->lastLivePumpTick < 16) return false;
+	impl->lastLivePumpTick = now;
+
+	if (onLiveMoveResize) onLiveMoveResize();
+	return true;
+#else
+	return false;
+#endif
 }
 
 fe::GLFW3Window::~GLFW3Window() {
