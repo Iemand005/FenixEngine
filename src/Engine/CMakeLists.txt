@@ -11,12 +11,14 @@ option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 if(EMSCRIPTEN)
     message(STATUS "Emscripten build detected — forcing web-compatible feature set")
 
-    set(FE_EXCLUDE_GLFW   ON  CACHE BOOL "Exclude GLFW from the build"       FORCE)
-    # set(FE_EXCLUDE_JOLT   ON  CACHE BOOL "Exclude JOLT physics from the build" FORCE)
-    set(FE_EXCLUDE_VULKAN ON  CACHE BOOL "Exclude Vulkan from the build"     FORCE)
-    set(FE_EXCLUDE_OPENXR ON  CACHE BOOL "Exclude OpenXR from the build"     FORCE)
-    set(FE_EXCLUDE_KISSFFT ON CACHE BOOL "Escldue KISS beaowoea ooo "                   FORCE)
-    set(FE_INCLUDE_OPENVR OFF CACHE BOOL "Include OpenVR"                   FORCE)
+    # Normal (non-cache) variables on purpose: CACHE ... FORCE here would leak
+    # into sibling projects of the meta build and survive reconfigures.
+    set(FE_EXCLUDE_GLFW   ON)
+    # set(FE_EXCLUDE_JOLT   ON)
+    set(FE_EXCLUDE_VULKAN ON)
+    set(FE_EXCLUDE_OPENXR ON)
+    set(FE_EXCLUDE_KISSFFT ON)
+    set(FE_INCLUDE_OPENVR OFF)
 
     set(SDL_WASAPI    OFF CACHE BOOL "" FORCE)
     set(SDL_GAMEINPUT OFF CACHE BOOL "" FORCE)
@@ -38,9 +40,9 @@ set(KISSFFT_TOOLS OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-set(SDL_WASAPI OFF CACHE BOOL "" FORCE)
-set(SDL_GAMEINPUT OFF CACHE BOOL "" FORCE)
-set(SDL_JOYSTICK ON CACHE BOOL "" FORCE)
+# NOTE: do NOT force SDL_WASAPI / SDL_GAMEINPUT off here. That used to be
+# unconditional, which disabled SDL's WASAPI driver (and audio capture) for
+# every desktop build. The EMSCRIPTEN branch above turns them off for the web.
 
 # set(EXTERNAL_DIR "${EXTERNAL_DIR}")
 set(EXTERNAL_DIR "../../external")

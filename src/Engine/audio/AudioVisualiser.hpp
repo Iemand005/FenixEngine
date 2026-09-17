@@ -1,10 +1,14 @@
 
+#pragma once
+
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <cmath>
+#include <vector>
+#include <algorithm>
 
 #ifndef FE_EXCLUDE_KISSFFT
 #include "kiss_fftr.h"
@@ -23,13 +27,13 @@ const int BINS = (FFT_SIZE / 2) + 1;
 
 const int NUM_BARS = 32;
 
-std::vector<float> audioSamples;         
+inline std::vector<float> audioSamples;         
 #ifndef FE_EXCLUDE_KISSFFT
-kiss_fftr_cfg      fftConfig;            
+inline kiss_fftr_cfg      fftConfig;            
 #endif
-float              fftInput[FFT_SIZE];  
+inline float              fftInput[FFT_SIZE];  
 #ifndef FE_EXCLUDE_KISSFFT
-kiss_fft_cpx       fftOutput[BINS]; 
+inline kiss_fft_cpx       fftOutput[BINS]; 
 #endif
 
 class AudioVisualiser {
