@@ -6,12 +6,19 @@
 #endif
 
 #ifndef FE_EXCLUDE_OPENXR
-#ifdef WIN32
+#ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
 
 #include <Windows.h>
 #include <unknwn.h>
+
+#elif defined(__ANDROID__)
+
+#include <EGL/egl.h>
+#include <jni.h>
+#include <SDL3/SDL_system.h>
+#include "Log.hpp"
 
 #else
 
@@ -21,7 +28,7 @@
 #endif
 #endif
 
-#ifdef XR_USE_PLATFORM_WAYLAND
+#if defined(XR_USE_PLATFORM_WAYLAND) && !defined(__ANDROID__)
 #ifndef FE_EXCLUDE_OPENXR
 #include <wayland-client.h>
 #endif
@@ -55,7 +62,11 @@ struct fe::XRGame::Impl {
 		XrSwapchain swapchain;
 
 		// API-specific swapchain image storage
+#ifdef __ANDROID__
+		std::vector<XrSwapchainImageOpenGLESKHR> swapchainImagesGL;
+#else
 		std::vector<XrSwapchainImageOpenGLKHR> swapchainImagesGL;
+#endif
 		std::vector<XrSwapchainImageVulkanKHR> swapchainImagesVK;
 
 		// Framebuffer handles from renderDevice, indexed [eye][swapchainImage]
@@ -141,7 +152,11 @@ struct fe::XRGame::Impl {
 			swapchainImagesVK.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR});
 			outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImagesVK.data()));
 		} else {
+#ifdef __ANDROID__
+			swapchainImagesGL.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR});
+#else
 			swapchainImagesGL.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
+#endif
 			outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImagesGL.data()));
 		}
 
