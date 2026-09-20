@@ -13,12 +13,10 @@
 
 #if defined(__ANDROID__) && __has_include(<android/log.h>)
 #include <android/log.h>
-#define FOXCRAFT_LOGP(FMT, ...) __android_log_print(ANDROID_LOG_INFO, "FOXCRAFT", FMT, ##__VA_ARGS__)
-#else
-#define FOXCRAFT_LOGP(FMT, ...)
 #endif
 
 #include "WawaDir.hpp"
+#include "Log.hpp"
 
 namespace fe {
 
@@ -79,9 +77,7 @@ namespace fe {
 		if (!file.is_open()) {
 			std::filesystem::path cwd = std::filesystem::current_path();
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
-#if defined(__ANDROID__)
-			FOXCRAFT_LOGP("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
-#endif
+			fe::LogWarning("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
 
 			std::string exeDir = GetExecutableDirectorye();
 			std::string path2 = exeDir + "/" + fileName;// TODO: this slash thing not corss latfromr!

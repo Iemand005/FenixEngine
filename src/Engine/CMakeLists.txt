@@ -125,6 +125,7 @@ endif()
 
 set(SOURCE_FILES
 	accessories/Aura.cpp
+	Android.cpp
 	EditableGame.cpp
 	engine.cpp
 	Game.cpp

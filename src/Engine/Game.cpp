@@ -2,6 +2,8 @@
 
 #include "Game.hpp"
 #include "ModelLoader.hpp"
+#include "Android.hpp"
+#include "Log.hpp"
 
 using namespace fe;
 
@@ -38,6 +40,12 @@ PhysicsFactory *Game::GetPhysicsFactory() {
 
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
+
+	// On Android, make APK assets available on the local filesystem (relative
+	// reads like "resources/shaders/..." work out of the box, same as desktop).
+	if (!AndroidSetupAssets("resources")) {
+		LogError("AndroidSetupAssets failed - resource loading will likely break");
+	}
 
 	// SetClearColor(0.0F, 0.0F, 0.0f); // Moved to after window creation (requires GL context)
 

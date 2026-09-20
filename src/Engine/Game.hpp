@@ -23,6 +23,7 @@
 #include "Character.hpp"
 #include "Object.hpp"
 #include "ShaderProgram.hpp"
+#include "Log.hpp"
 #include "bases.h"
 #include "saver/Level.hpp"
 
@@ -167,7 +168,7 @@ class Game : public Renderer {
 
 	void Init();
 
-	void Log(const std::string& message) { std::cout << message << std::endl; }
+	void Log(const std::string& message) { fe::Log("%s", message.c_str()); }
 
 	PhysicsFactory* GetPhysicsFactory();
 
