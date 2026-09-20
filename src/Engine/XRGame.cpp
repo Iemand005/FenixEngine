@@ -331,14 +331,17 @@ void XRGame::initOpenXR() {
 	} else {
 		auto window = GetWindow<fe::SDLWindow>();
 
-		#ifdef WIN32
+#ifdef WIN32
 			HDC hDC = window->GetDrawingContext();
 			HGLRC hGLRC = window->GetOpenGLRenderingContext();
 			XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
 			gfx.hDC = hDC;
 			gfx.hGLRC = hGLRC;
 			initOpenXR(&gfx);
-		#else
+#else
+#ifdef __ANDROID__
+
+#endif7
 			const char *video_driver = SDL_GetCurrentVideoDriver();
 			if (video_driver != NULL) {
 				std::cout << "Video Driver: " << video_driver << std::endl;
@@ -371,9 +374,9 @@ void XRGame::initOpenXR() {
 					initOpenXR(&gfx);
 				}
 			}
-		#endif
+#endif
 	}
-	#endif
+#endif
 }
 
 void XRGame::initOpenXR(void *next) {
