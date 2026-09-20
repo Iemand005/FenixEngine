@@ -220,7 +220,9 @@ struct fe::XRGame::Impl {
 
 	}
 
-	void Log(const std::string& message) { std::cout << message << std::endl; }
+	// Note: this lives inside the XRGame pimpl. Calling fe::Log("%s", msg.c_str())
+	// so XR diagnostics also reach logcat on Android.
+	void Log(const std::string& message) { fe::Log("%s", message.c_str()); }
 
 	void BeginSession() {
 		#ifndef FE_EXCLUDE_OPENXR
