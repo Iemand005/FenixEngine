@@ -241,11 +241,15 @@ void OpenGLRenderDevice::SetFrontFace(bool ccw) {
 }
 
 void OpenGLRenderDevice::EnableWireframe() {
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+#endif
 }
 
 void OpenGLRenderDevice::DisableWireframe() {
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 }
 
 void OpenGLRenderDevice::BindFramebuffer(int bufferIndex) {

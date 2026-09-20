@@ -18,8 +18,12 @@
 #if defined(__ANDROID__)
 #include <GLES3/gl31.h>
 #include <GLES3/gl3ext.h>
+typedef void* (*GLADloadproc)(const char* name);
+#define gladLoadGLLoader(x) (1)
 #elif defined(__EMSCRIPTEN__)
 #include <GLES3/gl3.h>
+typedef void* (*GLADloadproc)(const char* name);
+#define gladLoadGLLoader(x) (1)
 #else
 #include <glad/glad.h>
 #endif
