@@ -259,6 +259,7 @@ struct fe::XRGame::Impl {
 			case XR_SESSION_STATE_READY:
 				Log("Session state: READY - Should call xrBeginSession");
 				BeginSession();
+				drawVR = true;
 				break;
 			case XR_SESSION_STATE_SYNCHRONIZED:
 				Log("Session state: SYNCHRONIZED");
@@ -268,6 +269,7 @@ struct fe::XRGame::Impl {
 				break;
 			case XR_SESSION_STATE_FOCUSED:
 				Log("Session state: FOCUSED - Can Render AND submit frames");
+				drawVR = true;
 				break;
 			case XR_SESSION_STATE_STOPPING:
 				Log("Session state: STOPPING - Should call xrEndSession");
@@ -305,7 +307,10 @@ struct fe::XRGame::Impl {
 	void outputError(XrResult result) {
 		if (XR_SUCCEEDED(result)) return;
 		char buf[XR_MAX_RESULT_STRING_SIZE];
-		if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
+		if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) {
+			std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
+			Log("OpenXR Error: " + std::string(buf) + " (" + std::to_string(result) + ")");
+		}
 	}
 	#endif
 
