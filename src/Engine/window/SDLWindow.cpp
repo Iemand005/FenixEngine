@@ -766,3 +766,15 @@ unsigned long fe::SDLWindow::GetGLXDrawable() {
 	return SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 }
 #endif
+
+void* fe::SDLWindow::GetEGLDisplay() {
+	return (void*)SDL_EGL_GetCurrentDisplay();
+}
+
+void* fe::SDLWindow::GetEGLConfig() {
+	return (void*)SDL_EGL_GetCurrentConfig();
+}
+
+void* fe::SDLWindow::GetEGLContext() {
+	return (void*)SDL_GL_GetCurrentContext();
+}

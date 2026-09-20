@@ -1,20 +1,30 @@
+#pragma once
 #include "Game.hpp"
 #include "window/IWindow.hpp"
 
-#pragma once
+#ifndef XR_EXTENSION_PROTOTYPES
+#define XR_EXTENSION_PROTOTYPES
+#endif
+
+#if defined(_WIN32)
+#define XR_USE_PLATFORM_WIN32
 #define XR_USE_GRAPHICS_API_OPENGL
 #define XR_USE_GRAPHICS_API_VULKAN
-
-#ifdef WIN32
-#define XR_USE_PLATFORM_WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
+#elif defined(__ANDROID__)
+#define XR_USE_PLATFORM_ANDROID
+#define XR_USE_GRAPHICS_API_OPENGL_ES
+#define XR_USE_GRAPHICS_API_VULKAN
+#include <EGL/egl.h>
+#include <jni.h>
 #else
 #define XR_USE_PLATFORM_WAYLAND
 #define XR_USE_PLATFORM_XLIB
-#define XR_USE_PLATFORM_ANDROID
+#define XR_USE_GRAPHICS_API_OPENGL
+#define XR_USE_GRAPHICS_API_VULKAN
 #endif
 
 #include <memory>

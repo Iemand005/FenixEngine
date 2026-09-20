@@ -123,6 +123,9 @@ public:
 	void UpdateJoysticks();
 
 	void AttachToNativeParent(void* parent);
+	void* GetEGLDisplay();
+	void* GetEGLConfig();
+	void* GetEGLContext();
 #ifdef _WIN32
 	HWND GetNativeWindow();
 	HDC GetDrawingContext();
