@@ -710,6 +710,10 @@ void XRGame::DestroyXR() {
 void XRGame::LaunchVR() {
 	#ifndef FE_EXCLUDE_OPENXR
 	initOpenXR();
+	if (!IsInstanceValid()) {
+		fe::LogWarning("OpenXR instance invalid or no runtime found - staying in standard mode");
+		return;
+	}
 	impl->useVulkan = useVulkan;
 	impl->initSwapchain(renderDevice.get());
 	if (!useVulkan) CheckGLError("after framebuffer setup");
