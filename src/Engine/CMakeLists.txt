@@ -147,7 +147,6 @@ set(SOURCE_FILES
 
 
 set(RENDERER_SOURCES
-	glad/glad.c
 	Renderer.cpp
 	window/SDLWindow.cpp
 	window/GLFW3Window.cpp
@@ -155,6 +154,10 @@ set(RENDERER_SOURCES
 	Graphics/VulkanDevice.cpp
 	ModelLoader.cpp
 )
+
+if(NOT ANDROID AND NOT EMSCRIPTEN)
+	list(APPEND RENDERER_SOURCES glad/glad.c)
+endif()
 
 if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
 	list(REMOVE_ITEM RENDERER_SOURCES window/GLFW3Window.cpp)
