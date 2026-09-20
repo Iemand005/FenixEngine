@@ -351,20 +351,36 @@ void XRGame::initOpenXR() {
 	} else {
 		auto window = GetWindow<fe::SDLWindow>();
 
-#ifdef WIN32
+#ifdef _WIN32
 		HDC hDC = window->GetDrawingContext();
 		HGLRC hGLRC = window->GetOpenGLRenderingContext();
 		XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
 		gfx.hDC = hDC;
 		gfx.hGLRC = hGLRC;
 		initOpenXR(&gfx);
-#else
-#ifdef __ANDROID__
+#elif defined(__ANDROID__)
 		XrGraphicsBindingOpenGLESAndroidKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR};
+		gfx.next = nullptr;
 
-		gfx.display = window->GetEGLDisplay();
-		gfx.config = window->GetEGLConfig();
-		gfx.context = window->GetEGLContext();
+		EGLDisplay display = (EGLDisplay)window->GetEGLDisplay();
+		if (!display) display = eglGetCurrentDisplay();
+
+		EGLContext context = (EGLContext)window->GetEGLContext();
+		if (!context) context = eglGetCurrentContext();
+
+		EGLConfig config = (EGLConfig)window->GetEGLConfig();
+		if (!config && display && context) {
+			EGLint configId = 0;
+			if (eglQueryContext(display, context, EGL_CONFIG_ID, &configId)) {
+				EGLint attribs[] = { EGL_CONFIG_ID, configId, EGL_NONE };
+				int numConfigs = 0;
+				eglChooseConfig(display, attribs, &config, 1, &numConfigs);
+			}
+		}
+
+		gfx.display = display;
+		gfx.config = config;
+		gfx.context = context;
 
 		initOpenXR(&gfx);
 #else
@@ -401,7 +417,6 @@ void XRGame::initOpenXR() {
 				}
 			}
 #endif
-#endif
 	}
 #endif
 }
@@ -409,20 +424,75 @@ void XRGame::initOpenXR() {
 void XRGame::initOpenXR(void *next) {
 	#ifndef FE_EXCLUDE_OPENXR
 
+#ifdef __ANDROID__
+	// Initialize the OpenXR Android loader before calling any other OpenXR APIs
+	PFN_xrInitializeLoaderKHR pfnInitializeLoaderKHR = nullptr;
+	if (XR_SUCCEEDED(xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)(&pfnInitializeLoaderKHR))) && pfnInitializeLoaderKHR) {
+		JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
+		JavaVM* vm = nullptr;
+		if (env) {
+			env->GetJavaVM(&vm);
+		}
+		jobject activity = (jobject)SDL_GetAndroidActivity();
+
+		XrLoaderInitInfoAndroidKHR loaderInitInfo{XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR};
+		loaderInitInfo.next = nullptr;
+		loaderInitInfo.applicationVM = vm;
+		loaderInitInfo.applicationContext = activity;
+		XrResult res = pfnInitializeLoaderKHR((const XrLoaderInitInfoBaseHeaderKHR*)&loaderInitInfo);
+		if (XR_FAILED(res)) {
+			impl->Log("xrInitializeLoaderKHR failed with error: " + std::to_string(res));
+		} else {
+			impl->Log("xrInitializeLoaderKHR succeeded");
+		}
+	} else {
+		impl->Log("xrInitializeLoaderKHR not found or not required");
+	}
+#endif
+
 	XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
 
-	const char* extension = useVulkan
-		? XR_KHR_VULKAN_ENABLE_EXTENSION_NAME
-		: XR_KHR_OPENGL_ENABLE_EXTENSION_NAME;
-	const char* enabledExtensions[] = {extension};
-	createInfo.enabledExtensionCount = 1;
-	createInfo.enabledExtensionNames = enabledExtensions;
+	std::vector<const char*> enabledExtensions;
+
+#ifdef __ANDROID__
+	enabledExtensions.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
+	if (useVulkan) {
+		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
+	} else {
+		enabledExtensions.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
+	}
+#else
+	if (useVulkan) {
+		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
+	} else {
+		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+	}
+#endif
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
+	createInfo.enabledExtensionNames = enabledExtensions.data();
 
 	createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
 	createInfo.applicationInfo.applicationVersion = 1;
 	createInfo.applicationInfo.engineVersion = 1;
 	strcpy(createInfo.applicationInfo.engineName, "FenixEngine");
 	strcpy(createInfo.applicationInfo.applicationName, "Fenix Engine");
+
+#ifdef __ANDROID__
+	JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
+	JavaVM* vm = nullptr;
+	if (env) {
+		env->GetJavaVM(&vm);
+	}
+	jobject activity = (jobject)SDL_GetAndroidActivity();
+
+	XrInstanceCreateInfoAndroidKHR androidCreateInfo{XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR};
+	androidCreateInfo.next = nullptr;
+	androidCreateInfo.applicationVM = vm;
+	androidCreateInfo.applicationActivity = activity;
+
+	createInfo.next = &androidCreateInfo;
+#endif
 
 	impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
 
@@ -449,12 +519,21 @@ void XRGame::initOpenXR(void *next) {
 			impl->outputError(pfnGetVulkanReqs(impl->instance, impl->systemId, &vkReqs));
 		}
 	} else {
+#ifdef __ANDROID__
+		XrGraphicsRequirementsOpenGLESKHR glesReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR};
+		PFN_xrGetOpenGLESGraphicsRequirementsKHR pfnGetGLESReqs = nullptr;
+		xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLESGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetGLESReqs));
+		if (pfnGetGLESReqs) {
+			impl->outputError(pfnGetGLESReqs(impl->instance, impl->systemId, &glesReqs));
+		}
+#else
 		XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
 		PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLReqs = nullptr;
 		xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLReqs));
 		if (pfnGetOpenGLReqs) {
 			impl->outputError(pfnGetOpenGLReqs(impl->instance, impl->systemId, &glReqs));
 		}
+#endif
 	}
 
 	if (impl->useVulkan) {
@@ -487,6 +566,7 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
 	#endif
+}
 }
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
