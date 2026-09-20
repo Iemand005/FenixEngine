@@ -14,6 +14,7 @@
 #else
 #define XR_USE_PLATFORM_WAYLAND
 #define XR_USE_PLATFORM_XLIB
+#define XR_USE_PLATFORM_ANDROID
 #endif
 
 #include <memory>

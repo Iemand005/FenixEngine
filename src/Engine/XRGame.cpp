@@ -340,7 +340,7 @@ void XRGame::initOpenXR() {
 		initOpenXR(&gfx);
 #else
 #ifdef __ANDROID__
-		auto window = GetWindow<fe::SDLWindow>();
+		XrGraphicsBindingOpenGLESAndroidKHR 
 #else
 			const char *video_driver = SDL_GetCurrentVideoDriver();
 			if (video_driver != NULL) {
