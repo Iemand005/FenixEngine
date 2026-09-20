@@ -715,6 +715,7 @@ void XRGame::LaunchVR() {
 	if (!useVulkan) CheckGLError("after framebuffer setup");
 	impl->CreateActions();
 	GetWindow()->StopMouseCapture();
+	impl->drawVR = true;
 	#endif
 }
 
