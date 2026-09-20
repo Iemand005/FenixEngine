@@ -11,8 +11,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#if defined(__ANDROID__) && __has_include(<SDL3/SDL_log.h>)
-#include <SDL3/SDL_log.h>
+#if defined(__ANDROID__) && __has_include(<android/log.h>)
+#include <android/log.h>
+#define FOXCRAFT_LOGP(FMT, ...) __android_log_print(ANDROID_LOG_INFO, "FOXCRAFT", FMT, ##__VA_ARGS__)
+#else
+#define FOXCRAFT_LOGP(FMT, ...)
 #endif
 
 #include "WawaDir.hpp"
@@ -77,7 +80,7 @@ namespace fe {
 			std::filesystem::path cwd = std::filesystem::current_path();
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 #if defined(__ANDROID__)
-			SDL_Log("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
+			FOXCRAFT_LOGP("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
 #endif
 
 			std::string exeDir = GetExecutableDirectorye();
