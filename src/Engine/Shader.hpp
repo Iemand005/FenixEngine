@@ -11,6 +11,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#if defined(__ANDROID__) && __has_include(<SDL3/SDL_log.h>)
+#include <SDL3/SDL_log.h>
+#endif
+
 #include "WawaDir.hpp"
 
 namespace fe {
@@ -73,10 +77,7 @@ namespace fe {
 			std::filesystem::path cwd = std::filesystem::current_path();
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 #if defined(__ANDROID__)
-			#if __has_include(<SDL3/SDL_log.h>)
-			#include <SDL3/SDL_log.h>
 			SDL_Log("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
-			#endif
 #endif
 
 			std::string exeDir = GetExecutableDirectorye();
