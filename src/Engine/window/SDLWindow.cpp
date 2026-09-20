@@ -15,7 +15,14 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <SDL3/SDL_dialog.h>
+#if defined(__ANDROID__)
+#include <GLES3/gl31.h>
+#include <GLES3/gl3ext.h>
+#elif defined(__EMSCRIPTEN__)
+#include <GLES3/gl3.h>
+#else
 #include <glad/glad.h>
+#endif
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -189,12 +196,14 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
 		static bool gladLoaded = false;
 		if (!gladLoaded) {
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 			if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 				std::cout << "Failed to initialize GLAD" << std::endl;
 				SDL_DestroyWindow(impl->window);
 				impl->window = nullptr;
 				return;
 			}
+#endif
 			gladLoaded = true;
 		}
 	}
