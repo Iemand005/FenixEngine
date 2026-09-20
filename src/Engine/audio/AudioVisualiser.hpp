@@ -18,6 +18,9 @@
 #include <audio/WebAudioCapture.hpp>
 #elif defined(_WIN32)
 #include <audio/WasapiLoopbackCapture.hpp>
+#elif defined(__ANDROID__)
+// No OS loopback audio capture on Android (yet). The visualiser simply stays
+// silent: no capture header, no capture object.
 #else
 #include <audio/PipeWireLoopbackCapture.hpp>
 #endif
@@ -46,6 +49,8 @@ public:
 		g_webAudio.Init();
 #elif defined(_WIN32)
 		g_loopback.Init();
+#elif defined(__ANDROID__)
+		// no-op capture
 #else
 		g_pwLoopback.Init();
 #endif
@@ -61,6 +66,8 @@ public:
 		g_webAudio.Poll(audioSamples);
 #elif defined(_WIN32)
 		g_loopback.Poll(audioSamples);
+#elif defined(__ANDROID__)
+		// no packets on Android; leave the sample buffer alone
 #else
 		g_pwLoopback.Poll(audioSamples);
 #endif
@@ -143,6 +150,8 @@ public:
 		return g_webAudio.IsCapturing();
 #elif defined(_WIN32)
 		return g_loopback.IsCapturing();
+#elif defined(__ANDROID__)
+		return false;
 #else
 		return g_pwLoopback.IsCapturing();
 #endif

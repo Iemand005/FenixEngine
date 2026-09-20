@@ -3,7 +3,7 @@
 #include "Joystick.hpp"
 #ifdef _WIN32
 #include <windows.h>
-#elif !defined(EMSCRIPTEN)
+#elif !defined(EMSCRIPTEN) && !defined(__ANDROID__)
 #include <X11/Xlib.h>
 
 //#include <GL/glx.h>
@@ -137,8 +137,10 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
 	bool forceX11 = true;
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	if (!IsWayland() || forceX11)
 		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
+#endif
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		std::cout << "Failed to initialize video driver uhm" << std::endl;
 		return;
@@ -200,8 +202,10 @@ fe::SDLWindow::SDLWindow(std::string title, int width, int height, bool hidden, 
 
 	bool forceX11 = true;
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 	if (!IsWayland() || forceX11)
 		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
+#endif
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		std::cout << "Failed to initialize video driver uhm" << std::endl;
 		return;

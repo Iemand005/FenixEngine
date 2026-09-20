@@ -39,9 +39,9 @@ set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
 add_subdirectory(src/Engine)
 
-if(EMSCRIPTEN)
-    # When building for Emscripten, only build the Engine library
-    message(STATUS "Emscripten build: skipping game targets")
+if(EMSCRIPTEN OR ANDROID)
+    # When building for Emscripten/Android, only build the Engine library
+    message(STATUS "Cross-platform build (${CMAKE_SYSTEM_NAME}): skipping game targets")
     return()
 endif()
 

@@ -26,6 +26,16 @@ bool Aura::SetColor(char r, char g, char b, bool force) {
     auraInitialized = true;
     return true;
 }
+#elif defined(__ANDROID__)
+// Aura is not supported on Android (no WinUSB/HIDAPI SDK integration yet)
+struct Aura::Impl { void* dev = nullptr; };
+Aura::Aura() : impl(std::make_unique<Aura::Impl>()) {}
+Aura::~Aura() {}
+bool Aura::IsOpen() const { return false; }
+bool Aura::SetColor(char r, char g, char b, bool force) {
+    auraInitialized = true;
+    return true;
+}
 #else
 
 #include <vector>
@@ -178,4 +188,4 @@ bool Aura::SetColor(char r, char g, char b, bool force) {
 	return impl->SetFeature(impl->dev, &report, sizeof(report));
 }
 
-#endif // !__EMSCRIPTEN__
+#endif // !__EMSCRIPTEN__ !__ANDROID__
