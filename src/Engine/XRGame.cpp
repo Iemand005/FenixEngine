@@ -567,7 +567,6 @@ void XRGame::initOpenXR(void *next) {
 	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
 	#endif
 }
-}
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	#ifndef FE_EXCLUDE_OPENXR
