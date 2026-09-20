@@ -3,7 +3,14 @@
 #include <cstdint>
 #include <iostream>
 
+#if defined(__ANDROID__)
+#include <GLES3/gl31.h>
+#include <GLES3/gl3ext.h>
+#elif defined(__EMSCRIPTEN__)
+#include <GLES3/gl3.h>
+#else
 #include <glad/glad.h>
+#endif
 #include <glm/gtc/type_ptr.hpp>
 
 #include "OpenGLRenderDevice.hpp"
