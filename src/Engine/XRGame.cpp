@@ -257,18 +257,18 @@ struct fe::XRGame::Impl {
 				Log("Session state: IDLE");
 				break;
 			case XR_SESSION_STATE_READY:
-				Log("Session state: READY - Should call xrBeginSession");
+				Log("Session state: READY - Calling xrBeginSession");
 				BeginSession();
-				drawVR = true;
 				break;
 			case XR_SESSION_STATE_SYNCHRONIZED:
 				Log("Session state: SYNCHRONIZED");
 				break;
 			case XR_SESSION_STATE_VISIBLE:
-				Log("Session state: VISIBLE - Can Render but shouldn't submit");
+				Log("Session state: VISIBLE - Render but don't submit");
+				drawVR = true;
 				break;
 			case XR_SESSION_STATE_FOCUSED:
-				Log("Session state: FOCUSED - Can Render AND submit frames");
+				Log("Session state: FOCUSED - Render and submit");
 				drawVR = true;
 				break;
 			case XR_SESSION_STATE_STOPPING:
@@ -336,6 +336,7 @@ XRGame::~XRGame() {
 
 void XRGame::initOpenXR() {
 	#ifndef FE_EXCLUDE_OPENXR
+	impl->Log("XRGame::initOpenXR() starting");
 	impl->useVulkan = useVulkan;
 
 	if (useVulkan) {
@@ -368,6 +369,9 @@ void XRGame::initOpenXR() {
 		EGLContext context = (EGLContext)window->GetEGLContext();
 		if (!context) context = eglGetCurrentContext();
 
+		impl->Log("Android EGL Display: " + std::to_string((uint64_t)display));
+		impl->Log("Android EGL Context: " + std::to_string((uint64_t)context));
+
 		EGLConfig config = (EGLConfig)window->GetEGLConfig();
 		if (!config && display && context) {
 			EGLint configId = 0;
@@ -377,6 +381,7 @@ void XRGame::initOpenXR() {
 				eglChooseConfig(display, attribs, &config, 1, &numConfigs);
 			}
 		}
+		impl->Log("Android EGL Config: " + std::to_string((uint64_t)config));
 
 		gfx.display = display;
 		gfx.config = config;
@@ -423,11 +428,15 @@ void XRGame::initOpenXR() {
 
 void XRGame::initOpenXR(void *next) {
 	#ifndef FE_EXCLUDE_OPENXR
+	impl->Log("XRGame::initOpenXR(void *next) starting");
 
 #ifdef __ANDROID__
+	impl->Log("Initializing OpenXR Android loader...");
 	// Initialize the OpenXR Android loader before calling any other OpenXR APIs
 	PFN_xrInitializeLoaderKHR pfnInitializeLoaderKHR = nullptr;
-	if (XR_SUCCEEDED(xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)(&pfnInitializeLoaderKHR))) && pfnInitializeLoaderKHR) {
+	XrResult loaderProcRes = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)(&pfnInitializeLoaderKHR));
+	impl->Log("xrGetInstanceProcAddr(xrInitializeLoaderKHR) returned: " + std::to_string(loaderProcRes));
+	if (XR_SUCCEEDED(loaderProcRes) && pfnInitializeLoaderKHR) {
 		JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
 		JavaVM* vm = nullptr;
 		if (env) {
@@ -557,14 +566,20 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->outputError(xrCreateSession(impl->instance, &sessionInfo, &impl->session));
 
-	impl->Log("OpenXR Session Created");
+	if (impl->session != XR_NULL_HANDLE) {
+		impl->Log("OpenXR Session Created Successfully");
+	} else {
+		impl->Log("OpenXR Session Creation FAILED");
+	}
 
 	XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
 	spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
 	spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
 
-	impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
+	if (impl->session != XR_NULL_HANDLE) {
+		impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
+	}
 	#endif
 }
 
@@ -719,7 +734,6 @@ void XRGame::LaunchVR() {
 	if (!useVulkan) CheckGLError("after framebuffer setup");
 	impl->CreateActions();
 	GetWindow()->StopMouseCapture();
-	impl->drawVR = true;
 	#endif
 }
 
