@@ -72,6 +72,12 @@ namespace fe {
 		if (!file.is_open()) {
 			std::filesystem::path cwd = std::filesystem::current_path();
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
+#if defined(__ANDROID__)
+			#if __has_include(<SDL3/SDL_log.h>)
+			#include <SDL3/SDL_log.h>
+			SDL_Log("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
+			#endif
+#endif
 
 			std::string exeDir = GetExecutableDirectorye();
 			std::string path2 = exeDir + "/" + fileName;// TODO: this slash thing not corss latfromr!
