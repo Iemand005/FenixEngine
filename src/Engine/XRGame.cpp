@@ -341,7 +341,6 @@ void XRGame::initOpenXR() {
 #else
 #ifdef __ANDROID__
 
-#endif7
 			const char *video_driver = SDL_GetCurrentVideoDriver();
 			if (video_driver != NULL) {
 				std::cout << "Video Driver: " << video_driver << std::endl;
@@ -374,6 +373,7 @@ void XRGame::initOpenXR() {
 					initOpenXR(&gfx);
 				}
 			}
+#endif
 #endif
 	}
 #endif
