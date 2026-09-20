@@ -710,7 +710,7 @@ void XRGame::DestroyXR() {
 void XRGame::LaunchVR() {
 	#ifndef FE_EXCLUDE_OPENXR
 	initOpenXR();
-	if (!IsInstanceValid()) {
+np	if (!IsInstanceValid()) {
 		fe::LogWarning("OpenXR instance invalid or no runtime found - staying in standard mode");
 		return;
 	}
