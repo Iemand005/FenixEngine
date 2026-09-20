@@ -340,9 +340,13 @@ void XRGame::initOpenXR() {
 		initOpenXR(&gfx);
 #else
 #ifdef __ANDROID__
-		XrGraphicsBindingOpenGLESAndroidKHR gfx{
-			XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR
-		} 
+		XrGraphicsBindingOpenGLESAndroidKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR};
+
+		gfx.display = window->GetEGLDisplay();
+		gfx.config = window->GetEGLConfig();
+		gfx.context = window->GetEGLContext();
+
+		initOpenXR(&gfx);
 #else
 			const char *video_driver = SDL_GetCurrentVideoDriver();
 			if (video_driver != NULL) {
