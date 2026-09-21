@@ -67,7 +67,9 @@ struct fe::XRGame::Impl {
 #else
 		std::vector<XrSwapchainImageOpenGLKHR> swapchainImagesGL;
 #endif
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 		std::vector<XrSwapchainImageVulkanKHR> swapchainImagesVK;
+#endif
 
 		// Framebuffer handles from renderDevice, indexed [eye][swapchainImage]
 		std::vector<std::vector<uint64_t>> framebuffers;
@@ -149,8 +151,10 @@ struct fe::XRGame::Impl {
 		outputError(xrEnumerateSwapchainImages(swapchain, 0, &imageCount, nullptr));
 
 		if (useVulkan) {
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 			swapchainImagesVK.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR});
 			outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImagesVK.data()));
+#endif
 		} else {
 #ifdef __ANDROID__
 			swapchainImagesGL.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR});
@@ -165,9 +169,14 @@ struct fe::XRGame::Impl {
 		for (uint32_t eye = 0; eye < viewCount; eye++) {
 			framebuffers[eye].resize(imageCount);
 			for (uint32_t i = 0; i < imageCount; i++) {
-				uint64_t nativeImage = useVulkan
-					? reinterpret_cast<uint64_t>(swapchainImagesVK[i].image)
-					: static_cast<uint64_t>(swapchainImagesGL[i].image);
+				uint64_t nativeImage = 0;
+				if (useVulkan) {
+#ifdef XR_USE_GRAPHICS_API_VULKAN
+					nativeImage = reinterpret_cast<uint64_t>(swapchainImagesVK[i].image);
+#endif
+				} else {
+					nativeImage = static_cast<uint64_t>(swapchainImagesGL[i].image);
+				}
 				framebuffers[eye][i] = renderDevice->CreateFramebuffer(nativeImage, swapchainWidth, swapchainHeight, eye, 0, chosenFormat);
 			}
 		}
@@ -339,7 +348,7 @@ void XRGame::initOpenXR() {
 	impl->Log("XRGame::initOpenXR() starting");
 	impl->useVulkan = useVulkan;
 
-	if (useVulkan) {
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 		auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
 		XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
 		vkBinding.next = nullptr;
@@ -349,7 +358,9 @@ void XRGame::initOpenXR() {
 		vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
 		vkBinding.queueIndex = 0;
 		initOpenXR(&vkBinding);
-	} else {
+#else
+		impl->Log("Vulkan support not compiled in");
+#endif
 		auto window = GetWindow<fe::SDLWindow>();
 
 #ifdef _WIN32
@@ -519,7 +530,7 @@ void XRGame::initOpenXR(void *next) {
 		impl->Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 	}
 
-	// Graphics requirements for the selected API
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (useVulkan) {
 		XrGraphicsRequirementsVulkanKHR vkReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
 		PFN_xrGetVulkanGraphicsRequirementsKHR pfnGetVulkanReqs = nullptr;
@@ -528,6 +539,9 @@ void XRGame::initOpenXR(void *next) {
 			impl->outputError(pfnGetVulkanReqs(impl->instance, impl->systemId, &vkReqs));
 		}
 	} else {
+#else
+	if (true) {
+#endif
 #ifdef __ANDROID__
 		XrGraphicsRequirementsOpenGLESKHR glesReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR};
 		PFN_xrGetOpenGLESGraphicsRequirementsKHR pfnGetGLESReqs = nullptr;
@@ -545,6 +559,7 @@ void XRGame::initOpenXR(void *next) {
 #endif
 	}
 
+#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (impl->useVulkan) {
 		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
 		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
@@ -559,6 +574,7 @@ void XRGame::initOpenXR(void *next) {
 			}
 		}
 	}
+#endif
 
 	XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
 	sessionInfo.systemId = impl->systemId;
