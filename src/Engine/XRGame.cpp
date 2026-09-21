@@ -431,9 +431,8 @@ void XRGame::initOpenXR() {
 					gfx.glxContext = glxContext;
 					initOpenXR(&gfx);
 				}
-			}
-#endif
-	}
+}
+		#endif
 #endif
 }
 
@@ -476,17 +475,25 @@ void XRGame::initOpenXR(void *next) {
 
 #ifdef __ANDROID__
 	enabledExtensions.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
+	#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (useVulkan) {
 		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
 	} else {
 		enabledExtensions.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
 	}
+	#else
+	enabledExtensions.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
+	#endif
 #else
+	#ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (useVulkan) {
 		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
 	} else {
 		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
 	}
+	#else
+	enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+	#endif
 #endif
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
@@ -721,7 +728,9 @@ void XRGame::DestroyXR() {
 	}
 
 	impl->swapchainImagesGL.clear();
+	#ifdef XR_USE_GRAPHICS_API_VULKAN
 	impl->swapchainImagesVK.clear();
+	#endif
 
 	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
