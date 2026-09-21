@@ -95,6 +95,10 @@ struct fe::XRGame::Impl {
 		XrAction lookAction = XR_NULL_HANDLE;
 		XrAction poseAction = XR_NULL_HANDLE;
 		XrAction toggleXrAction = XR_NULL_HANDLE;
+		XrAction breakBlockAction = XR_NULL_HANDLE;
+		XrAction placeBlockAction = XR_NULL_HANDLE;
+		XrAction prevBlockAction = XR_NULL_HANDLE;
+		XrAction nextBlockAction = XR_NULL_HANDLE;
 		XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 		XrSpace headSpace = XR_NULL_HANDLE;
 
@@ -253,6 +257,10 @@ struct fe::XRGame::Impl {
 		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "move", &moveAction);
 		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "look", &lookAction);
 		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "toggle_xr", &toggleXrAction);
+		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "break_block", &breakBlockAction);
+		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "place_block", &placeBlockAction);
+		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "prev_block", &prevBlockAction);
+		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "next_block", &nextBlockAction);
 
 		// Movement on the right thumbstick, look/turn on the left thumbstick.
 		// Binding is suggested for the common interaction profiles that expose
@@ -272,6 +280,12 @@ struct fe::XRGame::Impl {
 				// Toggle the XR session from the face buttons (X on the left hand, A on the right).
 				{toggleXrAction, Path("/user/hand/left/input/x/click")},
 				{toggleXrAction, Path("/user/hand/right/input/a/click")},
+				// Triggers: L2 breaks, R2 places.
+				{breakBlockAction, Path("/user/hand/left/input/trigger")},
+				{placeBlockAction, Path("/user/hand/right/input/trigger")},
+				// Grips: L1 switches block left, R1 switches block right.
+				{prevBlockAction, Path("/user/hand/left/input/squeeze")},
+				{nextBlockAction, Path("/user/hand/right/input/squeeze")},
 			});
 		}
 
@@ -279,6 +293,11 @@ struct fe::XRGame::Impl {
 		SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
 			{moveAction, Path("/user/hand/right/input/trackpad")},
 			{lookAction, Path("/user/hand/left/input/trackpad")},
+			// L2/R2 = trigger, L1/R1 = squeeze.
+			{breakBlockAction, Path("/user/hand/left/input/trigger")},
+			{placeBlockAction, Path("/user/hand/right/input/trigger")},
+			{prevBlockAction, Path("/user/hand/left/input/squeeze")},
+			{nextBlockAction, Path("/user/hand/right/input/squeeze")},
 		});
 
 		XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
@@ -690,6 +709,21 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	xrGetActionStateBoolean(impl->session, &getInfo, &toggleState);
 	if (toggleState.isActive && toggleState.changedSinceLastSync && toggleState.currentState)
 		xrToggleRequested = true;
+
+	// Block break/place + hotbar switching. Edge-triggered (changedSinceLastSync
+	// + currentState) so a single press raises each request exactly once.
+	XrActionStateBoolean blockState{XR_TYPE_ACTION_STATE_BOOLEAN};
+	auto raiseOnPress = [&](XrAction action, bool& requested) {
+		if (action == XR_NULL_HANDLE) return;
+		getInfo.action = action;
+		xrGetActionStateBoolean(impl->session, &getInfo, &blockState);
+		if (blockState.isActive && blockState.changedSinceLastSync && blockState.currentState)
+			requested = true;
+	};
+	raiseOnPress(impl->breakBlockAction, xrBreakBlockRequested);
+	raiseOnPress(impl->placeBlockAction, xrPlaceBlockRequested);
+	raiseOnPress(impl->prevBlockAction, xrPrevBlockRequested);
+	raiseOnPress(impl->nextBlockAction, xrNextBlockRequested);
 
 	XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
 	impl->headSpace = impl->appSpace;

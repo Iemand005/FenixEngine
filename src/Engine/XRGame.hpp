@@ -77,6 +77,14 @@ namespace fe {
 		// XR action, a hotkey or a gamepad button).
 		bool xrToggleRequested = false;
 
+		// Edge-triggered requests raised by the XR action bindings
+		// (left/right trigger = break/place, L1/R1 grips = switch hotbar slot).
+		// The game consumes and clears them.
+		bool xrBreakBlockRequested = false;
+		bool xrPlaceBlockRequested = false;
+		bool xrPrevBlockRequested = false;
+		bool xrNextBlockRequested = false;
+
 		bool running = true;
 		
 		uint32_t swapchainImageIndex;
