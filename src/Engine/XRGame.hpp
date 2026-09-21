@@ -14,13 +14,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <unknwn.h>
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) || defined(ANDROID)
 #define XR_USE_PLATFORM_ANDROID
 #define XR_USE_GRAPHICS_API_OPENGL_ES
 // #define XR_USE_GRAPHICS_API_VULKAN
 #include <EGL/egl.h>
 #include <jni.h>
-#else
+#elif defined(__linux__) && !defined(__ANDROID__) && !defined(ANDROID)
 #define XR_USE_PLATFORM_WAYLAND
 #define XR_USE_PLATFORM_XLIB
 #define XR_USE_GRAPHICS_API_OPENGL
