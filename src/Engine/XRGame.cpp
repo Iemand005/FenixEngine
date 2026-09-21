@@ -431,7 +431,6 @@ void XRGame::initOpenXR() {
 					gfx.glxContext = glxContext;
 					initOpenXR(&gfx);
 				}
-}
 		#endif
 #endif
 }
