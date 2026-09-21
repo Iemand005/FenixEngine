@@ -254,7 +254,15 @@ struct fe::XRGame::Impl {
 		XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
 		beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 
-		outputError(xrBeginSession(session, &beginInfo));
+		XrResult result = xrBeginSession(session, &beginInfo);
+		outputError(result);
+		// The Oculus runtime will not transition the session to VISIBLE/FOCUSED
+		// until the application starts its frame loop (xrWaitFrame). Start it
+		// immediately after begin so the compositor leaves the loading screen.
+		if (XR_SUCCEEDED(result)) {
+			drawVR = true;
+			Log("xrBeginSession succeeded - starting frame loop");
+		}
 		#endif
 
 	}
@@ -799,6 +807,14 @@ void XRGame::Redraw(uint64_t fbo) {
 void XRGame::RedrawVR() {
 	#ifndef FE_EXCLUDE_OPENXR
 	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
+
+	// On Oculus (HorizonOS) xrWaitFrame can return shouldRender=false while the
+	// session transitions through SYNCHRONIZED/VISIBLE. Keep calling xrWaitFrame
+	// every frame so the compositor reaches FOCUSED and drops the loading screen;
+	// only begin/submit a real frame when the runtime asks for one.
+	if (!impl->frameState.shouldRender) {
+		return;
+	}
 
 	PollActionsAndUpdateMovement(impl->frameState.predictedDisplayTime);
 
