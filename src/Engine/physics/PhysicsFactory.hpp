@@ -35,8 +35,10 @@ namespace fe {
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 
 		// Creates a move-and-slide character controller for a player/agent.
-		// `height` and `radius` describe the capsule, `position` is the center of it.
-		std::unique_ptr<PhysicsCharacter> CreateCharacter(float height, float radius, const glm::vec3& position);
+		// `height` and `radius` describe the shape, `position` is the center of it.
+		// When `rectangularHitbox` is true the shape is a box (radius = half
+		// width/depth), otherwise it is a capsule.
+		std::unique_ptr<PhysicsCharacter> CreateCharacter(float height, float radius, const glm::vec3& position, bool rectangularHitbox = false);
 
 		void RemoveObject(std::unique_ptr<PhysicsObject> object);
 
