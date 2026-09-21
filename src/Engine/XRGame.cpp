@@ -280,12 +280,14 @@ struct fe::XRGame::Impl {
 				// Toggle the XR session from the face buttons (X on the left hand, A on the right).
 				{toggleXrAction, Path("/user/hand/left/input/x/click")},
 				{toggleXrAction, Path("/user/hand/right/input/a/click")},
-				// Triggers: L2 breaks, R2 places.
-				{breakBlockAction, Path("/user/hand/left/input/trigger")},
-				{placeBlockAction, Path("/user/hand/right/input/trigger")},
-				// Grips: L1 switches block left, R1 switches block right.
-				{prevBlockAction, Path("/user/hand/left/input/squeeze")},
-				{nextBlockAction, Path("/user/hand/right/input/squeeze")},
+				// The index-finger trigger sits on top of these controllers, so it
+				// maps to the "shoulder" buttons: L1/R1 switch the hotbar slot.
+				{prevBlockAction, Path("/user/hand/left/input/trigger")},
+				{nextBlockAction, Path("/user/hand/right/input/trigger")},
+				// The grip (squeeze) button sits lower, like a trigger: L2 breaks,
+				// R2 places.
+				{breakBlockAction, Path("/user/hand/left/input/squeeze")},
+				{placeBlockAction, Path("/user/hand/right/input/squeeze")},
 			});
 		}
 
@@ -293,11 +295,11 @@ struct fe::XRGame::Impl {
 		SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
 			{moveAction, Path("/user/hand/right/input/trackpad")},
 			{lookAction, Path("/user/hand/left/input/trackpad")},
-			// L2/R2 = trigger, L1/R1 = squeeze.
-			{breakBlockAction, Path("/user/hand/left/input/trigger")},
-			{placeBlockAction, Path("/user/hand/right/input/trigger")},
-			{prevBlockAction, Path("/user/hand/left/input/squeeze")},
-			{nextBlockAction, Path("/user/hand/right/input/squeeze")},
+			// L1/R1 = trigger (hotbar), L2/R2 = squeeze (break/place).
+			{prevBlockAction, Path("/user/hand/left/input/trigger")},
+			{nextBlockAction, Path("/user/hand/right/input/trigger")},
+			{breakBlockAction, Path("/user/hand/left/input/squeeze")},
+			{placeBlockAction, Path("/user/hand/right/input/squeeze")},
 		});
 
 		XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
