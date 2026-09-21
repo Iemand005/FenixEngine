@@ -140,6 +140,7 @@ set(SOURCE_FILES
 	ImageLoader.cpp
 	Mesh.cpp
 	physics/BasicDebugRenderer.cpp
+	physics/PhysicsCharacter.cpp
 	physics/PhysicsFactory.cpp
 	physics/PhysicsObject.cpp
 	physics/PhysicsVehicle.cpp

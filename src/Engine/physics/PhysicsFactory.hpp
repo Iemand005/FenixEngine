@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "PhysicsObject.hpp"
+#include "PhysicsCharacter.hpp"
 #include "PhysicsVehicle.hpp"
 #include "../Vertex.hpp"
 
@@ -32,6 +33,10 @@ namespace fe {
 		std::unique_ptr<PhysicsObject> CreateSphereObject(float radius, bool dynamic = true);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
 		std::unique_ptr<PhysicsObject> CreateObject(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+
+		// Creates a move-and-slide character controller for a player/agent.
+		// `height` and `radius` describe the capsule, `position` is the center of it.
+		std::unique_ptr<PhysicsCharacter> CreateCharacter(float height, float radius, const glm::vec3& position);
 
 		void RemoveObject(std::unique_ptr<PhysicsObject> object);
 

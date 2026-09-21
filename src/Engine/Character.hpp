@@ -5,6 +5,8 @@
 #include "Object.hpp"
 #include "Camera.hpp"
 
+#include "physics/PhysicsCharacter.hpp"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
@@ -22,12 +24,22 @@ public:
 	bool gravityEnabled = true;
 	bool isGrounded = false;
 
+	std::unique_ptr<PhysicsCharacter> physicsCharacter = nullptr;
+
 	Character() {
 		this->name = "Character";
 	}
 
 	bool IsGrounded() const {
 		return isGrounded;
+	}
+
+	void SetPhysicsCharacter(std::unique_ptr<PhysicsCharacter> physicsCharacter) {
+		this->physicsCharacter = std::move(physicsCharacter);
+	}
+
+	PhysicsCharacter* GetPhysicsCharacter() const {
+		return this->physicsCharacter.get();
 	}
 
 	void Move(Direction direction, Camera* camera) {
@@ -54,6 +66,34 @@ public:
 	void Update(double deltaTime) override {
 		Object::Update(deltaTime);
 		isGrounded = false;
+
+		// Move-and-slide controller path: slides along walls, never gets pushed
+		// into geometry and reports a real grounded state.
+		if (this->physicsCharacter) {
+			this->physicsCharacter->SetJumpSpeed(jumpSpeed);
+
+			glm::vec3 desiredVelocity(0.0f);
+			if (glm::length2(pendingMovement) > 0.0001f) {
+				desiredVelocity = glm::normalize(pendingMovement) * moveSpeed;
+			}
+			bool wantJump = pendingJump && !jumpTriggered;
+			this->physicsCharacter->SetInput(desiredVelocity, wantJump);
+			this->physicsCharacter->Update(deltaTime);
+
+			this->isGrounded = this->physicsCharacter->IsSupported();
+			this->state.position = this->physicsCharacter->GetPosition();
+			this->state.velocity = this->physicsCharacter->GetLinearVelocity();
+
+			// The jump key must be released before it can trigger again.
+			if (wantJump)
+				jumpTriggered = true;
+			if (!pendingJump)
+				jumpTriggered = false;
+
+			pendingMovement = glm::vec3(0.0f);
+			pendingJump = false;
+			return;
+		}
 
 		if (this->physicsObject) {
 			isGrounded = true; // TODO: use JPH contact listener for proper ground check
