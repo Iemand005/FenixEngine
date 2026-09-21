@@ -23,10 +23,13 @@ public:
 	PhysicsCharacter(const PhysicsCharacter&) = delete;
 	PhysicsCharacter& operator=(const PhysicsCharacter&) = delete;
 
-	// Builds the capsule shape (bottom of the shape at the character origin)
-	// and the backing Jolt character. Returns 0 on success, -1 on failure.
+	// Builds the capsule (or box when `rectangularHitbox` is true) shape (bottom
+	// of the shape at the character origin) and the backing Jolt character.
+	// `radius` is the capsule radius / half box width. Returns 0 on success,
+	// -1 on failure.
 	int Initialize(class JPH::PhysicsSystem* physicsSystem, class JPH::TempAllocator* tempAllocator,
-		float height, float radius, const glm::vec3& centerPosition, float maxSlopeAngleDeg = 50.0f);
+		float height, float radius, const glm::vec3& centerPosition,
+		bool rectangularHitbox = false, float maxSlopeAngleDeg = 50.0f);
 
 	// Sets the desired horizontal velocity (world space, m/s) and whether a
 	// jump is requested this frame. Consumed by the next Update() call.

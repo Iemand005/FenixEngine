@@ -10,6 +10,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
@@ -46,7 +47,8 @@ PhysicsCharacter::PhysicsCharacter() = default;
 PhysicsCharacter::~PhysicsCharacter() = default;
 
 int PhysicsCharacter::Initialize(JPH::PhysicsSystem* physicsSystem, JPH::TempAllocator* tempAllocator,
-	float height, float radius, const glm::vec3& centerPosition, float maxSlopeAngleDeg) {
+	float height, float radius, const glm::vec3& centerPosition,
+	bool rectangularHitbox, float maxSlopeAngleDeg) {
 #ifndef EXCLUDE_JOLT
 	if (physicsSystem == nullptr || tempAllocator == nullptr || height < 0.001f || radius < 0.001f)
 		return -1;
@@ -57,22 +59,26 @@ int PhysicsCharacter::Initialize(JPH::PhysicsSystem* physicsSystem, JPH::TempAll
 	impl->height = height;
 	impl->centerOffset = 0.5f * height;
 
-	// Build a capsule that is exactly `height` long with flat-ish top/bottom at
-	// (0,0,0). Jolt expects the bottom of the character shape on the origin, so
-	// the capsule is shifted up by (half height + radius).
-	float capsuleHalfHeight = 0.5f * height - radius;
+	// Build a shape that is exactly `height` tall with its bottom at (0,0,0).
+	// Jolt expects the bottom of the character shape on the origin, so the
+	// shape is shifted up by half the height.
+	const Shape *baseShape = nullptr;
+	if (rectangularHitbox)
+		baseShape = new BoxShape(Vec3(radius, 0.5f * height, radius));
+	else
+		baseShape = new CapsuleShape(0.5f * height - radius, radius);
+
 	auto shape = RotatedTranslatedShapeSettings(
-		Vec3(0.0f, impl->centerOffset, 0.0f), Quat::sIdentity(),
-		new CapsuleShape(capsuleHalfHeight, radius)).Create();
+		Vec3(0.0f, impl->centerOffset, 0.0f), Quat::sIdentity(), baseShape).Create();
 	if (shape.HasError())
 	{
-		std::cerr << "PhysicsCharacter: failed to create capsule shape: " << shape.GetError() << std::endl;
+		std::cerr << "PhysicsCharacter: failed to create character shape: " << shape.GetError() << std::endl;
 		return -1;
 	}
 
 	Ref<CharacterVirtualSettings> settings = new CharacterVirtualSettings();
 	settings->mShape = shape.Get();
-	// Only contacts that touch the lower part of the capsule count as
+	// Only contacts that touch the lower part of the shape count as
 	// supporting the character (same as the Jolt samples).
 	settings->mSupportingVolume = Plane(Vec3::sAxisY(), -radius);
 	settings->mMaxSlopeAngle = maxSlopeAngleDeg * (JPH_PI / 180.0f);

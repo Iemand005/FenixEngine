@@ -234,10 +234,10 @@ std::unique_ptr<PhysicsObject> PhysicsFactory::CreateObject(const std::vector<Ve
 	return CreateObject(vtxs, indices);
 }
 
-std::unique_ptr<PhysicsCharacter> PhysicsFactory::CreateCharacter(float height, float radius, const glm::vec3& position) {
+std::unique_ptr<PhysicsCharacter> PhysicsFactory::CreateCharacter(float height, float radius, const glm::vec3& position, bool rectangularHitbox) {
 	auto character = std::make_unique<fe::PhysicsCharacter>();
 #ifndef EXCLUDE_JOLT
-	if (!character->Initialize(impl->physicsSystem.get(), impl->temp_allocator.get(), height, radius, position)) {
+	if (character->Initialize(impl->physicsSystem.get(), impl->temp_allocator.get(), height, radius, position, rectangularHitbox) != 0) {
 		std::cerr << "PhysicsFactory: failed to create character controller." << std::endl;
 		return nullptr;
 	}
