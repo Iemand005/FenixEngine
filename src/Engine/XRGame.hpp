@@ -69,6 +69,14 @@ namespace fe {
 
 		glm::vec3 positionOffset = glm::vec3(1.0f);
 
+		// Yaw "look" turn (radians) accumulated from the look input (e.g. left
+		// thumbstick). Applied on top of the HMD orientation each VR frame.
+		float playerYaw = 0.0f;
+
+		// Set this to toggle the XR session on/off next frame (used by the
+		// XR action, a hotkey or a gamepad button).
+		bool xrToggleRequested = false;
+
 		bool running = true;
 		
 		uint32_t swapchainImageIndex;
@@ -90,6 +98,7 @@ namespace fe {
 #endif
 		void DisableVR();
 		void LaunchVR();
+		void ToggleXR();
 
 		void Redraw(uint64_t fbo = 0) ;
 		void RedrawVR();

@@ -1,5 +1,12 @@
 #include "XRGame.hpp"
 
+#include <algorithm>
+#include <cstring>
+#include <string>
+#include <vector>
+
+#include <glm/gtc/quaternion.hpp>
+
 #ifndef FE_EXCLUDE_OPENXR
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
@@ -85,8 +92,9 @@ struct fe::XRGame::Impl {
 
 		XrActionSet actionSet = XR_NULL_HANDLE;
 		XrAction moveAction = XR_NULL_HANDLE;
-		XrAction orientAction = XR_NULL_HANDLE;
+		XrAction lookAction = XR_NULL_HANDLE;
 		XrAction poseAction = XR_NULL_HANDLE;
+		XrAction toggleXrAction = XR_NULL_HANDLE;
 		XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 		XrSpace headSpace = XR_NULL_HANDLE;
 
@@ -204,13 +212,35 @@ struct fe::XRGame::Impl {
 #ifndef FE_EXCLUDE_OPENXR
 
 	void CreateAction(XrActionType type, std::string name, XrAction* action) {
+		// NOTE: Build and pretty-print the name in a fixed buffer; actionName
+		// is XR_MAX_ACTION_NAME_SIZE (64) and localizedActionName 128.
+		std::string pretty = name;
+		std::replace(pretty.begin(), pretty.end(), '_', ' ');
+
 		XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-		actionInfo.actionType = XR_ACTION_TYPE_VECTOR2F_INPUT;
-		strcpy(actionInfo.actionName, name.c_str());
-		strcpy(actionInfo.localizedActionName, name.c_str());
+		actionInfo.actionType = type;
+		strncpy(actionInfo.actionName, name.c_str(), XR_MAX_ACTION_NAME_SIZE - 1);
+		strncpy(actionInfo.localizedActionName, pretty.c_str(), XR_MAX_LOCALIZED_ACTION_NAME_SIZE - 1);
 		outputError(xrCreateAction(actionSet, &actionInfo, action));
 	}
-#endif
+
+	void SuggestProfileBindings(const char* profilePath, const std::vector<XrActionSuggestedBinding>& bindings) {
+		XrPath profilePathHandle;
+		XrResult r = xrStringToPath(instance, profilePath, &profilePathHandle);
+		if (XR_FAILED(r)) return;
+
+		XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+		suggestedBindings.interactionProfile = profilePathHandle;
+		suggestedBindings.suggestedBindings = bindings.data();
+		suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
+		xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
+	}
+
+	XrPath Path(const std::string& path) {
+		XrPath p;
+		xrStringToPath(instance, path.c_str(), &p);
+		return p;
+	}
 
 	void CreateActions() {
 		#ifndef FE_EXCLUDE_OPENXR
@@ -221,20 +251,35 @@ struct fe::XRGame::Impl {
 		xrCreateActionSet(instance, &actionSetInfo, &actionSet);
 
 		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "move", &moveAction);
+		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "look", &lookAction);
+		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "toggle_xr", &toggleXrAction);
 
-		std::vector<XrActionSuggestedBinding> bindings;
+		// Movement on the right thumbstick, look/turn on the left thumbstick.
+		// Binding is suggested for the common interaction profiles that expose
+		// a thumbstick or trackpad on each hand.
+		const char* thumbstickProfiles[] = {
+			"/interaction_profiles/oculus/touch_controller",
+			"/interaction_profiles/microsoft/motion_controller",
+			"/interaction_profiles/valve/index_controller",
+			"/interaction_profiles/bytedance/pico_touch_controller",
+			"/interaction_profiles/meta/touch_pro_controller",
+		};
 
-		XrPath leftThumbstickPath;
-		xrStringToPath(instance, "/user/hand/right/input/thumbstick", &leftThumbstickPath);
-		bindings.push_back({moveAction, leftThumbstickPath});
+		for (auto profile : thumbstickProfiles) {
+			SuggestProfileBindings(profile, {
+				{moveAction, Path("/user/hand/right/input/thumbstick")},
+				{lookAction, Path("/user/hand/left/input/thumbstick")},
+				// Toggle the XR session from the face buttons (X on the left hand, A on the right).
+				{toggleXrAction, Path("/user/hand/left/input/x/click")},
+				{toggleXrAction, Path("/user/hand/right/input/a/click")},
+			});
+		}
 
-		XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
-		XrPath oculusProfilePath;
-		xrStringToPath(instance, "/interaction_profiles/oculus/touch_controller", &oculusProfilePath);
-		suggestedBindings.interactionProfile = oculusProfilePath;
-		suggestedBindings.suggestedBindings = bindings.data();
-		suggestedBindings.countSuggestedBindings = (uint32_t)bindings.size();
-		xrSuggestInteractionProfileBindings(instance, &suggestedBindings);
+		// HTC Vive only has a trackpad on each controller.
+		SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
+			{moveAction, Path("/user/hand/right/input/trackpad")},
+			{lookAction, Path("/user/hand/left/input/trackpad")},
+		});
 
 		XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
 		attachInfo.actionSets = &actionSet;
@@ -625,16 +670,25 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	syncInfo.countActiveActionSets = 1;
 	xrSyncActions(impl->session, &syncInfo);
 
+	// Right stick = movement.
 	XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
 	XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
 	getInfo.action = impl->moveAction;
 	xrGetActionStateVector2f(impl->session, &getInfo, &moveState);
+	rightJoystickInput = moveState.isActive ? moveState.currentState : XrVector2f{0.0f, 0.0f};
 
-	if (moveState.isActive) {
-		rightJoystickInput = moveState.currentState;
-	} else {
-		rightJoystickInput = {0.0f, 0.0f};
-	}
+	// Left stick = look (turn).
+	XrActionStateVector2f lookState{XR_TYPE_ACTION_STATE_VECTOR2F};
+	getInfo.action = impl->lookAction;
+	xrGetActionStateVector2f(impl->session, &getInfo, &lookState);
+	leftJoystickInput = lookState.isActive ? lookState.currentState : XrVector2f{0.0f, 0.0f};
+
+	// Face buttons (X / A) toggle the XR session.
+	XrActionStateBoolean toggleState{XR_TYPE_ACTION_STATE_BOOLEAN};
+	getInfo.action = impl->toggleXrAction;
+	xrGetActionStateBoolean(impl->session, &getInfo, &toggleState);
+	if (toggleState.isActive && toggleState.changedSinceLastSync && toggleState.currentState)
+		xrToggleRequested = true;
 
 	XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
 	impl->headSpace = impl->appSpace;
@@ -645,19 +699,35 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	}
 
 	auto ori = headPose.orientation;
+	glm::quat headOrientation(ori.w, ori.x, ori.y, ori.z);
 
-	if (fabsf(rightJoystickInput.x) > 0.1f || fabsf(rightJoystickInput.y) > 0.1f) {
-		glm::vec3 forward = glm::vec3(-2.0f * (ori.x * ori.z + ori.w * ori.y), -2.0f * (ori.y * ori.z - ori.w * ori.x), -1.0f + 2.0f * (ori.x * ori.x + ori.y * ori.y));
-		glm::vec3 right = glm::vec3(1.0f - 2.0f * (ori.y * ori.y + ori.z * ori.z), 2.0f * (ori.x * ori.y + ori.w * ori.z), 2.0f * (ori.x * ori.z - ori.w * ori.y));
+	// Apply look input (left stick) as smooth yaw turning. Keep the previous
+	// heading applied on top of the HMD orientation elsewhere via playerYaw.
+	const float lookDeadzone = 0.1f;
+	const float turnSpeed = 1.2f; // radians-ish per detached tap; tuned for 60fps, multiplied by dt below
+	if (fabsf(leftJoystickInput.x) > lookDeadzone) {
+		double dt = std::max(fpsCounter.deltaTime, 0.0001);
+		playerYaw -= static_cast<float>(leftJoystickInput.x) * turnSpeed * static_cast<float>(dt);
+	}
+
+	// Movement direction should follow where the player is now looking after
+	// the turn above, i.e. head orientation rotated by playerYaw.
+	glm::quat turnQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::quat viewOrientation = turnQ * headOrientation;
+
+	const float moveDeadzone = 0.1f;
+	if (fabsf(rightJoystickInput.x) > moveDeadzone || fabsf(rightJoystickInput.y) > moveDeadzone) {
+		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 right = viewOrientation * glm::vec3(1.0f, 0.0f, 0.0f);
 
 		forward = glm::normalize(forward);
 		right = glm::normalize(right);
 
 		XrVector3f movement;
-		float moveSpeed = 0.1f;
-		movement.x = -.3f * forward.x * rightJoystickInput.y + right.x * rightJoystickInput.x * moveSpeed;
-		movement.y = leftJoystickInput.y;
-		movement.z = -.3f * forward.z * rightJoystickInput.y + right.z * rightJoystickInput.x * moveSpeed;
+		const float moveSpeed = 0.1f;
+		movement.x = moveSpeed * forward.x * -rightJoystickInput.y + moveSpeed * right.x * rightJoystickInput.x;
+		movement.y = moveSpeed * forward.y * -rightJoystickInput.y;
+		movement.z = moveSpeed * forward.z * -rightJoystickInput.y + moveSpeed * right.z * rightJoystickInput.x;
 
 		player->state.position.x += movement.x;
 		player->state.position.z += movement.z;
@@ -692,6 +762,14 @@ void XRGame::DisableVR() {
 	#ifndef FE_EXCLUDE_OPENXR
 	impl->outputError(xrRequestExitSession(impl->session));
 	#endif
+}
+
+void XRGame::ToggleXR() {
+	if (IsInstanceValid()) {
+		DestroyXR();
+	} else {
+		EnableXR();
+	}
 }
 
 void XRGame::DrawUI() {
@@ -783,6 +861,10 @@ void XRGame::EnableXR() {
 }
 
 void XRGame::Redraw(uint64_t fbo) {
+	if (xrToggleRequested) {
+		xrToggleRequested = false;
+		ToggleXR();
+	}
 	{
 		impl->PollEvents();
 
@@ -865,13 +947,14 @@ void XRGame::RedrawVR() {
 		XrFovf xrFov = views[eye].fov;
 
 		glm::vec3 hmdPosition(pose.position.x, pose.position.y, pose.position.z);
-		glm::quat orientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+		glm::quat hmdOrientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+		glm::quat turnedOrientation = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f)) * hmdOrientation;
 		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
 		if (!render2D) {
 			// Camera position = player position + HMD offset + user offset
 			glm::vec3 cameraPos = player->state.position + hmdPosition + positionOffset;
-			camera->update(cameraPos, orientation, fov);
+			camera->update(cameraPos, turnedOrientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
 			if (!useVulkan) {
@@ -902,6 +985,7 @@ void XRGame::RedrawVR() {
 
 		projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
 		projectionViews[eye].pose = views[eye].pose;
+		projectionViews[eye].pose.orientation = {turnedOrientation.x, turnedOrientation.y, turnedOrientation.z, turnedOrientation.w};
 		projectionViews[eye].fov = views[eye].fov;
 		projectionViews[eye].subImage.swapchain = impl->swapchain;
 		projectionViews[eye].subImage.imageRect.offset = {0, 0};

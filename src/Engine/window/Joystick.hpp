@@ -13,6 +13,11 @@ namespace fe {
 public:
 		Joystick(unsigned int id) : id(id) {
 			handle = SDL_OpenJoystick(id);
+			// Opening the device as a gamepad as well lets us read analogue and
+			// button input through SDL's runtime mapping (SDL_GAMEPAD_*), which
+			// behaves consistently regardless of the raw axis layout reported by
+			// the joystick API.
+			gamepad = SDL_IsGamepad(id) ? SDL_OpenGamepad(id) : nullptr;
 			if (handle && SDL_IsJoystickHaptic(handle)) {
 				haptic = SDL_OpenHapticFromJoystick(handle);
 				if (haptic) hapticFeatures = SDL_GetHapticFeatures(haptic);
@@ -22,6 +27,7 @@ public:
 		~Joystick() {
 			for (auto eid : effectIds) SDL_DestroyHapticEffect(haptic, eid);
 			if (haptic) SDL_CloseHaptic(haptic);
+			if (gamepad) SDL_CloseGamepad(gamepad);
 			if (handle) SDL_CloseJoystick(handle);
 		}
 
@@ -30,11 +36,13 @@ public:
 
 		Joystick(Joystick&& other) noexcept
 			: id(other.id), handle(other.handle), haptic(other.haptic),
-			  hapticFeatures(other.hapticFeatures), effectIds(std::move(other.effectIds)),
+			  hapticFeatures(other.hapticFeatures), gamepad(other.gamepad),
+			  effectIds(std::move(other.effectIds)),
 			  constEffectId(other.constEffectId), periodicEffectId(other.periodicEffectId),
 			  springEffectId(other.springEffectId) {
 			other.handle = nullptr;
 			other.haptic = nullptr;
+			other.gamepad = nullptr;
 			other.constEffectId = -1;
 			other.periodicEffectId = -1;
 			other.springEffectId = -1;
@@ -44,17 +52,20 @@ public:
 			if (this != &other) {
 				for (auto eid : effectIds) SDL_DestroyHapticEffect(haptic, eid);
 				if (haptic) SDL_CloseHaptic(haptic);
+				if (gamepad) SDL_CloseGamepad(gamepad);
 				if (handle) SDL_CloseJoystick(handle);
 				id = other.id;
 				handle = other.handle;
 				haptic = other.haptic;
 				hapticFeatures = other.hapticFeatures;
+				gamepad = other.gamepad;
 				effectIds = std::move(other.effectIds);
 				constEffectId = other.constEffectId;
 				periodicEffectId = other.periodicEffectId;
 				springEffectId = other.springEffectId;
 				other.handle = nullptr;
 				other.haptic = nullptr;
+				other.gamepad = nullptr;
 				other.constEffectId = -1;
 				other.periodicEffectId = -1;
 				other.springEffectId = -1;
@@ -84,6 +95,26 @@ public:
 		Uint8 GetButton(int index) {
 			if (!handle) return 0;
 			return SDL_GetJoystickButton(handle, index);
+		}
+
+		bool IsGamepad() const { return gamepad != nullptr; }
+
+		float GetGamepadAxis(SDL_GamepadAxis axis) {
+			if (!gamepad) return 0.0f;
+			return SDL_GetGamepadAxis(gamepad, axis) / 32768.0f;
+		}
+
+		bool GetGamepadButton(SDL_GamepadButton button) {
+			if (!gamepad) return false;
+			return SDL_GetGamepadButton(gamepad, button);
+		}
+
+		glm::vec2 GetLeftStick() {
+			return glm::vec2(GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFTX), GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFTY));
+		}
+
+		glm::vec2 GetRightStick() {
+			return glm::vec2(GetGamepadAxis(SDL_GAMEPAD_AXIS_RIGHTX), GetGamepadAxis(SDL_GAMEPAD_AXIS_RIGHTY));
 		}
 
 		void Rumble(float strength, Uint32 duration_ms = UINT32_MAX) {
@@ -166,6 +197,7 @@ public:
 private:
 		SDL_JoystickID id;
 		SDL_Joystick* handle = nullptr;
+		SDL_Gamepad* gamepad = nullptr;
 		SDL_Haptic* haptic = nullptr;
 		Uint32 hapticFeatures = 0;
 		std::vector<SDL_HapticEffectID> effectIds;
