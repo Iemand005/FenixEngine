@@ -288,6 +288,7 @@ struct fe::XRGame::Impl {
 		#endif
 
 	}
+	#endif
 
 	// Note: this lives inside the XRGame pimpl. Calling fe::Log("%s", msg.c_str())
 	// so XR diagnostics also reach logcat on Android.
