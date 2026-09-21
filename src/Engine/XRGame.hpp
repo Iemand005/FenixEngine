@@ -17,7 +17,7 @@
 #elif defined(__ANDROID__)
 #define XR_USE_PLATFORM_ANDROID
 #define XR_USE_GRAPHICS_API_OPENGL_ES
-#define XR_USE_GRAPHICS_API_VULKAN
+// #define XR_USE_GRAPHICS_API_VULKAN
 #include <EGL/egl.h>
 #include <jni.h>
 #else
