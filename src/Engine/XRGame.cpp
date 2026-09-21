@@ -370,7 +370,7 @@ struct fe::XRGame::Impl {
 	void outputError(XrResult result) {
 		if (XR_SUCCEEDED(result)) return;
 		char buf[XR_MAX_RESULT_STRING_SIZE];
-		if (xrResultToString(nullptr, result, buf) == XR_SUCCESS) {
+		if (xrResultToString(instance, result, buf) == XR_SUCCESS) {
 			std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
 			Log("OpenXR Error: " + std::string(buf) + " (" + std::to_string(result) + ")");
 		}
