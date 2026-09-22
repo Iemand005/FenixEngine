@@ -215,8 +215,7 @@ public:
 		}
 		std::unique_ptr<IRenderDevice> dev =
 #ifdef FE_HAS_VULKAN
-		if (useVulkan) dev = std::make_unique<VulkanDevice>();
-		else
+		useVulkan ? std::make_unique<VulkanDevice>() :
 #endif
 		std::make_unique<OpenGLRenderDevice>();
 
