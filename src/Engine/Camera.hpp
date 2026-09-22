@@ -11,8 +11,6 @@ class Camera {
 private:
 	glm::vec3 position;
 	glm::mat4 viewMatrix;
-	unsigned int frustumVAO = 0, frustumVBO = 0;
-	std::vector<glm::vec3> frustumVertices;
 	
 	public:
 	glm::vec3 up;
@@ -33,27 +31,6 @@ private:
 		this->position = position;
 		viewMatrix = glm::lookAt(position, position + front, up);
 		projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
-
-		// Compute frustum vertices
-		glm::vec3 right = glm::normalize(glm::cross(front, up));
-		float tanHalfFov = tan(glm::radians(fov / 2.0f));
-		float nearHeight = 2 * tanHalfFov * nearDist;
-		float farHeight = 2 * tanHalfFov * farDist;
-		float nearWidth = nearHeight * aspect;
-		float farWidth = farHeight * aspect;
-
-		glm::vec3 nearCenter = front * nearDist;
-		glm::vec3 farCenter = front * farDist;
-
-		glm::vec3 nearTopLeft = nearCenter + up * (nearHeight / 2) - right * (nearWidth / 2);
-		glm::vec3 nearTopRight = nearCenter + up * (nearHeight / 2) + right * (nearWidth / 2);
-		glm::vec3 nearBottomLeft = nearCenter - up * (nearHeight / 2) - right * (nearWidth / 2);
-		glm::vec3 nearBottomRight = nearCenter - up * (nearHeight / 2) + right * (nearWidth / 2);
-
-		glm::vec3 farTopLeft = farCenter + up * (farHeight / 2) - right * (farWidth / 2);
-		glm::vec3 farTopRight = farCenter + up * (farHeight / 2) + right * (farWidth / 2);
-		glm::vec3 farBottomLeft = farCenter - up * (farHeight / 2) - right * (farWidth / 2);
-		glm::vec3 farBottomRight = farCenter - up * (farHeight / 2) + right * (farWidth / 2);
 	};
 
 	void SetAspect(float aspect) {
@@ -107,12 +84,11 @@ private:
 	float GetFOV() const { return fov; }
 
 	void SetFOV(float newFov) {
-			fov = newFov;
-			projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
+		fov = newFov;
+		projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 	}
 
-	void UpdateDirection()
-	{
+	void UpdateDirection() {
 		glm::vec3 dir;
 		dir.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 		dir.y = sin(glm::radians(pitch));
