@@ -202,7 +202,7 @@ public:
 		this->useVulkan = useVulkan;
 #ifdef FE_HAS_VULKAN
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
-		else renderDevice = std::make_unique<OpenGLRenderDevice>();
+		else
 #else
 		renderDevice = std::make_unique<OpenGLRenderDevice>();
 #endif

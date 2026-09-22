@@ -41,19 +41,13 @@ PhysicsFactory *Game::GetPhysicsFactory() {
 void Game::Init() {
 	impl = std::make_unique<Game::Impl>();
 
-	// On Android, make APK assets available on the local filesystem (relative
-	// reads like "resources/shaders/..." work out of the box, same as desktop).
 	if (!AndroidSetupAssets("resources")) {
 		LogError("AndroidSetupAssets failed - resource loading will likely break");
 	}
 
-	// SetClearColor(0.0F, 0.0F, 0.0f); // Moved to after window creation (requires GL context)
-
 #ifndef EXCLUDE_JOLT
 	impl->PhysicsFactory = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
 #endif
-	
-	//LoadShaders("resources/shaders/VertexShader.glsl", "resources/shaders/FragmentShader.glsl");
 	
 	this->scene = std::make_unique<fe::Scene>();
 	this->camera = std::make_unique<fe::Camera>(60.0f, 0.1f, 1000.0f);
