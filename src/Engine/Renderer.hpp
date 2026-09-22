@@ -248,11 +248,6 @@ public:
 					window->SetFullscreen();
 				else window->GoBorderlessFullscreen();
 
-				// window->Show();
-
-				// SDL_HideCursor();
-				// SDL_SetCursor(nullptr);
-
 				window->Show();
 
 				window->ActivateScreenSaverMode();
