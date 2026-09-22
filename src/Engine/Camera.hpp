@@ -11,6 +11,7 @@ class Camera {
 private:
 	glm::vec3 position;
 	glm::mat4 viewMatrix;
+	unsigned int frustumVAO = 0, frustumVBO = 0;
 	std::vector<glm::vec3> frustumVertices;
 	
 	public:
