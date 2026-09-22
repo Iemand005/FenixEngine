@@ -214,15 +214,15 @@ public:
 			if (dev->IsVulkan() == useVulkan) return dev.get();
 		}
 		std::unique_ptr<IRenderDevice> dev;
-		if (useVulkan) {
 #ifdef FE_HAS_VULKAN
+		if (useVulkan) {
 			dev = std::make_unique<VulkanDevice>();
-#else
-			dev = std::make_unique<OpenGLRenderDevice>();
+		} else
 #endif
-		} else {
+		{
 			dev = std::make_unique<OpenGLRenderDevice>();
 		}
+
 		if (useVulkan) PushShaderPathsToDevice(dev.get());
 		if (window) dev->Init(window);
 		IRenderDevice* ptr = dev.get();
