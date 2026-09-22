@@ -36,7 +36,7 @@ struct PhysicsCharacter::Impl {
 	JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
 	JPH::Vec3 desiredHorizontal{0.0f, 0.0f, 0.0f};
 	bool wantsJump = false;
-	float jumpSpeed = 7.0f;
+	float jumpSpeed = 8.5f;
 	float height = 1.0f;
 	float centerOffset = 0.5f;
 #endif
@@ -128,6 +128,7 @@ void PhysicsCharacter::Update(double deltaTime) {
 	const float dt = static_cast<float>(deltaTime);
 	const Vec3 up = Vec3::sAxisY();
 	const Vec3 gravity = impl->physicsSystem->GetGravity();
+	const RVec3 startPosition = impl->character->GetPosition();
 
 	// Determine new velocity, mirroring CharacterVirtualTest::HandleInput so
 	// that the character stops cleanly against walls and never pops through.
@@ -169,9 +170,8 @@ void PhysicsCharacter::Update(double deltaTime) {
 
 	// ExtendedUpdate only blocks the position; it leaves the stored velocity
 	// pointing into the obstacle. Drop the component of the velocity that
-	// pushes into any surface we actually collided with (walls, ceilings) so
-	// the player genuinely loses momentum hitting a wall or bonking its head
-	// instead of continuing to push into it forever.
+	// pushes into any surface we were actually touching when the frame started
+	// (walls/floor the jump departs from) so we keep momentum loss there.
 	Vec3 postVelocity = impl->character->GetLinearVelocity();
 	for (const CharacterContact &contact : impl->character->GetActiveContacts())
 		if (contact.mHadCollision && !contact.mWasDiscarded)
@@ -181,6 +181,15 @@ void PhysicsCharacter::Update(double deltaTime) {
 			if (intoContact < 0.0f)
 				postVelocity -= intoContact * normal;
 		}
+
+	// A ceiling hit found mid-sweep never lands in GetActiveContacts(), so the
+	// loop above misses it. Catch it with the achieved movement instead: if we
+	// asked to rise this frame but were blocked from rising, kill the upward
+	// velocity so the player drops instead of pushing into the ceiling forever.
+	const float requestedDeltaUp = newVelocity.Dot(up) * dt;
+	const float achievedDeltaUp = static_cast<float>(impl->character->GetPosition().GetY() - startPosition.GetY());
+	if (requestedDeltaUp > 0.05f && achievedDeltaUp < 0.75f * requestedDeltaUp)
+		postVelocity = Vec3(postVelocity.GetX(), postVelocity.GetY() < 0.0f ? postVelocity.GetY() : 0.0f, postVelocity.GetZ());
 	impl->character->SetLinearVelocity(postVelocity);
 
 	impl->wantsJump = false;
