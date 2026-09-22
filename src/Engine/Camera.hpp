@@ -11,7 +11,6 @@ class Camera {
 private:
 	glm::vec3 position;
 	glm::mat4 viewMatrix;
-	unsigned int frustumVAO = 0, frustumVBO = 0;
 	std::vector<glm::vec3> frustumVertices;
 	
 	public:
@@ -54,12 +53,6 @@ private:
 		glm::vec3 farTopRight = farCenter + up * (farHeight / 2) + right * (farWidth / 2);
 		glm::vec3 farBottomLeft = farCenter - up * (farHeight / 2) - right * (farWidth / 2);
 		glm::vec3 farBottomRight = farCenter - up * (farHeight / 2) + right * (farWidth / 2);
-
-		frustumVertices = {
-											nearTopLeft, nearTopRight, nearTopRight, nearBottomRight, nearBottomRight, nearBottomLeft, nearBottomLeft, nearTopLeft,
-											farTopLeft, farTopRight, farTopRight, farBottomRight, farBottomRight, farBottomLeft, farBottomLeft, farTopLeft,
-											nearTopLeft, farTopLeft, nearTopRight, farTopRight, nearBottomRight, farBottomRight, nearBottomLeft, farBottomLeft};
-
 	};
 
 	void SetAspect(float aspect) {
