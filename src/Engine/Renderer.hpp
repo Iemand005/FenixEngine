@@ -216,9 +216,7 @@ public:
 		if (useVulkan) dev = std::make_unique<VulkanDevice>();
 		else
 #endif
-		{
-			dev = std::make_unique<OpenGLRenderDevice>();
-		}
+		dev = std::make_unique<OpenGLRenderDevice>();
 
 		if (useVulkan) PushShaderPathsToDevice(dev.get());
 		if (window) dev->Init(window);
