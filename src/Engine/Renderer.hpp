@@ -210,9 +210,8 @@ public:
 
 	IRenderDevice* CreateDevice(bool useVulkan, IWindow *window = nullptr) {
 		if (renderDevice && renderDevice->IsVulkan() == useVulkan) return renderDevice.get();
-		for (auto& dev : renderDevices) {
+		for (auto& dev : renderDevices)
 			if (dev->IsVulkan() == useVulkan) return dev.get();
-		}
 		std::unique_ptr<IRenderDevice> dev;
 #ifdef FE_HAS_VULKAN
 		if (useVulkan) dev = std::make_unique<VulkanDevice>();
