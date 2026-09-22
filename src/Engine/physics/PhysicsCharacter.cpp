@@ -151,12 +151,9 @@ void PhysicsCharacter::Update(double deltaTime) {
 	// Apply gravity to the vertical velocity.
 	newVelocity += gravity * dt;
 
-	// Horizontal input: on the ground use the desired velocity, in the air keep
-	// the momentum the player already has.
-	if (impl->character->IsSupported())
-		newVelocity += impl->desiredHorizontal;
-	else
-		newVelocity += currentVelocity - currentVerticalVelocity;
+	// Horizontal input is applied both on the ground and in the air so the
+	// player keeps analogue control while airborne (arcade-style handling).
+	newVelocity += impl->desiredHorizontal;
 
 	impl->character->SetLinearVelocity(newVelocity);
 
@@ -169,6 +166,22 @@ void PhysicsCharacter::Update(double deltaTime) {
 		{ },
 		{ },
 		*impl->tempAllocator);
+
+	// ExtendedUpdate only blocks the position; it leaves the stored velocity
+	// pointing into the obstacle. Drop the component of the velocity that
+	// pushes into any surface we actually collided with (walls, ceilings) so
+	// the player genuinely loses momentum hitting a wall or bonking its head
+	// instead of continuing to push into it forever.
+	Vec3 postVelocity = impl->character->GetLinearVelocity();
+	for (const CharacterContact &contact : impl->character->GetActiveContacts())
+		if (contact.mHadCollision && !contact.mWasDiscarded)
+		{
+			const Vec3 normal = contact.mSurfaceNormal;
+			const float intoContact = postVelocity.Dot(normal);
+			if (intoContact < 0.0f)
+				postVelocity -= intoContact * normal;
+		}
+	impl->character->SetLinearVelocity(postVelocity);
 
 	impl->wantsJump = false;
 #endif
