@@ -73,8 +73,10 @@ public:
 			this->physicsCharacter->SetJumpSpeed(jumpSpeed);
 
 			glm::vec3 desiredVelocity(0.0f);
-			if (glm::length2(pendingMovement) > 0.0001f) {
-				desiredVelocity = glm::normalize(pendingMovement) * moveSpeed;
+			float len = glm::length(pendingMovement);
+			if (len > 0.01f) {
+				if (len > 1.0f) pendingMovement /= len;
+				desiredVelocity = pendingMovement * moveSpeed;
 			}
 			bool wantJump = pendingJump && !jumpTriggered;
 			this->physicsCharacter->SetInput(desiredVelocity, wantJump);
@@ -99,8 +101,10 @@ public:
 			isGrounded = true; // TODO: use JPH contact listener for proper ground check
 
 			glm::vec3 targetVelocity(0.0f);
-			if (glm::length2(pendingMovement) > 0.0001f) {
-				targetVelocity = glm::normalize(pendingMovement) * moveSpeed;
+			float len = glm::length(pendingMovement);
+			if (len > 0.01f) {
+				if (len > 1.0f) pendingMovement /= len;
+				targetVelocity = pendingMovement * moveSpeed;
 			}
 
 			if (pendingJump && isGrounded && !jumpTriggered) {
@@ -119,7 +123,9 @@ public:
 		}
 
 		if (glm::length2(pendingMovement) > 0.0001f) {
-			this->state.position += glm::normalize(pendingMovement) * moveSpeed * static_cast<float>(deltaTime);
+			float len = glm::length(pendingMovement);
+			if (len > 1.0f) pendingMovement /= len;
+			this->state.position += pendingMovement * moveSpeed * static_cast<float>(deltaTime);
 		}
 		pendingMovement = glm::vec3(0.0f);
 		if (pendingJump && isGrounded) {
