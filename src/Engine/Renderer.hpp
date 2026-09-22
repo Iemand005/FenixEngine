@@ -203,9 +203,8 @@ public:
 #ifdef FE_HAS_VULKAN
 		if (useVulkan) renderDevice = std::make_unique<VulkanDevice>();
 		else
-#else
-		renderDevice = std::make_unique<OpenGLRenderDevice>();
 #endif
+		renderDevice = std::make_unique<OpenGLRenderDevice>();
 	}
 
 	IRenderDevice* CreateDevice(bool useVulkan, IWindow *window = nullptr) {
