@@ -28,8 +28,7 @@ static void EmscriptenLoopWrapper(void* arg) {
 
 void Renderer::Init(GLADloadproc loadProc) {
 	if (!gladLoadGLLoader(loadProc))
-		std::cerr << "Failed to load GLAS dhsit" << std::endl;
-		// throw std::runtime_error("Failed to load OpenGL functions (GLAD)");
+		std::cerr << "Failed to load OpenGL functions (GLAD)" << std::endl;
 }
 
 void Renderer::Run() {
@@ -91,8 +90,11 @@ void Renderer::RenderObject(Object& object, bool transparentPass) {
 		for (auto& child : obj->GetChildren())
 			RenderObject(*child, transparentPass);
 	}
+	if (auto* obj = dynamic_cast<Object*>(&object)) {
+		for (auto& child : obj->GetChildren())
+			RenderObject(*child, transparentPass);
+	}
 	if (object.reverseWinding) renderDevice->SetFrontFace(true);
-}
 
 static bool HasTransparentMesh(const Object& obj) {
 	for (auto& mesh : obj.meshes) {
