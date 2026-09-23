@@ -27,8 +27,6 @@
 #include "bases.h"
 #include "saver/Level.hpp"
 
-#define WAYLAND
-
 #include "Renderer.hpp"
 
 #include "physics/PhysicsFactory.hpp"
@@ -37,8 +35,6 @@ namespace fe {
 
 class Game : public Renderer {
    public:
-	int lastX, lastY;
-
 	std::shared_ptr<Character> player;
 
 	std::vector<std::shared_ptr<Character>> npcs = std::vector<std::shared_ptr<Character>>();
@@ -132,20 +128,6 @@ class Game : public Renderer {
 		}
 	}
 
-	double lastUpdateTime = 0.0f;
-
-	bool canJump = true;
-
-	int mapIndex = 0;
-
-#ifndef EXCLUDE_NETWORKING
-	std::unique_ptr<Networker> client = nullptr;
-#endif
-
-	std::unordered_map<unsigned char, std::shared_ptr<Character>> players = std::unordered_map<unsigned char, std::shared_ptr<Character>>();
-
-	bool isConnectedToServer = false;
-
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 
@@ -171,13 +153,6 @@ class Game : public Renderer {
 	void Log(const std::string& message) { fe::Log("%s", message.c_str()); }
 
 	PhysicsFactory* GetPhysicsFactory();
-
-	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) { Renderer::LoadShaders(vertexShaderPath, fragmentShaderPath); }
-
-	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {
-		this->shader = std::make_unique<fe::ShaderProgram>();
-		return this->shader->LoadShaderTexts(vertexShaderText, fragmentShaderText);
-	}
 
 	void MovePlayer(Direction direction) { this->player->Move(direction, camera.get()); }
 
@@ -258,10 +233,6 @@ class Game : public Renderer {
 		Renderer::Redraw();
 	}
 
-	void Redraw() {
-		Renderer::Redraw();
-	}
-
 	void Update() {
 		double dt = scene->Update();
 		UpdatePhysics(dt);
@@ -271,12 +242,6 @@ class Game : public Renderer {
 
 	virtual void InitUI() {}
 	virtual void DrawUI() {}
-
-	double GetFPS() { return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0; }
-
-	void UpdateAspect(int width, int height) {
-		if (this->camera) this->camera->SetAspect(width, height);
-	}
 };
 
 }  // namespace fe

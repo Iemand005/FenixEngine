@@ -85,9 +85,6 @@ namespace fe {
 		#else
 		bool useVulkan = false;
 #endif
-		// GraphicsAPI graphicsApi = Grapics
-		GraphicsAPI graphicsApi = GraphicsAPI::OpenGLES;
-
 		GLADloadproc loadProc = nullptr;
 
 		RendererOptions() = default; 
@@ -407,10 +404,6 @@ public:
 		for (auto& dev : renderDevices) dev->SetClearColor(r, g, b, a);
 	}
 
-	void Resize() {
-		throw std::runtime_error("Please implement");
-		// Resize(this->window->width, this->window->height);
-	}
 	void Resize(int width, int height) {
 		// glViewport(0, 0, width, height);
 		renderDevice->Resize(width, height);
@@ -592,6 +585,10 @@ public:
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
+	}
+
+	void Update() {
+		double dt = scene->Update();
 	}
 
 	void Update() {
