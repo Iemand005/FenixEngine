@@ -233,7 +233,7 @@ class Game : public Renderer {
 		Renderer::Redraw();
 	}
 
-	void Update() {
+	void Update(bool updatePhysics = true) {
 		double dt = scene->Update();
 		UpdatePhysics(dt);
 	}
