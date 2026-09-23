@@ -146,9 +146,9 @@ public:
 #ifdef FE_HAS_VULKAN
 		auto* vkDev = dynamic_cast<VulkanDevice*>(device);
 		if (!vkDev) return;
-		vkDev->SetShaderPaths(vertShaderPath_, fragShaderPath_);
-		vkDev->SetArrayShaderPaths(vertArrayShaderPath_, fragArrayShaderPath_);
-		vkDev->SetFoxcraftShaderPaths(vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+		vkDev->SetShaderPaths(VertexFormat::Standard, vertShaderPath_, fragShaderPath_);
+		vkDev->SetShaderPaths(VertexFormat::Array, vertArrayShaderPath_, fragArrayShaderPath_);
+		vkDev->SetShaderPaths(VertexFormat::Packed, vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
 #endif
 	}
 

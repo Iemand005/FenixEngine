@@ -82,7 +82,7 @@ void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertP
 		createImageViews(windowRegistry[window]);
 		createDepthResources(windowRegistry[window]);
 
-createRenderPass();
+ 		createRenderPass();
  		createPipelineSet(VertexFormat::Standard);
  		createPipelineSet(VertexFormat::Array);
  		createPipelineSet(VertexFormat::Packed);
@@ -830,24 +830,31 @@ void VulkanDevice::UploadBuffers(IGPUBuffers* buffers,
 }
 
 
- VkPipeline VulkanDevice::GetGraphicsPipeline() const {
- return graphicsPipeline_; 
-}
+VkPipeline VulkanDevice::GetGraphicsPipeline(VertexFormat format, bool transparent, bool cw) const {
+ 		switch (format) {
+ 			case VertexFormat::Standard:
+ 				return transparent ? (cw ? pipelineSets_[0].cwTransparent : pipelineSets_[0].transparent)
+ 				                   : (cw ? pipelineSets_[0].cw : pipelineSets_[0].normal);
+ 			case VertexFormat::Array:
+ 				return transparent ? (cw ? pipelineSets_[1].cwTransparent : pipelineSets_[1].transparent)
+ 				                   : (cw ? pipelineSets_[1].cw : pipelineSets_[1].normal);
+ 			case VertexFormat::Packed:
+ 			default:
+ 				return transparent ? (cw ? pipelineSets_[2].cwTransparent : pipelineSets_[2].transparent)
+ 				                   : (cw ? pipelineSets_[2].cw : pipelineSets_[2].normal);
+ 		}
+ 	
+ }
 
 
  const glm::mat4& VulkanDevice::GetViewMatrix() const {
  return currentView_; 
-}
+ }
 
 
  const glm::mat4& VulkanDevice::GetProjectionMatrix() const {
  return currentProj_; 
-}
-
-
- VkPipeline VulkanDevice::GetGraphicsPipelineArray() const {
- return graphicsPipelineArray_; 
-}
+ }
 
 
 
@@ -1235,13 +1242,13 @@ void VulkanDevice::UploadBuffers(IGPUBuffers* buffers,
 		rpBegin.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(cmd, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(VertexFormat::Standard));
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(w);
-		viewport.height = static_cast<float>(h);
+ 		VkViewport viewport{};
+ 		viewport.x = 0.0f;
+ 		viewport.y = 0.0f;
+ 		viewport.width = static_cast<float>(w);
+ 		viewport.height = static_cast<float>(h);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -1665,7 +1672,7 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
  std::vector<const IWindow*> VulkanDevice::GetWindows() {
 
 		std::vector<const IWindow*> windows;
-		windows.reserve(windowRegistry.size());;
+		windows.reserve(windowRegistry.size());
 		// windows.push_back()
 		for (auto &[window, _] : windowRegistry) windows.push_back(window);
 
@@ -2006,7 +2013,7 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 			attributeDescs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, position)};
 			attributeDescs[1] = {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, normal)};
 			attributeDescs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(fe::VertexArray, texCoord)};
-		} else if (format == VertexFormat::Foxcraft) {
+		} else if (format == VertexFormat::Packed) {
 			bindingDesc.binding = 0;
 			bindingDesc.stride = 7;
 			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -2145,67 +2152,22 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 
 
 
- void VulkanDevice::createImage(uint32_t width,  uint32_t height,  VkFormat format, 
+void VulkanDevice::createImage(uint32_t width,  uint32_t height,  VkFormat format, 
      VkImageTiling tiling,  VkImageUsageFlags usage, 
      VkMemoryPropertyFlags properties, 
      VkImage& image,  VkDeviceMemory& imageMemory) {
 
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = width;
-		imageInfo.extent.height = height;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.format = format;
-		imageInfo.tiling = tiling;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageInfo.usage = usage;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (vkCreateImage(_device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create image.");
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(_device, image, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-		if (vkAllocateMemory(_device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to allocate image memory.");
-		}
-		vkBindImageMemory(_device, image, imageMemory, 0);
-	
-}
+		fe::vk::CreateImage(_device, _physicalDevice, width, height, format, tiling, usage, properties, image, imageMemory);
+ 	
+ }
 
 
 
- VkImageView VulkanDevice::createImageView(VkImage image,  VkFormat format,  VkImageAspectFlags aspectFlags) {
+VkImageView VulkanDevice::createImageView(VkImage image,  VkFormat format,  VkImageAspectFlags aspectFlags) {
 
-		VkImageViewCreateInfo viewInfo{};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = format;
-		viewInfo.subresourceRange.aspectMask = aspectFlags;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-
-		VkImageView imageView;
-		if (vkCreateImageView(_device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create image view.");
-		}
-		return imageView;
-	
-}
+		return fe::vk::CreateImageView(_device, image, format, aspectFlags);
+ 	
+ }
 
 
 
@@ -2275,87 +2237,29 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 
 
  // Buffers (vertex, index, uniform)
- uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t VulkanDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) &&
-				(memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-		throw std::runtime_error("Failed to find suitable memory type.");
-	
-}
+		return fe::vk::FindMemoryType(_physicalDevice, typeFilter, properties);
+ 	
+ }
 
 
 
- void VulkanDevice::createBuffer(VkDeviceSize size,  VkBufferUsageFlags usage, 
+void VulkanDevice::createBuffer(VkDeviceSize size,  VkBufferUsageFlags usage, 
      VkMemoryPropertyFlags properties, 
      VkBuffer& buffer,  VkDeviceMemory& bufferMemory) {
 
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (vkCreateBuffer(_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create buffer.");
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(_device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-		if (vkAllocateMemory(_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to allocate buffer memory.");
-		}
-		vkBindBufferMemory(_device, buffer, bufferMemory, 0);
-	
-}
+		fe::vk::CreateBuffer(_device, _physicalDevice, size, usage, properties, buffer, bufferMemory);
+ 	
+ }
 
 
 
- void VulkanDevice::copyBuffer(VkBuffer srcBuffer,  VkBuffer dstBuffer,  VkDeviceSize size) {
+void VulkanDevice::copyBuffer(VkBuffer srcBuffer,  VkBuffer dstBuffer,  VkDeviceSize size) {
 
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		VkBufferCopy copyRegion{};
-		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
-
-		vkFreeCommandBuffers(_device, commandPool_, 1, &commandBuffer);
-	
-}
+		fe::vk::CopyBuffer(_device, commandPool_, graphicsQueue_, srcBuffer, dstBuffer, size);
+ 	
+ }
 
 
 
@@ -2434,114 +2338,20 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 
 
 
- void VulkanDevice::transitionImageLayout(VkImage image,  VkFormat format,  VkImageLayout oldLayout,  VkImageLayout newLayout) {
+void VulkanDevice::transitionImageLayout(VkImage image,  VkFormat format,  VkImageLayout oldLayout,  VkImageLayout newLayout) {
 
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount = 1;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-		VkPipelineStageFlags sourceStage;
-		VkPipelineStageFlags destinationStage;
-
-		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		} else {
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		}
-
-		vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0,
-			0, nullptr, 0, nullptr, 1, &barrier);
-
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
-
-		vkFreeCommandBuffers(_device, commandPool_, 1, &commandBuffer);
-	
-}
+		(void)format;
+		fe::vk::TransitionImageLayout(_device, commandPool_, graphicsQueue_, image, oldLayout, newLayout);
+ 	
+ }
 
 
 
- void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t width,  uint32_t height) {
+void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t width,  uint32_t height) {
 
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = 1;
-		region.imageOffset = {0, 0, 0};
-		region.imageExtent = {width, height, 1};
-
-		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
-
-		vkFreeCommandBuffers(_device, commandPool_, 1, &commandBuffer);
-	
-}
+		fe::vk::CopyBufferToImage(_device, commandPool_, graphicsQueue_, buffer, image, width, height);
+ 	
+ }
 
 
 
@@ -2760,30 +2570,12 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		}
 		windowRegistry.clear();
 
-		if (graphicsPipeline_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipeline_, nullptr);
-		if (graphicsPipelineArray_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineArray_, nullptr);
-		if (graphicsPipelineFoxcraft_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineFoxcraft_, nullptr);
-		if (graphicsPipelineCW_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineCW_, nullptr);
-		if (graphicsPipelineArrayCW_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineArrayCW_, nullptr);
-		if (graphicsPipelineFoxcraftCW_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineFoxcraftCW_, nullptr);
-		if (graphicsPipelineTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineTransparent_, nullptr);
-		if (graphicsPipelineArrayTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineArrayTransparent_, nullptr);
-		if (graphicsPipelineFoxcraftTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineFoxcraftTransparent_, nullptr);
-		if (graphicsPipelineCWTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineCWTransparent_, nullptr);
-		if (graphicsPipelineArrayCWTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineArrayCWTransparent_, nullptr);
-		if (graphicsPipelineFoxcraftCWTransparent_ != VK_NULL_HANDLE)
-			vkDestroyPipeline(_device, graphicsPipelineFoxcraftCWTransparent_, nullptr);
+ 		for (auto& pipelineSet : pipelineSets_) {
+ 			vkDestroyPipeline(_device, pipelineSet.normal, nullptr);
+ 			vkDestroyPipeline(_device, pipelineSet.cw, nullptr);
+ 			vkDestroyPipeline(_device, pipelineSet.transparent, nullptr);
+ 			vkDestroyPipeline(_device, pipelineSet.cwTransparent, nullptr);
+ 		}
 		if (pipelineLayout_ != VK_NULL_HANDLE)
 			vkDestroyPipelineLayout(_device, pipelineLayout_, nullptr);
 		if (renderPass_ != VK_NULL_HANDLE)
@@ -2813,9 +2605,13 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		if (depthVizPool_ != VK_NULL_HANDLE) vkDestroyDescriptorPool(_device, depthVizPool_, nullptr);
 		if (depthVizLayout_ != VK_NULL_HANDLE) vkDestroyDescriptorSetLayout(_device, depthVizLayout_, nullptr);
 
-		if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
-		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
-	
-}
+if (_device != VK_NULL_HANDLE) vkDestroyDevice(_device, nullptr);
+ 		if (_instance != VK_NULL_HANDLE) vkDestroyInstance(_instance, nullptr);
+ 	
+ }
 
 } // namespace fe
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
