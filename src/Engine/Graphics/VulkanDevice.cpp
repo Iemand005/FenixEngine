@@ -1,50 +1,64 @@
 #include "VulkanDevice.hpp"
+#include "VulkanUtils.hpp"
 
-namespace fe {
-namespace {
-
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4267 4244 4996 4100 4305 4324 4505)
-} // anonymous
+#endif
+
+namespace fe {
 
 
 
 
- void VulkanDevice::SetShaderPaths(const std::string& vertPath,  const std::string& fragPath) {
+void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertPath,  const std::string& fragPath) {
 
-		vertShaderPath_ = vertPath;
-		fragShaderPath_ = fragPath;
-	
-}
-
-
-
- void VulkanDevice::SetArrayShaderPaths(const std::string& vertPath,  const std::string& fragPath) {
-
-		vertShaderArrayPath_ = vertPath;
-		fragShaderArrayPath_ = fragPath;
-
-		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArray_);
-		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCW_, VK_FRONT_FACE_CLOCKWISE);
-		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(vertShaderArrayPath_, fragShaderArrayPath_, VertexFormat::Array, graphicsPipelineArrayCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-	
-}
+ 		switch (format) {
+ 		case VertexFormat::Standard:
+ 			vertShaderPath_ = vertPath;
+ 			fragShaderPath_ = fragPath;
+ 			break;
+ 		case VertexFormat::Array:
+ 			vertShaderArrayPath_ = vertPath;
+ 			fragShaderArrayPath_ = fragPath;
+ 			break;
+ 		case VertexFormat::Packed:
+ 			vertShaderPackedPath_ = vertPath;
+ 			fragShaderPackedPath_ = fragPath;
+ 			break;
+ 		}
+ 	
+ }
 
 
 
- void VulkanDevice::SetFoxcraftShaderPaths(const std::string& vertPath,  const std::string& fragPath) {
+ void VulkanDevice::createPipelineSet(VertexFormat format) {
 
-		vertShaderFoxcraftPath_ = vertPath;
-		fragShaderArrayPath_ = fragPath;
+ 		const std::string* vertPath = nullptr;
+ 		const std::string* fragPath = nullptr;
+ 		switch (format) {
+ 		case VertexFormat::Standard:
+ 			vertPath = &vertShaderPath_;
+ 			fragPath = &fragShaderPath_;
+ 			break;
+ 		case VertexFormat::Array:
+ 			vertPath = &vertShaderArrayPath_;
+ 			fragPath = &fragShaderArrayPath_;
+ 			break;
+ 		case VertexFormat::Packed:
+ 			vertPath = &vertShaderPackedPath_;
+ 			fragPath = &fragShaderPackedPath_;
+ 			break;
+ 		}
+ 		if (!vertPath || vertPath->empty() || fragPath->empty()) return;
 
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraft_);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCW_, VK_FRONT_FACE_CLOCKWISE);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(vertShaderFoxcraftPath_, fragShaderArrayPath_, VertexFormat::Foxcraft, graphicsPipelineFoxcraftCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-
-	
-}
+ 		PipelineSet& set = pipelineSets_[static_cast<size_t>(format)];
+ 		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal);
+ 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_CLOCKWISE);
+ 		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
+ 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
+ 	
+ }
 
 
 
@@ -68,15 +82,12 @@ namespace {
 		createImageViews(windowRegistry[window]);
 		createDepthResources(windowRegistry[window]);
 
-		createRenderPass();
-		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipeline_);
-		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCW_, VK_FRONT_FACE_CLOCKWISE);
-		
-		
-		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineTransparent_, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(vertShaderPath_, fragShaderPath_, VertexFormat::Standard, graphicsPipelineCWTransparent_, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-		
-		createCommandPool();
+createRenderPass();
+ 		createPipelineSet(VertexFormat::Standard);
+ 		createPipelineSet(VertexFormat::Array);
+ 		createPipelineSet(VertexFormat::Packed);
+
+ 		createCommandPool();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDefaultTexture();
