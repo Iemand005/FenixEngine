@@ -258,183 +258,148 @@ void VulkanDevice::SubmitFrame() {
 
 
 
- void VulkanDevice::Clear() {
+void VulkanDevice::Clear() {
 
-		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+ 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
-		if (currentWindow_ && windowRegistry.count(currentWindow_)) {
-			auto& primaryRes = windowRegistry[currentWindow_];
-			if (depthReadbackRequested_ && primaryRes.depthStagingBuffer != VK_NULL_HANDLE && !depthReadbackAvailable_) {
-				void* data;
-				vkMapMemory(_device, primaryRes.depthStagingMemory, 0, VK_WHOLE_SIZE, 0, &data);
-				VkFormat depthFormat = findDepthFormat();
-				size_t pixelCount = static_cast<size_t>(primaryRes.extent.width) * primaryRes.extent.height;
-				cachedDepthData_.resize(pixelCount);
-				cachedDepthW_ = static_cast<int>(primaryRes.extent.width);
-				cachedDepthH_ = static_cast<int>(primaryRes.extent.height);
-				if (depthFormat == VK_FORMAT_D24_UNORM_S8_UINT) {
-					const uint32_t* pixels = static_cast<const uint32_t*>(data);
-					for (size_t i = 0; i < pixelCount; i++) {
-						cachedDepthData_[i] = static_cast<float>(pixels[i] & 0x00FFFFFF) / 16777215.0f;
-					}
-				} else {
-					const float* pixels = static_cast<const float*>(data);
-					std::copy(pixels, pixels + pixelCount, cachedDepthData_.begin());
-				}
-				vkUnmapMemory(_device, primaryRes.depthStagingMemory);
-				depthReadbackAvailable_ = true;
-			}
-		}
+ 		if (currentWindow_ && windowRegistry.count(currentWindow_)) {
+ 			if (depthReadbackRequested_ && !depthReadbackAvailable_) {
+ 				readbackDepthStaging(windowRegistry[currentWindow_]);
+ 			}
+ 		}
 
-		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
-		drawCallCount_ = 0;
-		updateUniformBuffer(currentFrame_);
+ 		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
+ 		drawCallCount_ = 0;
+ 		updateUniformBuffer(currentFrame_);
 
-		for (auto& [window, res] : windowRegistry) {
-			VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
-				res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-				recreateSwapChain(window);
-				result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
-					res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
-				if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-					continue;
-				}
-			} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-				continue;
-			}
-
-			vkResetCommandBuffer(res.commandBuffers[currentFrame_], 0);
-
-			auto cmd = res.commandBuffers[currentFrame_];
-
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			vkBeginCommandBuffer(cmd, &beginInfo);
-
-			std::array<VkClearValue, 2> clearValues{};
-			clearValues[0].color = m_VulkanClearColor.color;
-			clearValues[1].depthStencil = {1.0f, 0};
-
-			VkRenderPassBeginInfo renderPassInfo{};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = renderPass_;
-			renderPassInfo.framebuffer = res.framebuffers[res.currentImageIndex];
-			renderPassInfo.renderArea.offset = {0, 0};
-			renderPassInfo.renderArea.extent = res.extent;
-			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-			renderPassInfo.pClearValues = clearValues.data();
-
-			vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			res.renderPassActive = true;
-			vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-
-			VkViewport viewport{};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = static_cast<float>(res.extent.width);
-			viewport.height = static_cast<float>(res.extent.height);
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-			VkRect2D scissor{};
-			scissor.offset = {0, 0};
-			scissor.extent = res.extent;
-			vkCmdSetScissor(cmd, 0, 1, &scissor);
-		}
-	
-}
+ 		for (auto& [window, res] : windowRegistry) {
+ 			if (acquireImage(res, window, false)) {
+ 				beginWindowFrame(res);
+ 			}
+ 		}
+ 	
+ }
 
 
 
  void VulkanDevice::Clear(const IWindow *window) {
 
-		auto& res = windowRegistry[window];
+ 		auto& res = windowRegistry[window];
 
-		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+ 		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 
-		if (depthReadbackRequested_ && res.depthStagingBuffer != VK_NULL_HANDLE && !depthReadbackAvailable_) {
-			void* data;
-			vkMapMemory(_device, res.depthStagingMemory, 0, VK_WHOLE_SIZE, 0, &data);
-			VkFormat depthFormat = findDepthFormat();
-			size_t pixelCount = static_cast<size_t>(res.extent.width) * res.extent.height;
-			cachedDepthData_.resize(pixelCount);
-			cachedDepthW_ = static_cast<int>(res.extent.width);
-			cachedDepthH_ = static_cast<int>(res.extent.height);
-			if (depthFormat == VK_FORMAT_D24_UNORM_S8_UINT) {
-				const uint32_t* pixels = static_cast<const uint32_t*>(data);
-				for (size_t i = 0; i < pixelCount; i++) {
-					cachedDepthData_[i] = static_cast<float>(pixels[i] & 0x00FFFFFF) / 16777215.0f;
-				}
-			} else {
-				const float* pixels = static_cast<const float*>(data);
-				std::copy(pixels, pixels + pixelCount, cachedDepthData_.begin());
-			}
-			vkUnmapMemory(_device, res.depthStagingMemory);
-			depthReadbackAvailable_ = true;
-		}
+ 		if (depthReadbackRequested_ && !depthReadbackAvailable_) {
+ 			readbackDepthStaging(res);
+ 		}
 
-		VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
-			res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
+ 		if (!acquireImage(res, window, true)) {
+ 			return;
+ 		}
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			recreateSwapChain(window);
-			vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
-			result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
-				res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
-			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-				return;
-			}
-		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-			return;
-		}
+ 		drawCallCount_ = 0;
+ 		updateUniformBuffer(currentFrame_);
 
-		drawCallCount_ = 0;
-		updateUniformBuffer(currentFrame_);
+ 		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
+ 		beginWindowFrame(res);
+ 	
+ }
 
-		vkResetFences(_device, 1, &inFlightFences_[currentFrame_]);
-		vkResetCommandBuffer(res.commandBuffers[currentFrame_], 0);
 
-		auto cmd = res.commandBuffers[currentFrame_];
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(cmd, &beginInfo);
+ void VulkanDevice::readbackDepthStaging(VulkanWindowResources& res) {
 
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = m_VulkanClearColor.color;
-		clearValues[1].depthStencil = {1.0f, 0};
+ 		if (res.depthStagingBuffer == VK_NULL_HANDLE) {
+ 			return;
+ 		}
 
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = renderPass_;
-		renderPassInfo.framebuffer = res.framebuffers[res.currentImageIndex];
-		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = res.extent;
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+ 		void* data;
+ 		vkMapMemory(_device, res.depthStagingMemory, 0, VK_WHOLE_SIZE, 0, &data);
 
-		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		res.renderPassActive = true;
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
+ 		VkFormat depthFormat = findDepthFormat();
+ 		size_t pixelCount = static_cast<size_t>(res.extent.width) * res.extent.height;
+ 		cachedDepthData_.resize(pixelCount);
+ 		cachedDepthW_ = static_cast<int>(res.extent.width);
+ 		cachedDepthH_ = static_cast<int>(res.extent.height);
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(res.extent.width);
-		viewport.height = static_cast<float>(res.extent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
+ 		if (depthFormat == VK_FORMAT_D24_UNORM_S8_UINT) {
+ 			const uint32_t* pixels = static_cast<const uint32_t*>(data);
+ 			for (size_t i = 0; i < pixelCount; i++) {
+ 				cachedDepthData_[i] = static_cast<float>(pixels[i] & 0x00FFFFFF) / 16777215.0f;
+ 			}
+ 		} else {
+ 			const float* pixels = static_cast<const float*>(data);
+ 			std::copy(pixels, pixels + pixelCount, cachedDepthData_.begin());
+ 		}
 
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = res.extent;
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
-	
-}
+ 		vkUnmapMemory(_device, res.depthStagingMemory);
+ 		depthReadbackAvailable_ = true;
+ 	
+ }
+
+
+
+ bool VulkanDevice::acquireImage(VulkanWindowResources& res,  const IWindow* window,  bool waitFenceAfterRecreate) {
+
+ 		VkResult result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
+ 			res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
+
+ 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+ 			recreateSwapChain(window);
+ 			if (waitFenceAfterRecreate) {
+ 				vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
+ 			}
+ 			result = vkAcquireNextImageKHR(_device, res.swapchain, UINT64_MAX,
+ 				res.imageAvailableSemaphores[currentFrame_], VK_NULL_HANDLE, &res.currentImageIndex);
+ 		}
+
+ 		return result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR;
+ 	
+ }
+
+
+
+ void VulkanDevice::beginWindowFrame(VulkanWindowResources& res) {
+
+ 		vkResetCommandBuffer(res.commandBuffers[currentFrame_], 0);
+
+ 		auto cmd = res.commandBuffers[currentFrame_];
+
+ 		VkCommandBufferBeginInfo beginInfo{};
+ 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+ 		vkBeginCommandBuffer(cmd, &beginInfo);
+
+ 		std::array<VkClearValue, 2> clearValues{};
+ 		clearValues[0].color = m_VulkanClearColor.color;
+ 		clearValues[1].depthStencil = {1.0f, 0};
+
+ 		VkRenderPassBeginInfo renderPassInfo{};
+ 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+ 		renderPassInfo.renderPass = renderPass_;
+ 		renderPassInfo.framebuffer = res.framebuffers[res.currentImageIndex];
+ 		renderPassInfo.renderArea.offset = {0, 0};
+ 		renderPassInfo.renderArea.extent = res.extent;
+ 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+ 		renderPassInfo.pClearValues = clearValues.data();
+
+ 		vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+ 		res.renderPassActive = true;
+ 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(VertexFormat::Standard));
+
+ 		VkViewport viewport{};
+ 		viewport.x = 0.0f;
+ 		viewport.y = 0.0f;
+ 		viewport.width = static_cast<float>(res.extent.width);
+ 		viewport.height = static_cast<float>(res.extent.height);
+ 		viewport.minDepth = 0.0f;
+ 		viewport.maxDepth = 1.0f;
+ 		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+ 		VkRect2D scissor{};
+ 		scissor.offset = {0, 0};
+ 		scissor.extent = res.extent;
+ 		vkCmdSetScissor(cmd, 0, 1, &scissor);
+ 	
+ }
 
 
 
