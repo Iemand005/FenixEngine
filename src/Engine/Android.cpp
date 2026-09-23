@@ -25,7 +25,7 @@ namespace fe {
 		if (internalPath) return std::string(internalPath);
 		return std::string();
 #else
-		return GetExecutableDirectorye();
+		return GetExecutableDirectory();
 #endif
 	}
 

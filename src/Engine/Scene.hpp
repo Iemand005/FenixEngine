@@ -31,7 +31,6 @@ template<typename VertexType> class Mesh;
 class Scene {
 	private:
 	std::vector<std::shared_ptr<Object>> objects;
-	glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	Timer timer;
 
 	std::array<PointLight, kMaxPointLights> pointLights{};
@@ -63,7 +62,6 @@ public:
 
 	int GetLightCount() { return lightCount; }
 	PointLight* GetLights() { return pointLights.data(); }
-	std::array<PointLight, kMaxPointLights> GetLightArray() { return pointLights; }
 
 	double Update();
 	void ResolveCollisions();

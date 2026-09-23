@@ -19,7 +19,7 @@ namespace fe {
             std::cerr << "[Fenix Error] Failed to load image: " << filePath << " -> " << stbi_failure_reason() << "\n";
 
 // #include "WawaDir.hpp"
-			std::string exeDir = GetExecutableDirectorye();
+			std::string exeDir = GetExecutableDirectory();
 			std::string path2 = exeDir + "/" + filePath; // TODO WINDOWS BLEH BACKLSAHS DOES IT ACCPET FWND SLSH I THINK TI DOES
 			rawPixels = stbi_load(path2.c_str(), &data.width, &data.height, &data.channels, desiredChannels);
 			if (!rawPixels)

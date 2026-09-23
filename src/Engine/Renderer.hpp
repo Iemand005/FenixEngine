@@ -73,12 +73,6 @@ using DefaultWindow = fe::GLFW3Window;
 
 namespace fe {
 
-	enum class GraphicsAPI {
-		OpenGL,
-		OpenGLES,
-		Vulkan
-	};
-
 	struct RendererOptions : WindowOptions {
 #ifndef __EMSCRIPTEN__
 		bool useVulkan = true;
@@ -585,14 +579,6 @@ public:
 		GLenum err;
 		while ((err = glGetError()) != GL_NO_ERROR)
 			std::cerr << "[GL ERROR] " << label << " -> 0x" << std::hex << err << std::dec << " (" << err << ")" << std::endl;
-	}
-
-	void Update() {
-		double dt = scene->Update();
-	}
-
-	void Update() {
-		double dt = scene->Update();
 	}
 
 	virtual void InitUI() {}

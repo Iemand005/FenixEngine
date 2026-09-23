@@ -1,4 +1,6 @@
 
+#pragma once
+
 #if defined(__ANDROID__)
 #include <GLES3/gl31.h>
 #include <GLES3/gl3ext.h>
@@ -43,9 +45,7 @@ namespace fe {
       id = glCreateShader(shaderType);
     }
 
-    Shader(std::string text, GLenum shaderType) : Shader(shaderType) {//TODO: gette ridde of dez duplicatke here
-      if (!LoadShaderFile(text)) LoadText(text);;
-    }
+    Shader(std::string text, GLenum shaderType) : Shader(text, static_cast<ShaderType>(shaderType)) {}
 
     Shader(std::string text, ShaderType shaderType) : Shader(shaderType) {
       if (!LoadShaderFile(text))
@@ -86,7 +86,7 @@ namespace fe {
 			std::cerr << "Failed to open file: " << fileName << " In: " << cwd << std::endl;
 			fe::LogWarning("Shader LoadShaderFile failed to open: %s (cwd=%s)", fileName.c_str(), cwd.string().c_str());
 
-			std::string exeDir = GetExecutableDirectorye();
+			std::string exeDir = GetExecutableDirectory();
 			std::string path2 = exeDir + "/" + fileName;// TODO: this slash thing not corss latfromr!
 			file.open(path2);
 			if (!file.is_open())

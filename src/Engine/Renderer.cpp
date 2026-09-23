@@ -86,15 +86,10 @@ void Renderer::RenderObject(Object& object, bool transparentPass) {
 		mesh->SetDevice(renderDevice.get());
 		renderDevice->DrawMesh(mesh->GetGPUBuffers(), mesh->GetGPUTexture());
 	}
-	if (auto* obj = dynamic_cast<Object*>(&object)) {
-		for (auto& child : obj->GetChildren())
-			RenderObject(*child, transparentPass);
-	}
-	if (auto* obj = dynamic_cast<Object*>(&object)) {
-		for (auto& child : obj->GetChildren())
-			RenderObject(*child, transparentPass);
-	}
+	for (auto& child : object.GetChildren())
+		RenderObject(*child, transparentPass);
 	if (object.reverseWinding) renderDevice->SetFrontFace(true);
+}
 
 static bool HasTransparentMesh(const Object& obj) {
 	for (auto& mesh : obj.meshes) {

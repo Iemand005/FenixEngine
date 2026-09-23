@@ -15,7 +15,7 @@
 #include <filesystem>
 
 namespace fe {
-	inline std::string GetExecutableDirectorye()
+	inline std::string GetExecutableDirectory()
 	{
 #ifdef _WIN32
 		char exePath[MAX_PATH] = {0};

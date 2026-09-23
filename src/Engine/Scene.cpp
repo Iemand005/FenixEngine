@@ -62,15 +62,8 @@ bool Scene::RemoveObject(Object* object) {
 		[object](const std::shared_ptr<Object>& obj) {
 			return obj.get() == object;
 		});
-	if (it != objects.end()) {
-		objects.erase(it);
-		return true;
-	}
-	for (auto& obj : objects) {
-		if (RemoveChildRecursive(obj.get(), object))
-			return true;
-	}
-	return false;
+	if (it == objects.end()) return false;
+	return RemoveObject(*it);
 }
 
 void Scene::SetLight(int index) {
@@ -82,10 +75,8 @@ void Scene::SetLight(int index) {
 
 static void UpdateObjectRecursive(Object& obj, double dt) {
 	obj.Update(dt);
-	if (auto* o = dynamic_cast<Object*>(&obj)) {
-		for (auto& child : o->GetChildren())
-			UpdateObjectRecursive(*child, dt);
-	}
+	for (auto& child : obj.GetChildren())
+		UpdateObjectRecursive(*child, dt);
 }
 
 double Scene::Update() {
