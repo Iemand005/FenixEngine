@@ -136,9 +136,8 @@ class Object : public ObjectBase {
 
 	template <typename VertexType>
 	void PushMesh(Mesh<VertexType>&& mesh) {
-		if (mesh.physicsObject) {
+		if (mesh.physicsObject)
 			this->physicsObject = std::move(mesh.physicsObject);
-		}
 		meshes.push_back(std::make_unique<Mesh<VertexType>>(std::move(mesh)));
 	}
 
