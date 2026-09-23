@@ -112,19 +112,19 @@ void Scene::DrawCircle(const glm::vec3& position, float radius, int segments, co
 	rotation = glm::rotate(rotation, glm::radians(rotationDegrees.z), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * rotation;
 
-	std::vector<glm::vec3> circleVertices;
-	circleVertices.reserve(static_cast<size_t>(segments));
+	gizmoCircleScratch_.clear();
+	gizmoCircleScratch_.reserve(static_cast<size_t>(segments));
 
 	constexpr float kTwoPi = 6.28318530717958647692f;
 	for (int i = 0; i < segments; ++i) {
 		float t = kTwoPi * (static_cast<float>(i) / static_cast<float>(segments));
 		glm::vec3 localPoint(std::cos(t) * radius, 0.0f, std::sin(t) * radius);
-		circleVertices.emplace_back(glm::vec3(transform * glm::vec4(localPoint, 1.0f)));
+		gizmoCircleScratch_.emplace_back(glm::vec3(transform * glm::vec4(localPoint, 1.0f)));
 	}
 
 	renderDevice_->DrawGizmoLines(
-		reinterpret_cast<const float*>(circleVertices.data()),
-		static_cast<int>(circleVertices.size()),
+		reinterpret_cast<const float*>(gizmoCircleScratch_.data()),
+		static_cast<int>(gizmoCircleScratch_.size()),
 		GizmoDrawMode::LineLoop, color, 2.0f,
 		viewMatrix_, projectionMatrix_);
 }
@@ -160,24 +160,24 @@ void Scene::DrawArrow(const glm::vec3& from, const glm::vec3& to, const glm::vec
 			shaftEnd - right * headRadius - up * headRadius,
 			shaftEnd + right * headRadius - up * headRadius};
 
-	std::vector<glm::vec3> arrowVertices;
-	arrowVertices.reserve(18);
-	arrowVertices.push_back(from);
-	arrowVertices.push_back(shaftEnd);
+	gizmoArrowScratch_.clear();
+	gizmoArrowScratch_.reserve(18);
+	gizmoArrowScratch_.push_back(from);
+	gizmoArrowScratch_.push_back(shaftEnd);
 
 	for (const auto& point : headRing) {
-		arrowVertices.push_back(to);
-		arrowVertices.push_back(point);
+		gizmoArrowScratch_.push_back(to);
+		gizmoArrowScratch_.push_back(point);
 	}
 
 	for (size_t i = 0; i < headRing.size(); ++i) {
-		arrowVertices.push_back(headRing[i]);
-		arrowVertices.push_back(headRing[(i + 1) % headRing.size()]);
+		gizmoArrowScratch_.push_back(headRing[i]);
+		gizmoArrowScratch_.push_back(headRing[(i + 1) % headRing.size()]);
 	}
 
 	renderDevice_->DrawGizmoLines(
-		reinterpret_cast<const float*>(arrowVertices.data()),
-		static_cast<int>(arrowVertices.size()),
+		reinterpret_cast<const float*>(gizmoArrowScratch_.data()),
+		static_cast<int>(gizmoArrowScratch_.size()),
 		GizmoDrawMode::Lines, color, 2.0f,
 		viewMatrix_, projectionMatrix_);
 }

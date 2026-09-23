@@ -34,6 +34,7 @@ private:
 	};
 
 	void SetAspect(float aspect) {
+		if (glm::abs(aspect - this->aspect) < 1e-6f) return;
 		this->aspect = aspect;
 		projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 	}
@@ -43,6 +44,7 @@ private:
 	}
 
 	void SetPos(const glm::vec3& pos) {
+		if (pos == this->position) return;
 		this->position = pos;
 		viewMatrix = glm::lookAt(position, position + front, up);
 	}
@@ -84,6 +86,7 @@ private:
 	float GetFOV() const { return fov; }
 
 	void SetFOV(float newFov) {
+		if (glm::abs(newFov - fov) < 1e-6f) return;
 		fov = newFov;
 		projectionMatrix = glm::perspective(glm::radians(fov), aspect, nearDist, farDist);
 	}

@@ -95,6 +95,8 @@ public:
 	std::unique_ptr<ShaderProgram> shader;
 	fe::Timer fpsCounter;
 
+	std::vector<Object*> transparentScratch_;
+
 	std::unique_ptr<IRenderDevice> renderDevice = nullptr;
 	std::vector<std::unique_ptr<IRenderDevice>> renderDevices;
 	std::unordered_map<const IWindow*, IRenderDevice*> windowDeviceMap;
@@ -423,6 +425,7 @@ public:
 	void RenderObject(Object& object, bool transparentPass = false);
 	void RenderScene(Scene *scene);
 	void RenderScene() { RenderScene(scene.get()); }
+	static void UploadLights(ShaderProgram* target, Scene* targetScene);
 
 	void RenderObjectOnDevice(Object& object, IRenderDevice* dev, bool transparentPass) {
 		if (frustumCullingEnabled) {
@@ -472,26 +475,12 @@ public:
 			if (vw > 0 && vh > 0)
 				perWindowProj = glm::perspective(glm::radians(camera->fov), (float)vw / (float)vh, camera->nearDist, camera->farDist);
 
-			if (shader) {
+if (shader) {
 				shader->Use();
 				float elapsedTime = (float)GetWindow()->GetTime();
-				shader->SetFloat("time", elapsedTime);
+				shader->SetFloat("time", elapsedTime); // TODO: report time other way (via param?) for embeddded rendering
 
-				if (scene) {
-					int count = scene->GetLightCount();
-					auto pointLights = scene->GetLights();
-					shader->SetInt("lightCount", count);
-					for (int i = 0; i < count; ++i) {
-						const auto& l = pointLights[i];
-						shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-						shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-						shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-						shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-					}
-				}
-
-				shader->SetMat4("view", camera->GetViewMatrix());
-				shader->SetMat4("projection", perWindowProj);
+				if (scene) UploadLights(shader.get(), scene.get());
 			}
 
 			d->SetMat4("view", camera->GetViewMatrix());
@@ -532,8 +521,7 @@ public:
 
 			shader->SetFloat("time", elapsedTime); // TODO: report time other way (via param?) for embeddded rendering
 #endif
-			shader->SetMat4("view", camera->GetViewMatrix());
-			shader->SetMat4("projection", camera->GetProjectionMatrix());
+			UploadLights(shader.get(), scene.get());
 		}
 
 		renderDevice->SetMat4("view", camera->GetViewMatrix());
@@ -555,8 +543,8 @@ public:
 			auto windows = dev->GetWindows();
 			for (auto &window : windows) {
 				camera->SetAspect(window->width, window->height);
-				renderDevice->SetMat4("view", camera->GetViewMatrix());
-				renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+				dev->SetMat4("view", camera->GetViewMatrix());
+				dev->SetMat4("projection", camera->GetProjectionMatrix());
 				dev->SubmitFrame(window);
 			}
 		}

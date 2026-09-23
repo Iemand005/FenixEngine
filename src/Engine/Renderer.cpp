@@ -77,7 +77,6 @@ void Renderer::RenderObject(Object& object, bool transparentPass) {
 	glm::vec3 toCenter = center - camera->GetPos();
 	if (frustumCullingEnabled && glm::dot(toCenter, camera->front) < -object.boundingRadius)
 		return;
-	if (shader) shader->SetMat4("model", model);
 	renderDevice->SetMat4("model", model);
 	renderDevice->SetVec3("objectColor", object.color);
 	if (object.reverseWinding) renderDevice->SetFrontFace(false);
@@ -104,19 +103,37 @@ static void CollectObjects(Object& obj, std::vector<Object*>& out) {
 		CollectObjects(*child, out);
 }
 
-void Renderer::RenderScene(Scene *scene) {
-	if (shader) {
-		int count = scene->GetLightCount();
-		auto pointLights = scene->GetLights();
-		shader->SetInt("lightCount", count);
-		for (int i = 0; i < count; ++i) {
-			const auto& l = pointLights[i];
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
+void Renderer::UploadLights(ShaderProgram* target, Scene* targetScene) {
+	static std::vector<std::string> namePos, nameCol, nameInt, nameRad;
+	if (namePos.empty()) {
+		namePos.reserve(kMaxPointLights);
+		nameCol.reserve(kMaxPointLights);
+		nameInt.reserve(kMaxPointLights);
+		nameRad.reserve(kMaxPointLights);
+		for (int i = 0; i < kMaxPointLights; ++i) {
+			std::string prefix = "pointLights[" + std::to_string(i) + "].";
+			namePos.push_back(prefix + "position");
+			nameCol.push_back(prefix + "color");
+			nameInt.push_back(prefix + "intensity");
+			nameRad.push_back(prefix + "radius");
 		}
 	}
+	if (!target || !targetScene) return;
+	int count = std::min(targetScene->GetLightCount(), kMaxPointLights);
+	target->SetInt("lightCount", count);
+	if (count <= 0) return;
+	const auto* lights = targetScene->GetLights();
+	for (int i = 0; i < count; ++i) {
+		const auto& l = lights[i];
+		target->SetVec3(namePos[i], l.position);
+		target->SetVec3(nameCol[i], l.color);
+		target->SetFloat(nameInt[i], l.intensity);
+		target->SetFloat(nameRad[i], std::max(0.001f, l.radius));
+	}
+}
+
+void Renderer::RenderScene(Scene *scene) {
+	if (shader) UploadLights(shader.get(), scene);
 
 	renderDevice->BeginFrame();
 
@@ -129,25 +146,25 @@ void Renderer::RenderScene(Scene *scene) {
 	// Transparent pass (depth write OFF, sorted back-to-front)
 	renderDevice->SetTransparentMode(true);
 	{
-		std::vector<Object*> transparentObjs;
-		for (auto& object : scene->GetObjects()) {
-			std::vector<Object*> children;
-			CollectObjects(*object, children);
-			for (auto* o : children) {
-				if (HasTransparentMesh(*o))
-					transparentObjs.push_back(o);
-			}
+		transparentScratch_.clear();
+		transparentScratch_.reserve(scene->GetObjects().size() * 4);
+		for (auto& object : scene->GetObjects())
+			CollectObjects(*object, transparentScratch_);
+		auto end = std::remove_if(transparentScratch_.begin(), transparentScratch_.end(),
+			[](const Object* o) { return !HasTransparentMesh(*o); });
+		size_t count = static_cast<size_t>(end - transparentScratch_.begin());
+		if (count > 1) {
+			glm::vec3 camPos = camera ? camera->GetPos() : glm::vec3(0.0f);
+			std::sort(transparentScratch_.begin(), end,
+				[&camPos](const Object* a, const Object* b) {
+					float da = glm::length2(a->state.position - camPos);
+					float db = glm::length2(b->state.position - camPos);
+					return da > db;
+				});
 		}
-		glm::vec3 camPos = camera ? camera->GetPos() : glm::vec3(0.0f);
-		std::sort(transparentObjs.begin(), transparentObjs.end(),
-			[&camPos](const Object* a, const Object* b) {
-				float da = glm::length2(a->state.position - camPos);
-				float db = glm::length2(b->state.position - camPos);
-				return da > db;
-			});
-		for (auto* obj : transparentObjs) {
+		for (size_t i = 0; i < count; ++i) {
+			Object* obj = transparentScratch_[i];
 			glm::mat4 model = obj->GetModelMatrix();
-			if (shader) shader->SetMat4("model", model);
 			renderDevice->SetMat4("model", model);
 			renderDevice->SetVec3("objectColor", obj->color);
 			if (obj->reverseWinding) renderDevice->SetFrontFace(false);

@@ -725,6 +725,7 @@ fe::WindowSize fe::SDLWindow::GetFramebufferSize() {
 }
 
 void SDLWindow::MakeCurrentGLContext() const {
+	if (SDL_GL_GetCurrentWindow() == GetWindow() && SDL_GL_GetCurrentContext() == GetSDLGLContext()) return;
 	SDL_GL_MakeCurrent(GetWindow(), GetSDLGLContext());
 }
 

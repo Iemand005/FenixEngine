@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -22,6 +24,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 	std::vector<IWindow*> registeredWindows_;
 	IWindow* activeWindow_ = nullptr;
 
+	GLint cachedUniformProgram_ = 0;
+	std::unordered_map<std::string, GLint> uniformLocationCache_;
+
+	GLint GetUniformLocation(const char* name);
 	void MakeCurrent();
 	void SetActiveWindow(IWindow* w);
 	IWindow* GetActiveWindow() const { return activeWindow_; }

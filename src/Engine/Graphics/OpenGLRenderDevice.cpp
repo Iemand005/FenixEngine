@@ -211,28 +211,42 @@ void OpenGLRenderDevice::UnregisterWindow(const IWindow* window) {
 		registeredWindows_.end());
 }
 
+GLint OpenGLRenderDevice::GetUniformLocation(const char* name) {
+	GLint prog = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+	if (prog != cachedUniformProgram_) {
+		cachedUniformProgram_ = prog;
+		uniformLocationCache_.clear();
+	}
+	auto it = uniformLocationCache_.find(name);
+	if (it != uniformLocationCache_.end()) return it->second;
+	GLint loc = prog ? glGetUniformLocation(prog, name) : -1;
+	uniformLocationCache_[name] = loc;
+	return loc;
+}
+
 void OpenGLRenderDevice::SetVec3(const char* name, const glm::vec3& value) {
 	MakeCurrent();
-	GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-	if (prog) glUniform3f(glGetUniformLocation(prog, name), value.x, value.y, value.z);
+	GLint loc = GetUniformLocation(name);
+	if (loc != -1) glUniform3f(loc, value.x, value.y, value.z);
 }
 
 void OpenGLRenderDevice::SetMat4(const char* name, const glm::mat4& value) {
 	MakeCurrent();
-	GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-	if (prog) glUniformMatrix4fv(glGetUniformLocation(prog, name), 1, GL_FALSE, glm::value_ptr(value));
+	GLint loc = GetUniformLocation(name);
+	if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void OpenGLRenderDevice::SetInt(const char* name, int value) {
 	MakeCurrent();
-	GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-	if (prog) glUniform1i(glGetUniformLocation(prog, name), value);
+	GLint loc = GetUniformLocation(name);
+	if (loc != -1) glUniform1i(loc, value);
 }
 
 void OpenGLRenderDevice::SetFloat(const char* name, float value) {
 	MakeCurrent();
-	GLint prog; glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-	if (prog) glUniform1f(glGetUniformLocation(prog, name), value);
+	GLint loc = GetUniformLocation(name);
+	if (loc != -1) glUniform1f(loc, value);
 }
 
 void OpenGLRenderDevice::SetFrontFace(bool ccw) {
@@ -272,9 +286,10 @@ void OpenGLRenderDevice::Resize(int width, int height) {
 }
 
 std::vector<const IWindow*> OpenGLRenderDevice::GetWindows() {
-	std::vector<IWindow*> windows;
+	std::vector<const IWindow*> windows;
 	windows.reserve(registeredWindows_.size());
-	return {};
+	for (IWindow* w : registeredWindows_) windows.push_back(w);
+	return windows;
 }
 
 std::unique_ptr<IGPUBuffers> OpenGLRenderDevice::CreateGPUBuffers() {

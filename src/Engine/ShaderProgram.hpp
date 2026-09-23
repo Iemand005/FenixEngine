@@ -134,23 +134,19 @@ class ShaderProgram {
 
 
   void SetMat4(const std::string& name, const glm::mat4& mat) const {
-		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		LogUniformIfNotFound(loc, name);
+		GLint loc = GetLocationCached(name);
 		if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
 	}
 	void SetVec3(const std::string& name, const glm::vec3& vec) const {
-		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		LogUniformIfNotFound(loc, name);
+		GLint loc = GetLocationCached(name);
 		if (loc != -1) glUniform3f(loc, vec.x, vec.y, vec.z);
 	}
 	void SetFloat(const std::string& name, float value) const {
-		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		LogUniformIfNotFound(loc, name);
+		GLint loc = GetLocationCached(name);
 		if (loc != -1) glUniform1f(loc, value);
 	}
 	void SetInt(const std::string& name, int value) const {
-		GLint loc = glGetUniformLocation(this->id, name.c_str());
-		LogUniformIfNotFound(loc, name);
+		GLint loc = GetLocationCached(name);
 		if (loc != -1) glUniform1i(loc, value);
 	}
 
@@ -162,6 +158,16 @@ class ShaderProgram {
 
  private:
   mutable std::unordered_set<std::string> missingUniforms;
+  mutable std::unordered_map<std::string, GLint> uniformLocations;
+
+  GLint GetLocationCached(const std::string& name) const {
+    auto cached = uniformLocations.find(name);
+    if (cached != uniformLocations.end()) return cached->second;
+    GLint loc = glGetUniformLocation(id, name.c_str());
+    uniformLocations[name] = loc;
+    LogUniformIfNotFound(loc, name);
+    return loc;
+  }
 };
 }
 

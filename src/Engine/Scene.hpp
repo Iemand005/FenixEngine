@@ -40,6 +40,9 @@ class Scene {
 	glm::mat4 viewMatrix_ = glm::mat4(1.0f);
 	glm::mat4 projectionMatrix_ = glm::mat4(1.0f);
 
+	std::vector<glm::vec3> gizmoCircleScratch_;
+	std::vector<glm::vec3> gizmoArrowScratch_;
+
 public:
 	Scene();
 	~Scene();

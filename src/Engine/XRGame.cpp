@@ -966,18 +966,7 @@ void XRGame::RedrawVR() {
 	renderDevice->BeginVRFrame();
 
 	// Set up lighting once, shared by all eyes
-	if (shader) {
-		int count = scene->GetLightCount();
-		auto pointLights = scene->GetLights();
-		shader->SetInt("lightCount", count);
-		for (int i = 0; i < count; ++i) {
-			const auto& l = pointLights[i];
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].position", l.position);
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].color", l.color);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].intensity", l.intensity);
-			shader->SetFloat("pointLights[" + std::to_string(i) + "].radius", std::max(0.001f, l.radius));
-		}
-	}
+	if (shader) UploadLights(shader.get(), scene.get());
 
 	for (uint32_t eye = 0; eye < viewCount; eye++) {
 		XrPosef pose = views[eye].pose;
