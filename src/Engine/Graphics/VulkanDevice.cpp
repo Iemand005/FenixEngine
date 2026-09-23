@@ -101,212 +101,148 @@ createRenderPass();
 	
 }
 
- void VulkanDevice::SubmitFrame() {
+void VulkanDevice::SubmitFrame() {
 
-		std::vector<const IWindow*> orderedWindows;
-		orderedWindows.reserve(windowRegistry.size());
-		for (auto& [window, res] : windowRegistry) {
-			orderedWindows.push_back(window);
-		}
+ 		std::vector<const IWindow*> windows;
+ 		windows.reserve(windowRegistry.size());
+ 		for (auto& [window, res] : windowRegistry) {
+ 			(void)res;
+ 			windows.push_back(window);
+ 		}
 
-		for (auto* window : orderedWindows) {
-			auto& res = windowRegistry[window];
-			auto cmd = res.commandBuffers[currentFrame_];
-
-			if (!res.renderPassActive) {
-				vkEndCommandBuffer(cmd);
-				continue;
-			}
-
-			vkCmdEndRenderPass(cmd);
-			res.renderPassActive = false;
-
-			if (depthReadbackRequested_) {
-				auto extent = res.extent;
-				VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
-				if (res.depthStagingBuffer == VK_NULL_HANDLE) {
-					createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-						res.depthStagingBuffer, res.depthStagingMemory);
-				}
-
-				VkImageMemoryBarrier barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.image = res.depthImage;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				barrier.subresourceRange.levelCount = 1;
-				barrier.subresourceRange.layerCount = 1;
-				barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-				VkBufferImageCopy copyRegion{};
-				copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				copyRegion.imageSubresource.layerCount = 1;
-				copyRegion.imageExtent = {extent.width, extent.height, 1};
-				vkCmdCopyImageToBuffer(cmd, res.depthImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, res.depthStagingBuffer, 1, &copyRegion);
-
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-				depthReadbackAvailable_ = false;
-			}
-
-			if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to record command buffer.");
-			}
-		}
-
-		std::vector<VkCommandBuffer> cmds;
-		std::vector<VkSemaphore> waitSemaphores;
-		std::vector<VkPipelineStageFlags> waitStages;
-		std::vector<VkSemaphore> signalSemaphores;
-
-		for (auto* window : orderedWindows) {
-			auto& res = windowRegistry[window];
-			cmds.push_back(res.commandBuffers[currentFrame_]);
-			waitSemaphores.push_back(res.imageAvailableSemaphores[currentFrame_]);
-			waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-			signalSemaphores.push_back(res.renderFinishedSemaphores[res.currentImageIndex]);
-		}
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-		submitInfo.pWaitSemaphores = waitSemaphores.data();
-		submitInfo.pWaitDstStageMask = waitStages.data();
-		submitInfo.commandBufferCount = static_cast<uint32_t>(cmds.size());
-		submitInfo.pCommandBuffers = cmds.data();
-		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-		submitInfo.pSignalSemaphores = signalSemaphores.data();
-
-		VkResult submitResult = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
-		if (submitResult != VK_SUCCESS) {
-			throw std::runtime_error("Failed to submit draw command buffer.");
-		}
-
-		for (auto* window : orderedWindows) {
-			auto& res = windowRegistry[window];
-
-			VkPresentInfoKHR presentInfo{};
-			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[res.currentImageIndex];
-			VkSwapchainKHR swapChains[] = {res.swapchain};
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &res.currentImageIndex;
-
-			VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
-			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-				recreateSwapChain(window);
-			}
-		}
-
-		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-	
-}
+ 		for (auto* window : windows) {
+ 			recordEndOfFrame(windowRegistry[window]);
+ 		}
+ 		submitAndPresent(windows);
+ 	
+ }
 
 
 
  void VulkanDevice::SubmitFrame(const IWindow *window) {
 
-		auto& res = windowRegistry[window];
-		auto cmd = res.commandBuffers[currentFrame_];
+ 		recordEndOfFrame(windowRegistry[window]);
+ 		submitAndPresent({window});
+ 	
+ }
 
-		if (res.renderPassActive) {
-			vkCmdEndRenderPass(cmd);
-			res.renderPassActive = false;
-		}
 
-		if (depthReadbackRequested_) {
-			auto extent = res.extent;
-			VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
-			if (res.depthStagingBuffer == VK_NULL_HANDLE) {
-				createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-					res.depthStagingBuffer, res.depthStagingMemory);
-			}
 
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.image = res.depthImage;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+ void VulkanDevice::recordEndOfFrame(VulkanWindowResources& res) {
 
-			VkBufferImageCopy copyRegion{};
-			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			copyRegion.imageSubresource.layerCount = 1;
-			copyRegion.imageExtent = {extent.width, extent.height, 1};
-			vkCmdCopyImageToBuffer(cmd, res.depthImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, res.depthStagingBuffer, 1, &copyRegion);
+ 		auto cmd = res.commandBuffers[currentFrame_];
 
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+ 		if (!res.renderPassActive) {
+ 			vkEndCommandBuffer(cmd);
+ 			return;
+ 		}
 
-			depthReadbackAvailable_ = false;
-		}
+ 		vkCmdEndRenderPass(cmd);
+ 		res.renderPassActive = false;
 
-		if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to record command buffer.");
-		}
+ 		if (depthReadbackRequested_) {
+ 			auto extent = res.extent;
+ 			VkDeviceSize needed = static_cast<VkDeviceSize>(extent.width) * extent.height * sizeof(float);
+ 			if (res.depthStagingBuffer == VK_NULL_HANDLE) {
+ 				createBuffer(needed, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+ 					VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+ 					res.depthStagingBuffer, res.depthStagingMemory);
+ 			}
 
-		VkSemaphore waitSemaphores[] = {res.imageAvailableSemaphores[currentFrame_]};
-		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		VkSemaphore signalSemaphores[] = {res.renderFinishedSemaphores[res.currentImageIndex]};
+ 			VkImageMemoryBarrier barrier{};
+ 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+ 			barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+ 			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+ 			barrier.image = res.depthImage;
+ 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+ 			barrier.subresourceRange.levelCount = 1;
+ 			barrier.subresourceRange.layerCount = 1;
+ 			barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+ 			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+ 			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &cmd;
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
+ 			VkBufferImageCopy copyRegion{};
+ 			copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+ 			copyRegion.imageSubresource.layerCount = 1;
+ 			copyRegion.imageExtent = {extent.width, extent.height, 1};
+ 			vkCmdCopyImageToBuffer(cmd, res.depthImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, res.depthStagingBuffer, 1, &copyRegion);
 
-		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to submit draw command buffer.");
-		}
+ 			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+ 			barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+ 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+ 			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+ 			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		VkPresentInfoKHR presentInfo{};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-		VkSwapchainKHR swapChains[] = {res.swapchain};
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &res.currentImageIndex;
+ 			depthReadbackAvailable_ = false;
+ 		}
 
-		VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
-		if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-			recreateSwapChain(window);
-		}
+ 		if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
+ 			throw std::runtime_error("Failed to record command buffer.");
+ 		}
+ 	
+ }
 
-		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-	
-}
+
+
+ void VulkanDevice::submitAndPresent(const std::vector<const IWindow*>& windows) {
+
+ 		std::vector<VkCommandBuffer> cmds;
+ 		std::vector<VkSemaphore> waitSemaphores;
+ 		std::vector<VkPipelineStageFlags> waitStages;
+ 		std::vector<VkSemaphore> signalSemaphores;
+
+ 		for (auto* window : windows) {
+ 			auto& res = windowRegistry[window];
+ 			cmds.push_back(res.commandBuffers[currentFrame_]);
+ 			waitSemaphores.push_back(res.imageAvailableSemaphores[currentFrame_]);
+ 			waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+ 			signalSemaphores.push_back(res.renderFinishedSemaphores[res.currentImageIndex]);
+ 		}
+
+ 		VkSubmitInfo submitInfo{};
+ 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+ 		submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+ 		submitInfo.pWaitSemaphores = waitSemaphores.data();
+ 		submitInfo.pWaitDstStageMask = waitStages.data();
+ 		submitInfo.commandBufferCount = static_cast<uint32_t>(cmds.size());
+ 		submitInfo.pCommandBuffers = cmds.data();
+ 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+ 		submitInfo.pSignalSemaphores = signalSemaphores.data();
+
+ 		VkResult submitResult = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
+ 		if (submitResult != VK_SUCCESS) {
+ 			throw std::runtime_error("Failed to submit draw command buffer.");
+ 		}
+
+ 		for (auto* window : windows) {
+ 			auto& res = windowRegistry[window];
+
+ 			VkPresentInfoKHR presentInfo{};
+ 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+ 			presentInfo.waitSemaphoreCount = 1;
+ 			presentInfo.pWaitSemaphores = &res.renderFinishedSemaphores[res.currentImageIndex];
+ 			VkSwapchainKHR swapChains[] = {res.swapchain};
+ 			presentInfo.swapchainCount = 1;
+ 			presentInfo.pSwapchains = swapChains;
+ 			presentInfo.pImageIndices = &res.currentImageIndex;
+
+ 			VkResult presentResult = vkQueuePresentKHR(presentQueue_, &presentInfo);
+ 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+ 				recreateSwapChain(window);
+ 			}
+ 		}
+
+ 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
+ 	
+ }
 
 
 
  void VulkanDevice::RegisterWindow(IWindow* window) {
 
-		setupWindowResources(window);
-	
-}
+ 		setupWindowResources(window);
+ 	
+ }
 
 
 
@@ -698,24 +634,7 @@ createRenderPass();
 
 		vkUpdateDescriptorSets(_device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 
-		VkPipeline requiredPipeline;
-		if (transparentMode_) {
-			if (vkBuffers->vertexFormat == VertexFormat::Array) {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineArrayCWTransparent_ : graphicsPipelineArrayTransparent_;
-			} else if (vkBuffers->vertexFormat == VertexFormat::Foxcraft) {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCWTransparent_ : graphicsPipelineFoxcraftTransparent_;
-			} else {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineCWTransparent_ : graphicsPipelineTransparent_;
-			}
-		} else {
-			if (vkBuffers->vertexFormat == VertexFormat::Array) {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineArrayCW_ : graphicsPipelineArray_;
-			} else if (vkBuffers->vertexFormat == VertexFormat::Foxcraft) {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCW_ : graphicsPipelineFoxcraft_;
-			} else {
-				requiredPipeline = reverseWinding_ ? graphicsPipelineCW_ : graphicsPipeline_;
-			}
-		}
+VkPipeline requiredPipeline = GetGraphicsPipeline(vkBuffers->vertexFormat, transparentMode_, reverseWinding_);
 
 		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{currentModel_, currentObjectColor_};
 
@@ -749,7 +668,7 @@ createRenderPass();
 
 		if (drawCount == 0) return;
 
-		VkPipeline requiredPipeline = reverseWinding_ ? graphicsPipelineFoxcraftCW_ : graphicsPipelineFoxcraft_;
+		VkPipeline requiredPipeline = GetGraphicsPipeline(VertexFormat::Packed, false, reverseWinding_);
 		struct PushData { glm::mat4 model; glm::vec4 objectColor; } pushData{glm::mat4(1.0f), glm::vec4(1.0f)};
 
 		for (auto& [window, res] : windowRegistry) {
