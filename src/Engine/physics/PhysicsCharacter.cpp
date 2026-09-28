@@ -34,11 +34,12 @@ struct PhysicsCharacter::Impl {
 	JPH::PhysicsSystem* physicsSystem = nullptr;
 	JPH::TempAllocator* tempAllocator = nullptr;
 	JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
-	JPH::Vec3 desiredHorizontal{0.0f, 0.0f, 0.0f};
+	JPH::Vec3 inputDirection{0.0f, 0.0f, 0.0f};
 	bool wantsJump = false;
 	float jumpSpeed = 8.5f;
 	float height = 1.0f;
 	float centerOffset = 0.5f;
+	MovementSettings movement{};
 #endif
 };
 
@@ -98,12 +99,27 @@ int PhysicsCharacter::Initialize(JPH::PhysicsSystem* physicsSystem, JPH::TempAll
 #endif
 }
 
-void PhysicsCharacter::SetInput(const glm::vec3& desiredHorizontalVelocity, bool wantsJump) {
+void PhysicsCharacter::SetInput(const glm::vec3& inputDirection, bool wantsJump) {
 #ifndef EXCLUDE_JOLT
 	if (!impl) return;
-	impl->desiredHorizontal = Vec3(desiredHorizontalVelocity.x, 0.0f, desiredHorizontalVelocity.z);
+	impl->inputDirection = Vec3(inputDirection.x, 0.0f, inputDirection.z);
 	impl->wantsJump = wantsJump;
 #endif
+}
+
+void PhysicsCharacter::SetMovementSettings(const MovementSettings& settings) {
+#ifndef EXCLUDE_JOLT
+	if (!impl) return;
+	impl->movement = settings;
+#endif
+}
+
+const PhysicsCharacter::MovementSettings& PhysicsCharacter::GetMovementSettings() const {
+	static const MovementSettings fallback{};
+#ifndef EXCLUDE_JOLT
+	if (impl) return impl->movement;
+#endif
+	return fallback;
 }
 
 void PhysicsCharacter::SetJumpSpeed(float jumpSpeed) {
@@ -125,7 +141,17 @@ void PhysicsCharacter::Update(double deltaTime) {
 	if (!impl || !impl->character || impl->physicsSystem == nullptr || impl->tempAllocator == nullptr)
 		return;
 
-	const float dt = static_cast<float>(deltaTime);
+	// Minecraft's movement runs on a fixed 20 Hz tick. The acceleration and
+	// drag constants are authored per tick, so we scale them by however many
+	// ticks this frame is worth; the resulting top speed is the same at 20, 60
+	// or 240 fps. A stall (window drag, load, breakpoint) is clamped, because
+	// integrating a second of movement in one step would launch the player
+	// through the terrain.
+	static constexpr double MOVEMENT_TICK_SECONDS = 0.05;
+	static constexpr double MAX_DELTA_TIME = 0.1;
+	const float dt = static_cast<float>(std::min(deltaTime, MAX_DELTA_TIME));
+	const float ticks = dt / static_cast<float>(MOVEMENT_TICK_SECONDS);
+
 	const Vec3 up = Vec3::sAxisY();
 	const Vec3 gravity = impl->physicsSystem->GetGravity();
 	const RVec3 startPosition = impl->character->GetPosition();
@@ -136,26 +162,48 @@ void PhysicsCharacter::Update(double deltaTime) {
 	const Vec3 currentVerticalVelocity = up * currentVelocity.Dot(up);
 	const Vec3 groundVelocity = impl->character->GetGroundVelocity();
 	const bool movingTowardsGround = (currentVerticalVelocity.GetY() - groundVelocity.GetY()) < 0.1f;
+	const bool onGround = impl->character->GetGroundState() == CharacterVirtual::EGroundState::OnGround;
 
-	Vec3 newVelocity;
-	if (impl->character->GetGroundState() == CharacterVirtual::EGroundState::OnGround && movingTowardsGround)
+	Vec3 verticalVelocity;
+	if (onGround && movingTowardsGround)
 	{
-		newVelocity = groundVelocity;
+		verticalVelocity = up * groundVelocity.Dot(up);
 		if (impl->wantsJump)
-			newVelocity += impl->jumpSpeed * up;
+			verticalVelocity += impl->jumpSpeed * up;
 	}
 	else
 	{
-		newVelocity = currentVerticalVelocity;
+		verticalVelocity = currentVerticalVelocity;
 	}
 
 	// Apply gravity to the vertical velocity.
-	newVelocity += gravity * dt;
+	verticalVelocity += gravity * dt;
 
-	// Horizontal input is applied both on the ground and in the air so the
-	// player keeps analogue control while airborne (arcade-style handling).
-	newVelocity += impl->desiredHorizontal;
+	// Horizontal movement is acceleration plus drag, not "set velocity to the
+	// walk speed". Each tick the velocity we ended last tick with is carried
+	// forward, friction retains a fraction of it, and the input direction
+	// adds a fixed amount on top:
+	//
+	//     v = v * retention + inputDirection * acceleration
+	//
+	// The terminal speed that falls out of that, acceleration / (1 -
+	// retention), is what keeps normal walking around 4.32 m/s even though the
+	// per-tick numbers look tiny. Friction is applied to the velocity only,
+	// never to the input, which is why the input is added afterwards.
+	const MovementSettings& movement = impl->movement;
+	const bool supported = onGround && impl->character->IsSupported();
+	const float retention = supported ? movement.groundVelocityRetention : movement.airVelocityRetention;
+	const float acceleration = supported ? movement.groundAcceleration : movement.airAcceleration;
+	// A moving platform carries the player itself; only the velocity the
+	// player added on top of it should be dragged and accelerated.
+	const Vec3 groundHorizontal = groundVelocity - up * groundVelocity.Dot(up);
+	const Vec3 currentHorizontal = currentVelocity - up * currentVelocity.Dot(up);
+	const Vec3 carriedVelocity = currentHorizontal - groundHorizontal;
+	// Clamped so a pathologically long frame cannot invert the velocity.
+	const float retainFactor = std::clamp(1.0f - (1.0f - retention) * ticks, 0.0f, 1.0f);
+	const Vec3 horizontalVelocity = carriedVelocity * retainFactor + impl->inputDirection * (acceleration * ticks) + groundHorizontal;
 
+	const Vec3 newVelocity = verticalVelocity + horizontalVelocity;
 	impl->character->SetLinearVelocity(newVelocity);
 
 	impl->character->ExtendedUpdate(
