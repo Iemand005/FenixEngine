@@ -237,8 +237,6 @@ set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOU
 if(MSVC)
 	target_link_options(main PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 
-	target_compile_options(AudioTest PRIVATE $<$<CONFIG:Debug>:/Zi>)
-
 	target_link_options(AudioTest PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 endif()
     

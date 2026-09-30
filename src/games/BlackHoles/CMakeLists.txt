@@ -60,8 +60,6 @@ endif()
 set_property(TARGET Tunnel PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	
 if(MSVC)
-	target_compile_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/Zi>)
-
 	target_link_options(Tunnel PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
 
 	add_compile_options(/RTC1)
