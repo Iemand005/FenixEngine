@@ -19,6 +19,12 @@
 
 #include "EditableGameBase.hpp"
 
+// Renderer.hpp only forward declares the device types now; the inline methods
+// below dynamic_cast to VulkanDevice, so it needs the full header.
+#ifdef FE_HAS_VULKAN
+#include "Graphics/VulkanDevice.hpp"
+#endif
+
 namespace fe {
   
 	class EditableGame : public EditableGameBase {

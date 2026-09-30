@@ -1,5 +1,9 @@
 #include "XRGame.hpp"
 
+#ifdef FE_HAS_VULKAN
+#include "Graphics/VulkanDevice.hpp"
+#endif
+
 #include <algorithm>
 #include <cstring>
 #include <string>

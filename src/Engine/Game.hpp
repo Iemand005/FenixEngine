@@ -29,6 +29,15 @@
 
 #include "Renderer.hpp"
 
+// Renderer.hpp no longer pulls these in transitively -- it only forward
+// declares the types it holds. Game's inline methods dereference them, so the
+// full headers are included here instead.
+#include "Camera.hpp"
+#include "Scene.hpp"
+#ifndef FE_EXCLUDE_SDL
+#include "window/SDLWindow.hpp"
+#endif
+
 #include "physics/PhysicsFactory.hpp"
 
 namespace fe {
