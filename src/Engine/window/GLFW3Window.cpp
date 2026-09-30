@@ -32,16 +32,16 @@ struct GLFW3Window::Impl {
 // window proc to keep rendering frames from inside that modal loop.
 namespace {
 
-constexpr wchar_t kLivePumpProp[] = L"FenixGLFWLivePumpHost";
-constexpr UINT_PTR kLivePumpTimerId = 0x4646;
+constexpr wchar_t kGlfwLivePumpProp[] = L"FenixGLFWGlfwLivePumpHost";
+constexpr UINT_PTR kGlfwLivePumpTimerId = 0x4646;
 
-struct LivePumpHost {
+struct GlfwLivePumpHost {
     fe::GLFW3Window* window = nullptr;
     WNDPROC originalProc = nullptr;
 };
 
-LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    auto* host = static_cast<LivePumpHost*>(GetPropW(hwnd, kLivePumpProp));
+LRESULT CALLBACK GlfwLivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto* host = static_cast<GlfwLivePumpHost*>(GetPropW(hwnd, kGlfwLivePumpProp));
     WNDPROC original = host ? host->originalProc
         : (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
     LRESULT result = CallWindowProcW(original, hwnd, msg, wParam, lParam);
@@ -51,18 +51,18 @@ LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
     switch (msg) {
         case WM_ENTERSIZEMOVE:
-            SetTimer(hwnd, kLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
+            SetTimer(hwnd, kGlfwLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
             window->LiveResizePump();
             break;
         case WM_EXITSIZEMOVE:
-            KillTimer(hwnd, kLivePumpTimerId);
+            KillTimer(hwnd, kGlfwLivePumpTimerId);
             break;
         case WM_MOVING:
         case WM_SIZING:
             window->LiveResizePump();
             break;
         case WM_TIMER:
-            if (wParam == kLivePumpTimerId) {
+            if (wParam == kGlfwLivePumpTimerId) {
                 window->LiveResizePump();
                 return 0;
             }
@@ -182,8 +182,8 @@ void fe::GLFW3Window::Destroy() {
 	if (impl->window) {
 		HWND hwnd = GetNativeWindow();
 		if (hwnd) {
-			if (auto* host = static_cast<LivePumpHost*>(RemovePropW(hwnd, kLivePumpProp))) {
-				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)LivePumpWndProc)
+			if (auto* host = static_cast<GlfwLivePumpHost*>(RemovePropW(hwnd, kGlfwLivePumpProp))) {
+				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)GlfwLivePumpWndProc)
 					SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)host->originalProc);
 				delete host;
 			}
@@ -198,12 +198,12 @@ void fe::GLFW3Window::EnableLiveResizePump() {
 #if defined(_WIN32)
 	HWND hwnd = GetNativeWindow();
 	if (!hwnd) return;
-	if (GetPropW(hwnd, kLivePumpProp)) return;
+	if (GetPropW(hwnd, kGlfwLivePumpProp)) return;
 
-	auto* host = new LivePumpHost();
+	auto* host = new GlfwLivePumpHost();
 	host->window = this;
-	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)LivePumpWndProc);
-	SetPropW(hwnd, kLivePumpProp, host);
+	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)GlfwLivePumpWndProc);
+	SetPropW(hwnd, kGlfwLivePumpProp, host);
 #endif
 }
 

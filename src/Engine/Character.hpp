@@ -14,7 +14,7 @@ namespace fe {
 
 class Character : public Object {
 public:
-	float moveSpeed = 5.0f;
+	float moveSpeed = 15.0f;
 	float jumpSpeed = 8.0f;
 	float jumpHeightWhenGravityDisabled = 0.15f;
 	float groundCheckDistance = 0.15f;

@@ -238,9 +238,24 @@ set(IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui_draw.cpp
 )
 
+# Dear ImGui is a vendored third-party library. Its .cpp files define
+# IMGUI_DEFINE_MATH_OPERATORS immediately before including imgui.h, which
+# imgui_internal.h rejects unless the define came first. Unity merges files into
+# one TU, so an engine file that includes imgui.h earlier in the blob breaks
+# these. Keep each ImGui file in its own TU.
+set_source_files_properties(${IMGUI_SOURCE_FILES} PROPERTIES
+	SKIP_UNITY_BUILD_INCLUSION ON
+)
+
 if(NOT FE_EXCLUDE_VULKAN)
 	list(APPEND IMGUI_SOURCE_FILES ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp)
 endif()
+
+# Same reason as above; keep the opt-out in place for the Vulkan backend too,
+# which is appended after the first set_source_files_properties call.
+set_source_files_properties(${IMGUI_SOURCE_FILES} PROPERTIES
+	SKIP_UNITY_BUILD_INCLUSION ON
+)
 
 set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 

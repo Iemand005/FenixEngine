@@ -47,16 +47,16 @@ using namespace fe;
 // proc to keep rendering frames from inside that modal loop.
 namespace {
 
-constexpr wchar_t kLivePumpProp[] = L"FenixLivePumpHost";
-constexpr UINT_PTR kLivePumpTimerId = 0x4645;
+constexpr wchar_t kSdlLivePumpProp[] = L"FenixSdlLivePumpHost";
+constexpr UINT_PTR kSdlLivePumpTimerId = 0x4645;
 
-struct LivePumpHost {
+struct SdlLivePumpHost {
 	fe::SDLWindow* window = nullptr;
 	WNDPROC originalProc = nullptr;
 };
 
-LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	auto* host = static_cast<LivePumpHost*>(GetPropW(hwnd, kLivePumpProp));
+LRESULT CALLBACK SdlLivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	auto* host = static_cast<SdlLivePumpHost*>(GetPropW(hwnd, kSdlLivePumpProp));
 	WNDPROC original = host ? host->originalProc
 		: (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
 	LRESULT result = CallWindowProcW(original, hwnd, msg, wParam, lParam);
@@ -68,18 +68,18 @@ LRESULT CALLBACK LivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 	// for live resize; ours is separate and never swallows SDL's messages.
 	switch (msg) {
 		case WM_ENTERSIZEMOVE:
-			SetTimer(hwnd, kLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
+			SetTimer(hwnd, kSdlLivePumpTimerId, USER_TIMER_MINIMUM, nullptr);
 			window->LiveResizePump();
 			break;
 		case WM_EXITSIZEMOVE:
-			KillTimer(hwnd, kLivePumpTimerId);
+			KillTimer(hwnd, kSdlLivePumpTimerId);
 			break;
 		case WM_MOVING:
 		case WM_SIZING:
 			window->LiveResizePump();
 			break;
 		case WM_TIMER:
-			if (wParam == kLivePumpTimerId) {
+			if (wParam == kSdlLivePumpTimerId) {
 				window->LiveResizePump();
 				return 0;
 			}
@@ -403,8 +403,8 @@ void fe::SDLWindow::Destroy() {
 	if (impl->window) {
 		HWND hwnd = GetNativeWindow();
 		if (hwnd) {
-			if (auto* host = static_cast<LivePumpHost*>(RemovePropW(hwnd, kLivePumpProp))) {
-				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)LivePumpWndProc)
+			if (auto* host = static_cast<SdlLivePumpHost*>(RemovePropW(hwnd, kSdlLivePumpProp))) {
+				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)SdlLivePumpWndProc)
 					SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)host->originalProc);
 				delete host;
 			}
@@ -424,12 +424,12 @@ void fe::SDLWindow::EnableLiveResizePump() {
 #ifdef _WIN32
 	HWND hwnd = GetNativeWindow();
 	if (!hwnd) return;
-	if (GetPropW(hwnd, kLivePumpProp)) return;
+	if (GetPropW(hwnd, kSdlLivePumpProp)) return;
 
-	auto* host = new LivePumpHost();
+	auto* host = new SdlLivePumpHost();
 	host->window = this;
-	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)LivePumpWndProc);
-	SetPropW(hwnd, kLivePumpProp, host);
+	host->originalProc = (WNDPROC)SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)SdlLivePumpWndProc);
+	SetPropW(hwnd, kSdlLivePumpProp, host);
 #endif
 }
 
