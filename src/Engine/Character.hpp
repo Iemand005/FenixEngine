@@ -78,7 +78,7 @@ public:
 				if (len > 1.0f) pendingMovement /= len;
 				desiredVelocity = pendingMovement * moveSpeed;
 			}
-			bool wantJump = pendingJump && !jumpTriggered;
+			bool wantJump = pendingJump;
 			this->physicsCharacter->SetInput(desiredVelocity, wantJump);
 			this->physicsCharacter->Update(deltaTime);
 
