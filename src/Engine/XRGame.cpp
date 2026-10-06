@@ -12,6 +12,10 @@
 #include <glm/gtc/quaternion.hpp>
 
 #ifndef FE_EXCLUDE_OPENXR
+#if defined(__linux__) || defined(__unix__)
+    #include <X11/Xlib.h>
+    #include <GL/glx.h>
+#endif
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 #endif
