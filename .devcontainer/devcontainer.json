@@ -4,7 +4,7 @@
 		"ghcr.io/devcontainers/features/desktop-lite:1": {
 			"version": "latest"
 		},
-		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc && git submodule update --init --recursive",
+		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc && git submodule update --init --recursive && sudo apt update && sudo apt install -y libvulkan-dev vulkan-tools mesa-vulkan-drivers",
 		"containerEnv": {
 			"HISTTIMEFORMAT": "%F %T "
 		}
