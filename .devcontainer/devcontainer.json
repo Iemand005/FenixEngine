@@ -4,7 +4,7 @@
 		"ghcr.io/devcontainers/features/desktop-lite:1": {
 			"version": "latest"
 		},
-		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%F %T \"' >> ~/.bashrc",
+		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc && git submodule update --init --recursive",
 		"containerEnv": {
 			"HISTTIMEFORMAT": "%F %T "
 		}
