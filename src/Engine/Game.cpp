@@ -9,7 +9,7 @@ using namespace fe;
 
 struct Game::Impl {
 #ifndef EXCLUDE_JOLT
-	std::unique_ptr<PhysicsFactory> PhysicsFactory = nullptr;
+	std::unique_ptr<PhysicsFactory> physicsFactory = nullptr;
 #endif
 };
 
