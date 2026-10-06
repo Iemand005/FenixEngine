@@ -20,5 +20,6 @@
             "inheritDefault": "visible"
         }
     },
-    "chat.disableAIFeatures": true
+    "chat.disableAIFeatures": true,
+    "git.enableSmartCommit": true
 }
