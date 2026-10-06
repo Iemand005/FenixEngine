@@ -34,7 +34,7 @@ Game::Game(RendererOptions options) : Renderer(options) {
 
 PhysicsFactory *Game::GetPhysicsFactory() {
 #ifndef EXCLUDE_JOLT
-	return impl->PhysicsFactory.get();
+	return impl->physicsFactory.get();
 #endif
 }
 
@@ -46,7 +46,7 @@ void Game::Init() {
 	}
 
 #ifndef EXCLUDE_JOLT
-	impl->PhysicsFactory = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
+	impl->physicsFactory = std::make_unique<PhysicsFactory>(renderDevice.get(), !this->useVulkan);
 #endif
 	
 	this->scene = std::make_unique<fe::Scene>();
@@ -67,6 +67,6 @@ void Game::LoadModel(const std::string& path) {
 
 void Game::UpdatePhysics(double deltaTime) {
 #ifndef EXCLUDE_JOLT
-	if (impl->PhysicsFactory) impl->PhysicsFactory->Update(deltaTime);
+	if (impl->physicsFactory) impl->physicsFactory->Update(deltaTime);
 #endif
 }
