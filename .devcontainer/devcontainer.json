@@ -3,13 +3,9 @@
 		"ghcr.io/devcontainers/features/desktop-lite:1": {
 			"version": "latest"
 		},
-		,
-    // Appends the HISTTIMEFORMAT variable into the container's bashrc file
-    "postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc",
-
-    // Optional: Also makes it visible to VS Code processes
-    "containerEnv": {
-        "HISTTIMEFORMAT": "%T %F "
-    }
+		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc",
+		"containerEnv": {
+			"HISTTIMEFORMAT": "%T %F "
+		}
 	}
 }
