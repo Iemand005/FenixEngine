@@ -18,5 +18,7 @@ sudo apt install -y \
     libvulkan-dev \
     vulkan-tools \
     mesa-vulkan-drivers
+sudo apt-get update && sudo apt-get install -y libvulkan-dev vulkan-tools mesa-vulkan-drivers libvulkan1
+
 
 echo "✅ Environment setup complete! You are ready to build FenixEngine."
