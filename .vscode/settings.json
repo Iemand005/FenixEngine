@@ -19,5 +19,6 @@
             "statusBarVisibility": "inherit",
             "inheritDefault": "visible"
         }
-    }
+    },
+    "chat.disableAIFeatures": true
 }
