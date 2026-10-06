@@ -4,9 +4,9 @@
 		"ghcr.io/devcontainers/features/desktop-lite:1": {
 			"version": "latest"
 		},
-		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%T %F \"' >> ~/.bashrc",
+		"postCreateCommand": "echo 'export HISTTIMEFORMAT=\"%F %T \"' >> ~/.bashrc",
 		"containerEnv": {
-			"HISTTIMEFORMAT": "%T %F "
+			"HISTTIMEFORMAT": "%F %T "
 		}
 	}
 }
