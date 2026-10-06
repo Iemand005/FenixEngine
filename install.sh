@@ -16,7 +16,7 @@ sudo apt install -y \
     libvulkan-dev vulkan-tools mesa-vulkan-drivers libvulkan1 \
     libwayland-dev wayland-protocols extra-cmake-modules \
     libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
-    libxkbcommon-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev
+    libxkbcommon-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libhidapi-dev
 
 
 

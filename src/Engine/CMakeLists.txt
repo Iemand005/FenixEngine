@@ -226,7 +226,7 @@ elseif(NOT EMSCRIPTEN)
 	target_compile_options(Renderer PRIVATE -g)
 endif()
 
-set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
+set(IMGUI_DIR ${EXTERNAL_DIR}/imgui)
 
 set(IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui.cpp
