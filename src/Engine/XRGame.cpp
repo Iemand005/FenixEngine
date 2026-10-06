@@ -425,98 +425,101 @@ XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options), impl(std
 XRGame::~XRGame() {
 	Destroy();
 };
-
 void XRGame::initOpenXR() {
-	#ifndef FE_EXCLUDE_OPENXR
+#ifndef FE_EXCLUDE_OPENXR
 	impl->Log("XRGame::initOpenXR() starting");
 	impl->useVulkan = useVulkan;
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-		auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
-		XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
-		vkBinding.next = nullptr;
-		vkBinding.instance = vk->GetInstance();
-		vkBinding.physicalDevice = vk->GetPhysicalDevice();
-		vkBinding.device = vk->GetDevice();
-		vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
-		vkBinding.queueIndex = 0;
-		initOpenXR(&vkBinding);
+	auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
+	XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
+	vkBinding.next = nullptr;
+	vkBinding.instance = vk->GetInstance();
+	vkBinding.physicalDevice = vk->GetPhysicalDevice();
+	vkBinding.device = vk->GetDevice();
+	vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
+	vkBinding.queueIndex = 0;
+	initOpenXR(&vkBinding);
 #else
-		impl->Log("Vulkan support not compiled in");
+	impl->Log("Vulkan support not compiled in");
 #endif
-		auto window = GetWindow<fe::SDLWindow>();
+
+	auto window = GetWindow<fe::SDLWindow>();
 
 #ifdef _WIN32
-		HDC hDC = window->GetDrawingContext();
-		HGLRC hGLRC = window->GetOpenGLRenderingContext();
-		XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
-		gfx.hDC = hDC;
-		gfx.hGLRC = hGLRC;
-		initOpenXR(&gfx);
+	HDC hDC = window->GetDrawingContext();
+	HGLRC hGLRC = window->GetOpenGLRenderingContext();
+	XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
+	gfx.hDC = hDC;
+	gfx.hGLRC = hGLRC;
+	initOpenXR(&gfx);
 #elif defined(__ANDROID__)
-		XrGraphicsBindingOpenGLESAndroidKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR};
-		gfx.next = nullptr;
+	XrGraphicsBindingOpenGLESAndroidKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR};
+	gfx.next = nullptr;
 
-		EGLDisplay display = (EGLDisplay)window->GetEGLDisplay();
-		if (!display) display = eglGetCurrentDisplay();
+	EGLDisplay display = (EGLDisplay)window->GetEGLDisplay();
+	if (!display) display = eglGetCurrentDisplay();
 
-		EGLContext context = (EGLContext)window->GetEGLContext();
-		if (!context) context = eglGetCurrentContext();
+	EGLContext context = (EGLContext)window->GetEGLContext();
+	if (!context) context = eglGetCurrentContext();
 
-		impl->Log("Android EGL Display: " + std::to_string((uint64_t)display));
-		impl->Log("Android EGL Context: " + std::to_string((uint64_t)context));
+	impl->Log("Android EGL Display: " + std::to_string((uint64_t)display));
+	impl->Log("Android EGL Context: " + std::to_string((uint64_t)context));
 
-		EGLConfig config = (EGLConfig)window->GetEGLConfig();
-		if (!config && display && context) {
-			EGLint configId = 0;
-			if (eglQueryContext(display, context, EGL_CONFIG_ID, &configId)) {
-				EGLint attribs[] = { EGL_CONFIG_ID, configId, EGL_NONE };
-				int numConfigs = 0;
-				eglChooseConfig(display, attribs, &config, 1, &numConfigs);
-			}
+	EGLConfig config = (EGLConfig)window->GetEGLConfig();
+	if (!config && display && context) {
+		EGLint configId = 0;
+		if (eglQueryContext(display, context, EGL_CONFIG_ID, &configId)) {
+			EGLint attribs[] = { EGL_CONFIG_ID, configId, EGL_NONE };
+			int numConfigs = 0;
+			eglChooseConfig(display, attribs, &config, 1, &numConfigs);
 		}
-		impl->Log("Android EGL Config: " + std::to_string((uint64_t)config));
+	}
+	impl->Log("Android EGL Config: " + std::to_string((uint64_t)config));
 
-		gfx.display = display;
-		gfx.config = config;
-		gfx.context = context;
+	gfx.display = display;
+	gfx.config = config;
+	gfx.context = context;
 
-		initOpenXR(&gfx);
+	initOpenXR(&gfx);
 #else
-			const char *video_driver = SDL_GetCurrentVideoDriver();
-			if (video_driver != NULL) {
-				std::cout << "Video Driver: " << video_driver << std::endl;
-				if (SDL_strcmp(video_driver, "wayland") == 0) {
-					XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
-					gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
-					gfx.display = (wl_display *)window->GetWaylandDisplay();
-					initOpenXR(&gfx);
-				} else if (SDL_strcmp(video_driver, "x11") == 0) {
-					Display *xDisplay = (Display *)window->GetX11Display();
-					GLXContext glxContext = glXGetCurrentContext();
-					int fb_config_id = 0;
-					glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
-					int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
-					int num_configs = 0;
-					GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
-					GLXFBConfig glxFBConfig = fb_configs[0];
-					XFree(fb_configs);
-					int visual_id_val = 0;
-					glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
-					VisualID visualid = (VisualID)visual_id_val;
-					XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
-					gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
-					gfx.next = NULL;
-					gfx.xDisplay = xDisplay;
-					gfx.glxDrawable = window->GetGLXDrawable();
-					gfx.visualid = visualid;
-					gfx.glxFBConfig = glxFBConfig;
-					gfx.glxContext = glxContext;
-					initOpenXR(&gfx);
-				}
-		#endif
-#endif
+	const char *video_driver = SDL_GetCurrentVideoDriver();
+	if (video_driver != NULL) {
+		std::cout << "Video Driver: " << video_driver << std::endl;
+		if (SDL_strcmp(video_driver, "wayland") == 0) {
+			XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
+			gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
+			gfx.display = (wl_display *)window->GetWaylandDisplay();
+			initOpenXR(&gfx);
+		} else if (SDL_strcmp(video_driver, "x11") == 0) {
+			Display *xDisplay = (Display *)window->GetX11Display();
+			GLXContext glxContext = glXGetCurrentContext();
+			int fb_config_id = 0;
+			glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
+			int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
+			int num_configs = 0;
+			GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
+			GLXFBConfig glxFBConfig = fb_configs[0];
+			XFree(fb_configs);
+			int visual_id_val = 0;
+			glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
+			VisualID visualid = (VisualID)visual_id_val;
+			XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
+			gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
+			gfx.next = NULL;
+			gfx.xDisplay = xDisplay;
+			gfx.glxDrawable = window->GetGLXDrawable();
+			gfx.visualid = visualid;
+			gfx.glxFBConfig = glxFBConfig;
+			gfx.glxContext = glxContext;
+			initOpenXR(&gfx);
+		}
+	}
+#endif // _WIN32 / __ANDROID__ / Linux check
+
+#endif // FE_EXCLUDE_OPENXR check
 }
+
 
 void XRGame::initOpenXR(void *next) {
 	#ifndef FE_EXCLUDE_OPENXR
