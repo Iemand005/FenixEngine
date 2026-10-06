@@ -1,5 +1,6 @@
 {
 	"features": {
+		"name": "FenixEngine Container",
 		"ghcr.io/devcontainers/features/desktop-lite:1": {
 			"version": "latest"
 		},
