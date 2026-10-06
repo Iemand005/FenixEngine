@@ -8,6 +8,8 @@ option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
+set(SDL_X11_XTEST OFF CACHE BOOL "Disable SDL X11 XTEST dependency" FORCE)
+
 if(EMSCRIPTEN)
     message(STATUS "Emscripten build detected — forcing web-compatible feature set")
 
