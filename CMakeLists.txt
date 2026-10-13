@@ -270,3 +270,12 @@ endif()
 
 message(STATUS "Project source directory: ${CMAKE_SOURCE_DIR}")
 message(STATUS "Build output directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE}}")
+
+# Dear ImGui is a vendored third-party library. Its .cpp files define
+# IMGUI_DEFINE_MATH_OPERATORS immediately before including imgui.h, which
+# imgui_internal.h hard-errors on unless that define came first. A unity blob
+# that pulls a game/engine file including imgui.h ahead of them breaks every
+# ImGui file after it, so keep each ImGui file in its own translation unit.
+set_source_files_properties(${IMGUI_SOURCE_FILES} PROPERTIES
+	SKIP_UNITY_BUILD_INCLUSION ON
+)
