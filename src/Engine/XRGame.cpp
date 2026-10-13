@@ -114,7 +114,22 @@ struct fe::XRGame::Impl {
 		XrFrameState frameState{XR_TYPE_FRAME_STATE};
 		XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
 		XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-		
+
+		XrPassthroughFB passthrough = XR_NULL_HANDLE;
+		XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
+		bool passthroughExtensionAvailable = false;
+		bool passthroughSupported = false;
+		bool passthroughEnabled = false;
+
+		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
+		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
+		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
+		PFN_xrPassthroughPauseFB pfnPassthroughPauseFB = nullptr;
+		PFN_xrCreatePassthroughLayerFB pfnCreatePassthroughLayerFB = nullptr;
+		PFN_xrDestroyPassthroughLayerFB pfnDestroyPassthroughLayerFB = nullptr;
+		PFN_xrPassthroughLayerResumeFB pfnPassthroughLayerResumeFB = nullptr;
+		PFN_xrPassthroughLayerPauseFB pfnPassthroughLayerPauseFB = nullptr;
+
 	#endif
 
 		void initSwapchain(IRenderDevice* renderDevice) {
@@ -404,6 +419,72 @@ struct fe::XRGame::Impl {
 			Log("OpenXR Error: " + std::string(buf) + " (" + std::to_string(result) + ")");
 		}
 	}
+
+	void LoadPassthroughFunctions() {
+		xrGetInstanceProcAddr(instance, "xrCreatePassthroughFB", (PFN_xrVoidFunction*)&pfnCreatePassthroughFB);
+		xrGetInstanceProcAddr(instance, "xrDestroyPassthroughFB", (PFN_xrVoidFunction*)&pfnDestroyPassthroughFB);
+		xrGetInstanceProcAddr(instance, "xrPassthroughStartFB", (PFN_xrVoidFunction*)&pfnPassthroughStartFB);
+		xrGetInstanceProcAddr(instance, "xrPassthroughPauseFB", (PFN_xrVoidFunction*)&pfnPassthroughPauseFB);
+		xrGetInstanceProcAddr(instance, "xrCreatePassthroughLayerFB", (PFN_xrVoidFunction*)&pfnCreatePassthroughLayerFB);
+		xrGetInstanceProcAddr(instance, "xrDestroyPassthroughLayerFB", (PFN_xrVoidFunction*)&pfnDestroyPassthroughLayerFB);
+		xrGetInstanceProcAddr(instance, "xrPassthroughLayerResumeFB", (PFN_xrVoidFunction*)&pfnPassthroughLayerResumeFB);
+		xrGetInstanceProcAddr(instance, "xrPassthroughLayerPauseFB", (PFN_xrVoidFunction*)&pfnPassthroughLayerPauseFB);
+	}
+
+	bool EnsurePassthroughCreated() {
+		if (!passthroughSupported) return false;
+
+		if (passthrough == XR_NULL_HANDLE && pfnCreatePassthroughFB) {
+			XrPassthroughCreateInfoFB passthroughInfo{XR_TYPE_PASSTHROUGH_CREATE_INFO_FB};
+			passthroughInfo.flags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
+			outputError(pfnCreatePassthroughFB(session, &passthroughInfo, &passthrough));
+		}
+
+		if (passthrough == XR_NULL_HANDLE) return false;
+
+		if (passthroughLayer == XR_NULL_HANDLE && pfnCreatePassthroughLayerFB) {
+			XrPassthroughLayerCreateInfoFB layerInfo{XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB};
+			layerInfo.passthrough = passthrough;
+			layerInfo.flags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
+			layerInfo.purpose = XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB;
+			outputError(pfnCreatePassthroughLayerFB(session, &layerInfo, &passthroughLayer));
+		}
+
+		return passthroughLayer != XR_NULL_HANDLE;
+	}
+
+	void EnablePassthrough() {
+		if (!passthroughSupported) return;
+		if (!EnsurePassthroughCreated()) return;
+
+		if (pfnPassthroughStartFB) outputError(pfnPassthroughStartFB(passthrough));
+		if (pfnPassthroughLayerResumeFB) outputError(pfnPassthroughLayerResumeFB(passthroughLayer));
+
+		passthroughEnabled = true;
+		Log("Passthrough enabled");
+	}
+
+	void DisablePassthrough() {
+		if (pfnPassthroughLayerPauseFB && passthroughLayer != XR_NULL_HANDLE) outputError(pfnPassthroughLayerPauseFB(passthroughLayer));
+		if (pfnPassthroughPauseFB && passthrough != XR_NULL_HANDLE) outputError(pfnPassthroughPauseFB(passthrough));
+
+		passthroughEnabled = false;
+		Log("Passthrough disabled");
+	}
+
+	void DestroyPassthrough() {
+		passthroughEnabled = false;
+
+		if (passthroughLayer != XR_NULL_HANDLE && pfnDestroyPassthroughLayerFB) {
+			outputError(pfnDestroyPassthroughLayerFB(passthroughLayer));
+		}
+		if (passthrough != XR_NULL_HANDLE && pfnDestroyPassthroughFB) {
+			outputError(pfnDestroyPassthroughFB(passthrough));
+		}
+
+		passthroughLayer = XR_NULL_HANDLE;
+		passthrough = XR_NULL_HANDLE;
+	}
 	#endif
 
 }; // Impl
@@ -576,10 +657,24 @@ void XRGame::initOpenXR(void *next) {
 	} else {
 		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
 	}
-	#else
-	enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+#else
+		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
 	#endif
 #endif
+
+	uint32_t availableExtensionCount = 0;
+	if (XR_SUCCEEDED(xrEnumerateInstanceExtensionProperties(nullptr, 0, &availableExtensionCount, nullptr)) && availableExtensionCount > 0) {
+		std::vector<XrExtensionProperties> availableExtensions(availableExtensionCount, {XR_TYPE_EXTENSION_PROPERTIES});
+		if (XR_SUCCEEDED(xrEnumerateInstanceExtensionProperties(nullptr, availableExtensionCount, &availableExtensionCount, availableExtensions.data()))) {
+			for (auto& availableExtension : availableExtensions) {
+				if (strcmp(availableExtension.extensionName, XR_FB_PASSTHROUGH_EXTENSION_NAME) == 0) {
+					impl->passthroughExtensionAvailable = true;
+					enabledExtensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
+					break;
+				}
+			}
+		}
+	}
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.enabledExtensionNames = enabledExtensions.data();
@@ -608,13 +703,21 @@ void XRGame::initOpenXR(void *next) {
 
 	impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
 
+	if (impl->passthroughExtensionAvailable && impl->instance != XR_NULL_HANDLE) {
+		impl->LoadPassthroughFunctions();
+	}
+
 	XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
 	systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 
 	impl->outputError(xrGetSystem(impl->instance, &systemInfo, &impl->systemId));
 
+	XrSystemPassthroughPropertiesFB passthroughProps{XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB};
 	XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
+	if (impl->passthroughExtensionAvailable) systemProps.next = &passthroughProps;
 	impl->outputError(xrGetSystemProperties(impl->instance, impl->systemId, &systemProps));
+	impl->passthroughSupported = impl->passthroughExtensionAvailable && passthroughProps.supportsPassthrough == XR_TRUE;
+	impl->Log("Passthrough supported: " + std::to_string(impl->passthroughSupported));
 	impl->Log("System Name: " + std::string(systemProps.systemName));
 	impl->Log("Vendor ID: " + std::to_string(systemProps.vendorId));
 
@@ -820,6 +923,45 @@ void XRGame::ToggleXR() {
 	}
 }
 
+bool XRGame::IsPassthroughSupported() const {
+#ifndef FE_EXCLUDE_OPENXR
+	return impl->passthroughSupported;
+#else
+	return false;
+#endif
+}
+
+bool XRGame::IsPassthroughEnabled() const {
+#ifndef FE_EXCLUDE_OPENXR
+	return impl->passthroughEnabled;
+#else
+	return false;
+#endif
+}
+
+void XRGame::SetPassthroughEnabled(bool enabled) {
+#ifndef FE_EXCLUDE_OPENXR
+	if (enabled == impl->passthroughEnabled) return;
+
+	if (enabled) {
+		if (!impl->passthroughSupported) return;
+		impl->EnablePassthrough();
+		if (impl->passthroughEnabled) {
+			SetClearColor(clearColorR_, clearColorG_, clearColorB_, 0.0f);
+		}
+	} else {
+		impl->DisablePassthrough();
+		SetClearColor(clearColorR_, clearColorG_, clearColorB_, 1.0f);
+	}
+#else
+	(void)enabled;
+#endif
+}
+
+void XRGame::TogglePassthrough() {
+	SetPassthroughEnabled(!IsPassthroughEnabled());
+}
+
 void XRGame::DrawUI() {
 	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
@@ -864,6 +1006,8 @@ void XRGame::DestroyXR() {
 	#ifdef XR_USE_GRAPHICS_API_VULKAN
 	impl->swapchainImagesVK.clear();
 	#endif
+
+	impl->DestroyPassthrough();
 
 	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
@@ -1037,18 +1181,37 @@ void XRGame::RedrawVR() {
 
 	XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
 	endInfo.displayTime = impl->frameState.predictedDisplayTime;
-	endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 
-	if (viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE) {
-		XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-		layer.space = impl->appSpace;
-		layer.viewCount = viewCount;
-		layer.views = projectionViews.data();
+	bool usePassthrough = impl->passthroughEnabled && impl->passthroughLayer != XR_NULL_HANDLE;
 
-		const XrCompositionLayerBaseHeader* layers[] = {(XrCompositionLayerBaseHeader*)&layer};
-		endInfo.layerCount = 1;
+	XrCompositionLayerPassthroughFB passthroughCompositionLayer{XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB};
+	bool hasPassthroughLayer = false;
+	if (usePassthrough) {
+		passthroughCompositionLayer.flags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
+		passthroughCompositionLayer.space = XR_NULL_HANDLE;
+		passthroughCompositionLayer.layerHandle = impl->passthroughLayer;
+		hasPassthroughLayer = true;
+	}
+
+	XrCompositionLayerProjection projectionLayer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
+	bool hasProjectionLayer = viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE;
+	if (hasProjectionLayer) {
+		projectionLayer.space = impl->appSpace;
+		projectionLayer.viewCount = viewCount;
+		projectionLayer.views = projectionViews.data();
+	}
+
+	if (hasPassthroughLayer || hasProjectionLayer) {
+		const XrCompositionLayerBaseHeader* layers[2];
+		uint32_t layerCount = 0;
+		if (hasPassthroughLayer) layers[layerCount++] = (XrCompositionLayerBaseHeader*)&passthroughCompositionLayer;
+		if (hasProjectionLayer) layers[layerCount++] = (XrCompositionLayerBaseHeader*)&projectionLayer;
+
+		endInfo.environmentBlendMode = hasPassthroughLayer ? XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND : XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		endInfo.layerCount = layerCount;
 		endInfo.layers = layers;
 	} else {
+		endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 		endInfo.layerCount = 0;
 		endInfo.layers = nullptr;
 		std::cerr << "Warning: No valid layers to submit" << std::endl;
