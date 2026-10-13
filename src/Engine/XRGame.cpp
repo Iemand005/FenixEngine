@@ -883,8 +883,10 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		movement.y = moveSpeed * forward.y * -rightJoystickInput.y;
 		movement.z = moveSpeed * forward.z * -rightJoystickInput.y + moveSpeed * right.z * rightJoystickInput.x;
 
-		player->state.position.x += movement.x;
-		player->state.position.z += movement.z;
+		if (player) {
+			player->state.position.x += movement.x;
+			player->state.position.z += movement.z;
+		}
 
 		positionOffset.x += movement.x;
 		positionOffset.z += movement.z;
@@ -1137,7 +1139,8 @@ void XRGame::RedrawVR() {
 
 		if (!render2D) {
 			// Camera position = player position + HMD offset + user offset
-			glm::vec3 cameraPos = player->state.position + hmdPosition + positionOffset;
+			glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+			glm::vec3 cameraPos = playerPosition + hmdPosition + positionOffset;
 			camera->update(cameraPos, turnedOrientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
