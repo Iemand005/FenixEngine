@@ -1,5 +1,3 @@
-#pragma once
-
 #include "EditableGame.hpp"
 
 #include <imgui.h>

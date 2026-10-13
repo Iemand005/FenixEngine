@@ -19,5 +19,8 @@
             "statusBarVisibility": "inherit",
             "inheritDefault": "visible"
         }
-    }
+    },
+    "chat.disableAIFeatures": true,
+    "git.enableSmartCommit": true,
+	"git.confirmSync": false
 }

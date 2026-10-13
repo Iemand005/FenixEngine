@@ -8,6 +8,8 @@ option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
+set(SDL_X11_XTEST OFF CACHE BOOL "Disable SDL X11 XTEST dependency" FORCE)
+
 if(EMSCRIPTEN)
     message(STATUS "Emscripten build detected — forcing web-compatible feature set")
 
@@ -224,7 +226,7 @@ elseif(NOT EMSCRIPTEN)
 	target_compile_options(Renderer PRIVATE -g)
 endif()
 
-set(IMGUI_DIR ${ENGINE_DIR}/external/imgui)
+set(IMGUI_DIR ${EXTERNAL_DIR}/imgui)
 
 set(IMGUI_SOURCE_FILES
 	${IMGUI_DIR}/imgui.cpp
