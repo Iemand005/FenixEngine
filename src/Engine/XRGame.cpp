@@ -121,6 +121,8 @@ struct fe::XRGame::Impl {
 		bool passthroughSupported = false;
 		bool passthroughEnabled = false;
 
+		XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
+
 		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
 		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
 		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
@@ -398,9 +400,10 @@ struct fe::XRGame::Impl {
 			switch (event.type) {
 				case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
 					XrEventDataSessionStateChanged* stateChanged = (XrEventDataSessionStateChanged*)&event;
-					XrSessionState currentState = stateChanged->state;
-					XrTime time = stateChanged->time;
-					HandleSessionStateChange(currentState, time);
+		XrSessionState currentState = stateChanged->state;
+		XrTime time = stateChanged->time;
+		sessionState = currentState;
+		HandleSessionStateChange(currentState, time);
 				} break;
 			}
 			event = {XR_TYPE_EVENT_DATA_BUFFER};
@@ -1085,6 +1088,11 @@ void XRGame::Redraw(uint64_t fbo) {
 
 void XRGame::RedrawVR() {
 	#ifndef FE_EXCLUDE_OPENXR
+	if (impl->session == XR_NULL_HANDLE || impl->sessionState == XR_SESSION_STATE_STOPPING || impl->sessionState == XR_SESSION_STATE_EXITING) {
+		impl->drawVR = false;
+		return;
+	}
+
 	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
 
 	// On Oculus (HorizonOS) xrWaitFrame can return shouldRender=false while the
