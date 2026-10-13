@@ -512,15 +512,18 @@ void XRGame::initOpenXR() {
 	impl->useVulkan = useVulkan;
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-	auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
-	XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
-	vkBinding.next = nullptr;
-	vkBinding.instance = vk->GetInstance();
-	vkBinding.physicalDevice = vk->GetPhysicalDevice();
-	vkBinding.device = vk->GetDevice();
-	vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
-	vkBinding.queueIndex = 0;
-	initOpenXR(&vkBinding);
+	if (useVulkan && renderDevice && renderDevice->IsVulkan()) {
+		auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
+		XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
+		vkBinding.next = nullptr;
+		vkBinding.instance = vk->GetInstance();
+		vkBinding.physicalDevice = vk->GetPhysicalDevice();
+		vkBinding.device = vk->GetDevice();
+		vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
+		vkBinding.queueIndex = 0;
+		initOpenXR(&vkBinding);
+		return;
+	}
 #else
 	impl->Log("Vulkan support not compiled in");
 #endif
@@ -755,7 +758,7 @@ void XRGame::initOpenXR(void *next) {
 	}
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (impl->useVulkan) {
+	if (next && static_cast<const XrBaseInStructure*>(next)->type == XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR) {
 		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
 		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
 			(PFN_xrVoidFunction*)(&pfn));
