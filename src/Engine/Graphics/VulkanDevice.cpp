@@ -1,5 +1,6 @@
 #include "VulkanDevice.hpp"
 #include "VulkanUtils.hpp"
+#include "../WawaDir.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)
