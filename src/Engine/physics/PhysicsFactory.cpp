@@ -245,10 +245,10 @@ std::unique_ptr<PhysicsCharacter> PhysicsFactory::CreateCharacter(float height, 
 	return character;
 }
 
-PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels) {
+PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels, const glm::vec3& forward) {
 #ifndef EXCLUDE_JOLT
 	auto vehicle = std::make_unique<PhysicsVehicle>();
-	vehicle->Create(body, impl->physicsSystem, wheels);
+	vehicle->Create(body, impl->physicsSystem, wheels, forward);
 	auto* ptr = vehicle.get();
 	impl->vehicles.push_back(std::move(vehicle));
 	return ptr;

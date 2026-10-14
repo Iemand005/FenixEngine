@@ -42,7 +42,8 @@ namespace fe {
 
 		void RemoveObject(std::unique_ptr<PhysicsObject> object);
 
-		PhysicsVehicle* CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels);
+		PhysicsVehicle* CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels,
+			const glm::vec3& forward = glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// Removes a vehicle's constraint from the physics system and destroys it.
 		// The pointer must have come from CreateVehicle and is invalid afterwards.

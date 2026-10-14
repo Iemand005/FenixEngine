@@ -30,7 +30,7 @@ PhysicsVehicle::~PhysicsVehicle() {
 #endif
 }
 
-void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSystem> system, const std::vector<WheelConfig>& wheelConfigs) {
+void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSystem> system, const std::vector<WheelConfig>& wheelConfigs, const glm::vec3& forward) {
 #ifndef EXCLUDE_JOLT
 	this->body = body;
 	this->physicsSystem = system;
@@ -47,7 +47,7 @@ void PhysicsVehicle::Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSys
 
 	VehicleConstraintSettings vehicleSettings;
 	vehicleSettings.mUp = Vec3(0, 1, 0);
-	vehicleSettings.mForward = Vec3(0, 0, 1);
+	vehicleSettings.mForward = Vec3(forward.x, forward.y, forward.z);
 	vehicleSettings.mMaxPitchRollAngle = DegreesToRadians(45.0f);
 
 	WheeledVehicleControllerSettings* controllerSettings = new WheeledVehicleControllerSettings;
