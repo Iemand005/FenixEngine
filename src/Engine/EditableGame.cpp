@@ -229,6 +229,17 @@ void fe::EditableGame::DrawDebugUI() {
 			this->DestroyXR();
 		}
 
+		bool passthroughSupported = IsPassthroughSupported();
+		ImGui::BeginDisabled(!passthroughSupported);
+		if (ImGui::Button(IsPassthroughEnabled() ? "Disable Passthrough" : "Enable Passthrough", ImVec2(150, 20))) {
+			SetPassthroughEnabled(!IsPassthroughEnabled());
+		}
+		ImGui::EndDisabled();
+		if (!passthroughSupported) {
+			ImGui::SameLine();
+			ImGui::TextDisabled("(not supported)");
+		}
+
 #ifdef FE_INCLUDE_OPENVR
 		ImGui::Begin("XR");
 		if (ImGui::Button("Start OpenVR HMD")) {

@@ -1,5 +1,6 @@
 #include "VulkanDevice.hpp"
 #include "VulkanUtils.hpp"
+#include "../WawaDir.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -1938,8 +1939,15 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 		if (!file.is_open()) {
-			std::cerr << "[VulkanDevice] Failed to open shader file: " << path << std::endl;
-			return {};
+			// Fall back to resolving the path against the executable directory so
+			// shaders load regardless of the launcher's working directory
+			// (mirrors Shader::LoadShaderFile on the OpenGL backend).
+			const std::string exeRelative = fe::GetExecutableDirectory() + "/" + path;
+			file.open(exeRelative, std::ios::ate | std::ios::binary);
+			if (!file.is_open()) {
+				std::cerr << "[VulkanDevice] Failed to open shader file: " << path << std::endl;
+				return {};
+			}
 		}
 		size_t fileSize = static_cast<size_t>(file.tellg());
 		std::vector<char> buffer(fileSize);

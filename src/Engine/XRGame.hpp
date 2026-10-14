@@ -108,6 +108,11 @@ namespace fe {
 		void LaunchVR();
 		void ToggleXR();
 
+		bool IsPassthroughSupported() const;
+		bool IsPassthroughEnabled() const;
+		void SetPassthroughEnabled(bool enabled);
+		void TogglePassthrough();
+
 		void Redraw(uint64_t fbo = 0) ;
 		void RedrawVR();
 		void RedrawWindow(uint64_t fbo = 0);
