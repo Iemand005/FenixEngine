@@ -8,7 +8,7 @@
 #include <Vertex.hpp>
 
 #pragma pack(push, 1)
-struct FoxcraftPackedVertex {
+struct VoxelPackedVertex {
     int16_t x, y, z;
     uint8_t normalLayer; // bits: nnnlllll (normal=3, layer=5)
 
@@ -20,12 +20,12 @@ struct FoxcraftPackedVertex {
     }
 };
 #pragma pack(pop)
-static_assert(sizeof(FoxcraftPackedVertex) == 7, "FoxcraftPackedVertex must be 7 bytes");
+static_assert(sizeof(VoxelPackedVertex) == 7, "VoxelPackedVertex must be 7 bytes");
 
 namespace fe {
     template<>
-    struct VertexTraits<FoxcraftPackedVertex> {
-        static glm::vec3 getPosition(const FoxcraftPackedVertex& v) {
+    struct VertexTraits<VoxelPackedVertex> {
+        static glm::vec3 getPosition(const VoxelPackedVertex& v) {
             return glm::vec3(static_cast<float>(v.x), static_cast<float>(v.y), static_cast<float>(v.z));
         }
     };

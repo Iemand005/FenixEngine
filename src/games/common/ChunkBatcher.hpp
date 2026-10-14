@@ -12,7 +12,7 @@
 #include <Graphics/VulkanDevice.hpp>
 #include <Graphics/VulkanGPUTexture.hpp>
 #include <Vertex.hpp>
-#include "PackedVertex.hpp"
+#include "VoxelPackedVertex.hpp"
 
 using fe::VulkanDevice;
 using fe::kMaxFramesInFlight;
@@ -60,17 +60,17 @@ public:
         uint32_t index;
     };
 
-    SlotHandle UploadChunk(const std::vector<FoxcraftPackedVertex>& vertices,
+    SlotHandle UploadChunk(const std::vector<VoxelPackedVertex>& vertices,
                            const std::vector<uint32_t>& indices,
                            const glm::vec3& worldOffset) {
-        uint32_t vertexBytes = static_cast<uint32_t>(vertices.size() * sizeof(FoxcraftPackedVertex));
+        uint32_t vertexBytes = static_cast<uint32_t>(vertices.size() * sizeof(VoxelPackedVertex));
         uint32_t indexBytes = static_cast<uint32_t>(indices.size() * sizeof(uint32_t));
         uint32_t alignedVB = vertexBytes;
         uint32_t r = alignedVB % 28;
         if (r) alignedVB += 28 - r;
         uint32_t alignedIB = AlignUp(indexBytes, 4);
 
-        std::vector<FoxcraftPackedVertex> worldVerts = vertices;
+        std::vector<VoxelPackedVertex> worldVerts = vertices;
         for (auto& v : worldVerts) {
             v.x += static_cast<int16_t>(worldOffset.x);
             v.y += static_cast<int16_t>(worldOffset.y);
@@ -197,7 +197,7 @@ public:
             cmd.indexCount = slot.indexCount;
             cmd.instanceCount = 1;
             cmd.firstIndex = slot.indexOffset / sizeof(uint32_t);
-            cmd.vertexOffset = slot.vertexOffset / sizeof(FoxcraftPackedVertex);
+            cmd.vertexOffset = slot.vertexOffset / sizeof(VoxelPackedVertex);
             cmd.firstInstance = 0;
             cmds_.push_back(cmd);
         }
