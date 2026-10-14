@@ -63,7 +63,7 @@ namespace fe {
 		Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
 			this->vertices = std::move(vertices);
 			this->indices = std::move(indices);
-			this->indexCount = this->indices.size();
+			this->indexCount = (unsigned int)this->indices.size();
 			modelMatrix = glm::mat4(1.0f);
 		}
 
