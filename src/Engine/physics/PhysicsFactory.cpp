@@ -166,7 +166,6 @@ void PhysicsFactory::Update(double dt) {
 	const int collisionSteps = 1;
 	float deltaTime = static_cast<float>(dt);
 
-	impl->physicsSystem->OptimizeBroadPhase(); // TEMP TEST
 	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
 
 	if (impl->debugRenderer && BasicDebugRenderer::DebugRenderingEnabled()) {
