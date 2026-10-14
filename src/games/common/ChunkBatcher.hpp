@@ -34,7 +34,7 @@ public:
         CreateGiantBuffers();
         CreateIndirectBuffers();
         AllocateDescriptorSets();
-        InitTexture(texturePaths);
+        InitTexture(textureImages);
         InitStaging();
     }
 
@@ -342,14 +342,14 @@ private:
         }
     }
 
-    void InitTexture(const std::vector<std::string>& texturePaths) {
+    void InitTexture(const std::vector<fe::ImageData>& textureImages) {
         chunkTexture_ = std::make_unique<fe::VulkanGPUTexture>();
         chunkTexture_->uploadTextureArray(
             device_->GetDevice(),
             device_->GetPhysicalDevice(),
             device_->GetCommandPool(),
             device_->GetGraphicsQueue(),
-            texturePaths,
+            textureImages,
             fe::TextureScaling::Nearest);
     }
 
