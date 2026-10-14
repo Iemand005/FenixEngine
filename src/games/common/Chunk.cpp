@@ -106,7 +106,7 @@ void Chunk::UploadToScene(fe::PhysicsFactory* PhysicsFactory, fe::Scene* scene, 
         gpuMesh = std::make_unique<fe::Mesh<VoxelVertex>>(
             std::vector<VoxelVertex>(mesh.vertices),
             std::vector<unsigned int>(mesh.indices));
-        gpuMesh->loadTextureArray(ChunkMesher::BlockTextures(), fe::TextureScaling::Nearest);
+        gpuMesh->loadTextureArray(ChunkMesher::BuildBlockTextureImages(), fe::TextureScaling::Nearest);
     }
 
     if (isRemesh) {
