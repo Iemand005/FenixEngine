@@ -347,7 +347,7 @@ namespace fe {
 			return true;
 		}
 
-		void UploadPendingTextureArray(IRenderDevice* dev, IGPUTexture* tex) {
+		void UploadPendingTextureArray(IRenderDevice* dev, IGPUTexture* tex) const {
 			if (!dev || !tex) return;
 			if (!pendingTextureArrayImages.empty())
 				dev->UploadTextureArray(tex, pendingTextureArrayImages, pendingTextureArrayScaling);
