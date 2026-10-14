@@ -22,7 +22,7 @@ using fe::kMaxFramesInFlight;
 class ChunkBatcher {
 public:
     ChunkBatcher(VulkanDevice* device,
-                 const std::vector<std::string>& texturePaths,
+                 const std::vector<fe::ImageData>& textureImages,
                  VkDeviceSize maxVertexBytes = 256ull * 1024 * 1024,
                  VkDeviceSize maxIndexBytes = 128ull * 1024 * 1024,
                  uint32_t maxChunks = 50000)

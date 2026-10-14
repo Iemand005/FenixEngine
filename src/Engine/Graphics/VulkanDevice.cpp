@@ -765,9 +765,18 @@ void VulkanDevice::UploadBuffers(IGPUBuffers* buffers,
  void VulkanDevice::UploadTextureArray(fe::IGPUTexture* texture, 
   const std::vector<std::string>& paths,  fe::TextureScaling scaling) {
 
-		if (!texture) return;
+	 if (!texture) return;
 		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
 		vkTexture->uploadTextureArray(_device, _physicalDevice, commandPool_, graphicsQueue_, paths, scaling);
+	
+}
+
+ void VulkanDevice::UploadTextureArray(fe::IGPUTexture* texture, 
+  const std::vector<fe::ImageData>& images,  fe::TextureScaling scaling) {
+
+		if (!texture) return;
+		auto* vkTexture = static_cast<fe::VulkanGPUTexture*>(texture);
+		vkTexture->uploadTextureArray(_device, _physicalDevice, commandPool_, graphicsQueue_, images, scaling);
 	
 }
 

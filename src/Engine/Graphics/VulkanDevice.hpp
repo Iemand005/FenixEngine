@@ -181,6 +181,9 @@ public:
 	void UploadTextureArray(fe::IGPUTexture* texture,
 		const std::vector<std::string>& paths, fe::TextureScaling scaling = fe::TextureScaling::Linear) override;
 
+	void UploadTextureArray(fe::IGPUTexture* texture,
+		const std::vector<fe::ImageData>& images, fe::TextureScaling scaling = fe::TextureScaling::Linear) override;
+
 	VkInstance GetInstance() const;
 
 	VkPhysicalDevice GetPhysicalDevice() const;
