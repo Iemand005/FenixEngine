@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstring>
+#include <cmath>
 #include <memory>
 #include <stdexcept>
 
@@ -12,6 +13,7 @@
 #include <Graphics/VulkanDevice.hpp>
 #include <Graphics/VulkanGPUTexture.hpp>
 #include <Vertex.hpp>
+#include "VoxelVertex.hpp"
 #include "VoxelPackedVertex.hpp"
 
 using fe::VulkanDevice;
@@ -60,22 +62,40 @@ public:
         uint32_t index;
     };
 
-    SlotHandle UploadChunk(const std::vector<VoxelPackedVertex>& vertices,
+    // Encode an axis-aligned face normal into the VoxelPackedVertex 3-bit
+    // normal index (matches the decodeNormal() table in VertexShader_vk_foxcraft.glsl).
+    static uint8_t EncodeNormal(const glm::vec3& n) {
+        if (n.x >  0.5f) return 0;
+        if (n.x < -0.5f) return 1;
+        if (n.y >  0.5f) return 2;
+        if (n.y < -0.5f) return 3;
+        if (n.z >  0.5f) return 4;
+        return 5;
+    }
+
+    SlotHandle UploadChunk(const std::vector<VoxelVertex>& vertices,
                            const std::vector<uint32_t>& indices,
                            const glm::vec3& worldOffset) {
-        uint32_t vertexBytes = static_cast<uint32_t>(vertices.size() * sizeof(VoxelPackedVertex));
+        std::vector<VoxelPackedVertex> worldVerts;
+        worldVerts.reserve(vertices.size());
+        for (const auto& v : vertices) {
+            VoxelPackedVertex p{};
+            p.x = static_cast<int16_t>(std::lround(v.position.x + worldOffset.x));
+            p.y = static_cast<int16_t>(std::lround(v.position.y + worldOffset.y));
+            p.z = static_cast<int16_t>(std::lround(v.position.z + worldOffset.z));
+            uint8_t face = EncodeNormal(v.normal);
+            uint8_t layer = static_cast<uint8_t>(std::lround(v.texCoord.z));
+            p.normalLayer = static_cast<uint8_t>(face | (layer << 3));
+            worldVerts.push_back(p);
+        }
+
+        uint32_t vertexBytes = static_cast<uint32_t>(worldVerts.size() * sizeof(VoxelPackedVertex));
         uint32_t indexBytes = static_cast<uint32_t>(indices.size() * sizeof(uint32_t));
         uint32_t alignedVB = vertexBytes;
         uint32_t r = alignedVB % 28;
         if (r) alignedVB += 28 - r;
         uint32_t alignedIB = AlignUp(indexBytes, 4);
 
-        std::vector<VoxelPackedVertex> worldVerts = vertices;
-        for (auto& v : worldVerts) {
-            v.x += static_cast<int16_t>(worldOffset.x);
-            v.y += static_cast<int16_t>(worldOffset.y);
-            v.z += static_cast<int16_t>(worldOffset.z);
-        }
 
         auto allocOffset = [&](uint32_t alignedSize, uint32_t& nextOff, uint32_t maxBytes,
                                bool isVertex) -> uint32_t {
