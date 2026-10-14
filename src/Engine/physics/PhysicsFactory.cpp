@@ -257,6 +257,19 @@ PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::ve
 #endif
 }
 
+void PhysicsFactory::DestroyVehicle(PhysicsVehicle* vehicle) {
+#ifndef EXCLUDE_JOLT
+	if (!vehicle)
+		return;
+	for (auto it = impl->vehicles.begin(); it != impl->vehicles.end(); ++it) {
+		if (it->get() == vehicle) {
+			impl->vehicles.erase(it); // destructor removes the Jolt constraint/step listener
+			return;
+		}
+	}
+#endif
+}
+
 void PhysicsFactory::Bind(PhysicsObject *obj) {
 #ifndef EXCLUDE_JOLT
 	obj->BindPhysicsSystem(impl->physicsSystem);

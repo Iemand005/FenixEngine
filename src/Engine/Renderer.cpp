@@ -345,6 +345,7 @@ void Renderer::RenderMesh(Mesh<Vertex>& mesh) {
 }
 
 void Renderer::RenderObject(Object& object, bool transparentPass) {
+	if (!object.visible) return;
 	glm::mat4 model = object.GetModelMatrix();
 	glm::vec3 modelPos = glm::vec3(model[3]);
 	glm::vec3 center = modelPos + object.boundingCenterOffset;
@@ -372,6 +373,7 @@ static bool HasTransparentMesh(const Object& obj) {
 }
 
 static void CollectObjects(Object& obj, std::vector<Object*>& out) {
+	if (!obj.visible) return;
 	out.push_back(&obj);
 	for (auto& child : obj.GetChildren())
 		CollectObjects(*child, out);
@@ -458,6 +460,7 @@ void Renderer::RenderScene() {
 }
 
 void Renderer::RenderObjectOnDevice(Object& object, IRenderDevice* dev, bool transparentPass) {
+	if (!object.visible) return;
 	if (frustumCullingEnabled) {
 		glm::vec3 modelPos = glm::vec3(object.GetModelMatrix()[3]);
 		glm::vec3 center = modelPos + object.boundingCenterOffset;

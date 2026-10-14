@@ -44,6 +44,10 @@ namespace fe {
 
 		PhysicsVehicle* CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels);
 
+		// Removes a vehicle's constraint from the physics system and destroys it.
+		// The pointer must have come from CreateVehicle and is invalid afterwards.
+		void DestroyVehicle(PhysicsVehicle* vehicle);
+
 		void EnableGravity();
 		void DisableGravity();
 		void SetGravity(const glm::vec3& gravity);
