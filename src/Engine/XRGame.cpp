@@ -121,6 +121,8 @@ struct fe::XRGame::Impl {
 		bool passthroughSupported = false;
 		bool passthroughEnabled = false;
 
+		XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
+
 		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
 		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
 		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
@@ -398,9 +400,10 @@ struct fe::XRGame::Impl {
 			switch (event.type) {
 				case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
 					XrEventDataSessionStateChanged* stateChanged = (XrEventDataSessionStateChanged*)&event;
-					XrSessionState currentState = stateChanged->state;
-					XrTime time = stateChanged->time;
-					HandleSessionStateChange(currentState, time);
+		XrSessionState currentState = stateChanged->state;
+		XrTime time = stateChanged->time;
+		sessionState = currentState;
+		HandleSessionStateChange(currentState, time);
 				} break;
 			}
 			event = {XR_TYPE_EVENT_DATA_BUFFER};
@@ -512,15 +515,18 @@ void XRGame::initOpenXR() {
 	impl->useVulkan = useVulkan;
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-	auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
-	XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
-	vkBinding.next = nullptr;
-	vkBinding.instance = vk->GetInstance();
-	vkBinding.physicalDevice = vk->GetPhysicalDevice();
-	vkBinding.device = vk->GetDevice();
-	vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
-	vkBinding.queueIndex = 0;
-	initOpenXR(&vkBinding);
+	if (useVulkan && renderDevice && renderDevice->IsVulkan()) {
+		auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
+		XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
+		vkBinding.next = nullptr;
+		vkBinding.instance = vk->GetInstance();
+		vkBinding.physicalDevice = vk->GetPhysicalDevice();
+		vkBinding.device = vk->GetDevice();
+		vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
+		vkBinding.queueIndex = 0;
+		initOpenXR(&vkBinding);
+		return;
+	}
 #else
 	impl->Log("Vulkan support not compiled in");
 #endif
@@ -755,7 +761,7 @@ void XRGame::initOpenXR(void *next) {
 	}
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (impl->useVulkan) {
+	if (next && static_cast<const XrBaseInStructure*>(next)->type == XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR) {
 		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
 		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
 			(PFN_xrVoidFunction*)(&pfn));
@@ -880,8 +886,10 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		movement.y = moveSpeed * forward.y * -rightJoystickInput.y;
 		movement.z = moveSpeed * forward.z * -rightJoystickInput.y + moveSpeed * right.z * rightJoystickInput.x;
 
-		player->state.position.x += movement.x;
-		player->state.position.z += movement.z;
+		if (player) {
+			player->state.position.x += movement.x;
+			player->state.position.z += movement.z;
+		}
 
 		positionOffset.x += movement.x;
 		positionOffset.z += movement.z;
@@ -1080,6 +1088,11 @@ void XRGame::Redraw(uint64_t fbo) {
 
 void XRGame::RedrawVR() {
 	#ifndef FE_EXCLUDE_OPENXR
+	if (impl->session == XR_NULL_HANDLE || impl->sessionState == XR_SESSION_STATE_STOPPING || impl->sessionState == XR_SESSION_STATE_EXITING) {
+		impl->drawVR = false;
+		return;
+	}
+
 	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
 
 	// On Oculus (HorizonOS) xrWaitFrame can return shouldRender=false while the
@@ -1134,7 +1147,8 @@ void XRGame::RedrawVR() {
 
 		if (!render2D) {
 			// Camera position = player position + HMD offset + user offset
-			glm::vec3 cameraPos = player->state.position + hmdPosition + positionOffset;
+			glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+			glm::vec3 cameraPos = playerPosition + hmdPosition + positionOffset;
 			camera->update(cameraPos, turnedOrientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
