@@ -422,18 +422,47 @@ public:
 				return out;
 			};
 
+			// The sheet is a cube net: the top face sits in the middle and every
+			// side is drawn so that the edge touching the top cell is that face's
+			// "up" edge. Rotate each side back to upright as seen on screen.
+			// mode: 0 = none, 1 = 90 CW, 2 = 90 CCW, 3 = 180.
+			auto rotateCell = [](fe::ImageData& img, int mode) {
+				const int n = img.width;
+				const int ch = img.channels;
+				if (mode == 0 || n <= 0 || n != img.height || img.pixels.empty())
+					return;
+				const std::vector<unsigned char> src = img.pixels;
+				auto at = [&](int row, int col) { return (static_cast<size_t>(row) * n + col) * ch; };
+				for (int my = 0; my < n; ++my) {
+					for (int x = 0; x < n; ++x) {
+						int sy, sx;
+						if (mode == 1)      { sy = x;         sx = n - 1 - my; } // CW
+						else if (mode == 2) { sy = n - 1 - x; sx = my;         } // CCW
+						else                { sy = n - 1 - my; sx = n - 1 - x; } // 180
+						std::copy(src.begin() + at(sy, sx), src.begin() + at(sy, sx) + ch,
+						          img.pixels.begin() + at(my, x));
+					}
+				}
+			};
+
 			// Order must match the kGrass*Layer constants above. Sheet layout
 			// (top row = image row 0):
 			//   . B .
 			//   L T R
 			//   . F .
 			//   . b .
-			result.push_back(cropCell(1, 1)); // 9  top
-			result.push_back(cropCell(1, 3)); // 10 bottom
-			result.push_back(cropCell(0, 1)); // 11 left
-			result.push_back(cropCell(2, 1)); // 12 right
-			result.push_back(cropCell(1, 2)); // 13 front
-			result.push_back(cropCell(1, 0)); // 14 back
+			fe::ImageData grassTop = cropCell(1, 1);                                    // 9  top
+			fe::ImageData grassBottom = cropCell(1, 3);                                 // 10 bottom
+			fe::ImageData grassLeft = cropCell(0, 1);    rotateCell(grassLeft, 2);      // 11 left
+			fe::ImageData grassRight = cropCell(2, 1);   rotateCell(grassRight, 1);     // 12 right
+			fe::ImageData grassFront = cropCell(1, 2);                                  // 13 front
+			fe::ImageData grassBack = cropCell(1, 0);    rotateCell(grassBack, 3);      // 14 back
+			result.push_back(std::move(grassTop));
+			result.push_back(std::move(grassBottom));
+			result.push_back(std::move(grassLeft));
+			result.push_back(std::move(grassRight));
+			result.push_back(std::move(grassFront));
+			result.push_back(std::move(grassBack));
 			return result;
 		}();
 		return layers;
