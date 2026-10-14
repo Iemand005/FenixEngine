@@ -383,55 +383,59 @@ public:
 	// Load every texture-array layer as an image. The flat tiles are loaded
 	// straight from disk; the grass cross-sheet is split into its six 16x16
 	// faces so that the array keeps its uniform layer size. All other block
-	// textures keep using the original style and are untouched.
-	static std::vector<fe::ImageData> BuildBlockTextureImages() {
-		std::vector<fe::ImageData> layers;
-		const auto& paths = BlockTextures();
-		layers.reserve(paths.size() + 6);
-		for (const auto& path : paths)
-			layers.push_back(fe::ImageLoader::Load(path, 4));
+	// textures keep using the original style and are untouched. Built once and
+	// cached, since every chunk mesh shares the same texture set.
+	static const std::vector<fe::ImageData>& BuildBlockTextureImages() {
+		static const std::vector<fe::ImageData> layers = []() {
+			std::vector<fe::ImageData> result;
+			const auto& paths = BlockTextures();
+			result.reserve(paths.size() + 6);
+			for (const auto& path : paths)
+				result.push_back(fe::ImageLoader::Load(path, 4));
 
-		fe::ImageData sheet = fe::ImageLoader::Load(GrassSheetPath(), 4);
-		const int cols = 3;
-		const int rows = 4;
-		const int cellW = (sheet.width > 0) ? sheet.width / cols : 0;
-		const int cellH = (sheet.height > 0) ? sheet.height / rows : 0;
+			fe::ImageData sheet = fe::ImageLoader::Load(GrassSheetPath(), 4);
+			const int cols = 3;
+			const int rows = 4;
+			const int cellW = (sheet.width > 0) ? sheet.width / cols : 0;
+			const int cellH = (sheet.height > 0) ? sheet.height / rows : 0;
 
-		auto cropCell = [&](int col, int rowFromTop) -> fe::ImageData {
-			fe::ImageData out;
-			if (cellW <= 0 || cellH <= 0 || sheet.pixels.empty())
+			auto cropCell = [&](int col, int rowFromTop) -> fe::ImageData {
+				fe::ImageData out;
+				if (cellW <= 0 || cellH <= 0 || sheet.pixels.empty())
+					return out;
+				out.width = cellW;
+				out.height = cellH;
+				out.channels = sheet.channels;
+				out.pixels.assign(static_cast<size_t>(cellW) * cellH * sheet.channels, 0);
+				// ImageLoader flips images vertically on load, so source row
+				// "rowFromTop" (0 = top of the sheet) lives at memory row
+				// (height - (rowFromTop + 1) * cellH).
+				const int srcY = sheet.height - (rowFromTop + 1) * cellH;
+				const int srcX = col * cellW;
+				for (int y = 0; y < cellH; ++y) {
+					const unsigned char* src = &sheet.pixels[
+						(static_cast<size_t>(srcY + y) * sheet.width + srcX) * sheet.channels];
+					unsigned char* dst = &out.pixels[
+						(static_cast<size_t>(y) * cellW) * sheet.channels];
+					std::copy(src, src + static_cast<size_t>(cellW) * sheet.channels, dst);
+				}
 				return out;
-			out.width = cellW;
-			out.height = cellH;
-			out.channels = sheet.channels;
-			out.pixels.assign(static_cast<size_t>(cellW) * cellH * sheet.channels, 0);
-			// ImageLoader flips images vertically on load, so source row
-			// "rowFromTop" (0 = top of the sheet) lives at memory row
-			// (height - (rowFromTop + 1) * cellH).
-			const int srcY = sheet.height - (rowFromTop + 1) * cellH;
-			const int srcX = col * cellW;
-			for (int y = 0; y < cellH; ++y) {
-				const unsigned char* src = &sheet.pixels[
-					(static_cast<size_t>(srcY + y) * sheet.width + srcX) * sheet.channels];
-				unsigned char* dst = &out.pixels[
-					(static_cast<size_t>(y) * cellW) * sheet.channels];
-				std::copy(src, src + static_cast<size_t>(cellW) * sheet.channels, dst);
-			}
-			return out;
-		};
+			};
 
-		// Order must match the kGrass*Layer constants above. Sheet layout
-		// (top row = image row 0):
-		//   . B .
-		//   L T R
-		//   . F .
-		//   . b .
-		layers.push_back(cropCell(1, 1)); // 9  top
-		layers.push_back(cropCell(1, 3)); // 10 bottom
-		layers.push_back(cropCell(0, 1)); // 11 left
-		layers.push_back(cropCell(2, 1)); // 12 right
-		layers.push_back(cropCell(1, 2)); // 13 front
-		layers.push_back(cropCell(1, 0)); // 14 back
+			// Order must match the kGrass*Layer constants above. Sheet layout
+			// (top row = image row 0):
+			//   . B .
+			//   L T R
+			//   . F .
+			//   . b .
+			result.push_back(cropCell(1, 1)); // 9  top
+			result.push_back(cropCell(1, 3)); // 10 bottom
+			result.push_back(cropCell(0, 1)); // 11 left
+			result.push_back(cropCell(2, 1)); // 12 right
+			result.push_back(cropCell(1, 2)); // 13 front
+			result.push_back(cropCell(1, 0)); // 14 back
+			return result;
+		}();
 		return layers;
 	}
 

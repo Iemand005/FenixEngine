@@ -118,6 +118,8 @@ namespace fe {
 								gpuTexture = device_->CreateGPUTexture();
 								if (gpuTexture) UploadPendingTextureArray(device_, gpuTexture.get());
 								hasPendingTextureArray = false;
+								pendingTextureArrayImages.clear();
+								pendingTextureArrayPaths.clear();
 							}
 					}
 					return *this;
@@ -207,6 +209,8 @@ namespace fe {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) UploadPendingTextureArray(device_, gpuTexture.get());
 				hasPendingTextureArray = false;
+				pendingTextureArrayImages.clear();
+				pendingTextureArrayPaths.clear();
 			}
 		}
 
@@ -224,6 +228,8 @@ namespace fe {
 					UploadPendingTextureArray(device_, gpuTexture.get());
 				}
 				hasPendingTextureArray = false;
+				pendingTextureArrayImages.clear();
+				pendingTextureArrayPaths.clear();
 			}
 
 			if (hasPendingImageData) {
