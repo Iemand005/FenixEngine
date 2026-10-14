@@ -4,6 +4,7 @@
 #include <deque>
 
 #include <Mesh.hpp>
+#include <ImageLoader.hpp>
 #include "Chunk.hpp"
 #include "ChunkManager.hpp"
 
@@ -167,7 +168,7 @@ public:
 				fe::PlaneDirection direction;
 				if (axis == 0)      direction = backFace ? fe::PlaneDirection::Left   : fe::PlaneDirection::Right;
 				else if (axis == 1) direction = backFace ? fe::PlaneDirection::Bottom : fe::PlaneDirection::Top;
-				else                direction = backFace ? fe::PlaneDirection::Front  : fe::PlaneDirection::Back;
+				else                direction = backFace ? fe::PlaneDirection::Back   : fe::PlaneDirection::Front;
 
 				int outwardSign = backFace ? -1 : 1;
 
@@ -321,14 +322,27 @@ public:
 		chunk->mesh = fe::Mesh<VoxelVertex>(std::move(allVertices), std::move(allIndices));
 	}
 
+	// Layer indices for the "cross" grass texture sheet (see BuildBlockTextureImages).
+	// These are appended after the flat tiles returned by BlockTextures().
+	static constexpr int kGrassTopLayer = 9;
+	static constexpr int kGrassBottomLayer = 10;
+	static constexpr int kGrassLeftLayer = 11;
+	static constexpr int kGrassRightLayer = 12;
+	static constexpr int kGrassFrontLayer = 13;
+	static constexpr int kGrassBackLayer = 14;
+
 	static int GetBlockTextureLayer(BlockType type, fe::PlaneDirection direction) {
 		switch (type) {
 			case BlockType::Grass:
-				if (direction == fe::PlaneDirection::Top)
-					return 1;
-				if (direction == fe::PlaneDirection::Bottom)
-					return 0;
-				return 2;
+				switch (direction) {
+					case fe::PlaneDirection::Top:    return kGrassTopLayer;
+					case fe::PlaneDirection::Bottom: return kGrassBottomLayer;
+					case fe::PlaneDirection::Left:   return kGrassLeftLayer;
+					case fe::PlaneDirection::Right:  return kGrassRightLayer;
+					case fe::PlaneDirection::Front:  return kGrassFrontLayer;
+					case fe::PlaneDirection::Back:   return kGrassBackLayer;
+				}
+				return kGrassSideLayerFallback();
 			case BlockType::Dirt:
 				return 0;
 			case BlockType::Stone:
@@ -345,18 +359,82 @@ public:
 		return 0;
 	}
 
-static const std::vector<std::string>& BlockTextures() {
-			static const std::vector<std::string> blocks = {
-				"resources/textures/dirt.png",
-				"resources/textures/grass_carried.png",
-				"resources/textures/grass_side_carried.png",
-				"resources/textures/bedrock.png",
-				"resources/textures/stone.png",
-				"resources/textures/cobblestone.png",
-				"resources/textures/glowstone.png",
-				"resources/textures/cake_bottom.png",
-				"resources/textures/cake_top.png"
-			};
-			return blocks;
-		}
+	// Flat, single-image block tiles (layer 0..8). The grass cross-sheet layers
+	// (9..14) are appended by BuildBlockTextureImages().
+	static const std::vector<std::string>& BlockTextures() {
+		static const std::vector<std::string> blocks = {
+			"resources/textures/dirt.png",
+			"resources/textures/grass_carried.png",
+			"resources/textures/grass_side_carried.png",
+			"resources/textures/bedrock.png",
+			"resources/textures/stone.png",
+			"resources/textures/cobblestone.png",
+			"resources/textures/glowstone.png",
+			"resources/textures/cake_bottom.png",
+			"resources/textures/cake_top.png"
+		};
+		return blocks;
+	}
+
+	// Path to the 3x4 grass sheet. Resolved relative to the working directory,
+	// which for the meta build is the repository root (see AGENTS/notes).
+	static const char* GrassSheetPath() { return "Assets/Grass.png"; }
+
+	// Load every texture-array layer as an image. The flat tiles are loaded
+	// straight from disk; the grass cross-sheet is split into its six 16x16
+	// faces so that the array keeps its uniform layer size. All other block
+	// textures keep using the original style and are untouched.
+	static std::vector<fe::ImageData> BuildBlockTextureImages() {
+		std::vector<fe::ImageData> layers;
+		const auto& paths = BlockTextures();
+		layers.reserve(paths.size() + 6);
+		for (const auto& path : paths)
+			layers.push_back(fe::ImageLoader::Load(path, 4));
+
+		fe::ImageData sheet = fe::ImageLoader::Load(GrassSheetPath(), 4);
+		const int cols = 3;
+		const int rows = 4;
+		const int cellW = (sheet.width > 0) ? sheet.width / cols : 0;
+		const int cellH = (sheet.height > 0) ? sheet.height / rows : 0;
+
+		auto cropCell = [&](int col, int rowFromTop) -> fe::ImageData {
+			fe::ImageData out;
+			if (cellW <= 0 || cellH <= 0 || sheet.pixels.empty())
+				return out;
+			out.width = cellW;
+			out.height = cellH;
+			out.channels = sheet.channels;
+			out.pixels.assign(static_cast<size_t>(cellW) * cellH * sheet.channels, 0);
+			// ImageLoader flips images vertically on load, so source row
+			// "rowFromTop" (0 = top of the sheet) lives at memory row
+			// (height - (rowFromTop + 1) * cellH).
+			const int srcY = sheet.height - (rowFromTop + 1) * cellH;
+			const int srcX = col * cellW;
+			for (int y = 0; y < cellH; ++y) {
+				const unsigned char* src = &sheet.pixels[
+					(static_cast<size_t>(srcY + y) * sheet.width + srcX) * sheet.channels];
+				unsigned char* dst = &out.pixels[
+					(static_cast<size_t>(y) * cellW) * sheet.channels];
+				std::copy(src, src + static_cast<size_t>(cellW) * sheet.channels, dst);
+			}
+			return out;
+		};
+
+		// Order must match the kGrass*Layer constants above. Sheet layout
+		// (top row = image row 0):
+		//   . B .
+		//   L T R
+		//   . F .
+		//   . b .
+		layers.push_back(cropCell(1, 1)); // 9  top
+		layers.push_back(cropCell(1, 3)); // 10 bottom
+		layers.push_back(cropCell(0, 1)); // 11 left
+		layers.push_back(cropCell(2, 1)); // 12 right
+		layers.push_back(cropCell(1, 2)); // 13 front
+		layers.push_back(cropCell(1, 0)); // 14 back
+		return layers;
+	}
+
+private:
+	static constexpr int kGrassSideLayerFallback() { return kGrassLeftLayer; }
 };

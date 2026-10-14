@@ -33,6 +33,8 @@ namespace fe {
 
 		bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear);
 
+		bool loadTextureArray(const std::vector<ImageData>& images, TextureScaling scaling = TextureScaling::Linear);
+
 		static std::unordered_map<std::string, unsigned int>& GetTextureArrayCache();
 
 	private:
