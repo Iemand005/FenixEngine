@@ -443,6 +443,13 @@ void OpenGLRenderDevice::UploadTextureArray(IGPUTexture* texture,
 	glTexture->loadTextureArray(paths, scaling);
 }
 
+void OpenGLRenderDevice::UploadTextureArray(IGPUTexture* texture,
+	const std::vector<ImageData>& images, TextureScaling scaling) {
+	if (!texture) return;
+	auto* glTexture = static_cast<OpenGLGPUTexture*>(texture);
+	glTexture->loadTextureArray(images, scaling);
+}
+
 void OpenGLRenderDevice::SubmitFrame() {
 	MakeCurrent();
 	glFlush();

@@ -141,6 +141,8 @@ set(SOURCE_FILES
 	Graphics/OpenGLRenderDevice.cpp
 	ImageLoader.cpp
 	Mesh.cpp
+	../games/common/Chunk.cpp
+	../games/common/ChunkManager.cpp
 	physics/BasicDebugRenderer.cpp
 	physics/PhysicsCharacter.cpp
 	physics/PhysicsFactory.cpp
@@ -322,6 +324,8 @@ target_include_directories(Engine PRIVATE
 target_include_directories(Engine PUBLIC
 	${EXTERNAL_DIR}/glm
 	${EXTERNAL_DIR}/imgui
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/../games/common
 )
 
 if(NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)

@@ -96,18 +96,16 @@ public:
 
 	void uploadTextureArray(VkDevice device, VkPhysicalDevice physicalDevice,
 				VkCommandPool commandPool, VkQueue graphicsQueue,
-				const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) {
+				const std::vector<ImageData>& images, TextureScaling scaling = TextureScaling::Linear) {
 
-		if (textureFilePaths.empty()) return;
+		if (images.empty()) return;
 
-		auto firstImage = fe::ImageLoader::Load(textureFilePaths[0]);
-		if (firstImage.pixels.empty()) return;
-
-		uint32_t w = static_cast<uint32_t>(firstImage.width);
-		uint32_t h = static_cast<uint32_t>(firstImage.height);
-		int nrChannels = firstImage.channels;
+		uint32_t w = static_cast<uint32_t>(images[0].width);
+		uint32_t h = static_cast<uint32_t>(images[0].height);
+		int nrChannels = images[0].channels;
+		if (w == 0 || h == 0 || nrChannels == 0 || images[0].pixels.empty()) return;
 		VkFormat format = (nrChannels == 4) ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8_SRGB;
-		uint32_t layers = static_cast<uint32_t>(textureFilePaths.size());
+		uint32_t layers = static_cast<uint32_t>(images.size());
 		VkDeviceSize layerSize = static_cast<VkDeviceSize>(w) * h * nrChannels;
 		VkDeviceSize totalSize = layerSize * layers;
 
@@ -121,11 +119,11 @@ public:
 		void* mapped;
 		vkMapMemory(device, stagingMemory, 0, totalSize, 0, &mapped);
 		auto* dst = static_cast<uint8_t*>(mapped);
-		memcpy(dst, firstImage.pixels.data(), static_cast<size_t>(layerSize));
+		memcpy(dst, images[0].pixels.data(), static_cast<size_t>(layerSize));
 
 		for (uint32_t i = 1; i < layers; ++i) {
-			auto img = fe::ImageLoader::Load(textureFilePaths[i]);
-			if (!img.pixels.empty() && img.width == firstImage.width && img.height == firstImage.height && img.channels == nrChannels) {
+			const auto& img = images[i];
+			if (!img.pixels.empty() && img.width == images[0].width && img.height == images[0].height && img.channels == nrChannels) {
 				memcpy(dst + i * layerSize, img.pixels.data(), static_cast<size_t>(layerSize));
 			}
 		}
@@ -153,6 +151,20 @@ public:
 
 		this->arrayTexture = true;
 		this->layerCount_ = static_cast<int>(layers);
+	}
+
+	void uploadTextureArray(VkDevice device, VkPhysicalDevice physicalDevice,
+				VkCommandPool commandPool, VkQueue graphicsQueue,
+				const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) {
+
+		if (textureFilePaths.empty()) return;
+
+		std::vector<ImageData> images;
+		images.reserve(textureFilePaths.size());
+		for (const auto& path : textureFilePaths)
+			images.push_back(fe::ImageLoader::Load(path));
+
+		uploadTextureArray(device, physicalDevice, commandPool, graphicsQueue, images, scaling);
 	}
 
 	bool load(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) override {

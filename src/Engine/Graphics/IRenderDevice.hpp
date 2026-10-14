@@ -50,6 +50,9 @@ namespace fe {
 		virtual void UploadTextureArray(IGPUTexture* texture,
 			const std::vector<std::string>& paths, TextureScaling scaling = TextureScaling::Linear) {}
 
+		virtual void UploadTextureArray(IGPUTexture* texture,
+			const std::vector<ImageData>& images, TextureScaling scaling = TextureScaling::Linear) {}
+
 		virtual void SetMat4(const char* name, const glm::mat4& value) {}
 		virtual void SetVec3(const char* name, const glm::vec3& value) {}
 		virtual void SetInt(const char* name, int value) {}

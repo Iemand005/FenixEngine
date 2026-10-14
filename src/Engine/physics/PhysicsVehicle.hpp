@@ -36,7 +36,8 @@ public:
     PhysicsVehicle(const PhysicsVehicle&) = delete;
     PhysicsVehicle& operator=(const PhysicsVehicle&) = delete;
 
-    void Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSystem> physicsSystem, const std::vector<WheelConfig>& wheels);
+    void Create(PhysicsObject* body, std::shared_ptr<JPH::PhysicsSystem> physicsSystem, const std::vector<WheelConfig>& wheels,
+                const glm::vec3& forward = glm::vec3(0.0f, 0.0f, 1.0f));
 
     void SetDriverInput(float forward, float right, float brake, float handbrake);
     void SetMaxPitchRollAngle(float angle);

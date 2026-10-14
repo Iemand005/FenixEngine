@@ -166,6 +166,7 @@ void PhysicsFactory::Update(double dt) {
 	const int collisionSteps = 1;
 	float deltaTime = static_cast<float>(dt);
 
+	impl->physicsSystem->OptimizeBroadPhase(); // TEMP TEST
 	impl->physicsSystem->Update(deltaTime, collisionSteps, impl->temp_allocator.get(), impl->jobSystem.get());
 
 	if (impl->debugRenderer && BasicDebugRenderer::DebugRenderingEnabled()) {
@@ -245,15 +246,28 @@ std::unique_ptr<PhysicsCharacter> PhysicsFactory::CreateCharacter(float height, 
 	return character;
 }
 
-PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels) {
+PhysicsVehicle* PhysicsFactory::CreateVehicle(PhysicsObject* body, const std::vector<PhysicsVehicle::WheelConfig>& wheels, const glm::vec3& forward) {
 #ifndef EXCLUDE_JOLT
 	auto vehicle = std::make_unique<PhysicsVehicle>();
-	vehicle->Create(body, impl->physicsSystem, wheels);
+	vehicle->Create(body, impl->physicsSystem, wheels, forward);
 	auto* ptr = vehicle.get();
 	impl->vehicles.push_back(std::move(vehicle));
 	return ptr;
 #else
 	return nullptr;
+#endif
+}
+
+void PhysicsFactory::DestroyVehicle(PhysicsVehicle* vehicle) {
+#ifndef EXCLUDE_JOLT
+	if (!vehicle)
+		return;
+	for (auto it = impl->vehicles.begin(); it != impl->vehicles.end(); ++it) {
+		if (it->get() == vehicle) {
+			impl->vehicles.erase(it); // destructor removes the Jolt constraint/step listener
+			return;
+		}
+	}
 #endif
 }
 

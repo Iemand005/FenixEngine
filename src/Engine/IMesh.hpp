@@ -39,6 +39,7 @@ public:
     virtual bool loadTexture(const std::string& textureFilePath, TextureScaling scaling = TextureScaling::Linear) = 0;
     virtual bool loadTexture(const ImageData& image, TextureScaling scaling = TextureScaling::Linear) = 0;
     virtual bool loadTextureArray(const std::vector<std::string>& textureFilePaths, TextureScaling scaling = TextureScaling::Linear) = 0;
+    virtual bool loadTextureArray(const std::vector<ImageData>& images, TextureScaling scaling = TextureScaling::Linear) { return false; }
 
     virtual glm::vec4 GetColor() const = 0;
     virtual void SetColor(const glm::vec4& c) = 0;

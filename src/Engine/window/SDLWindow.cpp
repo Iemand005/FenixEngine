@@ -9,6 +9,7 @@
 //#include <GL/glx.h>
 #endif
 
+#include <exception>
 #include <functional>
 #include <iostream>
 
@@ -57,11 +58,18 @@ struct SdlLivePumpHost {
 
 LRESULT CALLBACK SdlLivePumpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	auto* host = static_cast<SdlLivePumpHost*>(GetPropW(hwnd, kSdlLivePumpProp));
-	WNDPROC original = host ? host->originalProc
-		: (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
+
+	// If the host is gone the window is being torn down. Never fall back to
+	// GetWindowLongPtrW(GWLP_WNDPROC) here: it returns this very procedure, which
+	// would recurse into itself until the stack overflows (reported by Windows
+	// as "an unhandled exception was encountered during a user callback").
+	if (!host)
+		return DefWindowProcW(hwnd, msg, wParam, lParam);
+
+	WNDPROC original = host->originalProc ? host->originalProc : DefWindowProcW;
 	LRESULT result = CallWindowProcW(original, hwnd, msg, wParam, lParam);
 
-	fe::SDLWindow* window = host ? host->window : nullptr;
+	fe::SDLWindow* window = host->window;
 	if (!window) return result;
 
 	// SDL uses its own WM_ENTERSIZEMOVE timer (id == SDL_IterateMainCallbacks)
@@ -403,8 +411,18 @@ void fe::SDLWindow::Destroy() {
 	if (impl->window) {
 		HWND hwnd = GetNativeWindow();
 		if (hwnd) {
+			KillTimer(hwnd, kSdlLivePumpTimerId);
+
+			// Drop the render callbacks before unwinding the subclass so a late
+			// pump can't call back into a partially destroyed game/renderer.
+			onLiveMoveResize = nullptr;
+			resizeEvent = nullptr;
+
+			// Always restore the original proc; the previous equality check could
+			// fail (e.g. another subclass on top) and leave our proc installed
+			// with no host, which the proc would treat as a torn-down window.
 			if (auto* host = static_cast<SdlLivePumpHost*>(RemovePropW(hwnd, kSdlLivePumpProp))) {
-				if (host->originalProc && GetWindowLongPtrW(hwnd, GWLP_WNDPROC) == (LONG_PTR)SdlLivePumpWndProc)
+				if (host->originalProc)
 					SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)host->originalProc);
 				delete host;
 			}
@@ -435,6 +453,12 @@ void fe::SDLWindow::EnableLiveResizePump() {
 
 bool fe::SDLWindow::LiveResizePump() {
 #ifdef _WIN32
+	if (!impl || !impl->window) return false;
+
+	// Once a close was requested the game is shutting down; re-rendering from
+	// inside the modal Win32 loop can touch already-released GPU resources.
+	if (shouldClose) return false;
+
 	Uint64 now = SDL_GetTicks();
 	if (now - impl->lastLivePumpTick < 16) return false;
 	impl->lastLivePumpTick = now;
@@ -446,7 +470,16 @@ bool fe::SDLWindow::LiveResizePump() {
 		height = h;
 		if (resizeEvent) resizeEvent(w, h);
 	}
-	if (onLiveMoveResize) onLiveMoveResize();
+
+	// An exception escaping a window procedure is a hard fail-fast
+	// (0xC000041D). Rendering here is best-effort, so never let one propagate.
+	try {
+		if (onLiveMoveResize) onLiveMoveResize();
+	} catch (const std::exception& e) {
+		std::cerr << "[SDLWindow] Exception in live resize pump: " << e.what() << std::endl;
+	} catch (...) {
+		std::cerr << "[SDLWindow] Unknown exception in live resize pump" << std::endl;
+	}
 	return true;
 #else
 	return false;

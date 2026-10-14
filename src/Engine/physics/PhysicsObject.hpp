@@ -61,6 +61,7 @@ public:
 	glm::vec3 GetAngularVelocity();
 
 	glm::quat GetRotation();
+	void SetRotation(const glm::quat& rotation);
 
 	glm::vec3 GetPosition();
 	void SetPosition(glm::vec3 position);

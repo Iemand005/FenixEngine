@@ -31,6 +31,7 @@ class ObjectBase {
 	glm::vec3 visualOffset{0.0f};
 
 	bool isStatic = false;
+	bool visible = true;
 	bool touchedGround = false;
 	bool touchedOtherObject = false;
 	bool reverseWinding = false;

@@ -55,6 +55,7 @@ namespace fe {
 		bool hasPendingImageData = false;
 
 		std::vector<std::string> pendingTextureArrayPaths;
+		std::vector<ImageData> pendingTextureArrayImages;
 		TextureScaling pendingTextureArrayScaling = TextureScaling::Linear;
 		bool hasPendingTextureArray = false;
 
@@ -63,7 +64,7 @@ namespace fe {
 		Mesh(std::vector<VertexType> vertices, std::vector<unsigned int> indices) {
 			this->vertices = std::move(vertices);
 			this->indices = std::move(indices);
-			this->indexCount = this->indices.size();
+			this->indexCount = static_cast<unsigned int>(this->indices.size());
 			modelMatrix = glm::mat4(1.0f);
 		}
 
@@ -99,6 +100,7 @@ namespace fe {
 
 							hasPendingTextureArray = other.hasPendingTextureArray;
 							pendingTextureArrayPaths = other.pendingTextureArrayPaths;
+							pendingTextureArrayImages = other.pendingTextureArrayImages;
 							pendingTextureArrayScaling = other.pendingTextureArrayScaling;
 
 							if (device_ && !vertices.empty() && !indices.empty()) init();
@@ -114,8 +116,10 @@ namespace fe {
 							}
 							if (device_ && hasPendingTextureArray) {
 								gpuTexture = device_->CreateGPUTexture();
-								if (gpuTexture) device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+								if (gpuTexture) UploadPendingTextureArray(device_, gpuTexture.get());
 								hasPendingTextureArray = false;
+								pendingTextureArrayImages.clear();
+								pendingTextureArrayPaths.clear();
 							}
 					}
 					return *this;
@@ -140,6 +144,7 @@ namespace fe {
 			  pendingImageScaling(other.pendingImageScaling),
 			  hasPendingImageData(other.hasPendingImageData),
 			  pendingTextureArrayPaths(std::move(other.pendingTextureArrayPaths)),
+			  pendingTextureArrayImages(std::move(other.pendingTextureArrayImages)),
 			  pendingTextureArrayScaling(other.pendingTextureArrayScaling),
 			  hasPendingTextureArray(other.hasPendingTextureArray) {}
 
@@ -163,6 +168,7 @@ namespace fe {
 				pendingImageScaling = other.pendingImageScaling;
 				hasPendingImageData = other.hasPendingImageData;
 				pendingTextureArrayPaths = std::move(other.pendingTextureArrayPaths);
+				pendingTextureArrayImages = std::move(other.pendingTextureArrayImages);
 				pendingTextureArrayScaling = other.pendingTextureArrayScaling;
 				hasPendingTextureArray = other.hasPendingTextureArray;
 			}
@@ -186,6 +192,7 @@ namespace fe {
 					pendingImageScaling(other.pendingImageScaling),
 					hasPendingTextureArray(other.hasPendingTextureArray),
 					pendingTextureArrayPaths(other.pendingTextureArrayPaths),
+					pendingTextureArrayImages(other.pendingTextureArrayImages),
 					pendingTextureArrayScaling(other.pendingTextureArrayScaling) {
 			if (device_ && !vertices.empty() && !indices.empty()) init();
 			if (device_ && hasPendingTexture) {
@@ -200,8 +207,10 @@ namespace fe {
 			}
 			if (device_ && hasPendingTextureArray) {
 				gpuTexture = device_->CreateGPUTexture();
-				if (gpuTexture) device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+				if (gpuTexture) UploadPendingTextureArray(device_, gpuTexture.get());
 				hasPendingTextureArray = false;
+				pendingTextureArrayImages.clear();
+				pendingTextureArrayPaths.clear();
 			}
 		}
 
@@ -216,9 +225,11 @@ namespace fe {
 			if (hasPendingTextureArray) {
 				gpuTexture = device_->CreateGPUTexture();
 				if (gpuTexture) {
-					device_->UploadTextureArray(gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+					UploadPendingTextureArray(device_, gpuTexture.get());
 				}
 				hasPendingTextureArray = false;
+				pendingTextureArrayImages.clear();
+				pendingTextureArrayPaths.clear();
 			}
 
 			if (hasPendingImageData) {
@@ -311,9 +322,37 @@ namespace fe {
 			}
 
 			pendingTextureArrayPaths = textureFilePaths;
+			pendingTextureArrayImages.clear();
 			pendingTextureArrayScaling = newScaling;
 			hasPendingTextureArray = true;
 			return true;
+		}
+
+		bool loadTextureArray(const std::vector<ImageData>& images, TextureScaling newScaling = TextureScaling::Linear) override {
+			if (images.empty()) return false;
+
+			if (device_) {
+				gpuTexture = device_->CreateGPUTexture();
+				if (gpuTexture) {
+					device_->UploadTextureArray(gpuTexture.get(), images, newScaling);
+					return true;
+				}
+				return false;
+			}
+
+			pendingTextureArrayImages = images;
+			pendingTextureArrayPaths.clear();
+			pendingTextureArrayScaling = newScaling;
+			hasPendingTextureArray = true;
+			return true;
+		}
+
+		void UploadPendingTextureArray(IRenderDevice* dev, IGPUTexture* tex) const {
+			if (!dev || !tex) return;
+			if (!pendingTextureArrayImages.empty())
+				dev->UploadTextureArray(tex, pendingTextureArrayImages, pendingTextureArrayScaling);
+			else
+				dev->UploadTextureArray(tex, pendingTextureArrayPaths, pendingTextureArrayScaling);
 		}
 
 		void CopyToGPU() override {
@@ -349,12 +388,13 @@ namespace fe {
 
 			if (hasPendingTextureArray) {
 				copy->pendingTextureArrayPaths = pendingTextureArrayPaths;
+				copy->pendingTextureArrayImages = pendingTextureArrayImages;
 				copy->pendingTextureArrayScaling = pendingTextureArrayScaling;
 				copy->hasPendingTextureArray = true;
 				if (device_) {
 					copy->gpuTexture = device_->CreateGPUTexture();
 					if (copy->gpuTexture) {
-						device_->UploadTextureArray(copy->gpuTexture.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+						UploadPendingTextureArray(device_, copy->gpuTexture.get());
 						copy->hasPendingTextureArray = false;
 					}
 				}
@@ -416,7 +456,7 @@ namespace fe {
 				tex = dev->CreateGPUTexture();
 				if (tex) {
 					if (hasPendingTextureArray) {
-						dev->UploadTextureArray(tex.get(), pendingTextureArrayPaths, pendingTextureArrayScaling);
+						UploadPendingTextureArray(dev, tex.get());
 					} else if (hasPendingImageData) {
 						dev->UploadTexture(tex.get(), pendingImageData, pendingImageScaling);
 					} else if (hasPendingTexture) {
