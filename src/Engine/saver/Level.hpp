@@ -32,7 +32,7 @@ struct ObjectData {
 
 			LevelData *level = (LevelData *)malloc(size);
 
-			level->objectCount = objects.size();
+			level->objectCount = static_cast<int>(objects.size());
 
 			size_t i = 0;
 			for (auto &object : objects) {

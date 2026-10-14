@@ -126,7 +126,7 @@ namespace fe::Primitives {
 			for(auto& vertex : plane.vertices)
 				vertex.position += planeOffset;
 			
-			uint32_t vertexOffset = allVertices.size();
+			uint32_t vertexOffset = static_cast<uint32_t>(allVertices.size());
 			allVertices.insert(allVertices.end(), plane.vertices.begin(), plane.vertices.end());
 
 			for(uint32_t idx : plane.indices)
@@ -401,8 +401,8 @@ namespace fe::Primitives {
 		int nextSegment = currentSegment + 1;
 
 		if (nextSegment >= path.size()) {
-			nextSegment = path.size() - 1;
-			currentSegment = path.size() - 2;
+			nextSegment = static_cast<int>(path.size()) - 1;
+			currentSegment = static_cast<int>(path.size()) - 2;
 		}
 
 		float blend = scaledProgress - currentSegment;
