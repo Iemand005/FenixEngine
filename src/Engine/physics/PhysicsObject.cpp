@@ -274,6 +274,13 @@ glm::quat PhysicsObject::GetRotation() {
 #endif
 }
 
+void PhysicsObject::SetRotation(const glm::quat& rotation) {
+#ifndef EXCLUDE_JOLT
+	this->impl->physicsSystem->GetBodyInterface().SetRotation(
+		impl->bodyId, JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::Activate);
+#endif
+}
+
 glm::vec3 PhysicsObject::GetPosition() {
 #ifndef EXCLUDE_JOLT
 	return impl->ParseVec3(this->impl->physicsSystem->GetBodyInterface().GetPosition(impl->bodyId));

@@ -68,6 +68,17 @@ public:
 	void SetBatcher(ChunkBatcher* b) { batcher_ = b; }
 	static constexpr int WIDTH = 32, HEIGHT = 128, DEPTH = 32;
 	static constexpr int MAX_LIGHT = 15;
+
+	// Optional flat "landing strip" carved into generated terrain. Disabled by
+	// default so other games sharing this class keep their rolling terrain; a
+	// game can enable it (e.g. SuperFlight) to get a level spawn runway.
+	struct FlatStrip {
+		bool enabled = false;
+		float minX = 0.0f, maxX = 0.0f;
+		float minZ = 0.0f, maxZ = 0.0f;
+		int height = 24;
+	};
+	static inline FlatStrip landingStrip{};
 	glm::ivec2 coord;
 	std::atomic<ChunkState> state;
 	std::atomic<bool> paused{false};
@@ -181,6 +192,14 @@ public:
 				float normalizedNoise = noiseSum / maxAmplitude;
 				float waveHeight = heightOffset + normalizedNoise * heightAmplitude;
 				int maxHeight = glm::clamp(static_cast<int>(std::round(waveHeight)), 1, HEIGHT - 1);
+
+				// Flatten the requested landing strip so the runway and parked
+				// vehicles sit on level ground regardless of the noise field.
+				if (landingStrip.enabled &&
+					worldX >= landingStrip.minX && worldX <= landingStrip.maxX &&
+					worldZ >= landingStrip.minZ && worldZ <= landingStrip.maxZ) {
+					maxHeight = glm::clamp(landingStrip.height, 2, HEIGHT - 1);
+				}
 
 				float bedrockNoise = glm::perlin(glm::vec2(worldX * 0.25f, worldZ * 0.25f));
 				int bedrockThickness = glm::clamp(
