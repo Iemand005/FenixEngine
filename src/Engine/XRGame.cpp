@@ -1131,8 +1131,6 @@ void XRGame::RedrawVR() {
 
 	bool render2D = false;
 
-	renderDevice->BeginVRFrame();
-
 	// Set up lighting once, shared by all eyes
 	if (shader) UploadLights(shader.get(), scene.get());
 
@@ -1159,6 +1157,12 @@ void XRGame::RedrawVR() {
 					impl->depthTextures[swapchainImageIndex], 0, eye);
 			}
 
+			// Each eye is its own VR frame. This gives Vulkan a distinct
+			// in-flight uniform buffer / command buffer per eye; sharing one
+			// frame across both eyes makes the GPU use the last eye's
+			// view/projection for both, which breaks the stereo image.
+			renderDevice->BeginVRFrame();
+
 			// Set per-eye view/projection
 			renderDevice->SetMat4("view", camera->GetViewMatrix());
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
@@ -1169,7 +1173,15 @@ void XRGame::RedrawVR() {
 			for (auto& object : scene->GetObjects()) {
 				RenderObject(*object);
 			}
+
+			// Draw the game's custom scene content (voxel terrain, debug
+			// gizmos, ...) inside the eye render pass with the per-eye
+			// matrices. The window path does this in Renderer::Redraw; the VR
+			// path must mirror it or that content never reaches the HMD.
+			OnDraw();
+
 			renderDevice->EndEyeFrame();
+			renderDevice->EndVRFrame();
 		} else {
 			if (!useVulkan) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImagesGL[swapchainImageIndex].image);
@@ -1187,8 +1199,6 @@ void XRGame::RedrawVR() {
 		projectionViews[eye].subImage.imageRect.extent = {impl->swapchainWidth, impl->swapchainHeight};
 		projectionViews[eye].subImage.imageArrayIndex = eye;
 	}
-
-	renderDevice->EndVRFrame();
 
 	XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
 	impl->outputError(xrReleaseSwapchainImage(impl->swapchain, &releaseInfo));
