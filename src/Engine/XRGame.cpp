@@ -883,10 +883,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	if (fabsf(rightJoystickInput.x) > moveDeadzone || fabsf(rightJoystickInput.y) > moveDeadzone) {
 		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, 1.0f);
 		glm::vec3 right = viewOrientation * glm::vec3(1.0f, 0.0f, 0.0f);
-
-		// Flatten to the horizontal plane so pitch/roll of the head steers
-		// walking direction without changing speed or pushing the player
-		// into the ground.
+		
 		forward.y = 0.0f;
 		right.y = 0.0f;
 		forward = glm::normalize(forward);
@@ -1155,10 +1152,11 @@ void XRGame::RedrawVR() {
 		glm::quat turnedOrientation = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f)) * hmdOrientation;
 		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
+		// Camera position = player position + HMD offset + user offset
+		glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+		glm::vec3 cameraPos = playerPosition + hmdPosition + positionOffset;
+
 		if (!render2D) {
-			// Camera position = player position + HMD offset + user offset
-			glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
-			glm::vec3 cameraPos = playerPosition + hmdPosition + positionOffset;
 			camera->update(cameraPos, turnedOrientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
@@ -1203,7 +1201,11 @@ void XRGame::RedrawVR() {
 		}
 
 		projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-		projectionViews[eye].pose = views[eye].pose;
+		// The compositor timewarps around the pose submitted here. It must be
+		// the exact pose the eye rendered from (player + HMD + offset), or
+		// head rotation reprojects around the wrong point and the image
+		// swims with a lens-like distortion.
+		projectionViews[eye].pose.position = {cameraPos.x, cameraPos.y, cameraPos.z};
 		projectionViews[eye].pose.orientation = {turnedOrientation.x, turnedOrientation.y, turnedOrientation.z, turnedOrientation.w};
 		projectionViews[eye].fov = views[eye].fov;
 		projectionViews[eye].subImage.swapchain = impl->swapchain;
