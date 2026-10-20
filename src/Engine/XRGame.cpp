@@ -932,7 +932,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 				return glm::vec3(0.0f);
 
 			XrSpaceLocation location{XR_TYPE_SPACE_LOCATION};
-			if (XR_FAILED(xrLocateSpace(space, predictedDisplayTime, impl->appSpace, &location)))
+			if (XR_FAILED(xrLocateSpace(space, impl->appSpace, predictedDisplayTime, &location)))
 				return glm::vec3(0.0f);
 			if (!(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT))
 				return glm::vec3(0.0f);
