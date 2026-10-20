@@ -7,7 +7,7 @@ Try the engine in your browser!!
 
 Fenix Engine is a cross platform C++ game enine.
 
-Supports
+Supports (Tested)
 - Android 5+
 - WebGL
 - Windows 10+ (Windows 7 support expermental)
@@ -21,3 +21,5 @@ Graphics APIs:
 - OpenGL (3.3.0+)
 - OpenGL ES (2.0)
 - Vulkan (1.0 or so idk)
+
+
