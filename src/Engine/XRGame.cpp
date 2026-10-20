@@ -881,7 +881,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 	const float moveDeadzone = 0.1f;
 	if (fabsf(rightJoystickInput.x) > moveDeadzone || fabsf(rightJoystickInput.y) > moveDeadzone) {
-		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, 1.0f);
 		glm::vec3 right = viewOrientation * glm::vec3(1.0f, 0.0f, 0.0f);
 
 		// Flatten to the horizontal plane so pitch/roll of the head steers
