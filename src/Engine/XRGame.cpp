@@ -927,7 +927,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 			XrActionStatePose poseState{XR_TYPE_ACTION_STATE_POSE};
 			XrActionStateGetInfo poseGetInfo{XR_TYPE_ACTION_STATE_GET_INFO};
 			poseGetInfo.action = action;
-			outputError(xrGetActionStatePose(impl->session, &poseGetInfo, &poseState));
+			impl->outputError(xrGetActionStatePose(impl->session, &poseGetInfo, &poseState));
 			if (!poseState.isActive)
 				return glm::vec3(0.0f);
 
