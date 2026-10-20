@@ -8,7 +8,7 @@ Try the engine in your browser!!
 Fenix Engine is a cross platform C++ game enine.
 
 Supports (Tested)
-- Android 5+
+- Android 5+ (SDL3 part requuires Android 5  Imight impl the windowing interface with SDL2 to get it on android 4 aswell maybe idk yet)
 - WebGL
 - Windows 10+ (Windows 7 support expermental)
 - Quest Horizon OS
