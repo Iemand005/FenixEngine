@@ -17,3 +17,7 @@ VR Backends;
 - OpenXR (Optional)
 - OpenVR (Can render to panels and stuff in SteamVR overlays, optional)
 
+Graphics APIs:
+- OpenGL (3.3.0+)
+- OpenGL ES (2.0)
+- Vulkan (1.0 or so idk)
