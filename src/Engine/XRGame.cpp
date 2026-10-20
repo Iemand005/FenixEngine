@@ -804,7 +804,6 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	#ifndef FE_EXCLUDE_OPENXR
 	XrVector2f rightJoystickInput = {0.0f, 0.0f};
 	XrVector2f leftJoystickInput = {0.0f, 0.0f};
-	XrPosef headPose = {{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
 
 	XrActiveActionSet activeActionSet{impl->actionSet, XR_NULL_PATH};
 	XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
@@ -847,16 +846,24 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	raiseOnPress(impl->prevBlockAction, xrPrevBlockRequested);
 	raiseOnPress(impl->nextBlockAction, xrNextBlockRequested);
 
-	XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
-	impl->headSpace = impl->appSpace;
-	xrLocateSpace(impl->headSpace, impl->appSpace, predictedDisplayTime, &headLocation);
-
-	if (headLocation.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
-		headPose = headLocation.pose;
+	// There is no dedicated head reference space (locating appSpace in
+	// appSpace always yields identity), so grab the real HMD orientation from
+	// the stereo views — the same pose the render path uses.
+	glm::quat headOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+	{
+		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
+		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+		locateInfo.displayTime = predictedDisplayTime;
+		locateInfo.space = impl->appSpace;
+		XrViewState locateViewState{XR_TYPE_VIEW_STATE};
+		uint32_t hmdViewCount = 0;
+		std::vector<XrView> hmdViews(2, {XR_TYPE_VIEW});
+		if (XR_SUCCEEDED(xrLocateViews(impl->session, &locateInfo, &locateViewState, 2, &hmdViewCount, hmdViews.data()))
+			&& (locateViewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT)) {
+			auto& o = hmdViews[0].pose.orientation;
+			headOrientation = glm::quat(o.w, o.x, o.y, o.z);
+		}
 	}
-
-	auto ori = headPose.orientation;
-	glm::quat headOrientation(ori.w, ori.x, ori.y, ori.z);
 
 	// Apply look input (left stick) as smooth yaw turning. Keep the previous
 	// heading applied on top of the HMD orientation elsewhere via playerYaw.
@@ -877,6 +884,11 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, -1.0f);
 		glm::vec3 right = viewOrientation * glm::vec3(1.0f, 0.0f, 0.0f);
 
+		// Flatten to the horizontal plane so pitch/roll of the head steers
+		// walking direction without changing speed or pushing the player
+		// into the ground.
+		forward.y = 0.0f;
+		right.y = 0.0f;
 		forward = glm::normalize(forward);
 		right = glm::normalize(right);
 
