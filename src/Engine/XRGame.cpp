@@ -101,14 +101,18 @@ struct fe::XRGame::Impl {
 		XrActionSet actionSet = XR_NULL_HANDLE;
 		XrAction moveAction = XR_NULL_HANDLE;
 		XrAction lookAction = XR_NULL_HANDLE;
-		XrAction poseAction = XR_NULL_HANDLE;
+		XrAction leftGripPoseAction = XR_NULL_HANDLE;
+		XrAction leftAimPoseAction = XR_NULL_HANDLE;
+		XrAction rightGripPoseAction = XR_NULL_HANDLE;
+		XrAction rightAimPoseAction = XR_NULL_HANDLE;
 		XrAction toggleXrAction = XR_NULL_HANDLE;
 		XrAction breakBlockAction = XR_NULL_HANDLE;
 		XrAction placeBlockAction = XR_NULL_HANDLE;
 		XrAction prevBlockAction = XR_NULL_HANDLE;
 		XrAction nextBlockAction = XR_NULL_HANDLE;
-		XrSpace controllerSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
-		XrSpace headSpace = XR_NULL_HANDLE;
+		// Action spaces for the pose actions, indexed [hand] (0 = left, 1 = right).
+		XrSpace gripPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
+		XrSpace aimPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 
 		XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
 		XrFrameState frameState{XR_TYPE_FRAME_STATE};
@@ -287,6 +291,14 @@ struct fe::XRGame::Impl {
 		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "prev_block", &prevBlockAction);
 		CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "next_block", &nextBlockAction);
 
+		// Pose actions: grip = the physical controller body, aim = the
+		// pointer/ray pose from the tip (used for ray casting). One per hand,
+		// so four poses in total.
+		CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_grip_pose", &leftGripPoseAction);
+		CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_aim_pose", &leftAimPoseAction);
+		CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_grip_pose", &rightGripPoseAction);
+		CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_aim_pose", &rightAimPoseAction);
+
 		// Movement on the right thumbstick, look/turn on the left thumbstick.
 		// Binding is suggested for the common interaction profiles that expose
 		// a thumbstick or trackpad on each hand.
@@ -313,6 +325,12 @@ struct fe::XRGame::Impl {
 				// R2 places.
 				{breakBlockAction, Path("/user/hand/left/input/squeeze")},
 				{placeBlockAction, Path("/user/hand/right/input/squeeze")},
+				// Grip pose = controller body, aim pose = pointer/ray tip. Both
+				// paths are part of the base controller layout on all these profiles.
+				{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
+				{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
+				{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
+				{rightAimPoseAction, Path("/user/hand/right/input/aim/pose")},
 			});
 		}
 
@@ -325,12 +343,33 @@ struct fe::XRGame::Impl {
 			{nextBlockAction, Path("/user/hand/right/input/trigger")},
 			{breakBlockAction, Path("/user/hand/left/input/squeeze")},
 			{placeBlockAction, Path("/user/hand/right/input/squeeze")},
+			{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
+			{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
+			{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
+			{rightAimPoseAction, Path("/user/hand/right/input/aim/pose")},
 		});
 
 		XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
 		attachInfo.actionSets = &actionSet;
 		attachInfo.countActionSets = 1;
 		xrAttachSessionActionSets(session, &attachInfo);
+
+		// Action spaces can only be created after the action set is attached
+		// to the session. Identity pose in the action space: the located space
+		// pose *is* the controller pose.
+		auto createActionSpace = [&](XrAction action, XrSpace* space) {
+			if (action == XR_NULL_HANDLE) return;
+			XrActionSpaceCreateInfo spaceInfo{XR_TYPE_ACTION_SPACE_CREATE_INFO};
+			spaceInfo.action = action;
+			spaceInfo.subactionPath = XR_NULL_PATH;
+			spaceInfo.poseInActionSpace.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
+			spaceInfo.poseInActionSpace.position = {0.0f, 0.0f, 0.0f};
+			outputError(xrCreateActionSpace(session, &spaceInfo, space));
+		};
+		createActionSpace(leftGripPoseAction, &gripPoseSpace[0]);
+		createActionSpace(leftAimPoseAction, &aimPoseSpace[0]);
+		createActionSpace(rightGripPoseAction, &gripPoseSpace[1]);
+		createActionSpace(rightAimPoseAction, &aimPoseSpace[1]);
 		#endif
 
 	}
@@ -847,9 +886,10 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	raiseOnPress(impl->nextBlockAction, xrNextBlockRequested);
 
 	// There is no dedicated head reference space (locating appSpace in
-	// appSpace always yields identity), so grab the real HMD orientation from
+	// appSpace always yields identity), so grab the real HMD pose from
 	// the stereo views — the same pose the render path uses.
 	glm::quat headOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+	glm::vec3 hmdPosition(0.0f);
 	{
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
 		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -858,11 +898,54 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		XrViewState locateViewState{XR_TYPE_VIEW_STATE};
 		uint32_t hmdViewCount = 0;
 		std::vector<XrView> hmdViews(2, {XR_TYPE_VIEW});
-		if (XR_SUCCEEDED(xrLocateViews(impl->session, &locateInfo, &locateViewState, 2, &hmdViewCount, hmdViews.data()))
-			&& (locateViewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT)) {
-			auto& o = hmdViews[0].pose.orientation;
-			headOrientation = glm::quat(o.w, o.x, o.y, o.z);
+		if (XR_SUCCEEDED(xrLocateViews(impl->session, &locateInfo, &locateViewState, 2, &hmdViewCount, hmdViews.data()))) {
+			if (locateViewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) {
+				auto& o = hmdViews[0].pose.orientation;
+				headOrientation = glm::quat(o.w, o.x, o.y, o.z);
+			}
+			if (locateViewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) {
+				auto& p = hmdViews[0].pose.position;
+				hmdPosition = glm::vec3(p.x, p.y, p.z);
+			}
 		}
+	}
+
+	// Track the four controller poses: grip (controller body) and aim
+	// (pointer/ray tip) for each hand. They are located in appSpace and then
+	// composed into world space the same way the camera is: base (player +
+	// offset + HMD) with the controller's offset from the head rotated by the
+	// smooth-turn yaw. At yaw = 0 this is exactly player + offset + pose.
+	{
+		glm::vec3 base = (player ? player->state.position : glm::vec3(0.0f)) + positionOffset + hmdPosition;
+		glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		auto locateControllerPose = [&](XrAction action, XrSpace space, bool& active) -> glm::vec3 {
+			active = false;
+			if (action == XR_NULL_HANDLE || space == XR_NULL_HANDLE)
+				return glm::vec3(0.0f);
+
+			XrActionStatePose poseState{XR_TYPE_ACTION_STATE_POSE};
+			XrActionStateGetInfo poseGetInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+			poseGetInfo.action = action;
+			outputError(xrGetActionStatePose(impl->session, &poseGetInfo, &poseState));
+			if (!poseState.isActive)
+				return glm::vec3(0.0f);
+
+			XrSpaceLocation location{XR_TYPE_SPACE_LOCATION};
+			if (XR_FAILED(xrLocateSpace(space, predictedDisplayTime, impl->appSpace, &location)))
+				return glm::vec3(0.0f);
+			if (!(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT))
+				return glm::vec3(0.0f);
+
+			active = true;
+			glm::vec3 pose(location.pose.position.x, location.pose.position.y, location.pose.position.z);
+			return base + yawQ * (pose - hmdPosition);
+		};
+
+		leftGripPosition = locateControllerPose(impl->leftGripPoseAction, impl->gripPoseSpace[0], leftGripPoseActive);
+		leftAimPosition = locateControllerPose(impl->leftAimPoseAction, impl->aimPoseSpace[0], leftAimPoseActive);
+		rightGripPosition = locateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], rightGripPoseActive);
+		rightAimPosition = locateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], rightAimPoseActive);
 	}
 
 	// Apply look input (left stick) as smooth yaw turning. Keep the previous
@@ -1025,6 +1108,20 @@ void XRGame::DestroyXR() {
 	#endif
 
 	impl->DestroyPassthrough();
+
+	// Destroy the controller pose action spaces and the action set.
+	for (auto& space : impl->gripPoseSpace) {
+		if (space != XR_NULL_HANDLE) xrDestroySpace(space);
+		space = XR_NULL_HANDLE;
+	}
+	for (auto& space : impl->aimPoseSpace) {
+		if (space != XR_NULL_HANDLE) xrDestroySpace(space);
+		space = XR_NULL_HANDLE;
+	}
+	if (impl->actionSet != XR_NULL_HANDLE) xrDestroyActionSet(impl->actionSet);
+	impl->actionSet = XR_NULL_HANDLE;
+	leftGripPoseActive = leftAimPoseActive = rightGripPoseActive = rightAimPoseActive = false;
+	leftGripPosition = leftAimPosition = rightGripPosition = rightAimPosition = glm::vec3(0.0f);
 
 	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
 	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
