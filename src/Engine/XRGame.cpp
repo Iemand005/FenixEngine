@@ -277,7 +277,7 @@ struct fe::XRGame::Impl {
 		XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
 		strcpy(actionSetInfo.actionSetName, "gameplay");
 		strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
-		xrCreateActionSet(instance, &actionSetInfo, &actionSet);
+		xrCreateA-ctionSet(instance, &actionSetInfo, &actionSet);
 
 		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "move", &moveAction);
 		CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "look", &lookAction);
