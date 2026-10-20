@@ -77,6 +77,21 @@ namespace fe {
 		// XR action, a hotkey or a gamepad button).
 		bool xrToggleRequested = false;
 
+		// Controller poses tracked from OpenXR every VR frame, in world space
+		// (same space the VR camera is composed in). Grip = the physical
+		// controller body; Aim = the pointer/ray pose used for ray casting.
+		glm::vec3 leftGripPosition = glm::vec3(0.0f);
+		glm::vec3 leftAimPosition = glm::vec3(0.0f);
+		glm::vec3 rightGripPosition = glm::vec3(0.0f);
+		glm::vec3 rightAimPosition = glm::vec3(0.0f);
+
+		// False when the runtime isn't tracking the pose (e.g. controller
+		// asleep / not present); the corresponding position is stale.
+		bool leftGripPoseActive = false;
+		bool leftAimPoseActive = false;
+		bool rightGripPoseActive = false;
+		bool rightAimPoseActive = false;
+
 		// Edge-triggered requests raised by the XR action bindings
 		// (left/right trigger = break/place, L1/R1 grips = switch hotbar slot).
 		// The game consumes and clears them.
