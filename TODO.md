@@ -1,0 +1,1 @@
+Perform vibratino on controller if joystick hits max
