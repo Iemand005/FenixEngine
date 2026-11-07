@@ -329,6 +329,12 @@ target_include_directories(Engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/../games/common
 )
 
+if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)
+	target_include_directories(Engine PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/OpenXR-SDK/include
+	)
+endif()
+
 if(NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	target_include_directories(Engine PUBLIC
 		${EXTERNAL_DIR}/glfw/include
