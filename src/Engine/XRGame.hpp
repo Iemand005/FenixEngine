@@ -69,7 +69,11 @@ namespace fe {
 
 		bool drawWindow = true;
 
-		glm::vec3 positionOffset = glm::vec3(0.0f);
+		// World-space offset added to the player position before applying the
+		// reference-space tracking transform. Y is the eye height above the
+		// player's feet; X/Z should normally stay zero (they previously were 1,
+		// which shifted the head sideways/forward).
+		glm::vec3 positionOffset = glm::vec3(0.0f, 1.0f, 0.0f);
 
 		// Yaw "look" turn (radians) accumulated from the look input (e.g. left
 		// thumbstick). Applied on top of the HMD orientation each VR frame.

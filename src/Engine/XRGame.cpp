@@ -745,10 +745,13 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	xrNextBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::NextBlock);
 
 	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
-	glm::vec3 base = playerPosition + positionOffset + input.headPosition;
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	// Rigid reference-space -> world-space transform used for every tracked
+	// pose (controllers and eyes): translate to the player, then apply yaw
+	// about the reference-space origin.
+	glm::vec3 worldOrigin = playerPosition + positionOffset;
 	auto toWorldPosition = [&](glm::vec3 position) {
-		return base + yawQ * (position - input.headPosition);
+		return worldOrigin + yawQ * position;
 	};
 
 	leftGripPoseActive = input.leftGripPoseActive;
@@ -1043,17 +1046,13 @@ void XRGame::RedrawVR() {
 	// Set up lighting once, shared by all eyes
 	if (shader) UploadLights(shader.get(), scene.get());
 
-	// Head pose in the reference space (appSpace). The projection layer is
-	// submitted in this space, so every pose written into it must use these
-	// coordinates - never world coordinates.
-	glm::vec3 headRefPos(0.0f);
-	if (viewCount > 0)
-		headRefPos = glm::vec3(views[0].pose.position.x, views[0].pose.position.y, views[0].pose.position.z);
+	// The projection layer is submitted in the reference space (appSpace), so
+	// every pose written into it must use reference-space coordinates - never
+	// world coordinates. Choose one rigid reference -> world transform and use
+	// it for both rendering and controller positions.
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
-	// World position of the tracked head: player + offset + head. The yaw is
-	// applied around the head, matching toWorldPosition() for controllers.
-	glm::vec3 worldOrigin = playerPosition + positionOffset + headRefPos;
+	glm::vec3 worldOrigin = playerPosition + positionOffset;
 
 	for (uint32_t eye = 0; eye < viewCount; eye++) {
 		XrPosef pose = views[eye].pose;
@@ -1063,9 +1062,8 @@ void XRGame::RedrawVR() {
 		glm::quat hmdOrientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
 		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
-		// Rigid reference-space -> world-space transform: translate the tracked
-		// head to the player and apply the look yaw about the head.
-		glm::vec3 worldEyePos = worldOrigin + yawQ * (hmdPosition - headRefPos);
+		// Reference-space -> world-space (same rigid transform as controllers).
+		glm::vec3 worldEyePos = worldOrigin + yawQ * hmdPosition;
 		glm::quat worldEyeOrientation = yawQ * hmdOrientation;
 
 		if (!render2D) {
