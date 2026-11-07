@@ -12,8 +12,8 @@ namespace fe {
 
 	struct OpenXR::Impl {
 		InputState inputState;
-		bool buttonPressed[5] = {};
-		bool buttonHeld[5] = {};
+		bool buttonPressed[6] = {};
+		bool buttonHeld[6] = {};
 
 #ifndef FE_EXCLUDE_OPENXR
 		XrInstance instance = XR_NULL_HANDLE;
@@ -32,6 +32,7 @@ namespace fe {
 		XrAction placeBlockAction = XR_NULL_HANDLE;
 		XrAction prevBlockAction = XR_NULL_HANDLE;
 		XrAction nextBlockAction = XR_NULL_HANDLE;
+		XrAction spawnSphereAction = XR_NULL_HANDLE;
 		XrAction leftHapticAction = XR_NULL_HANDLE;
 		XrAction rightHapticAction = XR_NULL_HANDLE;
 		XrAction leftGripAction = XR_NULL_HANDLE;
@@ -121,6 +122,7 @@ namespace fe {
 			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "place_block", &placeBlockAction);
 			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "prev_block", &prevBlockAction);
 			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "next_block", &nextBlockAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "spawn_sphere", &spawnSphereAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_grip_pose", &leftGripPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_aim_pose", &leftAimPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_grip_pose", &rightGripPoseAction);
@@ -133,12 +135,10 @@ namespace fe {
 			// Touch/Index/Pico expose the grip as an analog squeeze value while
 			// Windows MR and Vive expose it as a boolean click. Each profile must
 			// be suggested in a single call (later calls replace earlier ones).
-			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue) {
+			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue, const char* spawnPath) {
 				std::vector<XrActionSuggestedBinding> bindings = {
 					{moveAction, Path("/user/hand/right/input/thumbstick")},
 					{lookAction, Path("/user/hand/left/input/thumbstick")},
-					{toggleXrAction, Path("/user/hand/left/input/x/click")},
-					{toggleXrAction, Path("/user/hand/right/input/a/click")},
 					{prevBlockAction, Path("/user/hand/left/input/trigger")},
 					{nextBlockAction, Path("/user/hand/right/input/trigger")},
 					{breakBlockAction, Path("/user/hand/left/input/squeeze")},
@@ -151,6 +151,9 @@ namespace fe {
 					{rightHapticAction, Path("/user/hand/right/output/haptic")},
 				};
 
+				if (spawnPath)
+					bindings.push_back({spawnSphereAction, Path(spawnPath)});
+
 				const char* squeezeComponent = squeezeValue ? "/input/squeeze/value" : "/input/squeeze/click";
 				bindings.push_back({leftGripAction, Path("/user/hand/left" + std::string(squeezeComponent))});
 				bindings.push_back({rightGripAction, Path("/user/hand/right" + std::string(squeezeComponent))});
@@ -158,11 +161,13 @@ namespace fe {
 				SuggestProfileBindings(profile, bindings);
 			};
 
-			suggestThumbstickProfile("/interaction_profiles/oculus/touch_controller", true);
-			suggestThumbstickProfile("/interaction_profiles/microsoft/motion_controller", false);
-			suggestThumbstickProfile("/interaction_profiles/valve/index_controller", true);
-			suggestThumbstickProfile("/interaction_profiles/bytedance/pico_touch_controller", true);
-			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true);
+			suggestThumbstickProfile("/interaction_profiles/oculus/touch_controller", true, "/user/hand/left/input/x/click");
+			suggestThumbstickProfile("/interaction_profiles/microsoft/motion_controller", false, nullptr);
+			// Index maps its face buttons to a/b (no x/y paths), so spawning is
+			// only bound on profiles that expose the left X button.
+			suggestThumbstickProfile("/interaction_profiles/valve/index_controller", true, nullptr);
+			suggestThumbstickProfile("/interaction_profiles/bytedance/pico_touch_controller", true, "/user/hand/left/input/x/click");
+			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true, "/user/hand/left/input/x/click");
 
 			SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
 				{moveAction, Path("/user/hand/right/input/trackpad")},
@@ -322,12 +327,14 @@ namespace fe {
 		impl->buttonPressed[static_cast<size_t>(Button::PlaceBlock)] |= impl->ReadButton(impl->placeBlockAction);
 		impl->buttonPressed[static_cast<size_t>(Button::PreviousBlock)] |= impl->ReadButton(impl->prevBlockAction);
 		impl->buttonPressed[static_cast<size_t>(Button::NextBlock)] |= impl->ReadButton(impl->nextBlockAction);
+		impl->buttonPressed[static_cast<size_t>(Button::SpawnSphere)] |= impl->ReadButton(impl->spawnSphereAction);
 
 		impl->buttonHeld[static_cast<size_t>(Button::ToggleXR)] = impl->ReadButtonHeld(impl->toggleXrAction);
 		impl->buttonHeld[static_cast<size_t>(Button::BreakBlock)] = impl->ReadButtonHeld(impl->breakBlockAction);
 		impl->buttonHeld[static_cast<size_t>(Button::PlaceBlock)] = impl->ReadButtonHeld(impl->placeBlockAction);
 		impl->buttonHeld[static_cast<size_t>(Button::PreviousBlock)] = impl->ReadButtonHeld(impl->prevBlockAction);
 		impl->buttonHeld[static_cast<size_t>(Button::NextBlock)] = impl->ReadButtonHeld(impl->nextBlockAction);
+		impl->buttonHeld[static_cast<size_t>(Button::SpawnSphere)] = impl->ReadButtonHeld(impl->spawnSphereAction);
 
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
 		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -381,6 +388,7 @@ namespace fe {
 		impl->placeBlockAction = XR_NULL_HANDLE;
 		impl->prevBlockAction = XR_NULL_HANDLE;
 		impl->nextBlockAction = XR_NULL_HANDLE;
+		impl->spawnSphereAction = XR_NULL_HANDLE;
 		impl->leftHapticAction = XR_NULL_HANDLE;
 		impl->rightHapticAction = XR_NULL_HANDLE;
 		impl->leftGripAction = XR_NULL_HANDLE;

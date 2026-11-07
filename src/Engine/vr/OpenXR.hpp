@@ -28,7 +28,8 @@ namespace fe {
 			BreakBlock,
 			PlaceBlock,
 			PreviousBlock,
-			NextBlock
+			NextBlock,
+			SpawnSphere
 		};
 
 		struct InputState {
