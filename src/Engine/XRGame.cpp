@@ -791,17 +791,14 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		forward = glm::normalize(forward);
 		right = glm::normalize(right);
 
-		XrVector3f movement;
-		const float moveSpeed = 0.1f;
-		movement.x = moveSpeed * forward.x * -input.moveInput.y + moveSpeed * right.x * input.moveInput.x;
-		movement.y = moveSpeed * forward.y * -input.moveInput.y;
-		movement.z = moveSpeed * forward.z * -input.moveInput.y + moveSpeed * right.z * input.moveInput.x;
-
-		// Move the player only; positionOffset stays a constant calibration
-		// offset. Applying the movement to both doubled the camera speed.
+		// Feed the stick direction into the character's pending movement so the
+		// normal Character::Update physics path moves the body. Writing straight
+		// into player->state.position was overwritten from the physics body every
+		// frame, which made the view lurch forward while the stick was held and
+		// snap back on release instead of walking.
 		if (player) {
-			player->state.position.x += movement.x;
-			player->state.position.z += movement.z;
+			player->pendingMovement += forward * -input.moveInput.y;
+			player->pendingMovement += right * input.moveInput.x;
 		}
 	}
 	#endif
