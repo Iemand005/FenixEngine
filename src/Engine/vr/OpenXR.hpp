@@ -26,7 +26,7 @@ namespace fe {
 		// Generic physical inputs exposed by the runtime. Games map these to
 		// their own actions (e.g. X -> spawn, grip -> grab).
 		enum class Button {
-			X,
+			X, 
 			Y,
 			A,
 			B,
