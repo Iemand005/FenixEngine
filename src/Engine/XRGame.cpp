@@ -210,10 +210,9 @@ void XRGame::PollActionsAndUpdateMovement() {
 	#ifndef FE_EXCLUDE_OPENXR
 
 	const OpenXR::InputState& rawInput = impl->input.GetInputState();
-	// Apply look input before transforming tracked poses so every pose uses
-	// the same world rotation for this frame.
+
 	const float lookDeadzone = 0.1f;
-	const float turnSpeed = 1.2f; // radians-ish per detached tap; tuned for 60fps, multiplied by dt below
+	const float turnSpeed = 1.2f;
 	if (fabsf(rawInput.lookInput.x) > lookDeadzone) {
 		double dt = std::max(fpsCounter.deltaTime, 0.0001);
 		playerYaw -= rawInput.lookInput.x * turnSpeed * static_cast<float>(dt);
@@ -223,8 +222,6 @@ void XRGame::PollActionsAndUpdateMovement() {
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 	const OpenXR::InputState input = impl->input.GetWorldInputState(playerPosition + positionOffset, yawQ);
 
-	// Movement direction should follow where the player is now looking after
-	// the turn above, i.e. head orientation rotated by playerYaw.
 	glm::quat viewOrientation = input.headOrientation;
 
 	const float moveDeadzone = 0.1f;
@@ -237,11 +234,6 @@ void XRGame::PollActionsAndUpdateMovement() {
 		forward = glm::normalize(forward);
 		right = glm::normalize(right);
 
-		// Feed the stick direction into the character's pending movement so the
-		// normal Character::Update physics path moves the body. Writing straight
-		// into player->state.position was overwritten from the physics body every
-		// frame, which made the view lurch forward while the stick was held and
-		// snap back on release instead of walking.
 		if (player) {
 			player->pendingMovement += forward * -input.moveInput.y;
 			player->pendingMovement += right * input.moveInput.x;
