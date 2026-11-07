@@ -72,10 +72,12 @@ void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertP
  		if (!vertPath || vertPath->empty() || fragPath->empty()) return;
 
  		PipelineSet& set = pipelineSets_[static_cast<size_t>(format)];
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_CLOCKWISE);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
+		// updateUniformBuffer flips projection Y for Vulkan's positive-height viewport,
+		// so the default counter-clockwise mesh winding becomes clockwise.
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal, VK_FRONT_FACE_CLOCKWISE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
  	
  }
 
@@ -2526,10 +2528,11 @@ void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t 
 		UniformBufferObject ubo{};
 		ubo.view = currentView_;
 		ubo.proj = currentProj_;
-		ubo.proj[1][1] *= -1;
-
-		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
-		ubo.proj[3][2] *= 0.5f;
+		// Flip the full Y row and remap OpenGL's [-1, 1] depth to Vulkan's [0, 1].
+		for (int column = 0; column < 4; ++column) {
+			ubo.proj[column][1] = -ubo.proj[column][1];
+			ubo.proj[column][2] = 0.5f * (ubo.proj[column][2] + ubo.proj[column][3]);
+		}
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	
