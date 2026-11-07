@@ -133,6 +133,7 @@ endif()
 set(SOURCE_FILES
 	accessories/Aura.cpp
 	Android.cpp
+	components/Drone.cpp
 	EditableGame.cpp
 	engine.cpp
 	Game.cpp
