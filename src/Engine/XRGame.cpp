@@ -844,129 +844,47 @@ void XRGame::initOpenXR(void *next) {
 
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	#ifndef FE_EXCLUDE_OPENXR
-	XrVector2f rightJoystickInput = {0.0f, 0.0f};
-	XrVector2f leftJoystickInput = {0.0f, 0.0f};
+	impl->input.UpdateInput(predictedDisplayTime);
+	const OpenXR::InputState& input = impl->input.GetInputState();
 
-	XrActiveActionSet activeActionSet{impl->actionSet, XR_NULL_PATH};
-	XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
-	syncInfo.activeActionSets = &activeActionSet;
-	syncInfo.countActiveActionSets = 1;
-	xrSyncActions(impl->session, &syncInfo);
+	xrToggleRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::ToggleXR);
+	xrBreakBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::BreakBlock);
+	xrPlaceBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::PlaceBlock);
+	xrPrevBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::PreviousBlock);
+	xrNextBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::NextBlock);
 
-	// Right stick = movement.
-	XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
-	XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-	getInfo.action = impl->moveAction;
-	xrGetActionStateVector2f(impl->session, &getInfo, &moveState);
-	rightJoystickInput = moveState.isActive ? moveState.currentState : XrVector2f{0.0f, 0.0f};
-
-	// Left stick = look (turn).
-	XrActionStateVector2f lookState{XR_TYPE_ACTION_STATE_VECTOR2F};
-	getInfo.action = impl->lookAction;
-	xrGetActionStateVector2f(impl->session, &getInfo, &lookState);
-	leftJoystickInput = lookState.isActive ? lookState.currentState : XrVector2f{0.0f, 0.0f};
-
-	// Face buttons (X / A) toggle the XR session.
-	XrActionStateBoolean toggleState{XR_TYPE_ACTION_STATE_BOOLEAN};
-	getInfo.action = impl->toggleXrAction;
-	xrGetActionStateBoolean(impl->session, &getInfo, &toggleState);
-	if (toggleState.isActive && toggleState.changedSinceLastSync && toggleState.currentState)
-		xrToggleRequested = true;
-
-	// Block break/place + hotbar switching. Edge-triggered (changedSinceLastSync
-	// + currentState) so a single press raises each request exactly once.
-	XrActionStateBoolean blockState{XR_TYPE_ACTION_STATE_BOOLEAN};
-	auto raiseOnPress = [&](XrAction action, bool& requested) {
-		if (action == XR_NULL_HANDLE) return;
-		getInfo.action = action;
-		xrGetActionStateBoolean(impl->session, &getInfo, &blockState);
-		if (blockState.isActive && blockState.changedSinceLastSync && blockState.currentState)
-			requested = true;
+	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+	glm::vec3 base = playerPosition + positionOffset + input.headPosition;
+	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	auto toWorldPosition = [&](glm::vec3 position) {
+		return base + yawQ * (position - input.headPosition);
 	};
-	raiseOnPress(impl->breakBlockAction, xrBreakBlockRequested);
-	raiseOnPress(impl->placeBlockAction, xrPlaceBlockRequested);
-	raiseOnPress(impl->prevBlockAction, xrPrevBlockRequested);
-	raiseOnPress(impl->nextBlockAction, xrNextBlockRequested);
 
-	// There is no dedicated head reference space (locating appSpace in
-	// appSpace always yields identity), so grab the real HMD pose from
-	// the stereo views — the same pose the render path uses.
-	glm::quat headOrientation(1.0f, 0.0f, 0.0f, 0.0f);
-	glm::vec3 hmdPosition(0.0f);
-	{
-		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
-		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-		locateInfo.displayTime = predictedDisplayTime;
-		locateInfo.space = impl->appSpace;
-		XrViewState locateViewState{XR_TYPE_VIEW_STATE};
-		uint32_t hmdViewCount = 0;
-		std::vector<XrView> hmdViews(2, {XR_TYPE_VIEW});
-		if (XR_SUCCEEDED(xrLocateViews(impl->session, &locateInfo, &locateViewState, 2, &hmdViewCount, hmdViews.data()))) {
-			if (locateViewState.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) {
-				auto& o = hmdViews[0].pose.orientation;
-				headOrientation = glm::quat(o.w, o.x, o.y, o.z);
-			}
-			if (locateViewState.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) {
-				auto& p = hmdViews[0].pose.position;
-				hmdPosition = glm::vec3(p.x, p.y, p.z);
-			}
-		}
-	}
-
-	// Track the four controller poses: grip (controller body) and aim
-	// (pointer/ray tip) for each hand. They are located in appSpace and then
-	// composed into world space the same way the camera is: base (player +
-	// offset + HMD) with the controller's offset from the head rotated by the
-	// smooth-turn yaw. At yaw = 0 this is exactly player + offset + pose.
-	{
-		glm::vec3 base = (player ? player->state.position : glm::vec3(0.0f)) + positionOffset + hmdPosition;
-		glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-
-		auto locateControllerPose = [&](XrAction action, XrSpace space, bool& active) -> glm::vec3 {
-			active = false;
-			if (action == XR_NULL_HANDLE || space == XR_NULL_HANDLE)
-				return glm::vec3(0.0f);
-
-			XrActionStatePose poseState{XR_TYPE_ACTION_STATE_POSE};
-			XrActionStateGetInfo poseGetInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-			poseGetInfo.action = action;
-			impl->outputError(xrGetActionStatePose(impl->session, &poseGetInfo, &poseState));
-			if (!poseState.isActive)
-				return glm::vec3(0.0f);
-
-			XrSpaceLocation location{XR_TYPE_SPACE_LOCATION};
-			if (XR_FAILED(xrLocateSpace(space, impl->appSpace, predictedDisplayTime, &location)))
-				return glm::vec3(0.0f);
-			if (!(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT))
-				return glm::vec3(0.0f);
-
-			active = true;
-			glm::vec3 pose(location.pose.position.x, location.pose.position.y, location.pose.position.z);
-			return base + yawQ * (pose - hmdPosition);
-		};
-
-		leftGripPosition = locateControllerPose(impl->leftGripPoseAction, impl->gripPoseSpace[0], leftGripPoseActive);
-		leftAimPosition = locateControllerPose(impl->leftAimPoseAction, impl->aimPoseSpace[0], leftAimPoseActive);
-		rightGripPosition = locateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], rightGripPoseActive);
-		rightAimPosition = locateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], rightAimPoseActive);
-	}
+	leftGripPoseActive = input.leftGripPoseActive;
+	leftAimPoseActive = input.leftAimPoseActive;
+	rightGripPoseActive = input.rightGripPoseActive;
+	rightAimPoseActive = input.rightAimPoseActive;
+	leftGripPosition = leftGripPoseActive ? toWorldPosition(input.leftGripPosition) : glm::vec3(0.0f);
+	leftAimPosition = leftAimPoseActive ? toWorldPosition(input.leftAimPosition) : glm::vec3(0.0f);
+	rightGripPosition = rightGripPoseActive ? toWorldPosition(input.rightGripPosition) : glm::vec3(0.0f);
+	rightAimPosition = rightAimPoseActive ? toWorldPosition(input.rightAimPosition) : glm::vec3(0.0f);
 
 	// Apply look input (left stick) as smooth yaw turning. Keep the previous
 	// heading applied on top of the HMD orientation elsewhere via playerYaw.
 	const float lookDeadzone = 0.1f;
 	const float turnSpeed = 1.2f; // radians-ish per detached tap; tuned for 60fps, multiplied by dt below
-	if (fabsf(leftJoystickInput.x) > lookDeadzone) {
+	if (fabsf(input.lookInput.x) > lookDeadzone) {
 		double dt = std::max(fpsCounter.deltaTime, 0.0001);
-		playerYaw -= static_cast<float>(leftJoystickInput.x) * turnSpeed * static_cast<float>(dt);
+		playerYaw -= input.lookInput.x * turnSpeed * static_cast<float>(dt);
 	}
 
 	// Movement direction should follow where the player is now looking after
 	// the turn above, i.e. head orientation rotated by playerYaw.
 	glm::quat turnQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::quat viewOrientation = turnQ * headOrientation;
+	glm::quat viewOrientation = turnQ * input.headOrientation;
 
 	const float moveDeadzone = 0.1f;
-	if (fabsf(rightJoystickInput.x) > moveDeadzone || fabsf(rightJoystickInput.y) > moveDeadzone) {
+	if (fabsf(input.moveInput.x) > moveDeadzone || fabsf(input.moveInput.y) > moveDeadzone) {
 		glm::vec3 forward = viewOrientation * glm::vec3(0.0f, 0.0f, 1.0f);
 		glm::vec3 right = viewOrientation * glm::vec3(1.0f, 0.0f, 0.0f);
 		
@@ -977,9 +895,9 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 
 		XrVector3f movement;
 		const float moveSpeed = 0.1f;
-		movement.x = moveSpeed * forward.x * -rightJoystickInput.y + moveSpeed * right.x * rightJoystickInput.x;
-		movement.y = moveSpeed * forward.y * -rightJoystickInput.y;
-		movement.z = moveSpeed * forward.z * -rightJoystickInput.y + moveSpeed * right.z * rightJoystickInput.x;
+		movement.x = moveSpeed * forward.x * -input.moveInput.y + moveSpeed * right.x * input.moveInput.x;
+		movement.y = moveSpeed * forward.y * -input.moveInput.y;
+		movement.z = moveSpeed * forward.z * -input.moveInput.y + moveSpeed * right.z * input.moveInput.x;
 
 		if (player) {
 			player->state.position.x += movement.x;
@@ -1112,17 +1030,7 @@ void XRGame::DestroyXR() {
 
 	impl->DestroyPassthrough();
 
-	// Destroy the controller pose action spaces and the action set.
-	for (auto& space : impl->gripPoseSpace) {
-		if (space != XR_NULL_HANDLE) xrDestroySpace(space);
-		space = XR_NULL_HANDLE;
-	}
-	for (auto& space : impl->aimPoseSpace) {
-		if (space != XR_NULL_HANDLE) xrDestroySpace(space);
-		space = XR_NULL_HANDLE;
-	}
-	if (impl->actionSet != XR_NULL_HANDLE) xrDestroyActionSet(impl->actionSet);
-	impl->actionSet = XR_NULL_HANDLE;
+	impl->input.DestroyInput();
 	leftGripPoseActive = leftAimPoseActive = rightGripPoseActive = rightAimPoseActive = false;
 	leftGripPosition = leftAimPosition = rightGripPosition = rightAimPosition = glm::vec3(0.0f);
 
@@ -1151,7 +1059,7 @@ void XRGame::LaunchVR() {
 	impl->useVulkan = useVulkan;
 	impl->initSwapchain(renderDevice.get());
 	if (!useVulkan) CheckGLError("after framebuffer setup");
-	impl->CreateActions();
+	impl->input.InitializeInput(impl->instance, impl->session, impl->appSpace);
 	GetWindow()->StopMouseCapture();
 	#endif
 }
