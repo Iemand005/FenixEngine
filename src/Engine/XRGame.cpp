@@ -973,17 +973,19 @@ void XRGame::RedrawVR() {
 
 	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
 
-	// On Oculus (HorizonOS) xrWaitFrame can return shouldRender=false while the
-	// session transitions through SYNCHRONIZED/VISIBLE. Keep calling xrWaitFrame
-	// every frame so the compositor reaches FOCUSED and drops the loading screen;
-	// only begin/submit a real frame when the runtime asks for one.
-	if (!impl->frameState.shouldRender) {
-		return;
-	}
-
 	PollActionsAndUpdateMovement(impl->frameState.predictedDisplayTime);
 
 	impl->outputError(xrBeginFrame(impl->session, &impl->frameBegin));
+	if (!impl->frameState.shouldRender) {
+		XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
+		endInfo.displayTime = impl->frameState.predictedDisplayTime;
+		endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		endInfo.layerCount = 0;
+		endInfo.layers = nullptr;
+		impl->outputError(xrEndFrame(impl->session, &endInfo));
+		return;
+	}
+
 	impl->outputError(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo, &swapchainImageIndex));
 
 	XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
@@ -1036,10 +1038,7 @@ void XRGame::RedrawVR() {
 					impl->depthTextures[swapchainImageIndex], 0, eye);
 			}
 
-			// Each eye is its own VR frame. This gives Vulkan a distinct
-			// in-flight uniform buffer / command buffer per eye; sharing one
-			// frame across both eyes makes the GPU use the last eye's
-			// view/projection for both, which breaks the stereo image.
+			// Each eye gets its own Vulkan command buffer and uniform buffer.
 			renderDevice->BeginVRFrame();
 
 			// Set per-eye view/projection
@@ -1081,6 +1080,10 @@ void XRGame::RedrawVR() {
 		projectionViews[eye].subImage.imageRect.offset = {0, 0};
 		projectionViews[eye].subImage.imageRect.extent = {impl->swapchainWidth, impl->swapchainHeight};
 		projectionViews[eye].subImage.imageArrayIndex = eye;
+	}
+
+	if (useVulkan) {
+		renderDevice->WaitForVRFrame();
 	}
 
 	XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};

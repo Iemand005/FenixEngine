@@ -260,6 +260,8 @@ public:
 
 	void EndVRFrame() override;
 
+	void WaitForVRFrame() override;
+
 	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override;
 
 	void EndExternalFrame() override;

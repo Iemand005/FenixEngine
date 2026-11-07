@@ -1311,10 +1311,18 @@ vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(Vert
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &cmd;
 
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
+		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS)
+			throw std::runtime_error("Failed to submit XR draw command buffer.");
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	
+}
+
+void VulkanDevice::WaitForVRFrame() {
+	if (vkWaitForFences(_device, static_cast<uint32_t>(inFlightFences_.size()),
+		inFlightFences_.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to wait for XR rendering to complete.");
+	}
 }
 
 
@@ -1461,7 +1469,7 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorRef{};
