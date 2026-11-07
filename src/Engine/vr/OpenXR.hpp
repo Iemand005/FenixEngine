@@ -40,6 +40,12 @@ namespace fe {
 			glm::vec3 leftAimPosition{0.0f};
 			glm::vec3 rightGripPosition{0.0f};
 			glm::vec3 rightAimPosition{0.0f};
+			glm::quat leftGripOrientation{1.0f, 0.0f, 0.0f, 0.0f};
+			glm::quat leftAimOrientation{1.0f, 0.0f, 0.0f, 0.0f};
+			glm::quat rightGripOrientation{1.0f, 0.0f, 0.0f, 0.0f};
+			glm::quat rightAimOrientation{1.0f, 0.0f, 0.0f, 0.0f};
+			bool leftGripPressed = false;
+			bool rightGripPressed = false;
 			bool leftGripPoseActive = false;
 			bool leftAimPoseActive = false;
 			bool rightGripPoseActive = false;
@@ -68,6 +74,10 @@ namespace fe {
 		bool IsControllerPoseActive(Hand hand, ControllerPose pose) const;
 		bool WasButtonPressed(Button button) const;
 		bool ConsumeButtonPress(Button button);
+		bool IsButtonHeld(Button button) const;
+
+		// True while the squeeze/grip button is held on the given hand.
+		bool IsGripPressed(Hand hand) const;
 
 		// Pulses the haptic actuator of the given controller.
 		// amplitude is clamped to [0, 1], durationSeconds is in seconds.

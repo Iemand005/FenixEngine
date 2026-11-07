@@ -13,6 +13,7 @@ namespace fe {
 	struct OpenXR::Impl {
 		InputState inputState;
 		bool buttonPressed[5] = {};
+		bool buttonHeld[5] = {};
 
 #ifndef FE_EXCLUDE_OPENXR
 		XrInstance instance = XR_NULL_HANDLE;
@@ -201,8 +202,21 @@ namespace fe {
 			return state.isActive && state.changedSinceLastSync && state.currentState;
 		}
 
-		glm::vec3 LocateControllerPose(XrAction action, XrSpace space, XrTime displayTime, bool& active) {
+		bool ReadButtonHeld(XrAction action) {
+			if (action == XR_NULL_HANDLE)
+				return false;
+
+			XrActionStateBoolean state{XR_TYPE_ACTION_STATE_BOOLEAN};
+			XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+			getInfo.action = action;
+			if (!CheckResult(xrGetActionStateBoolean(session, &getInfo, &state), "xrGetActionStateBoolean"))
+				return false;
+			return state.isActive && state.currentState;
+		}
+
+		glm::vec3 LocateControllerPose(XrAction action, XrSpace space, XrTime displayTime, bool& active, glm::quat& orientation) {
 			active = false;
+			orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 			if (action == XR_NULL_HANDLE || space == XR_NULL_HANDLE)
 				return glm::vec3(0.0f);
 
@@ -217,6 +231,11 @@ namespace fe {
 				return glm::vec3(0.0f);
 			if (!(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT))
 				return glm::vec3(0.0f);
+
+			if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+				const auto& o = location.pose.orientation;
+				orientation = glm::quat(o.w, o.x, o.y, o.z);
+			}
 
 			active = true;
 			return glm::vec3(location.pose.position.x, location.pose.position.y, location.pose.position.z);
@@ -279,6 +298,12 @@ namespace fe {
 		impl->buttonPressed[static_cast<size_t>(Button::PreviousBlock)] |= impl->ReadButton(impl->prevBlockAction);
 		impl->buttonPressed[static_cast<size_t>(Button::NextBlock)] |= impl->ReadButton(impl->nextBlockAction);
 
+		impl->buttonHeld[static_cast<size_t>(Button::ToggleXR)] = impl->ReadButtonHeld(impl->toggleXrAction);
+		impl->buttonHeld[static_cast<size_t>(Button::BreakBlock)] = impl->ReadButtonHeld(impl->breakBlockAction);
+		impl->buttonHeld[static_cast<size_t>(Button::PlaceBlock)] = impl->ReadButtonHeld(impl->placeBlockAction);
+		impl->buttonHeld[static_cast<size_t>(Button::PreviousBlock)] = impl->ReadButtonHeld(impl->prevBlockAction);
+		impl->buttonHeld[static_cast<size_t>(Button::NextBlock)] = impl->ReadButtonHeld(impl->nextBlockAction);
+
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
 		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 		locateInfo.displayTime = predictedDisplayTime;
@@ -298,10 +323,14 @@ namespace fe {
 		}
 
 		auto& state = impl->inputState;
-		state.leftGripPosition = impl->LocateControllerPose(impl->leftGripPoseAction, impl->gripPoseSpace[0], predictedDisplayTime, state.leftGripPoseActive);
-		state.leftAimPosition = impl->LocateControllerPose(impl->leftAimPoseAction, impl->aimPoseSpace[0], predictedDisplayTime, state.leftAimPoseActive);
-		state.rightGripPosition = impl->LocateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], predictedDisplayTime, state.rightGripPoseActive);
-		state.rightAimPosition = impl->LocateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], predictedDisplayTime, state.rightAimPoseActive);
+		state.leftGripPosition = impl->LocateControllerPose(impl->leftGripPoseAction, impl->gripPoseSpace[0], predictedDisplayTime, state.leftGripPoseActive, state.leftGripOrientation);
+		state.leftAimPosition = impl->LocateControllerPose(impl->leftAimPoseAction, impl->aimPoseSpace[0], predictedDisplayTime, state.leftAimPoseActive, state.leftAimOrientation);
+		state.rightGripPosition = impl->LocateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], predictedDisplayTime, state.rightGripPoseActive, state.rightGripOrientation);
+		state.rightAimPosition = impl->LocateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], predictedDisplayTime, state.rightAimPoseActive, state.rightAimOrientation);
+
+		// The squeeze (grip) buttons share the break/place bindings.
+		state.leftGripPressed = impl->buttonHeld[static_cast<size_t>(Button::BreakBlock)];
+		state.rightGripPressed = impl->buttonHeld[static_cast<size_t>(Button::PlaceBlock)];
 	}
 
 	void OpenXR::DestroyInput() {
@@ -337,6 +366,7 @@ namespace fe {
 		impl->appSpace = XR_NULL_HANDLE;
 		impl->inputState = InputState{};
 		std::fill(std::begin(impl->buttonPressed), std::end(impl->buttonPressed), false);
+		std::fill(std::begin(impl->buttonHeld), std::end(impl->buttonHeld), false);
 	}
 #endif
 
@@ -370,6 +400,15 @@ namespace fe {
 		bool pressed = impl->buttonPressed[index];
 		impl->buttonPressed[index] = false;
 		return pressed;
+	}
+
+	bool OpenXR::IsButtonHeld(Button button) const {
+		const size_t index = static_cast<size_t>(button);
+		return index < std::size(impl->buttonHeld) && impl->buttonHeld[index];
+	}
+
+	bool OpenXR::IsGripPressed(Hand hand) const {
+		return hand == Hand::Left ? impl->inputState.leftGripPressed : impl->inputState.rightGripPressed;
 	}
 
 	void OpenXR::TriggerHaptic(Hand hand, float amplitude, float durationSeconds) {

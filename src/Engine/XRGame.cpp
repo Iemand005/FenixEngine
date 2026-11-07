@@ -762,6 +762,10 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	leftAimPosition = leftAimPoseActive ? toWorldPosition(input.leftAimPosition) : glm::vec3(0.0f);
 	rightGripPosition = rightGripPoseActive ? toWorldPosition(input.rightGripPosition) : glm::vec3(0.0f);
 	rightAimPosition = rightAimPoseActive ? toWorldPosition(input.rightAimPosition) : glm::vec3(0.0f);
+	leftGripOrientation = leftGripPoseActive ? yawQ * input.leftGripOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	leftAimOrientation = leftAimPoseActive ? yawQ * input.leftAimOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	rightGripOrientation = rightGripPoseActive ? yawQ * input.rightGripOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	rightAimOrientation = rightAimPoseActive ? yawQ * input.rightAimOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
 	// Apply look input (left stick) as smooth yaw turning. Keep the previous
 	// heading applied on top of the HMD orientation elsewhere via playerYaw.

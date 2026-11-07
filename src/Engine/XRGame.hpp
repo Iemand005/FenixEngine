@@ -90,6 +90,10 @@ namespace fe {
 		glm::vec3 leftAimPosition = glm::vec3(0.0f);
 		glm::vec3 rightGripPosition = glm::vec3(0.0f);
 		glm::vec3 rightAimPosition = glm::vec3(0.0f);
+		glm::quat leftGripOrientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::quat leftAimOrientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::quat rightGripOrientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::quat rightAimOrientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
 		// False when the runtime isn't tracking the pose (e.g. controller
 		// asleep / not present); the corresponding position is stale.
