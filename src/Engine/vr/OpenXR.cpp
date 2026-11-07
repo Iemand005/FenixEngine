@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstring>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -56,8 +56,8 @@ namespace fe {
 
 			XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
 			actionInfo.actionType = type;
-			std::strncpy(actionInfo.actionName, name, XR_MAX_ACTION_NAME_SIZE - 1);
-			std::strncpy(actionInfo.localizedActionName, localizedName.c_str(), XR_MAX_LOCALIZED_ACTION_NAME_SIZE - 1);
+			std::snprintf(actionInfo.actionName, sizeof(actionInfo.actionName), "%s", name);
+			std::snprintf(actionInfo.localizedActionName, sizeof(actionInfo.localizedActionName), "%s", localizedName.c_str());
 			CheckResult(xrCreateAction(actionSet, &actionInfo, action), "xrCreateAction");
 		}
 
@@ -75,8 +75,8 @@ namespace fe {
 
 		void CreateActions() {
 			XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
-			std::strcpy(actionSetInfo.actionSetName, "gameplay");
-			std::strcpy(actionSetInfo.localizedActionSetName, "Gameplay");
+			std::snprintf(actionSetInfo.actionSetName, sizeof(actionSetInfo.actionSetName), "%s", "gameplay");
+			std::snprintf(actionSetInfo.localizedActionSetName, sizeof(actionSetInfo.localizedActionSetName), "%s", "Gameplay");
 			if (!CheckResult(xrCreateActionSet(instance, &actionSetInfo, &actionSet), "xrCreateActionSet"))
 				return;
 

@@ -39,6 +39,8 @@ typedef int64_t XrTime;
 
 namespace fe {
 
+	class OpenXR;
+
 	struct XRGameOptions : RendererOptions {
 		bool launchVR = false;
 		bool drawWindow = true;
@@ -111,6 +113,8 @@ namespace fe {
 		~XRGame();
 
 		bool IsInstanceValid();
+		OpenXR& GetOpenXR();
+		const OpenXR& GetOpenXR() const;
 
 		void initOpenXR();
 		void initOpenXR(void *next);

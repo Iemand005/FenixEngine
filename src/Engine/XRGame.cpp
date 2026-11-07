@@ -403,6 +403,15 @@ XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options), impl(std
 XRGame::~XRGame() {
 	Destroy();
 };
+
+OpenXR& XRGame::GetOpenXR() {
+	return impl->input;
+}
+
+const OpenXR& XRGame::GetOpenXR() const {
+	return impl->input;
+}
+
 void XRGame::initOpenXR() {
 #ifndef FE_EXCLUDE_OPENXR
 	impl->Log("XRGame::initOpenXR() starting");
