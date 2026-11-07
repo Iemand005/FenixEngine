@@ -1,6 +1,6 @@
 #include "OpenXR.hpp"
 
-#include "Log.hpp"
+#include "../Log.hpp"
 
 #include <algorithm>
 #include <cstddef>
