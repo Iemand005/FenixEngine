@@ -223,19 +223,6 @@ void XRGame::PollActionsAndUpdateMovement() {
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 	const OpenXR::InputState input = impl->input.GetWorldInputState(playerPosition + positionOffset, yawQ);
 
-	leftGripPoseActive = input.leftGripPoseActive;
-	leftAimPoseActive = input.leftAimPoseActive;
-	rightGripPoseActive = input.rightGripPoseActive;
-	rightAimPoseActive = input.rightAimPoseActive;
-	leftGripPosition = input.leftGripPosition;
-	leftAimPosition = input.leftAimPosition;
-	rightGripPosition = input.rightGripPosition;
-	rightAimPosition = input.rightAimPosition;
-	leftGripOrientation = input.leftGripOrientation;
-	leftAimOrientation = input.leftAimOrientation;
-	rightGripOrientation = input.rightGripOrientation;
-	rightAimOrientation = input.rightAimOrientation;
-
 	// Movement direction should follow where the player is now looking after
 	// the turn above, i.e. head orientation rotated by playerYaw.
 	glm::quat viewOrientation = input.headOrientation;
@@ -350,8 +337,6 @@ void XRGame::DestroyXR() {
 
 	impl->input.Shutdown();
 	impl->swapchainInfo = OpenXR::SwapchainInfo{};
-	leftGripPoseActive = leftAimPoseActive = rightGripPoseActive = rightAimPoseActive = false;
-	leftGripPosition = leftAimPosition = rightGripPosition = rightAimPosition = glm::vec3(0.0f);
 
 	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
