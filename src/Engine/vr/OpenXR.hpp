@@ -23,13 +23,15 @@ namespace fe {
 			Aim
 		};
 
+		// Generic physical inputs exposed by the runtime. Games map these to
+		// their own actions (e.g. X -> spawn, grip -> grab).
 		enum class Button {
-			ToggleXR,
-			BreakBlock,
-			PlaceBlock,
-			PreviousBlock,
-			NextBlock,
-			SpawnSphere
+			X,
+			Y,
+			A,
+			B,
+			LeftTrigger,
+			RightTrigger
 		};
 
 		struct InputState {

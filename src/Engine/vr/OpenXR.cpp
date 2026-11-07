@@ -27,12 +27,12 @@ namespace fe {
 		XrAction leftAimPoseAction = XR_NULL_HANDLE;
 		XrAction rightGripPoseAction = XR_NULL_HANDLE;
 		XrAction rightAimPoseAction = XR_NULL_HANDLE;
-		XrAction toggleXrAction = XR_NULL_HANDLE;
-		XrAction breakBlockAction = XR_NULL_HANDLE;
-		XrAction placeBlockAction = XR_NULL_HANDLE;
-		XrAction prevBlockAction = XR_NULL_HANDLE;
-		XrAction nextBlockAction = XR_NULL_HANDLE;
-		XrAction spawnSphereAction = XR_NULL_HANDLE;
+		XrAction buttonXAction = XR_NULL_HANDLE;
+		XrAction buttonYAction = XR_NULL_HANDLE;
+		XrAction buttonAAction = XR_NULL_HANDLE;
+		XrAction buttonBAction = XR_NULL_HANDLE;
+		XrAction leftTriggerAction = XR_NULL_HANDLE;
+		XrAction rightTriggerAction = XR_NULL_HANDLE;
 		XrAction leftHapticAction = XR_NULL_HANDLE;
 		XrAction rightHapticAction = XR_NULL_HANDLE;
 		XrAction leftGripAction = XR_NULL_HANDLE;
@@ -117,12 +117,12 @@ namespace fe {
 
 			CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "move", &moveAction);
 			CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT, "look", &lookAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "toggle_xr", &toggleXrAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "break_block", &breakBlockAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "place_block", &placeBlockAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "prev_block", &prevBlockAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "next_block", &nextBlockAction);
-			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "spawn_sphere", &spawnSphereAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "button_x", &buttonXAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "button_y", &buttonYAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "button_a", &buttonAAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "button_b", &buttonBAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "left_trigger", &leftTriggerAction);
+			CreateAction(XR_ACTION_TYPE_BOOLEAN_INPUT, "right_trigger", &rightTriggerAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_grip_pose", &leftGripPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_aim_pose", &leftAimPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_grip_pose", &rightGripPoseAction);
@@ -135,14 +135,15 @@ namespace fe {
 			// Touch/Index/Pico expose the grip as an analog squeeze value while
 			// Windows MR and Vive expose it as a boolean click. Each profile must
 			// be suggested in a single call (later calls replace earlier ones).
-			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue, const char* spawnPath) {
+			// faceButtons is true only for profiles with X/Y on the left and A/B
+			// on the right; suggesting a path a profile does not define would
+			// reject the whole binding set.
+			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue, bool faceButtons) {
 				std::vector<XrActionSuggestedBinding> bindings = {
 					{moveAction, Path("/user/hand/right/input/thumbstick")},
 					{lookAction, Path("/user/hand/left/input/thumbstick")},
-					{prevBlockAction, Path("/user/hand/left/input/trigger")},
-					{nextBlockAction, Path("/user/hand/right/input/trigger")},
-					{breakBlockAction, Path("/user/hand/left/input/squeeze")},
-					{placeBlockAction, Path("/user/hand/right/input/squeeze")},
+					{leftTriggerAction, Path("/user/hand/left/input/trigger")},
+					{rightTriggerAction, Path("/user/hand/right/input/trigger")},
 					{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
 					{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
 					{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
@@ -151,8 +152,12 @@ namespace fe {
 					{rightHapticAction, Path("/user/hand/right/output/haptic")},
 				};
 
-				if (spawnPath)
-					bindings.push_back({spawnSphereAction, Path(spawnPath)});
+				if (faceButtons) {
+					bindings.push_back({buttonXAction, Path("/user/hand/left/input/x/click")});
+					bindings.push_back({buttonYAction, Path("/user/hand/left/input/y/click")});
+					bindings.push_back({buttonAAction, Path("/user/hand/right/input/a/click")});
+					bindings.push_back({buttonBAction, Path("/user/hand/right/input/b/click")});
+				}
 
 				const char* squeezeComponent = squeezeValue ? "/input/squeeze/value" : "/input/squeeze/click";
 				bindings.push_back({leftGripAction, Path("/user/hand/left" + std::string(squeezeComponent))});
@@ -161,21 +166,18 @@ namespace fe {
 				SuggestProfileBindings(profile, bindings);
 			};
 
-			suggestThumbstickProfile("/interaction_profiles/oculus/touch_controller", true, "/user/hand/left/input/x/click");
-			suggestThumbstickProfile("/interaction_profiles/microsoft/motion_controller", false, nullptr);
-			// Index maps its face buttons to a/b (no x/y paths), so spawning is
-			// only bound on profiles that expose the left X button.
-			suggestThumbstickProfile("/interaction_profiles/valve/index_controller", true, nullptr);
-			suggestThumbstickProfile("/interaction_profiles/bytedance/pico_touch_controller", true, "/user/hand/left/input/x/click");
-			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true, "/user/hand/left/input/x/click");
+			suggestThumbstickProfile("/interaction_profiles/oculus/touch_controller", true, true);
+			suggestThumbstickProfile("/interaction_profiles/microsoft/motion_controller", false, false);
+			// Index maps its face buttons to a/b, so only triggers are bound there.
+			suggestThumbstickProfile("/interaction_profiles/valve/index_controller", true, false);
+			suggestThumbstickProfile("/interaction_profiles/bytedance/pico_touch_controller", true, true);
+			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true, true);
 
 			SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
 				{moveAction, Path("/user/hand/right/input/trackpad")},
 				{lookAction, Path("/user/hand/left/input/trackpad")},
-				{prevBlockAction, Path("/user/hand/left/input/trigger")},
-				{nextBlockAction, Path("/user/hand/right/input/trigger")},
-				{breakBlockAction, Path("/user/hand/left/input/squeeze")},
-				{placeBlockAction, Path("/user/hand/right/input/squeeze")},
+				{leftTriggerAction, Path("/user/hand/left/input/trigger")},
+				{rightTriggerAction, Path("/user/hand/right/input/trigger")},
 				{leftGripAction, Path("/user/hand/left/input/squeeze/click")},
 				{rightGripAction, Path("/user/hand/right/input/squeeze/click")},
 				{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
