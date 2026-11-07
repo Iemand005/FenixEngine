@@ -314,7 +314,7 @@ if(FE_EXCLUDE_VULKAN)
 endif()
 
 if(FE_EXCLUDE_OPENXR)
-	add_compile_definitions(FE_EXCLUDE_OPENXR)
+	target_compile_definitions(Engine PUBLIC FE_EXCLUDE_OPENXR)
 endif()
 
 target_include_directories(Engine PRIVATE
