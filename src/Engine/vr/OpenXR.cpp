@@ -34,6 +34,8 @@ namespace fe {
 		XrAction nextBlockAction = XR_NULL_HANDLE;
 		XrAction leftHapticAction = XR_NULL_HANDLE;
 		XrAction rightHapticAction = XR_NULL_HANDLE;
+		XrAction leftGripAction = XR_NULL_HANDLE;
+		XrAction rightGripAction = XR_NULL_HANDLE;
 
 		XrSpace gripPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 		XrSpace aimPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
@@ -125,17 +127,14 @@ namespace fe {
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_aim_pose", &rightAimPoseAction);
 			CreateAction(XR_ACTION_TYPE_VIBRATION_OUTPUT, "left_haptic", &leftHapticAction);
 			CreateAction(XR_ACTION_TYPE_VIBRATION_OUTPUT, "right_haptic", &rightHapticAction);
+			CreateAction(XR_ACTION_TYPE_FLOAT_INPUT, "left_grip", &leftGripAction);
+			CreateAction(XR_ACTION_TYPE_FLOAT_INPUT, "right_grip", &rightGripAction);
 
-			const char* thumbstickProfiles[] = {
-				"/interaction_profiles/oculus/touch_controller",
-				"/interaction_profiles/microsoft/motion_controller",
-				"/interaction_profiles/valve/index_controller",
-				"/interaction_profiles/bytedance/pico_touch_controller",
-				"/interaction_profiles/meta/touch_pro_controller",
-			};
-
-			for (const char* profile : thumbstickProfiles) {
-				SuggestProfileBindings(profile, {
+			// Touch/Index/Pico expose the grip as an analog squeeze value while
+			// Windows MR and Vive expose it as a boolean click. Each profile must
+			// be suggested in a single call (later calls replace earlier ones).
+			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue) {
+				std::vector<XrActionSuggestedBinding> bindings = {
 					{moveAction, Path("/user/hand/right/input/thumbstick")},
 					{lookAction, Path("/user/hand/left/input/thumbstick")},
 					{toggleXrAction, Path("/user/hand/left/input/x/click")},
@@ -150,8 +149,20 @@ namespace fe {
 					{rightAimPoseAction, Path("/user/hand/right/input/aim/pose")},
 					{leftHapticAction, Path("/user/hand/left/output/haptic")},
 					{rightHapticAction, Path("/user/hand/right/output/haptic")},
-				});
-			}
+				};
+
+				const char* squeezeComponent = squeezeValue ? "/input/squeeze/value" : "/input/squeeze/click";
+				bindings.push_back({leftGripAction, Path("/user/hand/left" + std::string(squeezeComponent))});
+				bindings.push_back({rightGripAction, Path("/user/hand/right" + std::string(squeezeComponent))});
+
+				SuggestProfileBindings(profile, bindings);
+			};
+
+			suggestThumbstickProfile("/interaction_profiles/oculus/touch_controller", true);
+			suggestThumbstickProfile("/interaction_profiles/microsoft/motion_controller", false);
+			suggestThumbstickProfile("/interaction_profiles/valve/index_controller", true);
+			suggestThumbstickProfile("/interaction_profiles/bytedance/pico_touch_controller", true);
+			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true);
 
 			SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
 				{moveAction, Path("/user/hand/right/input/trackpad")},
@@ -160,6 +171,8 @@ namespace fe {
 				{nextBlockAction, Path("/user/hand/right/input/trigger")},
 				{breakBlockAction, Path("/user/hand/left/input/squeeze")},
 				{placeBlockAction, Path("/user/hand/right/input/squeeze")},
+				{leftGripAction, Path("/user/hand/left/input/squeeze/click")},
+				{rightGripAction, Path("/user/hand/right/input/squeeze/click")},
 				{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
 				{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
 				{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
@@ -212,6 +225,18 @@ namespace fe {
 			if (!CheckResult(xrGetActionStateBoolean(session, &getInfo, &state), "xrGetActionStateBoolean"))
 				return false;
 			return state.isActive && state.currentState;
+		}
+
+		float ReadFloat(XrAction action) {
+			if (action == XR_NULL_HANDLE)
+				return 0.0f;
+
+			XrActionStateFloat state{XR_TYPE_ACTION_STATE_FLOAT};
+			XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+			getInfo.action = action;
+			if (!CheckResult(xrGetActionStateFloat(session, &getInfo, &state), "xrGetActionStateFloat"))
+				return 0.0f;
+			return state.isActive ? state.currentState : 0.0f;
 		}
 
 		glm::vec3 LocateControllerPose(XrAction action, XrSpace space, XrTime displayTime, bool& active, glm::quat& orientation) {
@@ -328,9 +353,10 @@ namespace fe {
 		state.rightGripPosition = impl->LocateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], predictedDisplayTime, state.rightGripPoseActive, state.rightGripOrientation);
 		state.rightAimPosition = impl->LocateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], predictedDisplayTime, state.rightAimPoseActive, state.rightAimOrientation);
 
-		// The squeeze (grip) buttons share the break/place bindings.
-		state.leftGripPressed = impl->buttonHeld[static_cast<size_t>(Button::BreakBlock)];
-		state.rightGripPressed = impl->buttonHeld[static_cast<size_t>(Button::PlaceBlock)];
+		// Analog squeeze (Touch/Index/Pico) is converted to the same pressed
+		// state as the boolean squeeze click (Windows MR/Vive).
+		state.leftGripPressed = impl->ReadFloat(impl->leftGripAction) > 0.5f;
+		state.rightGripPressed = impl->ReadFloat(impl->rightGripAction) > 0.5f;
 	}
 
 	void OpenXR::DestroyInput() {
@@ -357,6 +383,8 @@ namespace fe {
 		impl->nextBlockAction = XR_NULL_HANDLE;
 		impl->leftHapticAction = XR_NULL_HANDLE;
 		impl->rightHapticAction = XR_NULL_HANDLE;
+		impl->leftGripAction = XR_NULL_HANDLE;
+		impl->rightGripAction = XR_NULL_HANDLE;
 		impl->pendingHapticAmplitude[0] = 0.0f;
 		impl->pendingHapticAmplitude[1] = 0.0f;
 		impl->pendingHapticDuration[0] = 0.0f;
