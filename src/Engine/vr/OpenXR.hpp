@@ -68,6 +68,10 @@ namespace fe {
 		bool IsControllerPoseActive(Hand hand, ControllerPose pose) const;
 		bool WasButtonPressed(Button button) const;
 		bool ConsumeButtonPress(Button button);
+
+		// Pulses the haptic actuator of the given controller.
+		// amplitude is clamped to [0, 1], durationSeconds is in seconds.
+		void TriggerHaptic(Hand hand, float amplitude = 0.5f, float durationSeconds = 0.1f);
 	};
 
 }

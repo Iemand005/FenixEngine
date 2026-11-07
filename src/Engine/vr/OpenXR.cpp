@@ -31,9 +31,14 @@ namespace fe {
 		XrAction placeBlockAction = XR_NULL_HANDLE;
 		XrAction prevBlockAction = XR_NULL_HANDLE;
 		XrAction nextBlockAction = XR_NULL_HANDLE;
+		XrAction leftHapticAction = XR_NULL_HANDLE;
+		XrAction rightHapticAction = XR_NULL_HANDLE;
 
 		XrSpace gripPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 		XrSpace aimPoseSpace[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
+
+		float pendingHapticAmplitude[2] = {0.0f, 0.0f};
+		float pendingHapticDuration[2] = {0.0f, 0.0f};
 
 		bool CheckResult(XrResult result, const char* operation) const {
 			if (XR_FAILED(result)) {
@@ -73,6 +78,32 @@ namespace fe {
 			CheckResult(xrSuggestInteractionProfileBindings(instance, &suggestedBindings), "xrSuggestInteractionProfileBindings");
 		}
 
+		void ApplyPendingHaptics() {
+			if (session == XR_NULL_HANDLE)
+				return;
+
+			XrAction hapticActions[2] = {leftHapticAction, rightHapticAction};
+			for (size_t i = 0; i < 2; ++i) {
+				if (pendingHapticDuration[i] <= 0.0f || hapticActions[i] == XR_NULL_HANDLE)
+					continue;
+
+				XrHapticVibration vibration{XR_TYPE_HAPTIC_VIBRATION};
+				vibration.amplitude = std::clamp(pendingHapticAmplitude[i], 0.0f, 1.0f);
+				vibration.duration = static_cast<XrDuration>(static_cast<double>(pendingHapticDuration[i]) * 1.0e9);
+				vibration.frequency = XR_FREQUENCY_UNSPECIFIED;
+
+				XrHapticActionInfo hapticInfo{XR_TYPE_HAPTIC_ACTION_INFO};
+				hapticInfo.action = hapticActions[i];
+				hapticInfo.subactionPath = XR_NULL_PATH;
+
+				CheckResult(xrApplyHapticFeedback(session, &hapticInfo,
+					reinterpret_cast<const XrHapticBaseHeader*>(&vibration)), "xrApplyHapticFeedback");
+
+				pendingHapticAmplitude[i] = 0.0f;
+				pendingHapticDuration[i] = 0.0f;
+			}
+		}
+
 		void CreateActions() {
 			XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
 			std::snprintf(actionSetInfo.actionSetName, sizeof(actionSetInfo.actionSetName), "%s", "gameplay");
@@ -91,6 +122,8 @@ namespace fe {
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "left_aim_pose", &leftAimPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_grip_pose", &rightGripPoseAction);
 			CreateAction(XR_ACTION_TYPE_POSE_INPUT, "right_aim_pose", &rightAimPoseAction);
+			CreateAction(XR_ACTION_TYPE_VIBRATION_OUTPUT, "left_haptic", &leftHapticAction);
+			CreateAction(XR_ACTION_TYPE_VIBRATION_OUTPUT, "right_haptic", &rightHapticAction);
 
 			const char* thumbstickProfiles[] = {
 				"/interaction_profiles/oculus/touch_controller",
@@ -114,6 +147,8 @@ namespace fe {
 					{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
 					{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
 					{rightAimPoseAction, Path("/user/hand/right/input/aim/pose")},
+					{leftHapticAction, Path("/user/hand/left/output/haptic")},
+					{rightHapticAction, Path("/user/hand/right/output/haptic")},
 				});
 			}
 
@@ -128,6 +163,8 @@ namespace fe {
 				{leftAimPoseAction, Path("/user/hand/left/input/aim/pose")},
 				{rightGripPoseAction, Path("/user/hand/right/input/grip/pose")},
 				{rightAimPoseAction, Path("/user/hand/right/input/aim/pose")},
+				{leftHapticAction, Path("/user/hand/left/output/haptic")},
+				{rightHapticAction, Path("/user/hand/right/output/haptic")},
 			});
 
 			XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
@@ -219,6 +256,8 @@ namespace fe {
 		if (!impl->CheckResult(xrSyncActions(impl->session, &syncInfo), "xrSyncActions"))
 			return;
 
+		impl->ApplyPendingHaptics();
+
 		XrActionStateVector2f moveState{XR_TYPE_ACTION_STATE_VECTOR2F};
 		XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
 		getInfo.action = impl->moveAction;
@@ -287,6 +326,12 @@ namespace fe {
 		impl->placeBlockAction = XR_NULL_HANDLE;
 		impl->prevBlockAction = XR_NULL_HANDLE;
 		impl->nextBlockAction = XR_NULL_HANDLE;
+		impl->leftHapticAction = XR_NULL_HANDLE;
+		impl->rightHapticAction = XR_NULL_HANDLE;
+		impl->pendingHapticAmplitude[0] = 0.0f;
+		impl->pendingHapticAmplitude[1] = 0.0f;
+		impl->pendingHapticDuration[0] = 0.0f;
+		impl->pendingHapticDuration[1] = 0.0f;
 		impl->instance = XR_NULL_HANDLE;
 		impl->session = XR_NULL_HANDLE;
 		impl->appSpace = XR_NULL_HANDLE;
@@ -325,6 +370,21 @@ namespace fe {
 		bool pressed = impl->buttonPressed[index];
 		impl->buttonPressed[index] = false;
 		return pressed;
+	}
+
+	void OpenXR::TriggerHaptic(Hand hand, float amplitude, float durationSeconds) {
+#ifndef FE_EXCLUDE_OPENXR
+		if (impl->session == XR_NULL_HANDLE || durationSeconds <= 0.0f)
+			return;
+
+		const size_t index = hand == Hand::Left ? 0 : 1;
+		impl->pendingHapticAmplitude[index] = std::clamp(amplitude, 0.0f, 1.0f);
+		impl->pendingHapticDuration[index] = durationSeconds;
+#else
+		(void)hand;
+		(void)amplitude;
+		(void)durationSeconds;
+#endif
 	}
 
 }
