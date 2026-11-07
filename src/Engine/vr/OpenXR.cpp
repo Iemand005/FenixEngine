@@ -423,6 +423,28 @@ namespace fe {
 		return impl->inputState;
 	}
 
+	OpenXR::InputState OpenXR::GetWorldInputState(const glm::vec3& worldOrigin, const glm::quat& worldRotation) const {
+		InputState state = impl->inputState;
+		state.headPosition = worldOrigin + worldRotation * state.headPosition;
+		state.headOrientation = worldRotation * state.headOrientation;
+
+		auto transformPose = [&](bool active, glm::vec3& position, glm::quat& orientation) {
+			if (active) {
+				position = worldOrigin + worldRotation * position;
+				orientation = worldRotation * orientation;
+			} else {
+				position = glm::vec3(0.0f);
+				orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			}
+		};
+
+		transformPose(state.leftGripPoseActive, state.leftGripPosition, state.leftGripOrientation);
+		transformPose(state.leftAimPoseActive, state.leftAimPosition, state.leftAimOrientation);
+		transformPose(state.rightGripPoseActive, state.rightGripPosition, state.rightGripOrientation);
+		transformPose(state.rightAimPoseActive, state.rightAimPosition, state.rightAimOrientation);
+		return state;
+	}
+
 	glm::vec3 OpenXR::GetControllerPosition(Hand hand, ControllerPose pose) const {
 		const InputState& state = impl->inputState;
 		if (hand == Hand::Left)

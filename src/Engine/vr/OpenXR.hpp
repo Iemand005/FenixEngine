@@ -72,7 +72,11 @@ namespace fe {
 		void DestroyInput();
 #endif
 
+		// Latest raw input; tracked poses are in OpenXR reference space.
 		const InputState& GetInputState() const;
+		// Returns the latest input with tracked poses transformed from reference
+		// space into world space. Button and movement inputs are unchanged.
+		InputState GetWorldInputState(const glm::vec3& worldOrigin, const glm::quat& worldRotation) const;
 		glm::vec3 GetControllerPosition(Hand hand, ControllerPose pose) const;
 		bool IsControllerPoseActive(Hand hand, ControllerPose pose) const;
 		bool WasButtonPressed(Button button) const;

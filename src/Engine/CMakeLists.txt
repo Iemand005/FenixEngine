@@ -272,7 +272,7 @@ if(FE_EXCLUDE_JOLT)
 endif()
 
 if(FE_INCLUDE_OPENVR)
-	list(APPEND ENGINE_SOURCE_FILES openvr/OpenVR.cpp)
+	list(APPEND ENGINE_SOURCE_FILES vr/OpenVR.cpp)
 endif()
 
 add_library(Engine STATIC ${ENGINE_SOURCE_FILES})

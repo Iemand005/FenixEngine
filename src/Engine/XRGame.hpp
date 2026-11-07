@@ -30,7 +30,7 @@
 #include <memory>
 
 #ifdef FE_INCLUDE_OPENVR
-#include "openvr/OpenVR.hpp"
+#include "vr/OpenVR.hpp"
 #else
 namespace fe { class OpenVR; }
 #endif

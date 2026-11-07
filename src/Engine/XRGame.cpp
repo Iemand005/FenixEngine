@@ -736,44 +736,37 @@ void XRGame::initOpenXR(void *next) {
 void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	#ifndef FE_EXCLUDE_OPENXR
 	impl->input.UpdateInput(predictedDisplayTime);
-	const OpenXR::InputState& input = impl->input.GetInputState();
+
+	const OpenXR::InputState& rawInput = impl->input.GetInputState();
+	// Apply look input before transforming tracked poses so every pose uses
+	// the same world rotation for this frame.
+	const float lookDeadzone = 0.1f;
+	const float turnSpeed = 1.2f; // radians-ish per detached tap; tuned for 60fps, multiplied by dt below
+	if (fabsf(rawInput.lookInput.x) > lookDeadzone) {
+		double dt = std::max(fpsCounter.deltaTime, 0.0001);
+		playerYaw -= rawInput.lookInput.x * turnSpeed * static_cast<float>(dt);
+	}
 
 	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	// Rigid reference-space -> world-space transform used for every tracked
-	// pose (controllers and eyes): translate to the player, then apply yaw
-	// about the reference-space origin.
-	glm::vec3 worldOrigin = playerPosition + positionOffset;
-	auto toWorldPosition = [&](glm::vec3 position) {
-		return worldOrigin + yawQ * position;
-	};
+	const OpenXR::InputState input = impl->input.GetWorldInputState(playerPosition + positionOffset, yawQ);
 
 	leftGripPoseActive = input.leftGripPoseActive;
 	leftAimPoseActive = input.leftAimPoseActive;
 	rightGripPoseActive = input.rightGripPoseActive;
 	rightAimPoseActive = input.rightAimPoseActive;
-	leftGripPosition = leftGripPoseActive ? toWorldPosition(input.leftGripPosition) : glm::vec3(0.0f);
-	leftAimPosition = leftAimPoseActive ? toWorldPosition(input.leftAimPosition) : glm::vec3(0.0f);
-	rightGripPosition = rightGripPoseActive ? toWorldPosition(input.rightGripPosition) : glm::vec3(0.0f);
-	rightAimPosition = rightAimPoseActive ? toWorldPosition(input.rightAimPosition) : glm::vec3(0.0f);
-	leftGripOrientation = leftGripPoseActive ? yawQ * input.leftGripOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-	leftAimOrientation = leftAimPoseActive ? yawQ * input.leftAimOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-	rightGripOrientation = rightGripPoseActive ? yawQ * input.rightGripOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-	rightAimOrientation = rightAimPoseActive ? yawQ * input.rightAimOrientation : glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-
-	// Apply look input (left stick) as smooth yaw turning. Keep the previous
-	// heading applied on top of the HMD orientation elsewhere via playerYaw.
-	const float lookDeadzone = 0.1f;
-	const float turnSpeed = 1.2f; // radians-ish per detached tap; tuned for 60fps, multiplied by dt below
-	if (fabsf(input.lookInput.x) > lookDeadzone) {
-		double dt = std::max(fpsCounter.deltaTime, 0.0001);
-		playerYaw -= input.lookInput.x * turnSpeed * static_cast<float>(dt);
-	}
+	leftGripPosition = input.leftGripPosition;
+	leftAimPosition = input.leftAimPosition;
+	rightGripPosition = input.rightGripPosition;
+	rightAimPosition = input.rightAimPosition;
+	leftGripOrientation = input.leftGripOrientation;
+	leftAimOrientation = input.leftAimOrientation;
+	rightGripOrientation = input.rightGripOrientation;
+	rightAimOrientation = input.rightAimOrientation;
 
 	// Movement direction should follow where the player is now looking after
 	// the turn above, i.e. head orientation rotated by playerYaw.
-	glm::quat turnQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::quat viewOrientation = turnQ * input.headOrientation;
+	glm::quat viewOrientation = input.headOrientation;
 
 	const float moveDeadzone = 0.1f;
 	if (fabsf(input.moveInput.x) > moveDeadzone || fabsf(input.moveInput.y) > moveDeadzone) {
