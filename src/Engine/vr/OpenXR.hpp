@@ -1,12 +1,39 @@
 #pragma once
 
 #include <memory>
+#include <cstdint>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#ifndef XR_EXTENSION_PROTOTYPES
+#define XR_EXTENSION_PROTOTYPES
+#endif
+
+#if defined(_WIN32)
+#define XR_USE_PLATFORM_WIN32
+#define XR_USE_GRAPHICS_API_OPENGL
+#define XR_USE_GRAPHICS_API_VULKAN
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <unknwn.h>
+#elif defined(__ANDROID__) || defined(ANDROID)
+#define XR_USE_PLATFORM_ANDROID
+#define XR_USE_GRAPHICS_API_OPENGL_ES
+#include <EGL/egl.h>
+#include <jni.h>
+#elif defined(__linux__) && !defined(__ANDROID__) && !defined(ANDROID)
+#define XR_USE_PLATFORM_WAYLAND
+#define XR_USE_PLATFORM_XLIB
+#define XR_USE_GRAPHICS_API_OPENGL
+#define XR_USE_GRAPHICS_API_VULKAN
+#endif
+
 #ifndef FE_EXCLUDE_OPENXR
 #include <openxr/openxr.h>
+#include <openxr/openxr_platform.h>
 #endif
 
 namespace fe {
@@ -54,9 +81,45 @@ namespace fe {
 			bool rightAimPoseActive = false;
 		};
 
+		struct GraphicsBinding {
+			enum class WindowSystem {
+				Default,
+				Wayland,
+				X11
+			};
+
+			bool useVulkan = false;
+			WindowSystem windowSystem = WindowSystem::Default;
+			void* instance = nullptr;
+			void* physicalDevice = nullptr;
+			void* device = nullptr;
+			uint32_t queueFamilyIndex = 0;
+			void* display = nullptr;
+			void* config = nullptr;
+			void* context = nullptr;
+			uintptr_t drawable = 0;
+			uintptr_t framebufferConfig = 0;
+			uintptr_t visualId = 0;
+		};
+
+		struct SwapchainInfo {
+			uint32_t width = 0;
+			uint32_t height = 0;
+			uint32_t viewCount = 0;
+			int64_t format = 0;
+			std::vector<uint64_t> images;
+		};
+
+		struct View {
+			glm::vec3 position{0.0f};
+			glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
+			glm::vec4 fov{0.0f};
+		};
+
 	private:
 		struct Impl;
 		std::unique_ptr<Impl> impl;
+		void DestroyInput();
 
 	public:
 		OpenXR();
@@ -65,11 +128,20 @@ namespace fe {
 		OpenXR(const OpenXR&) = delete;
 		OpenXR& operator=(const OpenXR&) = delete;
 
-#ifndef FE_EXCLUDE_OPENXR
-		bool InitializeInput(XrInstance instance, XrSession session, XrSpace appSpace);
-		void UpdateInput(XrTime predictedDisplayTime);
-		void DestroyInput();
-#endif
+		bool Initialize(const GraphicsBinding& binding);
+		bool IsInstanceValid() const;
+		bool IsSessionRunning() const;
+		bool IsPassthroughSupported() const;
+		bool IsPassthroughEnabled() const;
+		void SetPassthroughEnabled(bool enabled);
+		void PollEvents();
+		bool CreateSwapchain(int64_t preferredFormat, SwapchainInfo& info);
+		void DestroySwapchain();
+		bool BeginFrame(uint32_t& imageIndex, std::vector<View>& views);
+		void EndFrame();
+		void RequestExitSession();
+		void Shutdown();
+		void UpdateInput(int64_t predictedDisplayTime);
 
 		// Latest raw input; tracked poses are in OpenXR reference space.
 		const InputState& GetInputState() const;

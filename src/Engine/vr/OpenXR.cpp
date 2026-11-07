@@ -5,8 +5,14 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
+#include <iostream>
 #include <string>
 #include <vector>
+
+#ifdef __ANDROID__
+#include <SDL3/SDL_system.h>
+#endif
 
 namespace fe {
 
@@ -21,6 +27,35 @@ namespace fe {
 		XrInstance instance = XR_NULL_HANDLE;
 		XrSession session = XR_NULL_HANDLE;
 		XrSpace appSpace = XR_NULL_HANDLE;
+		XrSystemId systemId = XR_NULL_SYSTEM_ID;
+		XrSwapchain swapchain = XR_NULL_HANDLE;
+		XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
+		bool sessionRunning = false;
+		bool useVulkan = false;
+		uint32_t viewCount = 0;
+		uint32_t swapchainWidth = 0;
+		uint32_t swapchainHeight = 0;
+		std::vector<XrView> locatedViews;
+		XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
+		XrFrameState frameState{XR_TYPE_FRAME_STATE};
+		XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
+		XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+		bool frameBegun = false;
+		bool imageAcquired = false;
+		bool passthroughExtensionAvailable = false;
+		bool passthroughSupported = false;
+		bool passthroughEnabled = false;
+		XrPassthroughFB passthrough = XR_NULL_HANDLE;
+		XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
+
+		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
+		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
+		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
+		PFN_xrPassthroughPauseFB pfnPassthroughPauseFB = nullptr;
+		PFN_xrCreatePassthroughLayerFB pfnCreatePassthroughLayerFB = nullptr;
+		PFN_xrDestroyPassthroughLayerFB pfnDestroyPassthroughLayerFB = nullptr;
+		PFN_xrPassthroughLayerResumeFB pfnPassthroughLayerResumeFB = nullptr;
+		PFN_xrPassthroughLayerPauseFB pfnPassthroughLayerPauseFB = nullptr;
 
 		XrActionSet actionSet = XR_NULL_HANDLE;
 		XrAction moveAction = XR_NULL_HANDLE;
@@ -45,6 +80,21 @@ namespace fe {
 
 		float pendingHapticAmplitude[2] = {0.0f, 0.0f};
 		float pendingHapticDuration[2] = {0.0f, 0.0f};
+
+		void Log(const std::string& message) const {
+			fe::Log("%s", message.c_str());
+		}
+
+		void OutputError(XrResult result) const {
+			if (XR_SUCCEEDED(result))
+				return;
+			char message[XR_MAX_RESULT_STRING_SIZE] = {};
+			if (instance != XR_NULL_HANDLE && XR_SUCCEEDED(xrResultToString(instance, result, message))) {
+				Log("OpenXR Error: " + std::string(message) + " (" + std::to_string(result) + ")");
+			} else {
+				Log("OpenXR call failed with result " + std::to_string(result));
+			}
+		}
 
 		bool CheckResult(XrResult result, const char* operation) const {
 			if (XR_FAILED(result)) {
@@ -273,6 +323,27 @@ namespace fe {
 
 			active = true;
 			return glm::vec3(location.pose.position.x, location.pose.position.y, location.pose.position.z);
+		}
+
+		void LoadPassthroughFunctions() {
+			xrGetInstanceProcAddr(instance, "xrCreatePassthroughFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnCreatePassthroughFB));
+			xrGetInstanceProcAddr(instance, "xrDestroyPassthroughFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnDestroyPassthroughFB));
+			xrGetInstanceProcAddr(instance, "xrPassthroughStartFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnPassthroughStartFB));
+			xrGetInstanceProcAddr(instance, "xrPassthroughPauseFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnPassthroughPauseFB));
+			xrGetInstanceProcAddr(instance, "xrCreatePassthroughLayerFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnCreatePassthroughLayerFB));
+			xrGetInstanceProcAddr(instance, "xrDestroyPassthroughLayerFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnDestroyPassthroughLayerFB));
+			xrGetInstanceProcAddr(instance, "xrPassthroughLayerResumeFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnPassthroughLayerResumeFB));
+			xrGetInstanceProcAddr(instance, "xrPassthroughLayerPauseFB", reinterpret_cast<PFN_xrVoidFunction*>(&pfnPassthroughLayerPauseFB));
+		}
+
+		void DestroyPassthrough() {
+			passthroughEnabled = false;
+			if (passthroughLayer != XR_NULL_HANDLE && pfnDestroyPassthroughLayerFB)
+				OutputError(pfnDestroyPassthroughLayerFB(passthroughLayer));
+			if (passthrough != XR_NULL_HANDLE && pfnDestroyPassthroughFB)
+				OutputError(pfnDestroyPassthroughFB(passthrough));
+			passthroughLayer = XR_NULL_HANDLE;
+			passthrough = XR_NULL_HANDLE;
 		}
 #endif
 	};

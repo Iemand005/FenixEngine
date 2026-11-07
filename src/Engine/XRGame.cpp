@@ -86,13 +86,6 @@ glm::mat4 MakeVulkanProjectionFromXrFov(const XrFovf& fov, float nearZ, float fa
 }
 #endif
 
-void CheckGLError(const char* location) {
-	GLenum err;
-	while ((err = glGetError()) != GL_NO_ERROR) {
-		std::cerr << "OpenGL error at " << location << ": " << err << std::endl;
-	}
-}
-
 struct fe::XRGame::Impl {
 		bool useVulkan = false;
 
@@ -939,7 +932,7 @@ void XRGame::LaunchVR() {
 	}
 	impl->useVulkan = useVulkan;
 	impl->initSwapchain(renderDevice.get());
-	if (!useVulkan) CheckGLError("after framebuffer setup");
+	// if (!useVulkan) CheckGLError("after framebuffer setup");
 	impl->input.InitializeInput(impl->instance, impl->session, impl->appSpace);
 	GetWindow()->StopMouseCapture();
 	#endif
