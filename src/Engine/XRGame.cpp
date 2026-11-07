@@ -7,8 +7,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
-#include <string>
 #include <vector>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,8 +20,6 @@
 #endif
 #endif
 
-// #include "Graphics/VulkanDevice.hpp"
-
 #include <imgui.h>
 
 using namespace fe;
@@ -35,7 +31,7 @@ namespace {
 // (angleLeft/angleDown negative), so start from a GL frustum and then apply the
 // exact GL -> Vulkan clip conversion once, here, instead of patching matrices
 // with global flags in the device.
-glm::mat4 MakeVulkanProjectionFromXrFov(const glm::vec4& fov, float nearZ, float farZ) {
+glm::mat4 MakeVulkanProjectionFromFov(const glm::vec4& fov, float nearZ, float farZ) {
 	const float tanLeft = std::tan(fov.x);
 	const float tanRight = std::tan(fov.y);
 	const float tanDown = std::tan(fov.z);
@@ -307,7 +303,8 @@ void XRGame::SetPassthroughEnabled(bool enabled) {
 	if (enabled == impl->input.IsPassthroughEnabled()) return;
 
 	impl->input.SetPassthroughEnabled(enabled);
-	SetClearColor(clearColorR_, clearColorG_, clearColorB_, enabled ? 0.0f : 1.0f);
+	SetClearColor(clearColorR_, clearColorG_, clearColorB_,
+		impl->input.IsPassthroughEnabled() ? 0.0f : 1.0f);
 }
 
 void XRGame::TogglePassthrough() {
@@ -453,7 +450,7 @@ void XRGame::RedrawVR() {
 
 		renderDevice->BeginVRFrame();
 		if (impl->useVulkan) {
-			const glm::mat4 vkProjection = MakeVulkanProjectionFromXrFov(
+			const glm::mat4 vkProjection = MakeVulkanProjectionFromFov(
 				view.fov, camera->nearDist, camera->farDist);
 			renderDevice->SetVRViewProjection(camera->GetViewMatrix(),
 				camera->GetProjectionMatrix(), vkProjection);

@@ -357,6 +357,10 @@ namespace fe {
 	bool OpenXR::Initialize(const GraphicsBinding& binding) {
 #ifndef FE_EXCLUDE_OPENXR
 		Shutdown();
+		auto initializationFailed = [this]() {
+			Shutdown();
+			return false;
+		};
 		impl->useVulkan = binding.useVulkan;
 
 #ifdef __ANDROID__
@@ -377,7 +381,7 @@ namespace fe {
 				reinterpret_cast<const XrLoaderInitInfoBaseHeaderKHR*>(&loaderInfo));
 			if (XR_FAILED(result)) {
 				impl->OutputError(result);
-				return false;
+				return initializationFailed();
 			}
 		}
 #endif
@@ -429,21 +433,21 @@ namespace fe {
 #endif
 
 		if (!impl->CheckResult(xrCreateInstance(&createInfo, &impl->instance), "xrCreateInstance"))
-			return false;
+			return initializationFailed();
 		if (impl->passthroughExtensionAvailable)
 			impl->LoadPassthroughFunctions();
 
 		XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
 		systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 		if (!impl->CheckResult(xrGetSystem(impl->instance, &systemInfo, &impl->systemId), "xrGetSystem"))
-			return false;
+			return initializationFailed();
 
 		XrSystemPassthroughPropertiesFB passthroughProperties{XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB};
 		XrSystemProperties systemProperties{XR_TYPE_SYSTEM_PROPERTIES};
 		if (impl->passthroughExtensionAvailable)
 			systemProperties.next = &passthroughProperties;
 		if (!impl->CheckResult(xrGetSystemProperties(impl->instance, impl->systemId, &systemProperties), "xrGetSystemProperties"))
-			return false;
+			return initializationFailed();
 		impl->passthroughSupported = impl->passthroughExtensionAvailable &&
 			passthroughProperties.supportsPassthrough == XR_TRUE;
 		impl->Log("OpenXR system: " + std::string(systemProperties.systemName));
@@ -458,7 +462,7 @@ namespace fe {
 				XrGraphicsRequirementsVulkanKHR requirements{XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
 				if (!impl->CheckResult(getRequirements(impl->instance, impl->systemId, &requirements),
 						"xrGetVulkanGraphicsRequirementsKHR"))
-					return false;
+					return initializationFailed();
 			}
 		} else
 #endif
@@ -472,7 +476,7 @@ namespace fe {
 				XrGraphicsRequirementsOpenGLESKHR requirements{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR};
 				if (!impl->CheckResult(getRequirements(impl->instance, impl->systemId, &requirements),
 						"xrGetOpenGLESGraphicsRequirementsKHR"))
-					return false;
+					return initializationFailed();
 			}
 #else
 			PFN_xrGetOpenGLGraphicsRequirementsKHR getRequirements = nullptr;
@@ -483,7 +487,7 @@ namespace fe {
 				XrGraphicsRequirementsOpenGLKHR requirements{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
 				if (!impl->CheckResult(getRequirements(impl->instance, impl->systemId, &requirements),
 						"xrGetOpenGLGraphicsRequirementsKHR"))
-					return false;
+					return initializationFailed();
 			}
 #endif
 		}
@@ -542,16 +546,18 @@ namespace fe {
 		}
 
 		if (!impl->CheckResult(xrCreateSession(impl->instance, &sessionInfo, &impl->session), "xrCreateSession"))
-			return false;
+			return initializationFailed();
 
 		XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
 		spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
 		spaceInfo.poseInReferenceSpace.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
 		if (!impl->CheckResult(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace), "xrCreateReferenceSpace"))
-			return false;
+			return initializationFailed();
 
 		impl->CreateActions();
-		return impl->actionSet != XR_NULL_HANDLE;
+		if (impl->actionSet == XR_NULL_HANDLE)
+			return initializationFailed();
+		return true;
 #else
 		(void)binding;
 		return false;
@@ -784,13 +790,17 @@ namespace fe {
 		}
 
 		if (!impl->CheckResult(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo,
-				&imageIndex), "xrAcquireSwapchainImage"))
+				&imageIndex), "xrAcquireSwapchainImage")) {
+			EndFrame();
 			return false;
+		}
 		impl->imageAcquired = true;
 		XrSwapchainImageWaitInfo waitInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
 		waitInfo.timeout = XR_INFINITE_DURATION;
-		if (!impl->CheckResult(xrWaitSwapchainImage(impl->swapchain, &waitInfo), "xrWaitSwapchainImage"))
+		if (!impl->CheckResult(xrWaitSwapchainImage(impl->swapchain, &waitInfo), "xrWaitSwapchainImage")) {
+			EndFrame();
 			return false;
+		}
 
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
 		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -800,8 +810,10 @@ namespace fe {
 		impl->locatedViews.assign(impl->viewCount, {XR_TYPE_VIEW});
 		uint32_t locatedViewCount = 0;
 		if (!impl->CheckResult(xrLocateViews(impl->session, &locateInfo, &viewState,
-				impl->viewCount, &locatedViewCount, impl->locatedViews.data()), "xrLocateViews"))
+				impl->viewCount, &locatedViewCount, impl->locatedViews.data()), "xrLocateViews")) {
+			EndFrame();
 			return false;
+		}
 		impl->locatedViews.resize(locatedViewCount);
 		views.reserve(locatedViewCount);
 		for (const XrView& xrView : impl->locatedViews) {
@@ -992,6 +1004,7 @@ namespace fe {
 #endif
 	}
 
+#ifndef FE_EXCLUDE_OPENXR
 	void OpenXR::DestroyInput() {
 		for (XrSpace& space : impl->gripPoseSpace) {
 			if (space != XR_NULL_HANDLE) xrDestroySpace(space);
