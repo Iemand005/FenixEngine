@@ -14,6 +14,8 @@ namespace fe {
 		InputState inputState;
 		bool buttonPressed[6] = {};
 		bool buttonHeld[6] = {};
+		bool gripPressedEdge[2] = {};
+		bool prevGripPressed[2] = {};
 
 #ifndef FE_EXCLUDE_OPENXR
 		XrInstance instance = XR_NULL_HANDLE;
@@ -366,6 +368,13 @@ namespace fe {
 		// state as the boolean squeeze click (Windows MR/Vive).
 		state.leftGripPressed = impl->ReadFloat(impl->leftGripAction) > 0.5f;
 		state.rightGripPressed = impl->ReadFloat(impl->rightGripAction) > 0.5f;
+
+		const bool grips[2] = {state.leftGripPressed, state.rightGripPressed};
+		for (size_t i = 0; i < 2; i++) {
+			if (grips[i] && !impl->prevGripPressed[i])
+				impl->gripPressedEdge[i] = true;
+			impl->prevGripPressed[i] = grips[i];
+		}
 	}
 
 	void OpenXR::DestroyInput() {
@@ -405,6 +414,8 @@ namespace fe {
 		impl->inputState = InputState{};
 		std::fill(std::begin(impl->buttonPressed), std::end(impl->buttonPressed), false);
 		std::fill(std::begin(impl->buttonHeld), std::end(impl->buttonHeld), false);
+		impl->gripPressedEdge[0] = impl->gripPressedEdge[1] = false;
+		impl->prevGripPressed[0] = impl->prevGripPressed[1] = false;
 	}
 #endif
 
@@ -447,6 +458,13 @@ namespace fe {
 
 	bool OpenXR::IsGripPressed(Hand hand) const {
 		return hand == Hand::Left ? impl->inputState.leftGripPressed : impl->inputState.rightGripPressed;
+	}
+
+	bool OpenXR::ConsumeGripPress(Hand hand) {
+		const size_t index = hand == Hand::Left ? 0 : 1;
+		const bool pressed = impl->gripPressedEdge[index];
+		impl->gripPressedEdge[index] = false;
+		return pressed;
 	}
 
 	void OpenXR::TriggerHaptic(Hand hand, float amplitude, float durationSeconds) {

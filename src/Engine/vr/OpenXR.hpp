@@ -82,6 +82,9 @@ namespace fe {
 		// True while the squeeze/grip button is held on the given hand.
 		bool IsGripPressed(Hand hand) const;
 
+		// Edge-triggered grip press; clears the pending press when consumed.
+		bool ConsumeGripPress(Hand hand);
+
 		// Pulses the haptic actuator of the given controller.
 		// amplitude is clamped to [0, 1], durationSeconds is in seconds.
 		void TriggerHaptic(Hand hand, float amplitude = 0.5f, float durationSeconds = 0.1f);
