@@ -1042,6 +1042,7 @@ void XRGame::RedrawVR() {
 			renderDevice->BeginVRFrame();
 
 			// Set per-eye view/projection
+			if (useVulkan) renderDevice->SetVRProjectionMode(true);
 			renderDevice->SetMat4("view", camera->GetViewMatrix());
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 
@@ -1060,6 +1061,7 @@ void XRGame::RedrawVR() {
 
 			renderDevice->EndEyeFrame();
 			renderDevice->EndVRFrame();
+			if (useVulkan) renderDevice->SetVRProjectionMode(false);
 		} else {
 			if (!useVulkan) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImagesGL[swapchainImageIndex].image);

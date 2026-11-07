@@ -72,12 +72,10 @@ void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertP
  		if (!vertPath || vertPath->empty() || fragPath->empty()) return;
 
  		PipelineSet& set = pipelineSets_[static_cast<size_t>(format)];
-		// updateUniformBuffer flips projection Y for Vulkan's positive-height viewport,
-		// so the default counter-clockwise mesh winding becomes clockwise.
-		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal, VK_FRONT_FACE_CLOCKWISE);
-		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
-		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_CLOCKWISE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
  	
  }
 
@@ -1320,6 +1318,11 @@ vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(Vert
 	
 }
 
+void VulkanDevice::SetVRProjectionMode(bool enabled) {
+	vrProjectionMode_ = enabled;
+}
+
+
 void VulkanDevice::WaitForVRFrame() {
 	if (vkWaitForFences(_device, static_cast<uint32_t>(inFlightFences_.size()),
 		inFlightFences_.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
@@ -2528,11 +2531,11 @@ void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t 
 		UniformBufferObject ubo{};
 		ubo.view = currentView_;
 		ubo.proj = currentProj_;
-		// Flip the full Y row and remap OpenGL's [-1, 1] depth to Vulkan's [0, 1].
-		for (int column = 0; column < 4; ++column) {
-			ubo.proj[column][1] = -ubo.proj[column][1];
-			ubo.proj[column][2] = 0.5f * (ubo.proj[column][2] + ubo.proj[column][3]);
-		}
+		ubo.proj[1][1] *= -1;
+		if (vrProjectionMode_)
+			ubo.proj[2][1] *= -1;
+		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
+		ubo.proj[3][2] *= 0.5f;
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	

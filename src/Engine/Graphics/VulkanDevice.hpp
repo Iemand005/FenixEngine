@@ -262,6 +262,8 @@ public:
 
 	void WaitForVRFrame() override;
 
+	void SetVRProjectionMode(bool enabled) override;
+
 	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override;
 
 	void EndExternalFrame() override;
@@ -364,6 +366,7 @@ private:
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
 	uint32_t drawCallCount_ = 0;
+	bool vrProjectionMode_ = false;
 
 	glm::mat4 currentModel_ = glm::mat4(1.0f);
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
