@@ -69,7 +69,7 @@ namespace fe {
 
 		bool drawWindow = true;
 
-		glm::vec3 positionOffset = glm::vec3(1.0f);
+		glm::vec3 positionOffset = glm::vec3(0.0f);
 
 		// Yaw "look" turn (radians) accumulated from the look input (e.g. left
 		// thumbstick). Applied on top of the HMD orientation each VR frame.

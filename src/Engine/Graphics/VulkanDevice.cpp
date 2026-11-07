@@ -931,8 +931,8 @@ VkPipeline VulkanDevice::GetGraphicsPipeline(VertexFormat format, bool transpare
  void VulkanDevice::SetMat4(const char* name,  const glm::mat4& value) {
 
 		if (strcmp(name, "model") == 0) { currentModel_ = value; }
-		else if (strcmp(name, "view") == 0) { currentView_ = value; updateUniformBuffer(currentFrame_); }
-		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "view") == 0) { currentView_ = value; vrProjectionActive_ = false; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "projection") == 0) { currentProj_ = value; vrProjectionActive_ = false; updateUniformBuffer(currentFrame_); }
 	
 }
 
@@ -1318,8 +1318,13 @@ vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(Vert
 	
 }
 
-void VulkanDevice::SetVRProjectionMode(bool enabled) {
-	vrProjectionMode_ = enabled;
+void VulkanDevice::SetVRViewProjection(const glm::mat4& view,
+		const glm::mat4& projection, const glm::mat4& projectionNative) {
+	currentView_ = view;
+	currentProj_ = projection;
+	vrProjection_ = projectionNative;
+	vrProjectionActive_ = true;
+	updateUniformBuffer(currentFrame_);
 }
 
 
@@ -2530,12 +2535,20 @@ void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t 
 
 		UniformBufferObject ubo{};
 		ubo.view = currentView_;
-		ubo.proj = currentProj_;
-		ubo.proj[1][1] *= -1;
-		if (vrProjectionMode_)
+
+		if (vrProjectionActive_) {
+			// The VR path builds the projection directly in Vulkan clip space
+			// (y down, z in [0, 1]); upload it untouched.
+			ubo.proj = vrProjection_;
+		} else {
+			ubo.proj = currentProj_;
+			// Full GL -> Vulkan clip conversion: mirror Y (both the base term
+			// and the off-axis skew term) and remap z from [-1, 1] to [0, 1].
+			ubo.proj[1][1] *= -1;
 			ubo.proj[2][1] *= -1;
-		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
-		ubo.proj[3][2] *= 0.5f;
+			ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
+			ubo.proj[3][2] *= 0.5f;
+		}
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	

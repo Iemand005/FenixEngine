@@ -262,7 +262,8 @@ public:
 
 	void WaitForVRFrame() override;
 
-	void SetVRProjectionMode(bool enabled) override;
+	void SetVRViewProjection(const glm::mat4& view,
+		const glm::mat4& projection, const glm::mat4& projectionNative) override;
 
 	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override;
 
@@ -366,11 +367,14 @@ private:
 	std::vector<VkFence> inFlightFences_;
 	uint32_t currentFrame_ = 0;
 	uint32_t drawCallCount_ = 0;
-	bool vrProjectionMode_ = false;
 
 	glm::mat4 currentModel_ = glm::mat4(1.0f);
 	glm::mat4 currentView_ = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0), glm::vec3(0,1,0));
 	glm::mat4 currentProj_ = glm::mat4(1.0f);
+	// VR matrices are already in Vulkan clip space and must not be run through
+	// the OpenGL->Vulkan conversion in updateUniformBuffer().
+	glm::mat4 vrProjection_ = glm::mat4(1.0f);
+	bool vrProjectionActive_ = false;
 	glm::vec4 currentObjectColor_ = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	bool reverseWinding_ = false;
 

@@ -6,10 +6,12 @@
 #endif
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <vector>
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 #ifndef FE_EXCLUDE_OPENXR
@@ -55,6 +57,34 @@
 #include <imgui.h>
 
 using namespace fe;
+
+#ifndef FE_EXCLUDE_OPENXR
+namespace {
+// Builds an off-axis projection matrix already expressed in Vulkan clip space
+// (y down, z in [0, 1]). OpenXR's fov angles use the OpenGL convention
+// (angleLeft/angleDown negative), so start from a GL frustum and then apply the
+// exact GL -> Vulkan clip conversion once, here, instead of patching matrices
+// with global flags in the device.
+glm::mat4 MakeVulkanProjectionFromXrFov(const XrFovf& fov, float nearZ, float farZ) {
+	const float tanLeft = std::tan(fov.angleLeft);
+	const float tanRight = std::tan(fov.angleRight);
+	const float tanDown = std::tan(fov.angleDown);
+	const float tanUp = std::tan(fov.angleUp);
+
+	glm::mat4 gl = glm::frustum(tanLeft * nearZ, tanRight * nearZ,
+		tanDown * nearZ, tanUp * nearZ, nearZ, farZ);
+
+	glm::mat4 vk = gl;
+	// Mirror Y (including the off-axis skew term).
+	for (int c = 0; c < 4; ++c)
+		vk[c][1] = -vk[c][1];
+	// Remap depth z from [-1, 1] to [0, 1]: row2' = 0.5 * (row2 + row3).
+	for (int c = 0; c < 4; ++c)
+		vk[c][2] = 0.5f * (vk[c][2] + vk[c][3]);
+	return vk;
+}
+}
+#endif
 
 void CheckGLError(const char* location) {
 	GLenum err;
@@ -760,13 +790,12 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 		movement.y = moveSpeed * forward.y * -input.moveInput.y;
 		movement.z = moveSpeed * forward.z * -input.moveInput.y + moveSpeed * right.z * input.moveInput.x;
 
+		// Move the player only; positionOffset stays a constant calibration
+		// offset. Applying the movement to both doubled the camera speed.
 		if (player) {
 			player->state.position.x += movement.x;
 			player->state.position.z += movement.z;
 		}
-
-		positionOffset.x += movement.x;
-		positionOffset.z += movement.z;
 	}
 	#endif
 }
@@ -1014,21 +1043,33 @@ void XRGame::RedrawVR() {
 	// Set up lighting once, shared by all eyes
 	if (shader) UploadLights(shader.get(), scene.get());
 
+	// Head pose in the reference space (appSpace). The projection layer is
+	// submitted in this space, so every pose written into it must use these
+	// coordinates - never world coordinates.
+	glm::vec3 headRefPos(0.0f);
+	if (viewCount > 0)
+		headRefPos = glm::vec3(views[0].pose.position.x, views[0].pose.position.y, views[0].pose.position.z);
+	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+	// World position of the tracked head: player + offset + head. The yaw is
+	// applied around the head, matching toWorldPosition() for controllers.
+	glm::vec3 worldOrigin = playerPosition + positionOffset + headRefPos;
+
 	for (uint32_t eye = 0; eye < viewCount; eye++) {
 		XrPosef pose = views[eye].pose;
 		XrFovf xrFov = views[eye].fov;
 
 		glm::vec3 hmdPosition(pose.position.x, pose.position.y, pose.position.z);
 		glm::quat hmdOrientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
-		glm::quat turnedOrientation = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f)) * hmdOrientation;
 		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
 
-		// Camera position = player position + HMD offset + user offset
-		glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
-		glm::vec3 cameraPos = playerPosition + hmdPosition + positionOffset;
+		// Rigid reference-space -> world-space transform: translate the tracked
+		// head to the player and apply the look yaw about the head.
+		glm::vec3 worldEyePos = worldOrigin + yawQ * (hmdPosition - headRefPos);
+		glm::quat worldEyeOrientation = yawQ * hmdOrientation;
 
 		if (!render2D) {
-			camera->update(cameraPos, turnedOrientation, fov);
+			camera->update(worldEyePos, worldEyeOrientation, fov);
 
 			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
 			if (!useVulkan) {
@@ -1041,10 +1082,17 @@ void XRGame::RedrawVR() {
 			// Each eye gets its own Vulkan command buffer and uniform buffer.
 			renderDevice->BeginVRFrame();
 
-			// Set per-eye view/projection
-			if (useVulkan) renderDevice->SetVRProjectionMode(true);
-			renderDevice->SetMat4("view", camera->GetViewMatrix());
-			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+			// Set per-eye view/projection. Vulkan receives a projection that is
+			// already in Vulkan clip space; OpenGL uses the camera's GL matrix.
+			if (useVulkan) {
+				glm::mat4 vkProjection = MakeVulkanProjectionFromXrFov(
+					xrFov, camera->nearDist, camera->farDist);
+				renderDevice->SetVRViewProjection(camera->GetViewMatrix(),
+					camera->GetProjectionMatrix(), vkProjection);
+			} else {
+				renderDevice->SetMat4("view", camera->GetViewMatrix());
+				renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+			}
 
 			// Render to the eye framebuffer
 			renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
@@ -1061,7 +1109,6 @@ void XRGame::RedrawVR() {
 
 			renderDevice->EndEyeFrame();
 			renderDevice->EndVRFrame();
-			if (useVulkan) renderDevice->SetVRProjectionMode(false);
 		} else {
 			if (!useVulkan) {
 				glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImagesGL[swapchainImageIndex].image);
@@ -1071,12 +1118,11 @@ void XRGame::RedrawVR() {
 		}
 
 		projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-		// The compositor timewarps around the pose submitted here. It must be
-		// the exact pose the eye rendered from (player + HMD + offset), or
-		// head rotation reprojects around the wrong point and the image
-		// swims with a lens-like distortion.
-		projectionViews[eye].pose.position = {cameraPos.x, cameraPos.y, cameraPos.z};
-		projectionViews[eye].pose.orientation = {turnedOrientation.x, turnedOrientation.y, turnedOrientation.z, turnedOrientation.w};
+		// The compositor timewarps around this pose, and it is expressed in the
+		// projection layer's space (impl->appSpace). Submit the raw reference
+		// eye pose returned by xrLocateViews; the world transform (player
+		// position + yaw) belongs to rendering only.
+		projectionViews[eye].pose = pose;
 		projectionViews[eye].fov = views[eye].fov;
 		projectionViews[eye].subImage.swapchain = impl->swapchain;
 		projectionViews[eye].subImage.imageRect.offset = {0, 0};

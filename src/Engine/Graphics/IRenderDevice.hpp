@@ -73,7 +73,15 @@ namespace fe {
 		virtual void EndEyeFrame() {}
 		virtual void EndVRFrame() {}
 		virtual void WaitForVRFrame() {}
-		virtual void SetVRProjectionMode(bool enabled) {}
+
+		// Sets the per-eye VR matrices. `view` is the world-space view matrix,
+		// `projection` is the GL-convention projection (used for CPU culling),
+		// and `projectionNative` is the same projection in the graphics API's
+		// native clip space (Vulkan: y-down, z in [0, 1]). Passing both avoids
+		// re-converting an already-converted matrix and keeps frustum culling
+		// on the GL convention it expects.
+		virtual void SetVRViewProjection(const glm::mat4& view,
+			const glm::mat4& projection, const glm::mat4& projectionNative) {}
 
 		virtual void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) {}
 		virtual void EndExternalFrame() {}
