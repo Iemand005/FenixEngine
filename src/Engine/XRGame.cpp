@@ -1,4 +1,5 @@
 #include "XRGame.hpp"
+#include "vr/OpenXR.hpp"
 
 #ifdef FE_HAS_VULKAN
 #include "Graphics/VulkanDevice.hpp"
@@ -97,6 +98,8 @@ struct fe::XRGame::Impl {
 
 		bool drawVR = false;
 		bool drawOpenVR = false;
+
+		OpenXR input;
 
 		XrActionSet actionSet = XR_NULL_HANDLE;
 		XrAction moveAction = XR_NULL_HANDLE;
