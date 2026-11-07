@@ -150,6 +150,7 @@ set(SOURCE_FILES
 	physics/PhysicsVehicle.cpp
 	Scene.cpp
 	Sensors/Accelerometer.cpp
+	vr/OpenXR.cpp
 	XRGame.cpp
 )
 
