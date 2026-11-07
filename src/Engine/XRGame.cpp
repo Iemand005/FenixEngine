@@ -738,12 +738,6 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 	impl->input.UpdateInput(predictedDisplayTime);
 	const OpenXR::InputState& input = impl->input.GetInputState();
 
-	xrToggleRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::ToggleXR);
-	xrBreakBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::BreakBlock);
-	xrPlaceBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::PlaceBlock);
-	xrPrevBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::PreviousBlock);
-	xrNextBlockRequested |= impl->input.ConsumeButtonPress(OpenXR::Button::NextBlock);
-
 	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 	// Rigid reference-space -> world-space transform used for every tracked

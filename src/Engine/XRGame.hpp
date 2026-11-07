@@ -79,8 +79,8 @@ namespace fe {
 		// thumbstick). Applied on top of the HMD orientation each VR frame.
 		float playerYaw = 0.0f;
 
-		// Set this to toggle the XR session on/off next frame (used by the
-		// XR action, a hotkey or a gamepad button).
+		// Set this to toggle the XR session on/off next frame (used by a
+		// hotkey or a gamepad button).
 		bool xrToggleRequested = false;
 
 		// Controller poses tracked from OpenXR every VR frame, in world space
@@ -101,14 +101,6 @@ namespace fe {
 		bool leftAimPoseActive = false;
 		bool rightGripPoseActive = false;
 		bool rightAimPoseActive = false;
-
-		// Edge-triggered requests raised by the XR action bindings
-		// (left/right trigger = break/place, L1/R1 grips = switch hotbar slot).
-		// The game consumes and clears them.
-		bool xrBreakBlockRequested = false;
-		bool xrPlaceBlockRequested = false;
-		bool xrPrevBlockRequested = false;
-		bool xrNextBlockRequested = false;
 
 		bool running = true;
 		

@@ -324,19 +324,19 @@ namespace fe {
 		else
 			impl->inputState.lookInput = glm::vec2(0.0f);
 
-		impl->buttonPressed[static_cast<size_t>(Button::ToggleXR)] |= impl->ReadButton(impl->toggleXrAction);
-		impl->buttonPressed[static_cast<size_t>(Button::BreakBlock)] |= impl->ReadButton(impl->breakBlockAction);
-		impl->buttonPressed[static_cast<size_t>(Button::PlaceBlock)] |= impl->ReadButton(impl->placeBlockAction);
-		impl->buttonPressed[static_cast<size_t>(Button::PreviousBlock)] |= impl->ReadButton(impl->prevBlockAction);
-		impl->buttonPressed[static_cast<size_t>(Button::NextBlock)] |= impl->ReadButton(impl->nextBlockAction);
-		impl->buttonPressed[static_cast<size_t>(Button::SpawnSphere)] |= impl->ReadButton(impl->spawnSphereAction);
+		impl->buttonPressed[static_cast<size_t>(Button::X)] |= impl->ReadButton(impl->buttonXAction);
+		impl->buttonPressed[static_cast<size_t>(Button::Y)] |= impl->ReadButton(impl->buttonYAction);
+		impl->buttonPressed[static_cast<size_t>(Button::A)] |= impl->ReadButton(impl->buttonAAction);
+		impl->buttonPressed[static_cast<size_t>(Button::B)] |= impl->ReadButton(impl->buttonBAction);
+		impl->buttonPressed[static_cast<size_t>(Button::LeftTrigger)] |= impl->ReadButton(impl->leftTriggerAction);
+		impl->buttonPressed[static_cast<size_t>(Button::RightTrigger)] |= impl->ReadButton(impl->rightTriggerAction);
 
-		impl->buttonHeld[static_cast<size_t>(Button::ToggleXR)] = impl->ReadButtonHeld(impl->toggleXrAction);
-		impl->buttonHeld[static_cast<size_t>(Button::BreakBlock)] = impl->ReadButtonHeld(impl->breakBlockAction);
-		impl->buttonHeld[static_cast<size_t>(Button::PlaceBlock)] = impl->ReadButtonHeld(impl->placeBlockAction);
-		impl->buttonHeld[static_cast<size_t>(Button::PreviousBlock)] = impl->ReadButtonHeld(impl->prevBlockAction);
-		impl->buttonHeld[static_cast<size_t>(Button::NextBlock)] = impl->ReadButtonHeld(impl->nextBlockAction);
-		impl->buttonHeld[static_cast<size_t>(Button::SpawnSphere)] = impl->ReadButtonHeld(impl->spawnSphereAction);
+		impl->buttonHeld[static_cast<size_t>(Button::X)] = impl->ReadButtonHeld(impl->buttonXAction);
+		impl->buttonHeld[static_cast<size_t>(Button::Y)] = impl->ReadButtonHeld(impl->buttonYAction);
+		impl->buttonHeld[static_cast<size_t>(Button::A)] = impl->ReadButtonHeld(impl->buttonAAction);
+		impl->buttonHeld[static_cast<size_t>(Button::B)] = impl->ReadButtonHeld(impl->buttonBAction);
+		impl->buttonHeld[static_cast<size_t>(Button::LeftTrigger)] = impl->ReadButtonHeld(impl->leftTriggerAction);
+		impl->buttonHeld[static_cast<size_t>(Button::RightTrigger)] = impl->ReadButtonHeld(impl->rightTriggerAction);
 
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
 		locateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -385,12 +385,12 @@ namespace fe {
 		impl->leftAimPoseAction = XR_NULL_HANDLE;
 		impl->rightGripPoseAction = XR_NULL_HANDLE;
 		impl->rightAimPoseAction = XR_NULL_HANDLE;
-		impl->toggleXrAction = XR_NULL_HANDLE;
-		impl->breakBlockAction = XR_NULL_HANDLE;
-		impl->placeBlockAction = XR_NULL_HANDLE;
-		impl->prevBlockAction = XR_NULL_HANDLE;
-		impl->nextBlockAction = XR_NULL_HANDLE;
-		impl->spawnSphereAction = XR_NULL_HANDLE;
+		impl->buttonXAction = XR_NULL_HANDLE;
+		impl->buttonYAction = XR_NULL_HANDLE;
+		impl->buttonAAction = XR_NULL_HANDLE;
+		impl->buttonBAction = XR_NULL_HANDLE;
+		impl->leftTriggerAction = XR_NULL_HANDLE;
+		impl->rightTriggerAction = XR_NULL_HANDLE;
 		impl->leftHapticAction = XR_NULL_HANDLE;
 		impl->rightHapticAction = XR_NULL_HANDLE;
 		impl->leftGripAction = XR_NULL_HANDLE;
