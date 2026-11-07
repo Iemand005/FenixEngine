@@ -13,42 +13,12 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <SDL3/SDL.h>
 
 #ifndef FE_EXCLUDE_OPENXR
 #if defined(__linux__) || defined(__unix__)
     #include <X11/Xlib.h>
     #include <GL/glx.h>
-#endif
-#include <openxr/openxr.h>
-#include <openxr/openxr_platform.h>
-#endif
-
-#ifndef FE_EXCLUDE_OPENXR
-#ifdef _WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define WIN32_LEAN_AND_MEAN
-
-#include <Windows.h>
-#include <unknwn.h>
-
-#elif defined(__ANDROID__)
-
-#include <EGL/egl.h>
-#include <jni.h>
-#include <SDL3/SDL_system.h>
-#include "Log.hpp"
-
-#else
-
-#include <X11/Xlib.h>
-#include <GL/glx.h>
-
-#endif
-#endif
-
-#if defined(XR_USE_PLATFORM_WAYLAND) && !defined(__ANDROID__)
-#ifndef FE_EXCLUDE_OPENXR
-#include <wayland-client.h>
 #endif
 #endif
 
@@ -65,11 +35,11 @@ namespace {
 // (angleLeft/angleDown negative), so start from a GL frustum and then apply the
 // exact GL -> Vulkan clip conversion once, here, instead of patching matrices
 // with global flags in the device.
-glm::mat4 MakeVulkanProjectionFromXrFov(const XrFovf& fov, float nearZ, float farZ) {
-	const float tanLeft = std::tan(fov.angleLeft);
-	const float tanRight = std::tan(fov.angleRight);
-	const float tanDown = std::tan(fov.angleDown);
-	const float tanUp = std::tan(fov.angleUp);
+glm::mat4 MakeVulkanProjectionFromXrFov(const glm::vec4& fov, float nearZ, float farZ) {
+	const float tanLeft = std::tan(fov.x);
+	const float tanRight = std::tan(fov.y);
+	const float tanDown = std::tan(fov.z);
+	const float tanUp = std::tan(fov.w);
 
 	glm::mat4 gl = glm::frustum(tanLeft * nearZ, tanRight * nearZ,
 		tanDown * nearZ, tanUp * nearZ, nearZ, farZ);
@@ -87,161 +57,39 @@ glm::mat4 MakeVulkanProjectionFromXrFov(const XrFovf& fov, float nearZ, float fa
 #endif
 
 struct fe::XRGame::Impl {
-		bool useVulkan = false;
+	bool useVulkan = false;
+	bool drawVR = false;
+	bool drawOpenVR = false;
+	OpenXR input;
+	OpenXR::SwapchainInfo swapchainInfo;
+	std::vector<std::vector<uint64_t>> framebuffers;
+	std::vector<GLuint> depthTextures;
 
-	#ifndef FE_EXCLUDE_OPENXR
-
-		XrInstance instance = XR_NULL_HANDLE;
-		XrSession session = XR_NULL_HANDLE;
-
-		XrSystemId systemId;
-
-		XrSpace appSpace = XR_NULL_HANDLE;
-
-		XrSwapchain swapchain;
-
-		// API-specific swapchain image storage
-#ifdef __ANDROID__
-		std::vector<XrSwapchainImageOpenGLESKHR> swapchainImagesGL;
-#else
-		std::vector<XrSwapchainImageOpenGLKHR> swapchainImagesGL;
-#endif
-#ifdef XR_USE_GRAPHICS_API_VULKAN
-		std::vector<XrSwapchainImageVulkanKHR> swapchainImagesVK;
-#endif
-
-		// Framebuffer handles from renderDevice, indexed [eye][swapchainImage]
-		std::vector<std::vector<uint64_t>> framebuffers;
-
-		// OpenGL-only depth textures (2D array, one per swapchain image)
-		std::vector<GLuint> depthTextures;
-
-		uint32_t viewCount = 2;
-		int32_t swapchainWidth, swapchainHeight;
-
-		bool drawVR = false;
-		bool drawOpenVR = false;
-
-		OpenXR input;
-
-
-		XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
-		XrFrameState frameState{XR_TYPE_FRAME_STATE};
-		XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
-		XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-
-		XrPassthroughFB passthrough = XR_NULL_HANDLE;
-		XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
-		bool passthroughExtensionAvailable = false;
-		bool passthroughSupported = false;
-		bool passthroughEnabled = false;
-
-		XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
-
-		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
-		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
-		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
-		PFN_xrPassthroughPauseFB pfnPassthroughPauseFB = nullptr;
-		PFN_xrCreatePassthroughLayerFB pfnCreatePassthroughLayerFB = nullptr;
-		PFN_xrDestroyPassthroughLayerFB pfnDestroyPassthroughLayerFB = nullptr;
-		PFN_xrPassthroughLayerResumeFB pfnPassthroughLayerResumeFB = nullptr;
-		PFN_xrPassthroughLayerPauseFB pfnPassthroughLayerPauseFB = nullptr;
-
-	#endif
-
-		void initSwapchain(IRenderDevice* renderDevice) {
-
-		#ifndef FE_EXCLUDE_OPENXR
-
-		uint32_t configCount;
-		xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &configCount, nullptr);
-		std::vector<XrViewConfigurationView> configViews(configCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
-		xrEnumerateViewConfigurationViews(instance, systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, configCount, &configCount, configViews.data());
-
-		if (!configViews.size()) {
-			std::cerr << "No headset??" << std::endl;
+	void initSwapchain(IRenderDevice* renderDevice) {
+#ifndef FE_EXCLUDE_OPENXR
+		if (!input.CreateSwapchain(renderDevice->GetSwapchainFormat(), swapchainInfo)) {
+			fe::LogWarning("Failed to create OpenXR swapchain");
+			return;
 		}
 
-		swapchainWidth = configViews[0].recommendedImageRectWidth;
-		swapchainHeight = configViews[0].recommendedImageRectHeight;
-
-		uint32_t formatCount;
-		xrEnumerateSwapchainFormats(session, 0, &formatCount, nullptr);
-		std::vector<int64_t> formats(formatCount);
-		xrEnumerateSwapchainFormats(session, formatCount, &formatCount, formats.data());
-
-		std::cout << "Available swapchain formats:" << std::endl;
-		for (auto format : formats) {
-			std::cout << "  " << format << std::endl;
-		}
-
-		int64_t preferredFormat = static_cast<int64_t>(renderDevice->GetSwapchainFormat());
-		int64_t chosenFormat = formats[0];
-		for (auto format : formats) {
-			if (format == preferredFormat) {
-				chosenFormat = format;
-				break;
-			}
-		}
-		std::cout << "Using format: " << chosenFormat << std::endl;
-
-		XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
-		swapchainInfo.arraySize = viewCount;
-		swapchainInfo.format = chosenFormat;
-		swapchainInfo.width = swapchainWidth;
-		swapchainInfo.height = swapchainHeight;
-		swapchainInfo.mipCount = 1;
-		swapchainInfo.faceCount = 1;
-		swapchainInfo.sampleCount = 1;
-		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
-			XR_SWAPCHAIN_USAGE_SAMPLED_BIT |
-			XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
-
-		outputError(xrCreateSwapchain(session, &swapchainInfo, &swapchain));
-
-		uint32_t imageCount;
-		outputError(xrEnumerateSwapchainImages(swapchain, 0, &imageCount, nullptr));
-
-		if (useVulkan) {
-#ifdef XR_USE_GRAPHICS_API_VULKAN
-			swapchainImagesVK.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR});
-			outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImagesVK.data()));
-#endif
-		} else {
-#ifdef __ANDROID__
-			swapchainImagesGL.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR});
-#else
-			swapchainImagesGL.resize(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
-#endif
-			outputError(xrEnumerateSwapchainImages(swapchain, imageCount, &imageCount, (XrSwapchainImageBaseHeader*)swapchainImagesGL.data()));
-		}
-
-		// Create framebuffers via renderDevice (one per eye per swapchain image)
-		framebuffers.resize(viewCount);
-		for (uint32_t eye = 0; eye < viewCount; eye++) {
-			framebuffers[eye].resize(imageCount);
-			for (uint32_t i = 0; i < imageCount; i++) {
-				uint64_t nativeImage = 0;
-				if (useVulkan) {
-#ifdef XR_USE_GRAPHICS_API_VULKAN
-					nativeImage = reinterpret_cast<uint64_t>(swapchainImagesVK[i].image);
-#endif
-				} else {
-					nativeImage = static_cast<uint64_t>(swapchainImagesGL[i].image);
-				}
-				framebuffers[eye][i] = renderDevice->CreateFramebuffer(nativeImage, swapchainWidth, swapchainHeight, eye, 0, chosenFormat);
+		framebuffers.resize(swapchainInfo.viewCount);
+		for (uint32_t eye = 0; eye < swapchainInfo.viewCount; ++eye) {
+			framebuffers[eye].resize(swapchainInfo.images.size());
+			for (size_t imageIndex = 0; imageIndex < swapchainInfo.images.size(); ++imageIndex) {
+				framebuffers[eye][imageIndex] = renderDevice->CreateFramebuffer(
+					swapchainInfo.images[imageIndex], swapchainInfo.width,
+					swapchainInfo.height, eye, 0, swapchainInfo.format);
 			}
 		}
 
-		// OpenGL-only depth textures (2D array for stereo)
 		if (!useVulkan) {
-			depthTextures.resize(imageCount);
-			glGenTextures(imageCount, depthTextures.data());
-			for (uint32_t i = 0; i < imageCount; i++) {
-				glBindTexture(GL_TEXTURE_2D_ARRAY, depthTextures[i]);
+			depthTextures.resize(swapchainInfo.images.size());
+			glGenTextures(static_cast<GLsizei>(depthTextures.size()), depthTextures.data());
+			for (GLuint texture : depthTextures) {
+				glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
 				glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F,
-					swapchainWidth, swapchainHeight, 2, 0,
-					GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+					swapchainInfo.width, swapchainInfo.height,
+					swapchainInfo.viewCount, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -250,163 +98,10 @@ struct fe::XRGame::Impl {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 		}
-		#endif
-
-	}
-	// Note: this lives inside the XRGame pimpl. Calling fe::Log("%s", msg.c_str())
-	// so XR diagnostics also reach logcat on Android.
-	void Log(const std::string& message) { fe::Log("%s", message.c_str()); }
-
-	void BeginSession() {
-		#ifndef FE_EXCLUDE_OPENXR
-
-		XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
-		beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-
-		XrResult result = xrBeginSession(session, &beginInfo);
-		outputError(result);
-		// The Oculus runtime will not transition the session to VISIBLE/FOCUSED
-		// until the application starts its frame loop (xrWaitFrame). Start it
-		// immediately after begin so the compositor leaves the loading screen.
-		if (XR_SUCCEEDED(result)) {
-			drawVR = true;
-			Log("xrBeginSession succeeded - starting frame loop");
-		}
-		#endif
-
-	}
-#ifndef FE_EXCLUDE_OPENXR
-
-	void HandleSessionStateChange(XrSessionState state, XrTime time) {
-		switch (state) {
-			case XR_SESSION_STATE_IDLE:
-				Log("Session state: IDLE");
-				break;
-			case XR_SESSION_STATE_READY:
-				Log("Session state: READY - Calling xrBeginSession");
-				BeginSession();
-				break;
-			case XR_SESSION_STATE_SYNCHRONIZED:
-				Log("Session state: SYNCHRONIZED");
-				break;
-			case XR_SESSION_STATE_VISIBLE:
-				Log("Session state: VISIBLE - Render but don't submit");
-				drawVR = true;
-				break;
-			case XR_SESSION_STATE_FOCUSED:
-				Log("Session state: FOCUSED - Render and submit");
-				drawVR = true;
-				break;
-			case XR_SESSION_STATE_STOPPING:
-				Log("Session state: STOPPING - Should call xrEndSession");
-				xrEndSession(session);
-				drawVR = false;
-				break;
-		}
-	}
+#else
+		(void)renderDevice;
 #endif
-
-	void PollEvents() {
-		#ifndef FE_EXCLUDE_OPENXR
-
-		if (instance == XR_NULL_HANDLE) return;
-
-		XrEventDataBuffer event = {XR_TYPE_EVENT_DATA_BUFFER};
-
-		while (xrPollEvent(instance, &event) == XR_SUCCESS) {
-			switch (event.type) {
-				case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
-					XrEventDataSessionStateChanged* stateChanged = (XrEventDataSessionStateChanged*)&event;
-		XrSessionState currentState = stateChanged->state;
-		XrTime time = stateChanged->time;
-		sessionState = currentState;
-		HandleSessionStateChange(currentState, time);
-				} break;
-			}
-			event = {XR_TYPE_EVENT_DATA_BUFFER};
-		}
-		#endif
-
 	}
-
-	#ifndef FE_EXCLUDE_OPENXR
-
-	void outputError(XrResult result) {
-		if (XR_SUCCEEDED(result)) return;
-		char buf[XR_MAX_RESULT_STRING_SIZE];
-		if (xrResultToString(instance, result, buf) == XR_SUCCESS) {
-			std::cerr << "Error: " << buf << " (" << result << ")" << std::endl;
-			Log("OpenXR Error: " + std::string(buf) + " (" + std::to_string(result) + ")");
-		}
-	}
-
-	void LoadPassthroughFunctions() {
-		xrGetInstanceProcAddr(instance, "xrCreatePassthroughFB", (PFN_xrVoidFunction*)&pfnCreatePassthroughFB);
-		xrGetInstanceProcAddr(instance, "xrDestroyPassthroughFB", (PFN_xrVoidFunction*)&pfnDestroyPassthroughFB);
-		xrGetInstanceProcAddr(instance, "xrPassthroughStartFB", (PFN_xrVoidFunction*)&pfnPassthroughStartFB);
-		xrGetInstanceProcAddr(instance, "xrPassthroughPauseFB", (PFN_xrVoidFunction*)&pfnPassthroughPauseFB);
-		xrGetInstanceProcAddr(instance, "xrCreatePassthroughLayerFB", (PFN_xrVoidFunction*)&pfnCreatePassthroughLayerFB);
-		xrGetInstanceProcAddr(instance, "xrDestroyPassthroughLayerFB", (PFN_xrVoidFunction*)&pfnDestroyPassthroughLayerFB);
-		xrGetInstanceProcAddr(instance, "xrPassthroughLayerResumeFB", (PFN_xrVoidFunction*)&pfnPassthroughLayerResumeFB);
-		xrGetInstanceProcAddr(instance, "xrPassthroughLayerPauseFB", (PFN_xrVoidFunction*)&pfnPassthroughLayerPauseFB);
-	}
-
-	bool EnsurePassthroughCreated() {
-		if (!passthroughSupported) return false;
-
-		if (passthrough == XR_NULL_HANDLE && pfnCreatePassthroughFB) {
-			XrPassthroughCreateInfoFB passthroughInfo{XR_TYPE_PASSTHROUGH_CREATE_INFO_FB};
-			passthroughInfo.flags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
-			outputError(pfnCreatePassthroughFB(session, &passthroughInfo, &passthrough));
-		}
-
-		if (passthrough == XR_NULL_HANDLE) return false;
-
-		if (passthroughLayer == XR_NULL_HANDLE && pfnCreatePassthroughLayerFB) {
-			XrPassthroughLayerCreateInfoFB layerInfo{XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB};
-			layerInfo.passthrough = passthrough;
-			layerInfo.flags = XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB;
-			layerInfo.purpose = XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB;
-			outputError(pfnCreatePassthroughLayerFB(session, &layerInfo, &passthroughLayer));
-		}
-
-		return passthroughLayer != XR_NULL_HANDLE;
-	}
-
-	void EnablePassthrough() {
-		if (!passthroughSupported) return;
-		if (!EnsurePassthroughCreated()) return;
-
-		if (pfnPassthroughStartFB) outputError(pfnPassthroughStartFB(passthrough));
-		if (pfnPassthroughLayerResumeFB) outputError(pfnPassthroughLayerResumeFB(passthroughLayer));
-
-		passthroughEnabled = true;
-		Log("Passthrough enabled");
-	}
-
-	void DisablePassthrough() {
-		if (pfnPassthroughLayerPauseFB && passthroughLayer != XR_NULL_HANDLE) outputError(pfnPassthroughLayerPauseFB(passthroughLayer));
-		if (pfnPassthroughPauseFB && passthrough != XR_NULL_HANDLE) outputError(pfnPassthroughPauseFB(passthrough));
-
-		passthroughEnabled = false;
-		Log("Passthrough disabled");
-	}
-
-	void DestroyPassthrough() {
-		passthroughEnabled = false;
-
-		if (passthroughLayer != XR_NULL_HANDLE && pfnDestroyPassthroughLayerFB) {
-			outputError(pfnDestroyPassthroughLayerFB(passthroughLayer));
-		}
-		if (passthrough != XR_NULL_HANDLE && pfnDestroyPassthroughFB) {
-			outputError(pfnDestroyPassthroughFB(passthrough));
-		}
-
-		passthroughLayer = XR_NULL_HANDLE;
-		passthrough = XR_NULL_HANDLE;
-	}
-	#endif
-
 }; // Impl
 
 XRGame::XRGame(bool launchVR) : XRGame(0, 0, launchVR, true) {}
@@ -437,298 +132,86 @@ const OpenXR& XRGame::GetOpenXR() const {
 
 void XRGame::initOpenXR() {
 #ifndef FE_EXCLUDE_OPENXR
-	impl->Log("XRGame::initOpenXR() starting");
-	impl->useVulkan = useVulkan;
+	OpenXR::GraphicsBinding binding;
+	impl->useVulkan = false;
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (useVulkan && renderDevice && renderDevice->IsVulkan()) {
 		auto* vk = static_cast<VulkanDevice*>(renderDevice.get());
-		XrGraphicsBindingVulkanKHR vkBinding{XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
-		vkBinding.next = nullptr;
-		vkBinding.instance = vk->GetInstance();
-		vkBinding.physicalDevice = vk->GetPhysicalDevice();
-		vkBinding.device = vk->GetDevice();
-		vkBinding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
-		vkBinding.queueIndex = 0;
-		initOpenXR(&vkBinding);
-		return;
+		binding.useVulkan = true;
+		binding.instance = vk->GetInstance();
+		binding.physicalDevice = vk->GetPhysicalDevice();
+		binding.device = vk->GetDevice();
+		binding.queueFamilyIndex = vk->GetGraphicsQueueFamily();
+		impl->useVulkan = true;
 	}
-#else
-	impl->Log("Vulkan support not compiled in");
 #endif
 
-	auto window = GetWindow<fe::SDLWindow>();
-
+	if (!binding.useVulkan) {
+		auto window = GetWindow<fe::SDLWindow>();
 #ifdef _WIN32
-	HDC hDC = window->GetDrawingContext();
-	HGLRC hGLRC = window->GetOpenGLRenderingContext();
-	XrGraphicsBindingOpenGLWin32KHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR};
-	gfx.hDC = hDC;
-	gfx.hGLRC = hGLRC;
-	initOpenXR(&gfx);
+		binding.display = window->GetDrawingContext();
+		binding.context = window->GetOpenGLRenderingContext();
 #elif defined(__ANDROID__)
-	XrGraphicsBindingOpenGLESAndroidKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR};
-	gfx.next = nullptr;
-
-	EGLDisplay display = (EGLDisplay)window->GetEGLDisplay();
-	if (!display) display = eglGetCurrentDisplay();
-
-	EGLContext context = (EGLContext)window->GetEGLContext();
-	if (!context) context = eglGetCurrentContext();
-
-	impl->Log("Android EGL Display: " + std::to_string((uint64_t)display));
-	impl->Log("Android EGL Context: " + std::to_string((uint64_t)context));
-
-	EGLConfig config = (EGLConfig)window->GetEGLConfig();
-	if (!config && display && context) {
-		EGLint configId = 0;
-		if (eglQueryContext(display, context, EGL_CONFIG_ID, &configId)) {
-			EGLint attribs[] = { EGL_CONFIG_ID, configId, EGL_NONE };
-			int numConfigs = 0;
-			eglChooseConfig(display, attribs, &config, 1, &numConfigs);
+		EGLDisplay display = static_cast<EGLDisplay>(window->GetEGLDisplay());
+		if (!display)
+			display = eglGetCurrentDisplay();
+		EGLContext context = static_cast<EGLContext>(window->GetEGLContext());
+		if (!context)
+			context = eglGetCurrentContext();
+		EGLConfig config = static_cast<EGLConfig>(window->GetEGLConfig());
+		if (!config && display && context) {
+			EGLint configId = 0;
+			if (eglQueryContext(display, context, EGL_CONFIG_ID, &configId)) {
+				EGLint attributes[] = {EGL_CONFIG_ID, configId, EGL_NONE};
+				int configCount = 0;
+				eglChooseConfig(display, attributes, &config, 1, &configCount);
+			}
 		}
-	}
-	impl->Log("Android EGL Config: " + std::to_string((uint64_t)config));
-
-	gfx.display = display;
-	gfx.config = config;
-	gfx.context = context;
-
-	initOpenXR(&gfx);
+		binding.display = display;
+		binding.config = config;
+		binding.context = context;
 #else
-	const char *video_driver = SDL_GetCurrentVideoDriver();
-	if (video_driver != NULL) {
-		std::cout << "Video Driver: " << video_driver << std::endl;
-		if (SDL_strcmp(video_driver, "wayland") == 0) {
-			XrGraphicsBindingOpenGLWaylandKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR};
-			gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR;
-			gfx.display = (wl_display *)window->GetWaylandDisplay();
-			initOpenXR(&gfx);
-		} else if (SDL_strcmp(video_driver, "x11") == 0) {
-			Display *xDisplay = (Display *)window->GetX11Display();
-			GLXContext glxContext = glXGetCurrentContext();
-			int fb_config_id = 0;
-			glXQueryContext(xDisplay, glxContext, GLX_FBCONFIG_ID, &fb_config_id);
-			int attribs[] = { GLX_FBCONFIG_ID, fb_config_id, None };
-			int num_configs = 0;
-			GLXFBConfig* fb_configs = glXChooseFBConfig(xDisplay, DefaultScreen(xDisplay), attribs, &num_configs);
-			GLXFBConfig glxFBConfig = fb_configs[0];
-			XFree(fb_configs);
-			int visual_id_val = 0;
-			glXGetFBConfigAttrib(xDisplay, glxFBConfig, GLX_VISUAL_ID, &visual_id_val);
-			VisualID visualid = (VisualID)visual_id_val;
-			XrGraphicsBindingOpenGLXlibKHR gfx{XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR};
-			gfx.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
-			gfx.next = NULL;
-			gfx.xDisplay = xDisplay;
-			gfx.glxDrawable = window->GetGLXDrawable();
-			gfx.visualid = visualid;
-			gfx.glxFBConfig = glxFBConfig;
-			gfx.glxContext = glxContext;
-			initOpenXR(&gfx);
-		}
-	}
-#endif // _WIN32 / __ANDROID__ / Linux check
-
-#endif // FE_EXCLUDE_OPENXR check
-}
-
-
-void XRGame::initOpenXR(void *next) {
-	#ifndef FE_EXCLUDE_OPENXR
-	impl->Log("XRGame::initOpenXR(void *next) starting");
-
-#ifdef __ANDROID__
-	impl->Log("Initializing OpenXR Android loader...");
-	// Initialize the OpenXR Android loader before calling any other OpenXR APIs
-	PFN_xrInitializeLoaderKHR pfnInitializeLoaderKHR = nullptr;
-	XrResult loaderProcRes = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)(&pfnInitializeLoaderKHR));
-	impl->Log("xrGetInstanceProcAddr(xrInitializeLoaderKHR) returned: " + std::to_string(loaderProcRes));
-	if (XR_SUCCEEDED(loaderProcRes) && pfnInitializeLoaderKHR) {
-		JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
-		JavaVM* vm = nullptr;
-		if (env) {
-			env->GetJavaVM(&vm);
-		}
-		jobject activity = (jobject)SDL_GetAndroidActivity();
-
-		XrLoaderInitInfoAndroidKHR loaderInitInfo{XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR};
-		loaderInitInfo.next = nullptr;
-		loaderInitInfo.applicationVM = vm;
-		loaderInitInfo.applicationContext = activity;
-		XrResult res = pfnInitializeLoaderKHR((const XrLoaderInitInfoBaseHeaderKHR*)&loaderInitInfo);
-		if (XR_FAILED(res)) {
-			impl->Log("xrInitializeLoaderKHR failed with error: " + std::to_string(res));
+		const char* videoDriver = SDL_GetCurrentVideoDriver();
+		if (videoDriver && SDL_strcmp(videoDriver, "wayland") == 0) {
+			binding.windowSystem = OpenXR::GraphicsBinding::WindowSystem::Wayland;
+			binding.display = window->GetWaylandDisplay();
+		} else if (videoDriver && SDL_strcmp(videoDriver, "x11") == 0) {
+			binding.windowSystem = OpenXR::GraphicsBinding::WindowSystem::X11;
+			Display* display = static_cast<Display*>(window->GetX11Display());
+			GLXContext context = glXGetCurrentContext();
+			int framebufferConfigId = 0;
+			glXQueryContext(display, context, GLX_FBCONFIG_ID, &framebufferConfigId);
+			int attributes[] = {GLX_FBCONFIG_ID, framebufferConfigId, None};
+			int configCount = 0;
+			GLXFBConfig* configs = glXChooseFBConfig(display, DefaultScreen(display), attributes, &configCount);
+			if (!configs || configCount == 0) {
+				fe::LogWarning("Failed to find the OpenGL framebuffer config for OpenXR");
+				return;
+			}
+			GLXFBConfig framebufferConfig = configs[0];
+			XFree(configs);
+			int visualId = 0;
+			glXGetFBConfigAttrib(display, framebufferConfig, GLX_VISUAL_ID, &visualId);
+			binding.display = display;
+			binding.context = context;
+			binding.drawable = static_cast<uintptr_t>(window->GetGLXDrawable());
+			binding.framebufferConfig = reinterpret_cast<uintptr_t>(framebufferConfig);
+			binding.visualId = static_cast<uintptr_t>(visualId);
 		} else {
-			impl->Log("xrInitializeLoaderKHR succeeded");
-		}
-	} else {
-		impl->Log("xrInitializeLoaderKHR not found or not required");
-	}
-#endif
-
-	XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
-
-	std::vector<const char*> enabledExtensions;
-
-#ifdef __ANDROID__
-	enabledExtensions.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
-	#ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (useVulkan) {
-		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
-	} else {
-		enabledExtensions.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
-	}
-	#else
-	enabledExtensions.push_back(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
-	#endif
-#else
-	#ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (useVulkan) {
-		enabledExtensions.push_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
-	} else {
-		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
-	}
-#else
-		enabledExtensions.push_back(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
-	#endif
-#endif
-
-	uint32_t availableExtensionCount = 0;
-	if (XR_SUCCEEDED(xrEnumerateInstanceExtensionProperties(nullptr, 0, &availableExtensionCount, nullptr)) && availableExtensionCount > 0) {
-		std::vector<XrExtensionProperties> availableExtensions(availableExtensionCount, {XR_TYPE_EXTENSION_PROPERTIES});
-		if (XR_SUCCEEDED(xrEnumerateInstanceExtensionProperties(nullptr, availableExtensionCount, &availableExtensionCount, availableExtensions.data()))) {
-			for (auto& availableExtension : availableExtensions) {
-				if (strcmp(availableExtension.extensionName, XR_FB_PASSTHROUGH_EXTENSION_NAME) == 0) {
-					impl->passthroughExtensionAvailable = true;
-					enabledExtensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
-					break;
-				}
-			}
-		}
-	}
-
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
-	createInfo.enabledExtensionNames = enabledExtensions.data();
-
-	createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
-	createInfo.applicationInfo.applicationVersion = 1;
-	createInfo.applicationInfo.engineVersion = 1;
-	strcpy(createInfo.applicationInfo.engineName, "FenixEngine");
-	strcpy(createInfo.applicationInfo.applicationName, "Fenix Engine");
-
-#ifdef __ANDROID__
-	JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
-	JavaVM* vm = nullptr;
-	if (env) {
-		env->GetJavaVM(&vm);
-	}
-	jobject activity = (jobject)SDL_GetAndroidActivity();
-
-	XrInstanceCreateInfoAndroidKHR androidCreateInfo{XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR};
-	androidCreateInfo.next = nullptr;
-	androidCreateInfo.applicationVM = vm;
-	androidCreateInfo.applicationActivity = activity;
-
-	createInfo.next = &androidCreateInfo;
-#endif
-
-	impl->outputError(xrCreateInstance(&createInfo, &impl->instance));
-
-	if (impl->passthroughExtensionAvailable && impl->instance != XR_NULL_HANDLE) {
-		impl->LoadPassthroughFunctions();
-	}
-
-	XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
-	systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
-
-	impl->outputError(xrGetSystem(impl->instance, &systemInfo, &impl->systemId));
-
-	XrSystemPassthroughPropertiesFB passthroughProps{XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB};
-	XrSystemProperties systemProps{XR_TYPE_SYSTEM_PROPERTIES};
-	if (impl->passthroughExtensionAvailable) systemProps.next = &passthroughProps;
-	impl->outputError(xrGetSystemProperties(impl->instance, impl->systemId, &systemProps));
-	impl->passthroughSupported = impl->passthroughExtensionAvailable && passthroughProps.supportsPassthrough == XR_TRUE;
-	impl->Log("Passthrough supported: " + std::to_string(impl->passthroughSupported));
-	impl->Log("System Name: " + std::string(systemProps.systemName));
-	impl->Log("Vendor ID: " + std::to_string(systemProps.vendorId));
-
-	if (!useVulkan) {
-		impl->Log("Current OpenGL Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
-	}
-
-#ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (useVulkan) {
-		XrGraphicsRequirementsVulkanKHR vkReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
-		PFN_xrGetVulkanGraphicsRequirementsKHR pfnGetVulkanReqs = nullptr;
-		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetVulkanReqs));
-		if (pfnGetVulkanReqs) {
-			impl->outputError(pfnGetVulkanReqs(impl->instance, impl->systemId, &vkReqs));
-		}
-	} else {
-#else
-	if (true) {
-#endif
-#ifdef __ANDROID__
-		XrGraphicsRequirementsOpenGLESKHR glesReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR};
-		PFN_xrGetOpenGLESGraphicsRequirementsKHR pfnGetGLESReqs = nullptr;
-		xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLESGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetGLESReqs));
-		if (pfnGetGLESReqs) {
-			impl->outputError(pfnGetGLESReqs(impl->instance, impl->systemId, &glesReqs));
-		}
-#else
-		XrGraphicsRequirementsOpenGLKHR glReqs{XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR};
-		PFN_xrGetOpenGLGraphicsRequirementsKHR pfnGetOpenGLReqs = nullptr;
-		xrGetInstanceProcAddr(impl->instance, "xrGetOpenGLGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLReqs));
-		if (pfnGetOpenGLReqs) {
-			impl->outputError(pfnGetOpenGLReqs(impl->instance, impl->systemId, &glReqs));
+			fe::LogWarning("Unsupported SDL video driver for OpenXR");
+			return;
 		}
 #endif
 	}
 
-#ifdef XR_USE_GRAPHICS_API_VULKAN
-	if (next && static_cast<const XrBaseInStructure*>(next)->type == XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR) {
-		PFN_xrGetVulkanGraphicsDeviceKHR pfn = nullptr;
-		xrGetInstanceProcAddr(impl->instance, "xrGetVulkanGraphicsDeviceKHR",
-			(PFN_xrVoidFunction*)(&pfn));
-		if (pfn) {
-			auto* vkBinding = static_cast<XrGraphicsBindingVulkanKHR*>(next);
-			VkPhysicalDevice runtimeDevice = VK_NULL_HANDLE;
-			XrResult result = pfn(impl->instance, impl->systemId,
-				vkBinding->instance, &runtimeDevice);
-			if (XR_SUCCEEDED(result)) {
-				vkBinding->physicalDevice = runtimeDevice;
-			}
-		}
-	}
+	if (!impl->input.Initialize(binding))
+		fe::LogWarning("OpenXR initialization failed");
 #endif
-
-	XrSessionCreateInfo sessionInfo{XR_TYPE_SESSION_CREATE_INFO};
-	sessionInfo.systemId = impl->systemId;
-	sessionInfo.next = next;
-
-	impl->outputError(xrCreateSession(impl->instance, &sessionInfo, &impl->session));
-
-	if (impl->session != XR_NULL_HANDLE) {
-		impl->Log("OpenXR Session Created Successfully");
-	} else {
-		impl->Log("OpenXR Session Creation FAILED");
-	}
-
-	XrReferenceSpaceCreateInfo spaceInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
-	spaceInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
-	spaceInfo.poseInReferenceSpace.position = {0, 0, 0};
-	spaceInfo.poseInReferenceSpace.orientation = {0, 0, 0, 1};
-
-	if (impl->session != XR_NULL_HANDLE) {
-		impl->outputError(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace));
-	}
-	#endif
 }
 
-void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
+void XRGame::PollActionsAndUpdateMovement() {
 	#ifndef FE_EXCLUDE_OPENXR
-	impl->input.UpdateInput(predictedDisplayTime);
 
 	const OpenXR::InputState& rawInput = impl->input.GetInputState();
 	// Apply look input before transforming tracked poses so every pose uses
@@ -785,11 +268,7 @@ void XRGame::PollActionsAndUpdateMovement(XrTime predictedDisplayTime) {
 }
 
 bool XRGame::IsInstanceValid() {
-#ifndef FE_EXCLUDE_OPENXR
-	return impl->instance != XR_NULL_HANDLE;
-#else
-	return false;
-#endif
+	return impl->input.IsInstanceValid();
 }
 
 #ifdef FE_INCLUDE_OPENVR
@@ -805,9 +284,7 @@ void XRGame::StartOpenVR() {
 #endif
 
 void XRGame::DisableVR() {
-	#ifndef FE_EXCLUDE_OPENXR
-	impl->outputError(xrRequestExitSession(impl->session));
-	#endif
+	impl->input.RequestExitSession();
 }
 
 void XRGame::ToggleXR() {
@@ -819,38 +296,18 @@ void XRGame::ToggleXR() {
 }
 
 bool XRGame::IsPassthroughSupported() const {
-#ifndef FE_EXCLUDE_OPENXR
-	return impl->passthroughSupported;
-#else
-	return false;
-#endif
+	return impl->input.IsPassthroughSupported();
 }
 
 bool XRGame::IsPassthroughEnabled() const {
-#ifndef FE_EXCLUDE_OPENXR
-	return impl->passthroughEnabled;
-#else
-	return false;
-#endif
+	return impl->input.IsPassthroughEnabled();
 }
 
 void XRGame::SetPassthroughEnabled(bool enabled) {
-#ifndef FE_EXCLUDE_OPENXR
-	if (enabled == impl->passthroughEnabled) return;
+	if (enabled == impl->input.IsPassthroughEnabled()) return;
 
-	if (enabled) {
-		if (!impl->passthroughSupported) return;
-		impl->EnablePassthrough();
-		if (impl->passthroughEnabled) {
-			SetClearColor(clearColorR_, clearColorG_, clearColorB_, 0.0f);
-		}
-	} else {
-		impl->DisablePassthrough();
-		SetClearColor(clearColorR_, clearColorG_, clearColorB_, 1.0f);
-	}
-#else
-	(void)enabled;
-#endif
+	impl->input.SetPassthroughEnabled(enabled);
+	SetClearColor(clearColorR_, clearColorG_, clearColorB_, enabled ? 0.0f : 1.0f);
 }
 
 void XRGame::TogglePassthrough() {
@@ -879,40 +336,25 @@ void XRGame::DrawUI() {
 }
 
 void XRGame::DestroyXR() {
-	#ifndef FE_EXCLUDE_OPENXR
-
 	impl->drawVR = false;
 
-	// Destroy framebuffers via renderDevice
 	for (auto& eyeFBs : impl->framebuffers) {
 		for (auto fb : eyeFBs) {
-			renderDevice->DestroyFramebuffer(fb);
+			if (renderDevice)
+				renderDevice->DestroyFramebuffer(fb);
 		}
 	}
 	impl->framebuffers.clear();
 
-	// OpenGL-only depth cleanup
-	if (!useVulkan && !impl->depthTextures.empty()) {
-		glDeleteTextures((GLsizei)impl->depthTextures.size(), impl->depthTextures.data());
+	if (!impl->useVulkan && !impl->depthTextures.empty()) {
+		glDeleteTextures(static_cast<GLsizei>(impl->depthTextures.size()), impl->depthTextures.data());
 		impl->depthTextures.clear();
 	}
 
-	impl->swapchainImagesGL.clear();
-	#ifdef XR_USE_GRAPHICS_API_VULKAN
-	impl->swapchainImagesVK.clear();
-	#endif
-
-	impl->DestroyPassthrough();
-
-	impl->input.DestroyInput();
+	impl->input.Shutdown();
+	impl->swapchainInfo = OpenXR::SwapchainInfo{};
 	leftGripPoseActive = leftAimPoseActive = rightGripPoseActive = rightAimPoseActive = false;
 	leftGripPosition = leftAimPosition = rightGripPosition = rightAimPosition = glm::vec3(0.0f);
-
-	if (impl->session != XR_NULL_HANDLE) xrDestroySession(impl->session);
-	if (impl->instance != XR_NULL_HANDLE) xrDestroyInstance(impl->instance);
-	impl->session = XR_NULL_HANDLE;
-	impl->instance = XR_NULL_HANDLE;
-	#endif
 
 	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
@@ -930,10 +372,12 @@ void XRGame::LaunchVR() {
 		fe::LogWarning("OpenXR instance invalid or no runtime found - staying in standard mode");
 		return;
 	}
-	impl->useVulkan = useVulkan;
 	impl->initSwapchain(renderDevice.get());
-	// if (!useVulkan) CheckGLError("after framebuffer setup");
-	impl->input.InitializeInput(impl->instance, impl->session, impl->appSpace);
+	if (impl->swapchainInfo.images.empty()) {
+		DestroyXR();
+		return;
+	}
+	impl->drawVR = true;
 	GetWindow()->StopMouseCapture();
 	#endif
 }
@@ -957,7 +401,7 @@ void XRGame::Redraw(uint64_t fbo) {
 		ToggleXR();
 	}
 	{
-		impl->PollEvents();
+		impl->input.PollEvents();
 
 		#ifdef FE_INCLUDE_OPENVR
 		if (impl->drawOpenVR && openVR && openVR->mode == OpenVR::Mode::Scene) {
@@ -978,182 +422,57 @@ void XRGame::Redraw(uint64_t fbo) {
 }
 
 void XRGame::RedrawVR() {
-	#ifndef FE_EXCLUDE_OPENXR
-	if (impl->session == XR_NULL_HANDLE || impl->sessionState == XR_SESSION_STATE_STOPPING || impl->sessionState == XR_SESSION_STATE_EXITING) {
-		impl->drawVR = false;
+#ifndef FE_EXCLUDE_OPENXR
+	if (!impl->input.IsSessionRunning())
 		return;
-	}
 
-	impl->outputError(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState));
-
-	PollActionsAndUpdateMovement(impl->frameState.predictedDisplayTime);
-
-	impl->outputError(xrBeginFrame(impl->session, &impl->frameBegin));
-	if (!impl->frameState.shouldRender) {
-		XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-		endInfo.displayTime = impl->frameState.predictedDisplayTime;
-		endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-		endInfo.layerCount = 0;
-		endInfo.layers = nullptr;
-		impl->outputError(xrEndFrame(impl->session, &endInfo));
+	std::vector<OpenXR::View> views;
+	if (!impl->input.BeginFrame(swapchainImageIndex, views))
 		return;
-	}
+	PollActionsAndUpdateMovement();
 
-	impl->outputError(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo, &swapchainImageIndex));
+	if (shader)
+		UploadLights(shader.get(), scene.get());
 
-	XrSwapchainImageWaitInfo waitImageInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-	waitImageInfo.timeout = XR_INFINITE_DURATION;
-	impl->outputError(xrWaitSwapchainImage(impl->swapchain, &waitImageInfo));
+	const glm::quat yaw = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
+	const glm::vec3 worldOrigin = playerPosition + positionOffset;
 
-	XrViewState viewState{XR_TYPE_VIEW_STATE};
-	XrViewLocateInfo viewLocateInfo{XR_TYPE_VIEW_LOCATE_INFO};
-	viewLocateInfo.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-	viewLocateInfo.displayTime = impl->frameState.predictedDisplayTime;
-	viewLocateInfo.space = impl->appSpace;
+	for (uint32_t eye = 0; eye < views.size(); ++eye) {
+		const OpenXR::View& view = views[eye];
+		const glm::vec3 worldEyePosition = worldOrigin + yaw * view.position;
+		const glm::quat worldEyeOrientation = yaw * view.orientation;
+		camera->update(worldEyePosition, worldEyeOrientation, view.fov);
 
-	uint32_t viewCount = 0;
-	impl->outputError(xrEnumerateViewConfigurationViews(impl->instance, impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 0, &viewCount, nullptr));
-
-	std::vector<XrView> views(viewCount, {XR_TYPE_VIEW});
-	std::vector<XrViewConfigurationView> viewConfigs(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
-	impl->outputError(xrEnumerateViewConfigurationViews(impl->instance, impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, viewCount, &viewCount, viewConfigs.data()));
-
-	impl->outputError(xrLocateViews(impl->session, &viewLocateInfo, &viewState, viewCount, &viewCount, views.data()));
-
-	std::vector<XrCompositionLayerProjectionView> projectionViews(viewCount);
-
-	bool render2D = false;
-
-	// Set up lighting once, shared by all eyes
-	if (shader) UploadLights(shader.get(), scene.get());
-
-	// The projection layer is submitted in the reference space (appSpace), so
-	// every pose written into it must use reference-space coordinates - never
-	// world coordinates. Choose one rigid reference -> world transform and use
-	// it for both rendering and controller positions.
-	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
-	glm::vec3 worldOrigin = playerPosition + positionOffset;
-
-	for (uint32_t eye = 0; eye < viewCount; eye++) {
-		XrPosef pose = views[eye].pose;
-		XrFovf xrFov = views[eye].fov;
-
-		glm::vec3 hmdPosition(pose.position.x, pose.position.y, pose.position.z);
-		glm::quat hmdOrientation(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
-		glm::vec4 fov(xrFov.angleLeft, xrFov.angleRight, xrFov.angleDown, xrFov.angleUp);
-
-		// Reference-space -> world-space (same rigid transform as controllers).
-		glm::vec3 worldEyePos = worldOrigin + yawQ * hmdPosition;
-		glm::quat worldEyeOrientation = yawQ * hmdOrientation;
-
-		if (!render2D) {
-			camera->update(worldEyePos, worldEyeOrientation, fov);
-
-			// OpenGL-specific: attach depth layer per eye (color is baked in CreateFramebuffer)
-			if (!useVulkan) {
-				GLuint fbo = (GLuint)impl->framebuffers[eye][swapchainImageIndex];
-				glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-					impl->depthTextures[swapchainImageIndex], 0, eye);
-			}
-
-			// Each eye gets its own Vulkan command buffer and uniform buffer.
-			renderDevice->BeginVRFrame();
-
-			// Set per-eye view/projection. Vulkan receives a projection that is
-			// already in Vulkan clip space; OpenGL uses the camera's GL matrix.
-			if (useVulkan) {
-				glm::mat4 vkProjection = MakeVulkanProjectionFromXrFov(
-					xrFov, camera->nearDist, camera->farDist);
-				renderDevice->SetVRViewProjection(camera->GetViewMatrix(),
-					camera->GetProjectionMatrix(), vkProjection);
-			} else {
-				renderDevice->SetMat4("view", camera->GetViewMatrix());
-				renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
-			}
-
-			// Render to the eye framebuffer
-			renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
-				impl->swapchainWidth, impl->swapchainHeight);
-			for (auto& object : scene->GetObjects()) {
-				RenderObject(*object);
-			}
-
-			// Draw the game's custom scene content (voxel terrain, debug
-			// gizmos, ...) inside the eye render pass with the per-eye
-			// matrices. The window path does this in Renderer::Redraw; the VR
-			// path must mirror it or that content never reaches the HMD.
-			OnDraw();
-
-			renderDevice->EndEyeFrame();
-			renderDevice->EndVRFrame();
-		} else {
-			if (!useVulkan) {
-				glBindTexture(GL_TEXTURE_2D_ARRAY, impl->swapchainImagesGL[swapchainImageIndex].image);
-				glCopyTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 1, 0, 0,
-					impl->swapchainWidth, impl->swapchainHeight);
-			}
+		if (!impl->useVulkan) {
+			const GLuint framebuffer = static_cast<GLuint>(impl->framebuffers[eye][swapchainImageIndex]);
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+				impl->depthTextures[swapchainImageIndex], 0, static_cast<GLint>(eye));
 		}
 
-		projectionViews[eye] = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
-		// The compositor timewarps around this pose, and it is expressed in the
-		// projection layer's space (impl->appSpace). Submit the raw reference
-		// eye pose returned by xrLocateViews; the world transform (player
-		// position + yaw) belongs to rendering only.
-		projectionViews[eye].pose = pose;
-		projectionViews[eye].fov = views[eye].fov;
-		projectionViews[eye].subImage.swapchain = impl->swapchain;
-		projectionViews[eye].subImage.imageRect.offset = {0, 0};
-		projectionViews[eye].subImage.imageRect.extent = {impl->swapchainWidth, impl->swapchainHeight};
-		projectionViews[eye].subImage.imageArrayIndex = eye;
+		renderDevice->BeginVRFrame();
+		if (impl->useVulkan) {
+			const glm::mat4 vkProjection = MakeVulkanProjectionFromXrFov(
+				view.fov, camera->nearDist, camera->farDist);
+			renderDevice->SetVRViewProjection(camera->GetViewMatrix(),
+				camera->GetProjectionMatrix(), vkProjection);
+		} else {
+			renderDevice->SetMat4("view", camera->GetViewMatrix());
+			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
+		}
+
+		renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
+			impl->swapchainInfo.width, impl->swapchainInfo.height);
+		for (auto& object : scene->GetObjects())
+			RenderObject(*object);
+		OnDraw();
+		renderDevice->EndEyeFrame();
+		renderDevice->EndVRFrame();
 	}
 
-	if (useVulkan) {
+	if (impl->useVulkan)
 		renderDevice->WaitForVRFrame();
-	}
-
-	XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-	impl->outputError(xrReleaseSwapchainImage(impl->swapchain, &releaseInfo));
-
-	XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
-	endInfo.displayTime = impl->frameState.predictedDisplayTime;
-
-	bool usePassthrough = impl->passthroughEnabled && impl->passthroughLayer != XR_NULL_HANDLE;
-
-	XrCompositionLayerPassthroughFB passthroughCompositionLayer{XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB};
-	bool hasPassthroughLayer = false;
-	if (usePassthrough) {
-		passthroughCompositionLayer.flags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
-		passthroughCompositionLayer.space = XR_NULL_HANDLE;
-		passthroughCompositionLayer.layerHandle = impl->passthroughLayer;
-		hasPassthroughLayer = true;
-	}
-
-	XrCompositionLayerProjection projectionLayer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};
-	bool hasProjectionLayer = viewCount > 0 && projectionViews[0].subImage.swapchain != XR_NULL_HANDLE;
-	if (hasProjectionLayer) {
-		projectionLayer.space = impl->appSpace;
-		projectionLayer.viewCount = viewCount;
-		projectionLayer.views = projectionViews.data();
-	}
-
-	if (hasPassthroughLayer || hasProjectionLayer) {
-		const XrCompositionLayerBaseHeader* layers[2];
-		uint32_t layerCount = 0;
-		if (hasPassthroughLayer) layers[layerCount++] = (XrCompositionLayerBaseHeader*)&passthroughCompositionLayer;
-		if (hasProjectionLayer) layers[layerCount++] = (XrCompositionLayerBaseHeader*)&projectionLayer;
-
-		endInfo.environmentBlendMode = hasPassthroughLayer ? XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND : XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-		endInfo.layerCount = layerCount;
-		endInfo.layers = layers;
-	} else {
-		endInfo.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-		endInfo.layerCount = 0;
-		endInfo.layers = nullptr;
-		std::cerr << "Warning: No valid layers to submit" << std::endl;
-	}
-
-	impl->outputError(xrEndFrame(impl->session, &endInfo));
-	#endif
+	impl->input.EndFrame();
+#endif
 }
