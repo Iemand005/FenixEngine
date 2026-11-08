@@ -107,20 +107,23 @@ namespace fe {
 		XrSession session = XR_NULL_HANDLE;
 		XrSpace appSpace = XR_NULL_HANDLE;
 		XrSystemId systemId = XR_NULL_SYSTEM_ID;
-		XrSwapchain swapchain = XR_NULL_HANDLE;
+		std::vector<XrSwapchain> swapchains;
 		XrSessionState sessionState = XR_SESSION_STATE_UNKNOWN;
 		bool sessionRunning = false;
 		bool useVulkan = false;
 		uint32_t viewCount = 0;
 		uint32_t swapchainWidth = 0;
 		uint32_t swapchainHeight = 0;
+		std::vector<uint32_t> swapchainWidths;
+		std::vector<uint32_t> swapchainHeights;
 		std::vector<XrView> locatedViews;
 		XrFrameWaitInfo waitInfo{XR_TYPE_FRAME_WAIT_INFO};
 		XrFrameState frameState{XR_TYPE_FRAME_STATE};
 		XrFrameBeginInfo frameBegin{XR_TYPE_FRAME_BEGIN_INFO};
 		XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
 		bool frameBegun = false;
-		bool imageAcquired = false;
+		std::vector<uint32_t> acquiredImageIndices;
+		std::vector<bool> imageAcquired;
 		bool passthroughExtensionAvailable = false;
 		bool passthroughSupported = false;
 		bool passthroughEnabled = false;
@@ -835,28 +838,34 @@ namespace fe {
 	bool OpenXR::CreateSwapchain(int64_t preferredFormat, SwapchainInfo& info) {
 #ifndef FE_EXCLUDE_OPENXR
 		DestroySwapchain();
+		info = SwapchainInfo{};
 		if (impl->session == XR_NULL_HANDLE)
 			return false;
+		auto fail = [this, &info]() {
+			DestroySwapchain();
+			info = SwapchainInfo{};
+			return false;
+		};
 
 		uint32_t viewCount = 0;
 		if (!impl->CheckResult(xrEnumerateViewConfigurationViews(impl->instance,
 				impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
 				0, &viewCount, nullptr), "xrEnumerateViewConfigurationViews") || viewCount == 0)
-			return false;
+			return fail();
 		std::vector<XrViewConfigurationView> configViews(viewCount, {XR_TYPE_VIEW_CONFIGURATION_VIEW});
 		if (!impl->CheckResult(xrEnumerateViewConfigurationViews(impl->instance,
 				impl->systemId, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
 				viewCount, &viewCount, configViews.data()), "xrEnumerateViewConfigurationViews"))
-			return false;
+			return fail();
 
 		uint32_t formatCount = 0;
 		if (!impl->CheckResult(xrEnumerateSwapchainFormats(impl->session, 0,
 				&formatCount, nullptr), "xrEnumerateSwapchainFormats") || formatCount == 0)
-			return false;
+			return fail();
 		std::vector<int64_t> formats(formatCount);
 		if (!impl->CheckResult(xrEnumerateSwapchainFormats(impl->session, formatCount,
 				&formatCount, formats.data()), "xrEnumerateSwapchainFormats"))
-			return false;
+			return fail();
 		if (impl->useVulkan) {
 			std::ostringstream message;
 			message << "OpenXR Vulkan swapchain formats (preferred " << preferredFormat << "):";
@@ -893,54 +902,80 @@ namespace fe {
 		impl->viewCount = viewCount;
 		impl->swapchainWidth = static_cast<uint32_t>(configViews.front().recommendedImageRectWidth);
 		impl->swapchainHeight = static_cast<uint32_t>(configViews.front().recommendedImageRectHeight);
-		XrSwapchainCreateInfo swapchainInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
-		swapchainInfo.arraySize = viewCount;
-		swapchainInfo.format = chosenFormat;
-		swapchainInfo.width = impl->swapchainWidth;
-		swapchainInfo.height = impl->swapchainHeight;
-		swapchainInfo.mipCount = 1;
-		swapchainInfo.faceCount = 1;
-		swapchainInfo.sampleCount = 1;
-		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
-		if (!impl->CheckResult(xrCreateSwapchain(impl->session, &swapchainInfo,
-				&impl->swapchain), "xrCreateSwapchain"))
-			return false;
+		impl->swapchains.reserve(viewCount);
+		impl->acquiredImageIndices.resize(viewCount);
+		impl->imageAcquired.assign(viewCount, false);
+		impl->swapchainWidths.reserve(viewCount);
+		impl->swapchainHeights.reserve(viewCount);
+		info.images.resize(viewCount);
+		info.viewWidths.reserve(viewCount);
+		info.viewHeights.reserve(viewCount);
+		for (uint32_t view = 0; view < viewCount; ++view) {
+			const uint32_t width = static_cast<uint32_t>(configViews[view].recommendedImageRectWidth);
+			const uint32_t height = static_cast<uint32_t>(configViews[view].recommendedImageRectHeight);
+			impl->swapchainWidths.push_back(width);
+			impl->swapchainHeights.push_back(height);
+			XrSwapchainCreateInfo createInfo{XR_TYPE_SWAPCHAIN_CREATE_INFO};
+			createInfo.arraySize = 1;
+			createInfo.format = chosenFormat;
+			createInfo.width = width;
+			createInfo.height = height;
+			createInfo.mipCount = 1;
+			createInfo.faceCount = 1;
+			createInfo.sampleCount = 1;
+			createInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
+				XR_SWAPCHAIN_USAGE_SAMPLED_BIT;
 
-		uint32_t imageCount = 0;
-		if (!impl->CheckResult(xrEnumerateSwapchainImages(impl->swapchain, 0,
-				&imageCount, nullptr), "xrEnumerateSwapchainImages"))
-			return false;
-		info.images.clear();
-		info.images.reserve(imageCount);
-		if (impl->useVulkan) {
+			XrSwapchain swapchain = XR_NULL_HANDLE;
+			if (!impl->CheckResult(xrCreateSwapchain(impl->session, &createInfo, &swapchain),
+					"xrCreateSwapchain"))
+				return fail();
+			impl->swapchains.push_back(swapchain);
+
+			uint32_t imageCount = 0;
+			if (!impl->CheckResult(xrEnumerateSwapchainImages(swapchain, 0,
+					&imageCount, nullptr), "xrEnumerateSwapchainImages") || imageCount == 0)
+				return fail();
+			info.images[view].reserve(imageCount);
+			info.viewWidths.push_back(width);
+			info.viewHeights.push_back(height);
+			if (impl->useVulkan) {
 #ifdef XR_USE_GRAPHICS_API_VULKAN
-			std::vector<XrSwapchainImageVulkanKHR> images(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR});
-			if (!impl->CheckResult(xrEnumerateSwapchainImages(impl->swapchain, imageCount,
-					&imageCount, reinterpret_cast<XrSwapchainImageBaseHeader*>(images.data())),
-					"xrEnumerateSwapchainImages"))
-				return false;
-			for (const auto& image : images)
-				info.images.push_back(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(image.image)));
-#endif
-		} else {
-#ifdef __ANDROID__
-			std::vector<XrSwapchainImageOpenGLESKHR> images(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR});
+				std::vector<XrSwapchainImageVulkanKHR> images(
+					imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR});
+				if (!impl->CheckResult(xrEnumerateSwapchainImages(swapchain, imageCount,
+						&imageCount, reinterpret_cast<XrSwapchainImageBaseHeader*>(images.data())),
+						"xrEnumerateSwapchainImages"))
+					return fail();
+				for (const auto& image : images)
+					info.images[view].push_back(
+						static_cast<uint64_t>(reinterpret_cast<uintptr_t>(image.image)));
 #else
-			std::vector<XrSwapchainImageOpenGLKHR> images(imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
+				return fail();
 #endif
-			if (!impl->CheckResult(xrEnumerateSwapchainImages(impl->swapchain, imageCount,
-					&imageCount, reinterpret_cast<XrSwapchainImageBaseHeader*>(images.data())),
-					"xrEnumerateSwapchainImages"))
-				return false;
-			for (const auto& image : images)
-				info.images.push_back(static_cast<uint64_t>(image.image));
+			} else {
+#ifdef __ANDROID__
+				std::vector<XrSwapchainImageOpenGLESKHR> images(
+					imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR});
+#else
+				std::vector<XrSwapchainImageOpenGLKHR> images(
+					imageCount, {XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR});
+#endif
+				if (!impl->CheckResult(xrEnumerateSwapchainImages(swapchain, imageCount,
+						&imageCount, reinterpret_cast<XrSwapchainImageBaseHeader*>(images.data())),
+						"xrEnumerateSwapchainImages"))
+					return fail();
+				for (const auto& image : images)
+					info.images[view].push_back(static_cast<uint64_t>(image.image));
+			}
 		}
 
 		info.width = impl->swapchainWidth;
 		info.height = impl->swapchainHeight;
 		info.viewCount = impl->viewCount;
 		info.format = chosenFormat;
-		return !info.images.empty();
+		return std::all_of(info.images.begin(), info.images.end(),
+			[](const std::vector<uint64_t>& images) { return !images.empty(); });
 #else
 		(void)preferredFormat;
 		(void)info;
@@ -950,21 +985,28 @@ namespace fe {
 
 	void OpenXR::DestroySwapchain() {
 #ifndef FE_EXCLUDE_OPENXR
-		if (impl->swapchain != XR_NULL_HANDLE) {
-			impl->OutputError(xrDestroySwapchain(impl->swapchain));
-			impl->swapchain = XR_NULL_HANDLE;
+		for (XrSwapchain swapchain : impl->swapchains) {
+			if (swapchain != XR_NULL_HANDLE)
+				impl->OutputError(xrDestroySwapchain(swapchain));
 		}
+		impl->swapchains.clear();
+		impl->acquiredImageIndices.clear();
+		impl->imageAcquired.clear();
 		impl->viewCount = 0;
 		impl->swapchainWidth = 0;
 		impl->swapchainHeight = 0;
+		impl->swapchainWidths.clear();
+		impl->swapchainHeights.clear();
 #endif
 	}
 
-	bool OpenXR::BeginFrame(uint32_t& imageIndex, std::vector<View>& views) {
+	bool OpenXR::BeginFrame(std::vector<uint32_t>& imageIndices, std::vector<View>& views) {
 #ifndef FE_EXCLUDE_OPENXR
+		imageIndices.clear();
 		views.clear();
 		impl->locatedViews.clear();
-		if (!impl->sessionRunning || impl->session == XR_NULL_HANDLE || impl->swapchain == XR_NULL_HANDLE)
+		if (!impl->sessionRunning || impl->session == XR_NULL_HANDLE ||
+				impl->swapchains.size() != impl->viewCount)
 			return false;
 		if (!impl->CheckResult(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState), "xrWaitFrame"))
 			return false;
@@ -977,17 +1019,24 @@ namespace fe {
 			return false;
 		}
 
-		if (!impl->CheckResult(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo,
-				&imageIndex), "xrAcquireSwapchainImage")) {
-			EndFrame();
-			return false;
-		}
-		impl->imageAcquired = true;
-		XrSwapchainImageWaitInfo waitInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-		waitInfo.timeout = XR_INFINITE_DURATION;
-		if (!impl->CheckResult(xrWaitSwapchainImage(impl->swapchain, &waitInfo), "xrWaitSwapchainImage")) {
-			EndFrame();
-			return false;
+		imageIndices.resize(impl->swapchains.size());
+		std::fill(impl->imageAcquired.begin(), impl->imageAcquired.end(), false);
+		for (size_t swapchainIndex = 0; swapchainIndex < impl->swapchains.size(); ++swapchainIndex) {
+			if (!impl->CheckResult(xrAcquireSwapchainImage(impl->swapchains[swapchainIndex],
+					&impl->acquireInfo, &impl->acquiredImageIndices[swapchainIndex]),
+					"xrAcquireSwapchainImage")) {
+				EndFrame();
+				return false;
+			}
+			impl->imageAcquired[swapchainIndex] = true;
+			XrSwapchainImageWaitInfo waitInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
+			waitInfo.timeout = XR_INFINITE_DURATION;
+			if (!impl->CheckResult(xrWaitSwapchainImage(impl->swapchains[swapchainIndex],
+					&waitInfo), "xrWaitSwapchainImage")) {
+				EndFrame();
+				return false;
+			}
+			imageIndices[swapchainIndex] = impl->acquiredImageIndices[swapchainIndex];
 		}
 
 		XrViewLocateInfo locateInfo{XR_TYPE_VIEW_LOCATE_INFO};
@@ -999,6 +1048,12 @@ namespace fe {
 		uint32_t locatedViewCount = 0;
 		if (!impl->CheckResult(xrLocateViews(impl->session, &locateInfo, &viewState,
 				impl->viewCount, &locatedViewCount, impl->locatedViews.data()), "xrLocateViews")) {
+			EndFrame();
+			return false;
+		}
+		if (locatedViewCount != impl->swapchains.size()) {
+			fe::LogWarning("OpenXR returned %u views for %zu per-view swapchains",
+				locatedViewCount, impl->swapchains.size());
 			EndFrame();
 			return false;
 		}
@@ -1015,7 +1070,7 @@ namespace fe {
 		}
 		return true;
 #else
-		(void)imageIndex;
+		(void)imageIndices;
 		(void)views;
 		return false;
 #endif
@@ -1025,24 +1080,28 @@ namespace fe {
 #ifndef FE_EXCLUDE_OPENXR
 		if (!impl->frameBegun)
 			return;
-		if (impl->imageAcquired) {
+		for (size_t swapchainIndex = 0; swapchainIndex < impl->swapchains.size(); ++swapchainIndex) {
+			if (!impl->imageAcquired[swapchainIndex])
+				continue;
 			XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-			impl->OutputError(xrReleaseSwapchainImage(impl->swapchain, &releaseInfo));
-			impl->imageAcquired = false;
+			impl->OutputError(xrReleaseSwapchainImage(
+				impl->swapchains[swapchainIndex], &releaseInfo));
+			impl->imageAcquired[swapchainIndex] = false;
 		}
 
 		std::vector<XrCompositionLayerProjectionView> projectionViews;
 		projectionViews.reserve(impl->locatedViews.size());
-		for (const XrView& view : impl->locatedViews) {
+		for (size_t viewIndex = 0; viewIndex < impl->locatedViews.size(); ++viewIndex) {
+			const XrView& view = impl->locatedViews[viewIndex];
 			XrCompositionLayerProjectionView projectionView{XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
 			projectionView.pose = view.pose;
 			projectionView.fov = view.fov;
-			projectionView.subImage.swapchain = impl->swapchain;
+			projectionView.subImage.swapchain = impl->swapchains[viewIndex];
 			projectionView.subImage.imageRect.offset = {0, 0};
 			projectionView.subImage.imageRect.extent = {
-				static_cast<int32_t>(impl->swapchainWidth),
-				static_cast<int32_t>(impl->swapchainHeight)};
-			projectionView.subImage.imageArrayIndex = static_cast<uint32_t>(projectionViews.size());
+				static_cast<int32_t>(impl->swapchainWidths[viewIndex]),
+				static_cast<int32_t>(impl->swapchainHeights[viewIndex])};
+			projectionView.subImage.imageArrayIndex = 0;
 			projectionViews.push_back(projectionView);
 		}
 
@@ -1104,7 +1163,7 @@ namespace fe {
 		impl->passthroughSupported = false;
 		impl->passthroughExtensionAvailable = false;
 		impl->frameBegun = false;
-		impl->imageAcquired = false;
+		impl->imageAcquired.clear();
 #endif
 	}
 

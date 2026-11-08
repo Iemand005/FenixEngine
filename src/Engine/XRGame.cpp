@@ -59,7 +59,7 @@ struct fe::XRGame::Impl {
 	OpenXR input;
 	OpenXR::SwapchainInfo swapchainInfo;
 	std::vector<std::vector<uint64_t>> framebuffers;
-	std::vector<GLuint> depthTextures;
+	std::vector<std::vector<GLuint>> depthTextures;
 
 	void initSwapchain(IRenderDevice* renderDevice) {
 #ifndef FE_EXCLUDE_OPENXR
@@ -70,26 +70,30 @@ struct fe::XRGame::Impl {
 
 		framebuffers.resize(swapchainInfo.viewCount);
 		for (uint32_t eye = 0; eye < swapchainInfo.viewCount; ++eye) {
-			framebuffers[eye].resize(swapchainInfo.images.size());
-			for (size_t imageIndex = 0; imageIndex < swapchainInfo.images.size(); ++imageIndex) {
+			framebuffers[eye].resize(swapchainInfo.images[eye].size());
+			for (size_t imageIndex = 0; imageIndex < swapchainInfo.images[eye].size(); ++imageIndex) {
 				framebuffers[eye][imageIndex] = renderDevice->CreateFramebuffer(
-					swapchainInfo.images[imageIndex], swapchainInfo.width,
-					swapchainInfo.height, eye, 0, swapchainInfo.format);
+					swapchainInfo.images[eye][imageIndex], swapchainInfo.viewWidths[eye],
+					swapchainInfo.viewHeights[eye], 0, 0, swapchainInfo.format);
 			}
 		}
 
 		if (!useVulkan) {
-			depthTextures.resize(swapchainInfo.images.size());
-			glGenTextures(static_cast<GLsizei>(depthTextures.size()), depthTextures.data());
-			for (GLuint texture : depthTextures) {
-				glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-				glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F,
-					swapchainInfo.width, swapchainInfo.height,
-					swapchainInfo.viewCount, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			depthTextures.resize(swapchainInfo.viewCount);
+			for (uint32_t eye = 0; eye < swapchainInfo.viewCount; ++eye) {
+				depthTextures[eye].resize(swapchainInfo.images[eye].size());
+				glGenTextures(static_cast<GLsizei>(depthTextures[eye].size()),
+					depthTextures[eye].data());
+				for (GLuint texture : depthTextures[eye]) {
+					glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+					glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F,
+						swapchainInfo.viewWidths[eye], swapchainInfo.viewHeights[eye], 1, 0,
+						GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+					glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				}
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
@@ -323,7 +327,11 @@ void XRGame::DestroyXR() {
 	impl->framebuffers.clear();
 
 	if (!impl->useVulkan && !impl->depthTextures.empty()) {
-		glDeleteTextures(static_cast<GLsizei>(impl->depthTextures.size()), impl->depthTextures.data());
+		for (auto& eyeDepthTextures : impl->depthTextures) {
+			if (!eyeDepthTextures.empty())
+				glDeleteTextures(static_cast<GLsizei>(eyeDepthTextures.size()),
+					eyeDepthTextures.data());
+		}
 		impl->depthTextures.clear();
 	}
 
@@ -347,7 +355,7 @@ void XRGame::LaunchVR() {
 		return;
 	}
 	impl->initSwapchain(renderDevice.get());
-	if (impl->swapchainInfo.images.empty()) {
+	if (impl->swapchainInfo.images.empty() || impl->swapchainInfo.images.front().empty()) {
 		DestroyXR();
 		return;
 	}
@@ -400,8 +408,9 @@ void XRGame::RedrawVR() {
 	if (!impl->input.IsSessionRunning())
 		return;
 
+	std::vector<uint32_t> imageIndices;
 	std::vector<OpenXR::View> views;
-	if (!impl->input.BeginFrame(swapchainImageIndex, views))
+	if (!impl->input.BeginFrame(imageIndices, views))
 		return;
 	PollActionsAndUpdateMovement();
 
@@ -419,10 +428,11 @@ void XRGame::RedrawVR() {
 		camera->update(worldEyePosition, worldEyeOrientation, view.fov);
 
 		if (!impl->useVulkan) {
-			const GLuint framebuffer = static_cast<GLuint>(impl->framebuffers[eye][swapchainImageIndex]);
+			const uint32_t imageIndex = imageIndices[eye];
+			const GLuint framebuffer = static_cast<GLuint>(impl->framebuffers[eye][imageIndex]);
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				impl->depthTextures[swapchainImageIndex], 0, static_cast<GLint>(eye));
+				impl->depthTextures[eye][imageIndex], 0, 0);
 		}
 
 		renderDevice->BeginVRFrame();
@@ -436,8 +446,8 @@ void XRGame::RedrawVR() {
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 		}
 
-		renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
-			impl->swapchainInfo.width, impl->swapchainInfo.height);
+		renderDevice->BeginEyeFrame(impl->framebuffers[eye][imageIndices[eye]],
+			impl->swapchainInfo.viewWidths[eye], impl->swapchainInfo.viewHeights[eye]);
 		for (auto& object : scene->GetObjects())
 			RenderObject(*object);
 		OnDraw();
