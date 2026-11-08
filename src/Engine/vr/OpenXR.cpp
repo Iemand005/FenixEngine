@@ -865,10 +865,26 @@ namespace fe {
 			impl->Log(message.str());
 		}
 		int64_t chosenFormat = formats.front();
-		for (int64_t format : formats) {
-			if (format == preferredFormat) {
-				chosenFormat = format;
-				break;
+		bool selectedFormat = false;
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+		if (impl->useVulkan) {
+			for (VkFormat unormFormat : {VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM}) {
+				if (std::find(formats.begin(), formats.end(),
+						static_cast<int64_t>(unormFormat)) != formats.end()) {
+					chosenFormat = static_cast<int64_t>(unormFormat);
+					selectedFormat = true;
+					break;
+				}
+			}
+		}
+#endif
+		if (!selectedFormat) {
+			for (int64_t format : formats) {
+				if (format == preferredFormat) {
+					chosenFormat = format;
+					selectedFormat = true;
+					break;
+				}
 			}
 		}
 		if (impl->useVulkan)
