@@ -108,9 +108,7 @@ namespace fe {
 			uint32_t height = 0;
 			uint32_t viewCount = 0;
 			int64_t format = 0;
-			std::vector<uint32_t> viewWidths;
-			std::vector<uint32_t> viewHeights;
-			std::vector<std::vector<uint64_t>> images;
+			std::vector<uint64_t> images;
 		};
 
 		struct View {
@@ -149,7 +147,7 @@ namespace fe {
 		void PollEvents();
 		bool CreateSwapchain(int64_t preferredFormat, SwapchainInfo& info);
 		void DestroySwapchain();
-		bool BeginFrame(std::vector<uint32_t>& imageIndices, std::vector<View>& views);
+		bool BeginFrame(uint32_t& imageIndex, std::vector<View>& views);
 		void EndFrame();
 		void RequestExitSession();
 		void Shutdown();

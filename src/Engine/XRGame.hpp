@@ -57,7 +57,9 @@ namespace fe {
 		bool xrToggleRequested = false;
 
 		bool running = true;
-		
+
+		uint32_t swapchainImageIndex = 0;
+
 		XRGame(bool launchVR = true);
 		XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
 		XRGame(GLADloadproc loadProc);
