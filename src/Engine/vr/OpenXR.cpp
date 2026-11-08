@@ -857,6 +857,13 @@ namespace fe {
 		if (!impl->CheckResult(xrEnumerateSwapchainFormats(impl->session, formatCount,
 				&formatCount, formats.data()), "xrEnumerateSwapchainFormats"))
 			return false;
+		if (impl->useVulkan) {
+			std::ostringstream message;
+			message << "OpenXR Vulkan swapchain formats (preferred " << preferredFormat << "):";
+			for (int64_t format : formats)
+				message << ' ' << format;
+			impl->Log(message.str());
+		}
 		int64_t chosenFormat = formats.front();
 		for (int64_t format : formats) {
 			if (format == preferredFormat) {
@@ -864,6 +871,8 @@ namespace fe {
 				break;
 			}
 		}
+		if (impl->useVulkan)
+			impl->Log("OpenXR selected Vulkan swapchain format: " + std::to_string(chosenFormat));
 
 		impl->viewCount = viewCount;
 		impl->swapchainWidth = static_cast<uint32_t>(configViews.front().recommendedImageRectWidth);
