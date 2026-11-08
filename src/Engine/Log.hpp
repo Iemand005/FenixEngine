@@ -37,33 +37,48 @@ namespace fe {
 #endif
 	}
 
+	enum class LogLevel {
+		Info,
+		Warning,
+		Error
+	};
+
+	inline void LogV(LogLevel level, const char* fmt, va_list args) {
+		const bool toStdout = level == LogLevel::Info;
+		FILE* stream = toStdout ? stdout : stderr;
+		va_list streamArgs;
+		va_copy(streamArgs, args);
+		vfprintf(stream, fmt, streamArgs);
+		va_end(streamArgs);
+		fprintf(stream, "\n");
+		fflush(stream);
+
+		const int androidLevel = level == LogLevel::Info ? ANDROID_LOG_INFO
+			: level == LogLevel::Warning ? ANDROID_LOG_WARN : ANDROID_LOG_ERROR;
+		va_list logcatArgs;
+		va_copy(logcatArgs, args);
+		LogToLogcat(androidLevel, fmt, logcatArgs);
+		va_end(logcatArgs);
+	}
+
 	inline void Log(const char* fmt, ...) {
 		va_list args;
 		va_start(args, fmt);
-		vprintf(fmt, args);
-		printf("\n");
-		fflush(stdout);
-		LogToLogcat(ANDROID_LOG_INFO, fmt, args);
+		LogV(LogLevel::Info, fmt, args);
 		va_end(args);
 	}
 
 	inline void LogError(const char* fmt, ...) {
 		va_list args;
 		va_start(args, fmt);
-		vfprintf(stderr, fmt, args);
-		fprintf(stderr, "\n");
-		fflush(stderr);
-		LogToLogcat(ANDROID_LOG_ERROR, fmt, args);
+		LogV(LogLevel::Error, fmt, args);
 		va_end(args);
 	}
 
 	inline void LogWarning(const char* fmt, ...) {
 		va_list args;
 		va_start(args, fmt);
-		vfprintf(stderr, fmt, args);
-		fprintf(stderr, "\n");
-		fflush(stderr);
-		LogToLogcat(ANDROID_LOG_WARN, fmt, args);
+		LogV(LogLevel::Warning, fmt, args);
 		va_end(args);
 	}
 
