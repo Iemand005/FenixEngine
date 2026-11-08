@@ -37,7 +37,7 @@ public:
 
 	bool IsSpawned() const;
 	bool IsActive() const;
-	std::shared_ptr<Object> GetObject() const;
+	std::shared_ptr<Object> GetDroneObject() const;
 	PhysicsObject* GetBody() const;
 	Settings& GetSettings();
 	const Settings& GetSettings() const;

@@ -100,7 +100,7 @@ bool Drone::IsActive() const {
 	return body_ != nullptr;
 }
 
-std::shared_ptr<Object> Drone::GetObject() const {
+std::shared_ptr<Object> Drone::GetDroneObject() const {
 	return object_;
 }
 

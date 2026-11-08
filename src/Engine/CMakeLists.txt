@@ -155,6 +155,9 @@ set(SOURCE_FILES
 	XRGame.cpp
 )
 
+set_source_files_properties(components/Drone.cpp PROPERTIES
+	SKIP_UNITY_BUILD_INCLUSION ON
+)
 
 set(RENDERER_SOURCES
 	Renderer.cpp
