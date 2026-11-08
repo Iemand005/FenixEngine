@@ -784,10 +784,6 @@ namespace fe {
 			return false;
 		impl->frameBegun = true;
 		UpdateInput(static_cast<int64_t>(impl->frameState.predictedDisplayTime));
-		if (!impl->frameState.shouldRender) {
-			EndFrame();
-			return false;
-		}
 
 		if (!impl->CheckResult(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo,
 				&imageIndex), "xrAcquireSwapchainImage")) {
