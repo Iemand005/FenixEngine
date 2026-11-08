@@ -45,7 +45,7 @@ namespace fe {
 
 	inline void LogV(LogLevel level, const char* fmt, va_list args) {
 		const bool toStdout = level == LogLevel::Info;
-		FILE* stream = toStdout ? stdout : stderr;
+		auto stream = toStdout ? stdout : stderr;
 		va_list streamArgs;
 		va_copy(streamArgs, args);
 		vfprintf(stream, fmt, streamArgs);
