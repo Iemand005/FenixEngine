@@ -390,33 +390,39 @@ void OpenGLRenderDevice::DrawMesh(const IGPUBuffers* buffers, const IGPUTexture*
 		return;
 	}
 
+	if (textureUniformProgram_ != static_cast<GLuint>(currentProgram)) {
+		textureUniformProgram_ = static_cast<GLuint>(currentProgram);
+		texture2DUniform_ = glGetUniformLocation(textureUniformProgram_, "ourTexture");
+		textureArrayUniform_ = glGetUniformLocation(textureUniformProgram_, "ourTextureArray");
+		useTextureArrayUniform_ = glGetUniformLocation(textureUniformProgram_, "useTextureArray");
+		if (texture2DUniform_ >= 0)
+			glUniform1i(texture2DUniform_, 0);
+		if (textureArrayUniform_ >= 0)
+			glUniform1i(textureArrayUniform_, 1);
+	}
+
 	glBuffers->bind();
+	const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
+	const bool useTextureArray = texture && glTexture->isTextureArray();
+	if (useTextureArrayUniform_ >= 0)
+		glUniform1i(useTextureArrayUniform_, useTextureArray ? 1 : 0);
 
 	glActiveTexture(GL_TEXTURE0);
 	if (texture) {
-		const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
-		if (glTexture->isTextureArray()) {
-			glBindTexture(GL_TEXTURE_2D_ARRAY, glTexture->textureId);
-		} else {
+		if (!useTextureArray)
 			glBindTexture(GL_TEXTURE_2D, glTexture->textureId);
-		}
 	} else {
 		glBindTexture(GL_TEXTURE_2D, defaultTextureId_);
 	}
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, useTextureArray ? glTexture->textureId : 0);
 	glDrawElements(GL_TRIANGLES, glBuffers->indexCount, GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
-	if (texture) {
-		const auto* glTexture = static_cast<const OpenGLGPUTexture*>(texture);
-		if (glTexture->isTextureArray()) {
-			glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-		} else {
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
-	} else {
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void OpenGLRenderDevice::UploadTexture(IGPUTexture* texture,

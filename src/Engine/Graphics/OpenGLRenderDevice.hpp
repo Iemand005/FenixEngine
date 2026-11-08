@@ -26,6 +26,10 @@ class OpenGLRenderDevice : public IRenderDevice {
 
 	GLint cachedUniformProgram_ = 0;
 	std::unordered_map<std::string, GLint> uniformLocationCache_;
+	GLuint textureUniformProgram_ = 0;
+	GLint texture2DUniform_ = -1;
+	GLint textureArrayUniform_ = -1;
+	GLint useTextureArrayUniform_ = -1;
 
 	GLint GetUniformLocation(const char* name);
 	void MakeCurrent();
