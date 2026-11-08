@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -116,6 +117,13 @@ namespace fe {
 			glm::vec4 fov{0.0f};
 		};
 
+		struct VulkanRequirements {
+			std::vector<std::string> instanceExtensions;
+			std::vector<std::string> deviceExtensions;
+			uint64_t minApiVersion = 0;
+			uint64_t maxApiVersion = 0;
+		};
+
 	private:
 		struct Impl;
 		std::unique_ptr<Impl> impl;
@@ -129,6 +137,8 @@ namespace fe {
 		OpenXR& operator=(const OpenXR&) = delete;
 
 		bool Initialize(const GraphicsBinding& binding);
+		static bool GetVulkanRequirements(VulkanRequirements& requirements);
+		static bool GetVulkanGraphicsDevice(void* vulkanInstance, void*& physicalDevice);
 		bool IsInstanceValid() const;
 		bool IsSessionRunning() const;
 		bool IsPassthroughSupported() const;

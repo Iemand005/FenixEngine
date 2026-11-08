@@ -1687,13 +1687,24 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+		std::vector<const char*> deviceExtensions;
+		deviceExtensions.reserve(kDeviceExtensions.size() + openXRDeviceExtensions_.size());
+		for (const char* extension : kDeviceExtensions)
+			deviceExtensions.push_back(extension);
+		for (const std::string& extension : openXRDeviceExtensions_) {
+			const bool alreadyEnabled = std::any_of(deviceExtensions.begin(), deviceExtensions.end(),
+				[&extension](const char* enabled) { return extension == enabled; });
+			if (!alreadyEnabled)
+				deviceExtensions.push_back(extension.c_str());
+		}
+
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(kDeviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = kDeviceExtensions.data();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 		if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create logical device.");

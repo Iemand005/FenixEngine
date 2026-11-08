@@ -18,13 +18,13 @@ namespace fe {
 		bool launchVR = false;
 		bool drawWindow = true;
 
-		XRGameOptions() = default; 
+		XRGameOptions() { preferOpenXRDevice = true; }
 
-    	XRGameOptions(int width, int height) : fe::RendererOptions(width, height) {}
+		XRGameOptions(int width, int height) : fe::RendererOptions(width, height) { preferOpenXRDevice = true; }
 
-    	XRGameOptions(bool useVulkan, int width, int height) : fe::RendererOptions(width, height, false, false, useVulkan) {}
+		XRGameOptions(bool useVulkan, int width, int height) : fe::RendererOptions(width, height, useVulkan, false, false) { preferOpenXRDevice = true; }
 
-		XRGameOptions(int width, int height, bool launchVR, bool drawWindow = true) : fe::RendererOptions(width, height), launchVR(launchVR), drawWindow(drawWindow) {}
+		XRGameOptions(int width, int height, bool launchVR, bool drawWindow = true) : fe::RendererOptions(width, height), launchVR(launchVR), drawWindow(drawWindow) { preferOpenXRDevice = true; }
 	};
 
 	class XRGame : public fe::Game {

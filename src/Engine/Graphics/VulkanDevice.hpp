@@ -185,6 +185,7 @@ public:
 		const std::vector<fe::ImageData>& images, fe::TextureScaling scaling = fe::TextureScaling::Linear) override;
 
 	VkInstance GetInstance() const;
+	void SetPreferOpenXRDevice(bool prefer) { preferOpenXRDevice_ = prefer; }
 
 	VkPhysicalDevice GetPhysicalDevice() const;
 
@@ -314,6 +315,9 @@ private:
 	std::string vertShaderPackedPath_;
 	std::string fragShaderPackedPath_;
 	std::string _deviceName;
+	bool preferOpenXRDevice_ = false;
+	bool openXRRequirementsAvailable_ = false;
+	std::vector<std::string> openXRDeviceExtensions_;
 	static inline bool preferIntegratedGPU_ = false;
 
 	VkInstance _instance = VK_NULL_HANDLE;

@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,84 @@
 #endif
 
 namespace fe {
+
+#if !defined(FE_EXCLUDE_OPENXR) && defined(XR_USE_GRAPHICS_API_VULKAN)
+	namespace {
+		bool CreateVulkanQueryInstance(XrInstance& instance, XrSystemId& systemId) {
+			uint32_t extensionCount = 0;
+			const XrResult enumerateResult =
+				xrEnumerateInstanceExtensionProperties(nullptr, 0, &extensionCount, nullptr);
+			if (XR_FAILED(enumerateResult) && enumerateResult != XR_ERROR_SIZE_INSUFFICIENT)
+				return false;
+			std::vector<XrExtensionProperties> availableExtensions(
+				extensionCount, {XR_TYPE_EXTENSION_PROPERTIES});
+			if (XR_FAILED(xrEnumerateInstanceExtensionProperties(nullptr, extensionCount,
+					&extensionCount, availableExtensions.data())))
+				return false;
+
+			const bool vulkanExtensionAvailable = std::any_of(
+				availableExtensions.begin(), availableExtensions.end(),
+				[](const XrExtensionProperties& extension) {
+					return std::strcmp(extension.extensionName,
+						XR_KHR_VULKAN_ENABLE_EXTENSION_NAME) == 0;
+				});
+			if (!vulkanExtensionAvailable) {
+				fe::LogWarning("OpenXR runtime does not support Vulkan graphics binding");
+				return false;
+			}
+
+			const char* enabledExtensions[] = {XR_KHR_VULKAN_ENABLE_EXTENSION_NAME};
+			XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
+			createInfo.enabledExtensionCount = 1;
+			createInfo.enabledExtensionNames = enabledExtensions;
+			createInfo.applicationInfo.apiVersion = XR_API_VERSION_1_0;
+			std::snprintf(createInfo.applicationInfo.engineName,
+				sizeof(createInfo.applicationInfo.engineName), "%s", "FenixEngine");
+			std::snprintf(createInfo.applicationInfo.applicationName,
+				sizeof(createInfo.applicationInfo.applicationName), "%s", "Fenix Engine");
+			if (XR_FAILED(xrCreateInstance(&createInfo, &instance))) {
+				fe::LogWarning("Failed to create a temporary OpenXR instance for Vulkan requirements");
+				return false;
+			}
+
+			XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
+			systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
+			if (XR_FAILED(xrGetSystem(instance, &systemInfo, &systemId))) {
+				fe::LogWarning("Failed to get the OpenXR system for Vulkan requirements");
+				xrDestroyInstance(instance);
+				instance = XR_NULL_HANDLE;
+				return false;
+			}
+			return true;
+		}
+
+		bool ReadVulkanExtensionList(XrInstance instance, XrSystemId systemId,
+			const char* functionName, std::vector<std::string>& extensions) {
+			PFN_xrVoidFunction function = nullptr;
+			if (XR_FAILED(xrGetInstanceProcAddr(instance, functionName, &function)) || !function) {
+				fe::LogWarning("OpenXR runtime does not expose %s", functionName);
+				return false;
+			}
+
+			auto getExtensions = reinterpret_cast<PFN_xrGetVulkanInstanceExtensionsKHR>(function);
+			uint32_t bufferSize = 0;
+			const XrResult sizeResult = getExtensions(instance, systemId, 0, &bufferSize, nullptr);
+			if (XR_FAILED(sizeResult) && sizeResult != XR_ERROR_SIZE_INSUFFICIENT)
+				return false;
+			if (bufferSize == 0)
+				return true;
+			std::vector<char> buffer(bufferSize, '\0');
+			if (XR_FAILED(getExtensions(instance, systemId, bufferSize, &bufferSize, buffer.data())))
+				return false;
+
+			std::istringstream names(buffer.data());
+			std::string name;
+			while (names >> name)
+				extensions.push_back(std::move(name));
+			return true;
+		}
+	}
+#endif
 
 	struct OpenXR::Impl {
 		InputState inputState;
@@ -354,6 +433,81 @@ namespace fe {
 		Shutdown();
 	}
 
+	bool OpenXR::GetVulkanRequirements(VulkanRequirements& requirements) {
+		requirements = VulkanRequirements{};
+#if !defined(FE_EXCLUDE_OPENXR) && defined(XR_USE_GRAPHICS_API_VULKAN)
+		XrInstance instance = XR_NULL_HANDLE;
+		XrSystemId systemId = XR_NULL_SYSTEM_ID;
+		if (!CreateVulkanQueryInstance(instance, systemId))
+			return false;
+
+		const bool extensionsAvailable =
+			ReadVulkanExtensionList(instance, systemId,
+				"xrGetVulkanInstanceExtensionsKHR", requirements.instanceExtensions) &&
+			ReadVulkanExtensionList(instance, systemId,
+				"xrGetVulkanDeviceExtensionsKHR", requirements.deviceExtensions);
+
+		PFN_xrVoidFunction function = nullptr;
+		bool requirementsAvailable = false;
+		if (XR_SUCCEEDED(xrGetInstanceProcAddr(instance,
+				"xrGetVulkanGraphicsRequirementsKHR", &function)) && function) {
+			auto getRequirements =
+				reinterpret_cast<PFN_xrGetVulkanGraphicsRequirementsKHR>(function);
+			XrGraphicsRequirementsVulkanKHR graphicsRequirements{
+				XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR};
+			if (XR_SUCCEEDED(getRequirements(instance, systemId, &graphicsRequirements))) {
+				requirements.minApiVersion = graphicsRequirements.minApiVersionSupported;
+				requirements.maxApiVersion = graphicsRequirements.maxApiVersionSupported;
+				requirementsAvailable = true;
+			}
+		}
+
+		xrDestroyInstance(instance);
+		if (!extensionsAvailable || !requirementsAvailable) {
+			fe::LogWarning("Failed to query OpenXR Vulkan requirements");
+			requirements = VulkanRequirements{};
+			return false;
+		}
+		return true;
+#else
+		return false;
+#endif
+	}
+
+	bool OpenXR::GetVulkanGraphicsDevice(void* vulkanInstance, void*& physicalDevice) {
+		physicalDevice = nullptr;
+#if !defined(FE_EXCLUDE_OPENXR) && defined(XR_USE_GRAPHICS_API_VULKAN)
+		if (!vulkanInstance)
+			return false;
+
+		XrInstance instance = XR_NULL_HANDLE;
+		XrSystemId systemId = XR_NULL_SYSTEM_ID;
+		if (!CreateVulkanQueryInstance(instance, systemId))
+			return false;
+
+		PFN_xrVoidFunction function = nullptr;
+		bool success = XR_SUCCEEDED(xrGetInstanceProcAddr(instance,
+			"xrGetVulkanGraphicsDeviceKHR", &function)) && function;
+		if (success) {
+			auto getGraphicsDevice =
+				reinterpret_cast<PFN_xrGetVulkanGraphicsDeviceKHR>(function);
+			VkPhysicalDevice runtimeDevice = VK_NULL_HANDLE;
+			success = XR_SUCCEEDED(getGraphicsDevice(instance, systemId,
+				reinterpret_cast<VkInstance>(vulkanInstance), &runtimeDevice));
+			if (success)
+				physicalDevice = reinterpret_cast<void*>(runtimeDevice);
+		}
+
+		xrDestroyInstance(instance);
+		if (!success)
+			fe::LogWarning("Failed to query the OpenXR Vulkan graphics device");
+		return success;
+#else
+		(void)vulkanInstance;
+		return false;
+#endif
+	}
+
 	bool OpenXR::Initialize(const GraphicsBinding& binding) {
 #ifndef FE_EXCLUDE_OPENXR
 		Shutdown();
@@ -504,14 +658,24 @@ namespace fe {
 			vulkanBinding.queueIndex = 0;
 
 			PFN_xrGetVulkanGraphicsDeviceKHR getGraphicsDevice = nullptr;
-			if (impl->CheckResult(xrGetInstanceProcAddr(impl->instance,
+			if (!impl->CheckResult(xrGetInstanceProcAddr(impl->instance,
 					"xrGetVulkanGraphicsDeviceKHR",
 					reinterpret_cast<PFN_xrVoidFunction*>(&getGraphicsDevice)),
-					"xrGetInstanceProcAddr(xrGetVulkanGraphicsDeviceKHR)") && getGraphicsDevice) {
-				VkPhysicalDevice runtimeDevice = VK_NULL_HANDLE;
-				if (XR_SUCCEEDED(getGraphicsDevice(impl->instance, impl->systemId,
-						vulkanBinding.instance, &runtimeDevice)))
-					vulkanBinding.physicalDevice = runtimeDevice;
+					"xrGetInstanceProcAddr(xrGetVulkanGraphicsDeviceKHR)") || !getGraphicsDevice)
+				return initializationFailed();
+
+			VkPhysicalDevice runtimeDevice = VK_NULL_HANDLE;
+			if (!impl->CheckResult(getGraphicsDevice(impl->instance, impl->systemId,
+					vulkanBinding.instance, &runtimeDevice), "xrGetVulkanGraphicsDeviceKHR"))
+				return initializationFailed();
+			if (runtimeDevice != vulkanBinding.physicalDevice) {
+				VkPhysicalDeviceProperties runtimeProperties{};
+				VkPhysicalDeviceProperties applicationProperties{};
+				vkGetPhysicalDeviceProperties(runtimeDevice, &runtimeProperties);
+				vkGetPhysicalDeviceProperties(vulkanBinding.physicalDevice, &applicationProperties);
+				fe::LogWarning("OpenXR requires Vulkan GPU '%s', but FenixEngine selected '%s'",
+					runtimeProperties.deviceName, applicationProperties.deviceName);
+				return initializationFailed();
 			}
 			sessionInfo.next = &vulkanBinding;
 		} else
@@ -784,6 +948,10 @@ namespace fe {
 			return false;
 		impl->frameBegun = true;
 		UpdateInput(static_cast<int64_t>(impl->frameState.predictedDisplayTime));
+		if (!impl->frameState.shouldRender) {
+			EndFrame();
+			return false;
+		}
 
 		if (!impl->CheckResult(xrAcquireSwapchainImage(impl->swapchain, &impl->acquireInfo,
 				&imageIndex), "xrAcquireSwapchainImage")) {

@@ -75,6 +75,7 @@ namespace fe {
 		#else
 		bool useVulkan = false;
 #endif
+		bool preferOpenXRDevice = false;
 		GLADloadproc loadProc = nullptr;
 
 		RendererOptions() = default; 

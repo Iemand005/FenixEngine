@@ -182,6 +182,14 @@ endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
 
+if(FE_EXCLUDE_OPENXR OR EMSCRIPTEN)
+	target_compile_definitions(Renderer PRIVATE FE_EXCLUDE_OPENXR)
+else()
+	target_include_directories(Renderer PRIVATE
+		${EXTERNAL_DIR}/OpenXR-SDK/include
+	)
+endif()
+
 target_precompile_headers(Renderer PRIVATE
 	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
 )
