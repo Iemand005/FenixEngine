@@ -885,8 +885,7 @@ namespace fe {
 		swapchainInfo.mipCount = 1;
 		swapchainInfo.faceCount = 1;
 		swapchainInfo.sampleCount = 1;
-		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT |
-			XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
+		swapchainInfo.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
 		if (!impl->CheckResult(xrCreateSwapchain(impl->session, &swapchainInfo,
 				&impl->swapchain), "xrCreateSwapchain"))
 			return false;
