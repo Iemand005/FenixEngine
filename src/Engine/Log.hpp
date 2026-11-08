@@ -26,16 +26,11 @@ namespace fe {
 
 	inline void LogSetTag(const char* tag) { LogTag() = tag; }
 
-	inline int LogToLogcat(int level, const char* fmt, va_list args) {
 #if FE_LOGCAT_AVAILABLE
+	inline int LogToLogcat(int level, const char* fmt, va_list args) {
 		return __android_log_vprint(level, LogTag(), fmt, args);
-#else
-		(void)level;
-		(void)fmt;
-		(void)args;
-		return 0;
-#endif
 	}
+#endif
 
 	enum class LogLevel {
 		Info,
@@ -57,7 +52,9 @@ namespace fe {
 			: level == LogLevel::Warning ? ANDROID_LOG_WARN : ANDROID_LOG_ERROR;
 		va_list logcatArgs;
 		va_copy(logcatArgs, args);
+#if FE_LOGCAT_AVAILABLE
 		LogToLogcat(androidLevel, fmt, logcatArgs);
+#endif
 		va_end(logcatArgs);
 	}
 
