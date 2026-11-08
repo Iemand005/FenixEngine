@@ -780,10 +780,10 @@ namespace fe {
 			return false;
 		if (!impl->CheckResult(xrWaitFrame(impl->session, &impl->waitInfo, &impl->frameState), "xrWaitFrame"))
 			return false;
-		UpdateInput(static_cast<int64_t>(impl->frameState.predictedDisplayTime));
 		if (!impl->CheckResult(xrBeginFrame(impl->session, &impl->frameBegin), "xrBeginFrame"))
 			return false;
 		impl->frameBegun = true;
+		UpdateInput(static_cast<int64_t>(impl->frameState.predictedDisplayTime));
 		if (!impl->frameState.shouldRender) {
 			EndFrame();
 			return false;
