@@ -413,7 +413,7 @@ void XRGame::RedrawVR() {
 	const glm::vec3 worldOrigin = playerPosition + positionOffset;
 
 	for (uint32_t eye = 0; eye < views.size(); ++eye) {
-		const OpenXR::View& view = views[eye];
+		const auto& view = views[eye];
 		const glm::vec3 worldEyePosition = worldOrigin + yaw * view.position;
 		const glm::quat worldEyeOrientation = yaw * view.orientation;
 		camera->update(worldEyePosition, worldEyeOrientation, view.fov);
