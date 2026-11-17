@@ -271,8 +271,8 @@ namespace fe {
 			// reject the whole binding set.
 			auto suggestThumbstickProfile = [&](const char* profile, bool squeezeValue, bool faceButtons) {
 				std::vector<XrActionSuggestedBinding> bindings = {
-					{moveAction, Path("/user/hand/right/input/thumbstick")},
-					{lookAction, Path("/user/hand/left/input/thumbstick")},
+					{moveAction, Path("/user/hand/left/input/thumbstick")},
+					{lookAction, Path("/user/hand/right/input/thumbstick")},
 					{leftTriggerAction, Path("/user/hand/left/input/trigger")},
 					{rightTriggerAction, Path("/user/hand/right/input/trigger")},
 					{leftGripPoseAction, Path("/user/hand/left/input/grip/pose")},
@@ -305,8 +305,8 @@ namespace fe {
 			suggestThumbstickProfile("/interaction_profiles/meta/touch_pro_controller", true, true);
 
 			SuggestProfileBindings("/interaction_profiles/htc/vive_controller", {
-				{moveAction, Path("/user/hand/right/input/trackpad")},
-				{lookAction, Path("/user/hand/left/input/trackpad")},
+				{moveAction, Path("/user/hand/left/input/trackpad")},
+				{lookAction, Path("/user/hand/right/input/trackpad")},
 				{leftTriggerAction, Path("/user/hand/left/input/trigger")},
 				{rightTriggerAction, Path("/user/hand/right/input/trigger")},
 				{leftGripAction, Path("/user/hand/left/input/squeeze/click")},
