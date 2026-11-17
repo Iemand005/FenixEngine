@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <memory>
 #include <cstdint>
 #include <string>
@@ -51,6 +52,49 @@ namespace fe {
 			Aim
 		};
 
+		// Values match XrHandJointEXT from XR_EXT_hand_tracking.
+		enum class HandJoint {
+			Palm = 0,
+			Wrist = 1,
+			ThumbMetacarpal = 2,
+			ThumbProximal = 3,
+			ThumbDistal = 4,
+			ThumbTip = 5,
+			IndexMetacarpal = 6,
+			IndexProximal = 7,
+			IndexIntermediate = 8,
+			IndexDistal = 9,
+			IndexTip = 10,
+			MiddleMetacarpal = 11,
+			MiddleProximal = 12,
+			MiddleIntermediate = 13,
+			MiddleDistal = 14,
+			MiddleTip = 15,
+			RingMetacarpal = 16,
+			RingProximal = 17,
+			RingIntermediate = 18,
+			RingDistal = 19,
+			RingTip = 20,
+			LittleMetacarpal = 21,
+			LittleProximal = 22,
+			LittleIntermediate = 23,
+			LittleDistal = 24,
+			LittleTip = 25,
+			Count = 26
+		};
+
+		struct HandJointPose {
+			glm::vec3 position{0.0f};
+			glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
+			float radius = 0.0f;
+			bool active = false;
+		};
+
+		struct HandState {
+			bool active = false;
+			std::array<HandJointPose, static_cast<size_t>(HandJoint::Count)> joints{};
+		};
+
 		// Generic physical inputs exposed by the runtime. Games map these to  their own actions (e.g. X -> spawn, grip -> grab).
 		enum class Button {
 			X,
@@ -80,6 +124,8 @@ namespace fe {
 			bool leftAimPoseActive = false;
 			bool rightGripPoseActive = false;
 			bool rightAimPoseActive = false;
+			HandState leftHand;
+			HandState rightHand;
 		};
 
 		struct GraphicsBinding {
@@ -144,6 +190,7 @@ namespace fe {
 		bool IsPassthroughSupported() const;
 		bool IsPassthroughEnabled() const;
 		void SetPassthroughEnabled(bool enabled);
+		bool IsHandTrackingSupported() const;
 		void PollEvents();
 		bool CreateSwapchain(int64_t preferredFormat, SwapchainInfo& info);
 		void DestroySwapchain();
@@ -160,6 +207,9 @@ namespace fe {
 		InputState GetWorldInputState(const glm::vec3& worldOrigin, const glm::quat& worldRotation) const;
 		glm::vec3 GetControllerPosition(Hand hand, ControllerPose pose) const;
 		bool IsControllerPoseActive(Hand hand, ControllerPose pose) const;
+		bool IsHandTrackingActive(Hand hand) const;
+		const HandState& GetHandState(Hand hand) const;
+		const HandJointPose& GetHandJointPose(Hand hand, HandJoint joint) const;
 		bool WasButtonPressed(Button button) const;
 		bool ConsumeButtonPress(Button button);
 		bool IsButtonHeld(Button button) const;

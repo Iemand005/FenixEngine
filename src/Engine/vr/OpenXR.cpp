@@ -127,6 +127,10 @@ namespace fe {
 		XrPassthroughFB passthrough = XR_NULL_HANDLE;
 		XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
 
+		bool handTrackingExtensionAvailable = false;
+		bool handTrackingSupported = false;
+		XrHandTrackerEXT handTrackers[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
+
 		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
 		PFN_xrDestroyPassthroughFB pfnDestroyPassthroughFB = nullptr;
 		PFN_xrPassthroughStartFB pfnPassthroughStartFB = nullptr;
@@ -135,6 +139,10 @@ namespace fe {
 		PFN_xrDestroyPassthroughLayerFB pfnDestroyPassthroughLayerFB = nullptr;
 		PFN_xrPassthroughLayerResumeFB pfnPassthroughLayerResumeFB = nullptr;
 		PFN_xrPassthroughLayerPauseFB pfnPassthroughLayerPauseFB = nullptr;
+
+		PFN_xrCreateHandTrackerEXT pfnCreateHandTrackerEXT = nullptr;
+		PFN_xrDestroyHandTrackerEXT pfnDestroyHandTrackerEXT = nullptr;
+		PFN_xrLocateHandJointsEXT pfnLocateHandJointsEXT = nullptr;
 
 		XrActionSet actionSet = XR_NULL_HANDLE;
 		XrAction moveAction = XR_NULL_HANDLE;
@@ -424,6 +432,76 @@ namespace fe {
 			passthroughLayer = XR_NULL_HANDLE;
 			passthrough = XR_NULL_HANDLE;
 		}
+
+		void LoadHandTrackingFunctions() {
+			xrGetInstanceProcAddr(instance, "xrCreateHandTrackerEXT", reinterpret_cast<PFN_xrVoidFunction*>(&pfnCreateHandTrackerEXT));
+			xrGetInstanceProcAddr(instance, "xrDestroyHandTrackerEXT", reinterpret_cast<PFN_xrVoidFunction*>(&pfnDestroyHandTrackerEXT));
+			xrGetInstanceProcAddr(instance, "xrLocateHandJointsEXT", reinterpret_cast<PFN_xrVoidFunction*>(&pfnLocateHandJointsEXT));
+		}
+
+		void CreateHandTrackers() {
+			if (!handTrackingSupported || !pfnCreateHandTrackerEXT)
+				return;
+
+			const XrHandEXT hands[2] = {XR_HAND_LEFT_EXT, XR_HAND_RIGHT_EXT};
+			for (size_t i = 0; i < 2; ++i) {
+				XrHandTrackerCreateInfoEXT createInfo{XR_TYPE_HAND_TRACKER_CREATE_INFO_EXT};
+				createInfo.hand = hands[i];
+				createInfo.handJointSet = XR_HAND_JOINT_SET_DEFAULT_EXT;
+				CheckResult(pfnCreateHandTrackerEXT(session, &createInfo, &handTrackers[i]),
+					"xrCreateHandTrackerEXT");
+			}
+		}
+
+		void DestroyHandTrackers() {
+			if (pfnDestroyHandTrackerEXT) {
+				for (XrHandTrackerEXT& handTracker : handTrackers) {
+					if (handTracker != XR_NULL_HANDLE)
+						OutputError(pfnDestroyHandTrackerEXT(handTracker));
+					handTracker = XR_NULL_HANDLE;
+				}
+			} else {
+				for (XrHandTrackerEXT& handTracker : handTrackers)
+					handTracker = XR_NULL_HANDLE;
+			}
+		}
+
+		void LocateHand(size_t index, HandState& handState, XrTime displayTime) {
+			handState = HandState{};
+			if (!handTrackingSupported || handTrackers[index] == XR_NULL_HANDLE || !pfnLocateHandJointsEXT)
+				return;
+
+			XrHandJointsLocateInfoEXT locateInfo{XR_TYPE_HAND_JOINTS_LOCATE_INFO_EXT};
+			locateInfo.baseSpace = appSpace;
+			locateInfo.time = displayTime;
+
+			XrHandJointLocationEXT jointLocations[XR_HAND_JOINT_COUNT_EXT] = {};
+			XrHandJointLocationsEXT locations{XR_TYPE_HAND_JOINT_LOCATIONS_EXT};
+			locations.jointCount = XR_HAND_JOINT_COUNT_EXT;
+			locations.jointLocations = jointLocations;
+
+			if (!CheckResult(pfnLocateHandJointsEXT(handTrackers[index], &locateInfo, &locations),
+					"xrLocateHandJointsEXT") || !locations.isActive)
+				return;
+
+			handState.active = true;
+			const uint32_t jointCount = std::min(
+				locations.jointCount, static_cast<uint32_t>(XR_HAND_JOINT_COUNT_EXT));
+			for (uint32_t joint = 0; joint < jointCount; ++joint) {
+				const XrHandJointLocationEXT& location = jointLocations[joint];
+				HandJointPose& pose = handState.joints[joint];
+				if (location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+					pose.active = true;
+					pose.position = glm::vec3(location.pose.position.x,
+						location.pose.position.y, location.pose.position.z);
+				}
+				if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+					const auto& orientation = location.pose.orientation;
+					pose.orientation = glm::quat(orientation.w, orientation.x, orientation.y, orientation.z);
+				}
+				pose.radius = location.radius;
+			}
+		}
 #endif
 	};
 
@@ -560,7 +638,9 @@ namespace fe {
 					if (std::strcmp(extension.extensionName, XR_FB_PASSTHROUGH_EXTENSION_NAME) == 0) {
 						impl->passthroughExtensionAvailable = true;
 						enabledExtensions.push_back(XR_FB_PASSTHROUGH_EXTENSION_NAME);
-						break;
+					} else if (std::strcmp(extension.extensionName, XR_EXT_HAND_TRACKING_EXTENSION_NAME) == 0) {
+						impl->handTrackingExtensionAvailable = true;
+						enabledExtensions.push_back(XR_EXT_HAND_TRACKING_EXTENSION_NAME);
 					}
 				}
 			}
@@ -590,6 +670,8 @@ namespace fe {
 			return initializationFailed();
 		if (impl->passthroughExtensionAvailable)
 			impl->LoadPassthroughFunctions();
+		if (impl->handTrackingExtensionAvailable)
+			impl->LoadHandTrackingFunctions();
 
 		XrSystemGetInfo systemInfo{XR_TYPE_SYSTEM_GET_INFO};
 		systemInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
@@ -597,13 +679,20 @@ namespace fe {
 			return initializationFailed();
 
 		XrSystemPassthroughPropertiesFB passthroughProperties{XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB};
+		XrSystemHandTrackingPropertiesEXT handTrackingProperties{XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT};
 		XrSystemProperties systemProperties{XR_TYPE_SYSTEM_PROPERTIES};
 		if (impl->passthroughExtensionAvailable)
 			systemProperties.next = &passthroughProperties;
+		if (impl->handTrackingExtensionAvailable) {
+			handTrackingProperties.next = systemProperties.next;
+			systemProperties.next = &handTrackingProperties;
+		}
 		if (!impl->CheckResult(xrGetSystemProperties(impl->instance, impl->systemId, &systemProperties), "xrGetSystemProperties"))
 			return initializationFailed();
 		impl->passthroughSupported = impl->passthroughExtensionAvailable &&
 			passthroughProperties.supportsPassthrough == XR_TRUE;
+		impl->handTrackingSupported = impl->handTrackingExtensionAvailable &&
+			handTrackingProperties.supportsHandTracking == XR_TRUE;
 		impl->Log("OpenXR system: " + std::string(systemProperties.systemName));
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
@@ -718,6 +807,7 @@ namespace fe {
 		if (!impl->CheckResult(xrCreateReferenceSpace(impl->session, &spaceInfo, &impl->appSpace), "xrCreateReferenceSpace"))
 			return initializationFailed();
 
+		impl->CreateHandTrackers();
 		impl->CreateActions();
 		if (impl->actionSet == XR_NULL_HANDLE)
 			return initializationFailed();
@@ -758,6 +848,10 @@ namespace fe {
 #else
 		return false;
 #endif
+	}
+
+	bool OpenXR::IsHandTrackingSupported() const {
+		return impl->handTrackingSupported;
 	}
 
 	void OpenXR::SetPassthroughEnabled(bool enabled) {
@@ -1117,6 +1211,8 @@ namespace fe {
 		impl->sessionRunning = false;
 		impl->passthroughSupported = false;
 		impl->passthroughExtensionAvailable = false;
+		impl->handTrackingSupported = false;
+		impl->handTrackingExtensionAvailable = false;
 		impl->frameBegun = false;
 		impl->imageAcquired = false;
 #endif
@@ -1189,6 +1285,8 @@ namespace fe {
 		state.leftAimPosition = impl->LocateControllerPose(impl->leftAimPoseAction, impl->aimPoseSpace[0], displayTime, state.leftAimPoseActive, state.leftAimOrientation);
 		state.rightGripPosition = impl->LocateControllerPose(impl->rightGripPoseAction, impl->gripPoseSpace[1], displayTime, state.rightGripPoseActive, state.rightGripOrientation);
 		state.rightAimPosition = impl->LocateControllerPose(impl->rightAimPoseAction, impl->aimPoseSpace[1], displayTime, state.rightAimPoseActive, state.rightAimOrientation);
+		impl->LocateHand(0, state.leftHand, displayTime);
+		impl->LocateHand(1, state.rightHand, displayTime);
 
 		// Analog squeeze (Touch/Index/Pico) is converted to the same pressed
 		// state as the boolean squeeze click (Windows MR/Vive).
@@ -1208,6 +1306,7 @@ namespace fe {
 
 #ifndef FE_EXCLUDE_OPENXR
 	void OpenXR::DestroyInput() {
+		impl->DestroyHandTrackers();
 		for (XrSpace& space : impl->gripPoseSpace) {
 			if (space != XR_NULL_HANDLE) xrDestroySpace(space);
 			space = XR_NULL_HANDLE;
@@ -1269,6 +1368,15 @@ namespace fe {
 		transformPose(state.leftAimPoseActive, state.leftAimPosition, state.leftAimOrientation);
 		transformPose(state.rightGripPoseActive, state.rightGripPosition, state.rightGripOrientation);
 		transformPose(state.rightAimPoseActive, state.rightAimPosition, state.rightAimOrientation);
+
+		for (HandState* hand : {&state.leftHand, &state.rightHand}) {
+			for (HandJointPose& joint : hand->joints) {
+				if (!joint.active)
+					continue;
+				joint.position = worldOrigin + worldRotation * joint.position;
+				joint.orientation = worldRotation * joint.orientation;
+			}
+		}
 		return state;
 	}
 
@@ -1284,6 +1392,22 @@ namespace fe {
 		if (hand == Hand::Left)
 			return pose == ControllerPose::Grip ? state.leftGripPoseActive : state.leftAimPoseActive;
 		return pose == ControllerPose::Grip ? state.rightGripPoseActive : state.rightAimPoseActive;
+	}
+
+	bool OpenXR::IsHandTrackingActive(Hand hand) const {
+		return hand == Hand::Left ? impl->inputState.leftHand.active : impl->inputState.rightHand.active;
+	}
+
+	const OpenXR::HandState& OpenXR::GetHandState(Hand hand) const {
+		return hand == Hand::Left ? impl->inputState.leftHand : impl->inputState.rightHand;
+	}
+
+	const OpenXR::HandJointPose& OpenXR::GetHandJointPose(Hand hand, HandJoint joint) const {
+		static const HandJointPose inactive;
+		const size_t index = static_cast<size_t>(joint);
+		if (index >= static_cast<size_t>(HandJoint::Count))
+			return inactive;
+		return GetHandState(hand).joints[index];
 	}
 
 	bool OpenXR::WasButtonPressed(Button button) const {
