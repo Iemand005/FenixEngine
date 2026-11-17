@@ -72,10 +72,10 @@ void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertP
  		if (!vertPath || vertPath->empty() || fragPath->empty()) return;
 
  		PipelineSet& set = pipelineSets_[static_cast<size_t>(format)];
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_CLOCKWISE);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
- 		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.normal);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cw, VK_FRONT_FACE_CLOCKWISE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.transparent, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, VK_TRUE);
+		createGraphicsPipeline(*vertPath, *fragPath, format, set.cwTransparent, VK_FRONT_FACE_CLOCKWISE, VK_FALSE, VK_TRUE);
  	
  }
 
@@ -931,8 +931,8 @@ VkPipeline VulkanDevice::GetGraphicsPipeline(VertexFormat format, bool transpare
  void VulkanDevice::SetMat4(const char* name,  const glm::mat4& value) {
 
 		if (strcmp(name, "model") == 0) { currentModel_ = value; }
-		else if (strcmp(name, "view") == 0) { currentView_ = value; updateUniformBuffer(currentFrame_); }
-		else if (strcmp(name, "projection") == 0) { currentProj_ = value; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "view") == 0) { currentView_ = value; vrProjectionActive_ = false; updateUniformBuffer(currentFrame_); }
+		else if (strcmp(name, "projection") == 0) { currentProj_ = value; vrProjectionActive_ = false; updateUniformBuffer(currentFrame_); }
 	
 }
 
@@ -1311,10 +1311,28 @@ vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetGraphicsPipeline(Vert
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &cmd;
 
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]);
+		if (vkQueueSubmit(graphicsQueue_, 1, &submitInfo, inFlightFences_[currentFrame_]) != VK_SUCCESS)
+			throw std::runtime_error("Failed to submit XR draw command buffer.");
 
 		currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
 	
+}
+
+void VulkanDevice::SetVRViewProjection(const glm::mat4& view,
+		const glm::mat4& projection, const glm::mat4& projectionNative) {
+	currentView_ = view;
+	currentProj_ = projection;
+	vrProjection_ = projectionNative;
+	vrProjectionActive_ = true;
+	updateUniformBuffer(currentFrame_);
+}
+
+
+void VulkanDevice::WaitForVRFrame() {
+	if (vkWaitForFences(_device, static_cast<uint32_t>(inFlightFences_.size()),
+		inFlightFences_.data(), VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to wait for XR rendering to complete.");
+	}
 }
 
 
@@ -1461,7 +1479,7 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorRef{};
@@ -1669,13 +1687,24 @@ void VulkanDevice::setupWindowResources(IWindow* window) {
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+		std::vector<const char*> deviceExtensions;
+		deviceExtensions.reserve(kDeviceExtensions.size() + openXRDeviceExtensions_.size());
+		for (const char* extension : kDeviceExtensions)
+			deviceExtensions.push_back(extension);
+		for (const std::string& extension : openXRDeviceExtensions_) {
+			const bool alreadyEnabled = std::any_of(deviceExtensions.begin(), deviceExtensions.end(),
+				[&extension](const char* enabled) { return extension == enabled; });
+			if (!alreadyEnabled)
+				deviceExtensions.push_back(extension.c_str());
+		}
+
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(kDeviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = kDeviceExtensions.data();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 		if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_device) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create logical device.");
@@ -2517,11 +2546,20 @@ void VulkanDevice::copyBufferToImage(VkBuffer buffer,  VkImage image,  uint32_t 
 
 		UniformBufferObject ubo{};
 		ubo.view = currentView_;
-		ubo.proj = currentProj_;
-		ubo.proj[1][1] *= -1;
 
-		ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
-		ubo.proj[3][2] *= 0.5f;
+		if (vrProjectionActive_) {
+			// The VR path builds the projection directly in Vulkan clip space
+			// (y down, z in [0, 1]); upload it untouched.
+			ubo.proj = vrProjection_;
+		} else {
+			ubo.proj = currentProj_;
+			// Full GL -> Vulkan clip conversion: mirror Y (both the base term
+			// and the off-axis skew term) and remap z from [-1, 1] to [0, 1].
+			ubo.proj[1][1] *= -1;
+			ubo.proj[2][1] *= -1;
+			ubo.proj[2][2] = ubo.proj[2][2] * 0.5f - 0.5f;
+			ubo.proj[3][2] *= 0.5f;
+		}
 
 		memcpy(uniformBuffersMapped_[currentImage], &ubo, sizeof(ubo));
 	

@@ -95,6 +95,12 @@ Renderer::Renderer(int width, int height, bool skipInit, bool hidden, bool fulls
 
 Renderer::Renderer(RendererOptions options) {
 	CreateRenderDevice(options.useVulkan);
+#ifdef FE_HAS_VULKAN
+	if (options.useVulkan && options.preferOpenXRDevice) {
+		if (auto* vulkanDevice = dynamic_cast<VulkanDevice*>(renderDevice.get()))
+			vulkanDevice->SetPreferOpenXRDevice(true);
+	}
+#endif
 #ifdef FE_HAS_WINDOW
 	NewWindow(options.width, options.height, options.hidden, options.fullscreen, options.useVulkan);
 #endif

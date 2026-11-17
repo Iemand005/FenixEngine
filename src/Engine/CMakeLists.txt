@@ -133,6 +133,7 @@ endif()
 set(SOURCE_FILES
 	accessories/Aura.cpp
 	Android.cpp
+	components/Drone.cpp
 	EditableGame.cpp
 	engine.cpp
 	Game.cpp
@@ -150,9 +151,13 @@ set(SOURCE_FILES
 	physics/PhysicsVehicle.cpp
 	Scene.cpp
 	Sensors/Accelerometer.cpp
+	vr/OpenXR.cpp
 	XRGame.cpp
 )
 
+set_source_files_properties(components/Drone.cpp PROPERTIES
+	SKIP_UNITY_BUILD_INCLUSION ON
+)
 
 set(RENDERER_SOURCES
 	Renderer.cpp
@@ -176,6 +181,14 @@ if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
 endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
+
+if(FE_EXCLUDE_OPENXR OR EMSCRIPTEN)
+	target_compile_definitions(Renderer PRIVATE FE_EXCLUDE_OPENXR)
+else()
+	target_include_directories(Renderer PRIVATE
+		${EXTERNAL_DIR}/OpenXR-SDK/include
+	)
+endif()
 
 target_precompile_headers(Renderer PRIVATE
 	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
@@ -271,7 +284,7 @@ if(FE_EXCLUDE_JOLT)
 endif()
 
 if(FE_INCLUDE_OPENVR)
-	list(APPEND ENGINE_SOURCE_FILES openvr/OpenVR.cpp)
+	list(APPEND ENGINE_SOURCE_FILES vr/OpenVR.cpp)
 endif()
 
 add_library(Engine STATIC ${ENGINE_SOURCE_FILES})
@@ -313,7 +326,7 @@ if(FE_EXCLUDE_VULKAN)
 endif()
 
 if(FE_EXCLUDE_OPENXR)
-	add_compile_definitions(FE_EXCLUDE_OPENXR)
+	target_compile_definitions(Engine PUBLIC FE_EXCLUDE_OPENXR)
 endif()
 
 target_include_directories(Engine PRIVATE
@@ -327,6 +340,12 @@ target_include_directories(Engine PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/../games/common
 )
+
+if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)
+	target_include_directories(Engine PUBLIC
+		${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_DIR}/OpenXR-SDK/include
+	)
+endif()
 
 if(NOT FE_EXCLUDE_GLFW AND NOT EMSCRIPTEN)
 	target_include_directories(Engine PUBLIC

@@ -2,54 +2,29 @@
 #include "Game.hpp"
 #include "window/IWindow.hpp"
 
-#ifndef XR_EXTENSION_PROTOTYPES
-#define XR_EXTENSION_PROTOTYPES
-#endif
-
-#if defined(_WIN32)
-#define XR_USE_PLATFORM_WIN32
-#define XR_USE_GRAPHICS_API_OPENGL
-#define XR_USE_GRAPHICS_API_VULKAN
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <unknwn.h>
-#elif defined(__ANDROID__) || defined(ANDROID)
-#define XR_USE_PLATFORM_ANDROID
-#define XR_USE_GRAPHICS_API_OPENGL_ES
-// #define XR_USE_GRAPHICS_API_VULKAN
-#include <EGL/egl.h>
-#include <jni.h>
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(ANDROID)
-#define XR_USE_PLATFORM_WAYLAND
-#define XR_USE_PLATFORM_XLIB
-#define XR_USE_GRAPHICS_API_OPENGL
-#define XR_USE_GRAPHICS_API_VULKAN
-#endif
-
 #include <memory>
 
 #ifdef FE_INCLUDE_OPENVR
-#include "openvr/OpenVR.hpp"
+#include "vr/OpenVR.hpp"
 #else
 namespace fe { class OpenVR; }
 #endif
 
-typedef int64_t XrTime;
-
 namespace fe {
+
+	class OpenXR;
 
 	struct XRGameOptions : RendererOptions {
 		bool launchVR = false;
 		bool drawWindow = true;
 
-		XRGameOptions() = default; 
+		XRGameOptions() { preferOpenXRDevice = true; }
 
-    	XRGameOptions(int width, int height) : fe::RendererOptions(width, height) {}
+		XRGameOptions(int width, int height) : fe::RendererOptions(width, height) { preferOpenXRDevice = true; }
 
-    	XRGameOptions(bool useVulkan, int width, int height) : fe::RendererOptions(width, height, false, false, useVulkan) {}
+		XRGameOptions(bool useVulkan, int width, int height) : fe::RendererOptions(width, height, useVulkan, false, false) { preferOpenXRDevice = true; }
 
-		XRGameOptions(int width, int height, bool launchVR, bool drawWindow = true) : fe::RendererOptions(width, height), launchVR(launchVR), drawWindow(drawWindow) {}
+		XRGameOptions(int width, int height, bool launchVR, bool drawWindow = true) : fe::RendererOptions(width, height), launchVR(launchVR), drawWindow(drawWindow) { preferOpenXRDevice = true; }
 	};
 
 	class XRGame : public fe::Game {
@@ -67,42 +42,23 @@ namespace fe {
 
 		bool drawWindow = true;
 
-		glm::vec3 positionOffset = glm::vec3(1.0f);
+		// World-space offset added to the player position before applying the
+		// reference-space tracking transform. Y is the eye height above the
+		// player's feet; X/Z should normally stay zero (they previously were 1,
+		// which shifted the head sideways/forward).
+		glm::vec3 positionOffset = glm::vec3(0.0f, 1.0f, 0.0f);
 
 		// Yaw "look" turn (radians) accumulated from the look input (e.g. left
 		// thumbstick). Applied on top of the HMD orientation each VR frame.
 		float playerYaw = 0.0f;
 
-		// Set this to toggle the XR session on/off next frame (used by the
-		// XR action, a hotkey or a gamepad button).
+		// Set this to toggle the XR session on/off next frame (used by a
+		// hotkey or a gamepad button).
 		bool xrToggleRequested = false;
 
-		// Controller poses tracked from OpenXR every VR frame, in world space
-		// (same space the VR camera is composed in). Grip = the physical
-		// controller body; Aim = the pointer/ray pose used for ray casting.
-		glm::vec3 leftGripPosition = glm::vec3(0.0f);
-		glm::vec3 leftAimPosition = glm::vec3(0.0f);
-		glm::vec3 rightGripPosition = glm::vec3(0.0f);
-		glm::vec3 rightAimPosition = glm::vec3(0.0f);
-
-		// False when the runtime isn't tracking the pose (e.g. controller
-		// asleep / not present); the corresponding position is stale.
-		bool leftGripPoseActive = false;
-		bool leftAimPoseActive = false;
-		bool rightGripPoseActive = false;
-		bool rightAimPoseActive = false;
-
-		// Edge-triggered requests raised by the XR action bindings
-		// (left/right trigger = break/place, L1/R1 grips = switch hotbar slot).
-		// The game consumes and clears them.
-		bool xrBreakBlockRequested = false;
-		bool xrPlaceBlockRequested = false;
-		bool xrPrevBlockRequested = false;
-		bool xrNextBlockRequested = false;
-
 		bool running = true;
-		
-		uint32_t swapchainImageIndex;
+
+		uint32_t swapchainImageIndex = 0;
 
 		XRGame(bool launchVR = true);
 		XRGame(int width, int height, bool launchVR = true, bool drawWindow = true, bool showWindow = true);
@@ -111,9 +67,10 @@ namespace fe {
 		~XRGame();
 
 		bool IsInstanceValid();
+		OpenXR& GetOpenXR();
+		const OpenXR& GetOpenXR() const;
 
 		void initOpenXR();
-		void initOpenXR(void *next);
 
 		void EnableXR();
 #ifdef FE_INCLUDE_OPENVR
@@ -132,7 +89,7 @@ namespace fe {
 		void RedrawVR();
 		void RedrawWindow(uint64_t fbo = 0);
 
-		void PollActionsAndUpdateMovement(XrTime predictedDisplayTime);
+		void PollActionsAndUpdateMovement();
 
 		void DrawUI() override;
 
