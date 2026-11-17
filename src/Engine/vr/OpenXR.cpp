@@ -97,6 +97,7 @@ namespace fe {
 
 	struct OpenXR::Impl {
 		InputState inputState;
+		bool handTrackingSupported = false;
 		bool buttonPressed[6] = {};
 		bool buttonHeld[6] = {};
 		bool gripPressedEdge[2] = {};
@@ -128,7 +129,6 @@ namespace fe {
 		XrPassthroughLayerFB passthroughLayer = XR_NULL_HANDLE;
 
 		bool handTrackingExtensionAvailable = false;
-		bool handTrackingSupported = false;
 		XrHandTrackerEXT handTrackers[2] = {XR_NULL_HANDLE, XR_NULL_HANDLE};
 
 		PFN_xrCreatePassthroughFB pfnCreatePassthroughFB = nullptr;
