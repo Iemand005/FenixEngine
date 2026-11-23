@@ -213,7 +213,7 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 	};
 
 	window->onLiveMoveResize = [self]() {
-		self->Redraw();
+		self->redraw();
 	};
 #ifdef _WIN32
 	window->EnableLiveResizePump();
@@ -501,7 +501,7 @@ if (shader) {
 #endif
 }
 
-void Renderer::Redraw() {
+void Renderer::redraw() {
 #ifdef FE_HAS_WINDOW
 	auto window = GetWindow<DefaultWindow>();
 #endif

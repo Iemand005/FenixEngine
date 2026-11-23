@@ -239,7 +239,7 @@ class Game : public Renderer {
 
 	void Redraw(GLuint fbo) {
 		BindFrameBuffer(fbo);
-		Renderer::Redraw();
+		Renderer::redraw();
 	}
 
 	void Update() {

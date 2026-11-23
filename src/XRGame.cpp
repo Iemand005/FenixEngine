@@ -473,7 +473,7 @@ void XRGame::LaunchVR() {
 void XRGame::RedrawWindow(uint64_t fbo) {
 	BindFrameBuffer((int)fbo);
 	CheckErrors();
-	Renderer::Redraw();
+	Renderer::redraw();
 }
 
 void XRGame::EnableXR() {

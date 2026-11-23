@@ -194,7 +194,7 @@ public:
 
 	void RenderAdditionalGLWindows();
 
-	void Redraw();
+	void redraw();
 
 	void CheckErrors();
 	void CheckErrors(const char* label);
