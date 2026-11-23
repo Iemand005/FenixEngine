@@ -20,7 +20,9 @@
 #endif
 #endif
 
+#ifndef FE_EXCLUDE_IMGUI
 #include <imgui.h>
+#endif
 
 using namespace fe;
 
@@ -291,6 +293,7 @@ void XRGame::TogglePassthrough() {
 }
 
 void XRGame::DrawUI() {
+#ifndef FE_EXCLUDE_IMGUI
 	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
 		ImGui::Begin("XR");
@@ -309,6 +312,7 @@ void XRGame::DrawUI() {
 	}
 	ImGui::End();
 	#endif
+#endif
 }
 
 void XRGame::DestroyXR() {
