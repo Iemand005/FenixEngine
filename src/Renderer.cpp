@@ -55,8 +55,12 @@ Renderer::Renderer() = default;
 Renderer::~Renderer() = default;
 
 void Renderer::Init(GLADloadproc loadProc) {
+#ifdef __EMSCRIPTEN__
+	(void)loadProc;
+#else
 	if (!gladLoadGLLoader(loadProc))
 		std::cerr << "Failed to load OpenGL functions (GLAD)" << std::endl;
+#endif
 }
 
 void Renderer::PushShaderPathsToDevice(VertexFormat format, const std::string& vertPath, const std::string& fragPath) {

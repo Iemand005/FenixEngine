@@ -73,10 +73,20 @@ public:
 	// default so other games sharing this class keep their rolling terrain; a
 	// game can enable it (e.g. SuperFlight) to get a level spawn runway.
 	struct FlatStrip {
-		bool enabled = false;
-		float minX = 0.0f, maxX = 0.0f;
-		float minZ = 0.0f, maxZ = 0.0f;
-		int height = 24;
+		bool enabled;
+		float minX, maxX;
+		float minZ, maxZ;
+		int height;
+
+		FlatStrip()
+			: enabled(false)
+			, minX(0.0f)
+			, maxX(0.0f)
+			, minZ(0.0f)
+			, maxZ(0.0f)
+			, height(24)
+		{
+		}
 	};
 	static inline FlatStrip landingStrip{};
 	glm::ivec2 coord;
