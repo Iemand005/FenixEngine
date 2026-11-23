@@ -219,7 +219,6 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 #endif
 
 void Renderer::NewWindow(int width, int height, bool hidden, bool fullscreen) {
-	// throw new std::exception("deprecatfucker");
 	NewWindow(width, height, hidden, fullscreen, useVulkan);
 }
 
