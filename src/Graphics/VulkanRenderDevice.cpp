@@ -1,5 +1,6 @@
 
 #include "VulkanDevice.hpp"
+#include "../Log.hpp"
 #ifndef FE_EXCLUDE_OPENXR
 #include "../vr/OpenXR.hpp"
 #endif

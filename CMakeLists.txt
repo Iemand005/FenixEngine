@@ -194,7 +194,7 @@ set(SOURCE_FILES
 	src/XRGame.cpp
 )
 
-set_source_files_properties(components/Drone.cpp PROPERTIES
+set_source_files_properties(src/components/Drone.cpp PROPERTIES
 	SKIP_UNITY_BUILD_INCLUSION ON
 )
 
@@ -216,7 +216,7 @@ if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
 endif()
 
 if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES src/Graphics/VulkanRenderDevice.cpp Graphics/VulkanDevice.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES src/Graphics/VulkanRenderDevice.cpp src/Graphics/VulkanDevice.cpp)
 endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
@@ -230,11 +230,11 @@ else()
 endif()
 
 target_precompile_headers(Renderer PRIVATE
-	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp>"
 )
 
 target_include_directories(Renderer PRIVATE
-	../include
+	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_include_directories(Renderer PUBLIC
@@ -317,19 +317,19 @@ set(ENGINE_SOURCE_FILES ${SOURCE_FILES} ${IMGUI_SOURCE_FILES})
 
 if(FE_EXCLUDE_JOLT)
 	list(REMOVE_ITEM ENGINE_SOURCE_FILES
-		physics/PhysicsVehicle.cpp
-		physics/BasicDebugRenderer.cpp
+		src/physics/PhysicsVehicle.cpp
+		src/physics/BasicDebugRenderer.cpp
 	)
 endif()
 
 if(FE_INCLUDE_OPENVR)
-	list(APPEND ENGINE_SOURCE_FILES vr/OpenVR.cpp)
+	list(APPEND ENGINE_SOURCE_FILES src/vr/OpenVR.cpp)
 endif()
 
 add_library(Engine STATIC ${ENGINE_SOURCE_FILES})
 
 target_precompile_headers(Engine PRIVATE
-	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.hpp>"
+	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp>"
 )
 
 if(WIN32)
@@ -369,15 +369,15 @@ if(FE_EXCLUDE_OPENXR)
 endif()
 
 target_include_directories(Engine PRIVATE
-	../include
+	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${EXTERNAL_DIR}/cgltf
 )
 
 target_include_directories(Engine PUBLIC
 	${EXTERNAL_DIR}/glm
 	${EXTERNAL_DIR}/imgui
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/common
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/src/common
 )
 
 if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)

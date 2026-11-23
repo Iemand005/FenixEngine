@@ -19,6 +19,9 @@
 #define XR_USE_GRAPHICS_API_VULKAN
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <Windows.h>
 #include <unknwn.h>
 #elif defined(__ANDROID__) || defined(ANDROID)
@@ -31,6 +34,10 @@
 #define XR_USE_PLATFORM_XLIB
 #define XR_USE_GRAPHICS_API_OPENGL
 #define XR_USE_GRAPHICS_API_VULKAN
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+#include <vulkan/vulkan.h>
 #endif
 
 #ifndef FE_EXCLUDE_OPENXR
