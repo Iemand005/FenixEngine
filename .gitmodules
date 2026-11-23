@@ -4,9 +4,6 @@
 [submodule "third_party/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui
-[submodule "third_party/assimp"]
-	path = third_party/assimp
-	url = https://github.com/assimp/assimp
 [submodule "third_party/OpenXR-SDK"]
 	path = external/OpenXR-SDK
 	url = https://github.com/KhronosGroup/OpenXR-SDK.git
@@ -28,5 +25,3 @@
 [submodule "external/cgltf"]
 	path = external/cgltf
 	url = https://github.com/jkuhlmann/cgltf
-[submodule "external/JoltPhysics"]
-	url = https://github.com/Iemand005/JoltPhysics
