@@ -209,7 +209,7 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 	}
 
 	window->resizeEvent = [self](int width, int height) {
-		self->resize(width, height);
+		window->resize(width, height);
 	};
 
 	window->onLiveMoveResize = [self]() {
