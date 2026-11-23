@@ -215,7 +215,7 @@ public:
 		return (WindowT*)this->windows.front().get();
 	}
 
-	double GetFPS();
+	double getFPS();
 
 	void BindFrameBuffer(int bufferIndex = 0);
 
