@@ -324,6 +324,7 @@ namespace fe {
 				ImGui::SetKeyboardFocusHere(-1);
 				}
 			}
+			}
 			ImGui::End();
 		}
 #else
