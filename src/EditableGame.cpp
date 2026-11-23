@@ -224,7 +224,7 @@ void fe::EditableGame::DrawDebugUI() {
 		if (renderDevice) ImGui::Text("Device: %s", renderDevice->GetDeviceName());
 
 		ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io_->Framerate, io_->Framerate);
 		ImGui::Checkbox("Show Frame Times", &showFrameTimes);
 
 		ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
