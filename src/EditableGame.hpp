@@ -30,6 +30,8 @@
 #include "Graphics/VulkanDevice.hpp"
 #endif
 
+struct ImGuiIO;
+
 namespace fe {
 
 	class EditableGame : public XRGame {
@@ -85,9 +87,7 @@ namespace fe {
 #endif
 		}
 
-#ifndef FE_EXCLUDE_IMGUI
-		ImGuiIO io;
-#endif
+		ImGuiIO* io_ = nullptr;
 
 		bool physicsGravityEnabled = true;
 		bool leftWasDown_ = false;
@@ -103,14 +103,14 @@ namespace fe {
 			// const char* glsl_version = ;
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
-			io = ImGui::GetIO();
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+			io_ = &ImGui::GetIO();
+			io_->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 
 			ImGui::StyleColorsDark();
 
 			float scale = SDL_GetWindowDisplayScale(window->GetWindow());
 			if (scale > 1.0f) {
-				io.FontGlobalScale = scale;
+				io_->FontGlobalScale = scale;
 				ImGui::GetStyle().ScaleAllSizes(scale);
 			}
 
