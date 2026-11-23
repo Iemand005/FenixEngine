@@ -204,9 +204,7 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 		} else {
 			window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 		}
-	} else {
-		window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
-	}
+	} else window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 
 	window->onLiveMoveResize = [self]() {
 		self->redraw();
