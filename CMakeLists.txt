@@ -234,7 +234,7 @@ target_precompile_headers(Renderer PRIVATE
 )
 
 target_include_directories(Renderer PRIVATE
-	../../include
+	../include
 )
 
 target_include_directories(Renderer PUBLIC
@@ -369,7 +369,7 @@ if(FE_EXCLUDE_OPENXR)
 endif()
 
 target_include_directories(Engine PRIVATE
-	../../include
+	../include
 	${EXTERNAL_DIR}/cgltf
 )
 
@@ -377,7 +377,7 @@ target_include_directories(Engine PUBLIC
 	${EXTERNAL_DIR}/glm
 	${EXTERNAL_DIR}/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/../games/common
+	${CMAKE_CURRENT_SOURCE_DIR}/common
 )
 
 if(NOT FE_EXCLUDE_OPENXR AND NOT EMSCRIPTEN)
