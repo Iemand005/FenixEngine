@@ -1,6 +1,8 @@
 #include "EditableGame.hpp"
 
+#ifndef FE_EXCLUDE_IMGUI
 #include <imgui.h>
+#endif
 
 #include <algorithm>
 #include <limits>
@@ -26,7 +28,11 @@ void fe::EditableGame::DetectAndHandleClick() {
 		Uint32 buttons = SDL_GetMouseState(&mx, &my);
 		bool leftDown = (buttons & SDL_BUTTON_LMASK) != 0;
 
-		if (leftDown && !leftWasDown_ && !ImGui::GetIO().WantCaptureMouse) {
+		if (leftDown && !leftWasDown_
+#ifndef FE_EXCLUDE_IMGUI
+			&& !ImGui::GetIO().WantCaptureMouse
+#endif
+			) {
 			RaycastSelect(static_cast<int>(mx), static_cast<int>(my), window->width, window->height);
 		}
 
@@ -37,7 +43,12 @@ void fe::EditableGame::DetectAndHandleClick() {
 void fe::EditableGame::OnDraw() {
 	if (IsSelectModeEnabled())
 		DetectAndHandleClick();
-	EditableGameBase::OnDraw();
+	if (selectedObject)
+		DrawGizmo(selectedObject->state.position);
+#ifndef EXCLUDE_JOLT
+	auto physics = GetPhysicsFactory();
+	if (physics) physics->RenderDebug(camera->GetViewMatrix(), camera->GetProjectionMatrix());
+#endif
 }
 
 static void RaycastNode(fe::Object* obj, const glm::vec3& rayOrigin, const glm::vec3& rayDir, fe::Object*& hitObject, float& closestT) {
@@ -87,7 +98,7 @@ static void RaycastNode(fe::Object* obj, const glm::vec3& rayOrigin, const glm::
 		RaycastNode(child.get(), rayOrigin, rayDir, hitObject, closestT);
 }
 
-void fe::EditableGameBase::RaycastSelect(int mx, int my, int w, int h) {
+void fe::EditableGame::RaycastSelect(int mx, int my, int w, int h) {
 	if (!scene || !camera) return;
 
 	glm::vec3 nearPos = glm::unProject(
@@ -116,6 +127,7 @@ void fe::EditableGameBase::RaycastSelect(int mx, int my, int w, int h) {
 		SelectObject(hitObject);
 }
 
+#ifndef FE_EXCLUDE_IMGUI
 void DrawObjectNode(Object* object, Camera* camera, Scene* scene, EditableGame* game, float step) {
 	ImGui::PushID(object);
 
@@ -186,7 +198,9 @@ void DrawObjectNode(Object* object, Camera* camera, Scene* scene, EditableGame* 
 
 	ImGui::PopID();
 }
+#endif
 
+#ifndef FE_EXCLUDE_IMGUI
 void fe::EditableGame::DrawDebugUI() {
 #ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {
@@ -506,3 +520,6 @@ void fe::EditableGame::DrawDebugUI() {
 
 	if (this->client) DrawNetworkDebugUI();
 }
+#else
+void fe::EditableGame::DrawDebugUI() {}
+#endif

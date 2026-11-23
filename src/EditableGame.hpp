@@ -5,19 +5,24 @@
 
 #include <iostream>
 
+#ifndef EXCLUDE_JOLT
+#include "physics/PhysicsFactory.hpp"
+#endif
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifndef FE_EXCLUDE_IMGUI
 #include <imgui.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_opengl3.h>
 #ifdef FE_HAS_VULKAN
 #include <backends/imgui_impl_vulkan.h>
 #endif
+#endif
 
-#include "EditableGameBase.hpp"
+#include "XRGame.hpp"
 
 // Renderer.hpp only forward declares the device types now; the inline methods
 // below dynamic_cast to VulkanDevice, so it needs the full header.
@@ -26,32 +31,70 @@
 #endif
 
 namespace fe {
-  
-	class EditableGame : public EditableGameBase {
+
+	class EditableGame : public XRGame {
+
+		fe::Object* selectedObject = nullptr;
+		int lighselecIndex = -1;
+		bool selectModeEnabled_ = false;
+
+		void DrawGizmo(const glm::vec3& position) {
+			if (!scene) return;
+			scene->DrawCircle(position, 10, 32, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.95f, 0.80f, 0.15f));
+			scene->DrawArrow(position, {1.0f, 0.0f, 0.0f}, 2.0f, {1.0f, 0.0f, 0.0f});
+			scene->DrawArrow(position, {0.0f, 1.0f, 0.0f}, 2.0f, {0.0f, 1.0f, 0.0f});
+			scene->DrawArrow(position, {0.0f, 0.0f, 1.0f}, 2.0f, {0.0f, 0.0f, 1.0f});
+		}
 
 	public:
-		EditableGame(int width, int height, bool vr = false, bool showWindow = true) : EditableGameBase(width, height, vr, showWindow) {
-			Init();
+		EditableGame() { Init(); }
+
+		EditableGame(GLADloadproc loadProc) : XRGame(loadProc) { Init(); }
+
+		EditableGame(int width, int height, bool vr = false, bool showWindow = true) : XRGame(width, height, vr, true, showWindow) { Init(); }
+
+		EditableGame(XRGameOptions options) : XRGame(options) { Init(); }
+
+		bool IsSelectModeEnabled() const { return selectModeEnabled_; }
+		void SetSelectModeEnabled(bool enabled) { selectModeEnabled_ = enabled; }
+
+		void RaycastSelect(int mx, int my, int w, int h);
+
+		void SelectObjectByIndex(int index) {
+			auto objs = scene->GetObjects();
+			auto objec = objs[index];
+			selectedObject = objec.get();
 		}
 
-		EditableGame(XRGameOptions options) : EditableGameBase(options) {
-			Init();
-		}
-		
+		void SelectObject(fe::Object* obj) { selectedObject = obj; }
+		fe::Object* GetSelectedObject() const { return selectedObject; }
+		void UnselectObject() { selectedObject = nullptr; }
+
+		void SelectLightByIndex(int index) { lighselecIndex = index; }
+		void UnselectLight() { lighselecIndex = -1; }
+
 	private:
 		void Init() {
+#ifndef FE_EXCLUDE_IMGUI
 			InitImGui();
+#endif
 			InitUI();
+#ifndef FE_EXCLUDE_IMGUI
 			bool themed = true;
 			if (themed) ApplyBlackAndOrangeTheme();
+#endif
 		}
 
+#ifndef FE_EXCLUDE_IMGUI
 		ImGuiIO io;
+#endif
 
 		bool physicsGravityEnabled = true;
 		bool leftWasDown_ = false;
 
 		void DetectAndHandleClick();
+
+#ifndef FE_EXCLUDE_IMGUI
 		void InitImGui() {
 			auto renderer = (Renderer*)this;
 			auto window = GetWindow<SDLWindow>();
@@ -115,11 +158,15 @@ namespace fe {
 			ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
 		}
+#else
+		void InitImGui() {}
+#endif
 
 	public:
 
 		void OnDraw() override;
 
+#ifndef FE_EXCLUDE_IMGUI
 		void BeginFrame() {
 #ifdef FE_HAS_VULKAN
 			if (!useVulkan) {
@@ -167,14 +214,51 @@ namespace fe {
 			}
 #endif
 		}
+#else
+		void BeginFrame() {}
+		void EndFrame() {}
+#endif
 
 		void DrawDebugUI();
 
-	#ifdef USE_VISUALIZER
-			void DrawAudioVisualizerUI() {
-			}
-	#endif
+#ifdef USE_VISUALIZER
+#ifndef FE_EXCLUDE_IMGUI
+		void DrawAudioVisualizerUI() {
+			ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
+			ImGui::Begin("Audio Spectrum");
 
+			ImVec2 canvasPos  = ImGui::GetCursorScreenPos();
+			ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+			canvasSize.y = std::max(canvasSize.y, 80.0f);
+
+			ImDrawList* draw = ImGui::GetWindowDrawList();
+			draw->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(18, 18, 18, 255));
+
+			float barGap   = 2.0f;
+			float barWidth = (canvasSize.x - barGap * (NUM_BARS - 1)) / NUM_BARS;
+
+			for (int i = 0; i < NUM_BARS; ++i) {
+				float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
+				float normalized = std::clamp(ah, 0.0f, 1.0f);
+				float barHeight  = normalized * canvasSize.y;
+
+				float x0 = canvasPos.x + i * (barWidth + barGap);
+				ImVec2 barMin(x0, canvasPos.y + canvasSize.y - barHeight);
+				ImVec2 barMax(x0 + barWidth, canvasPos.y + canvasSize.y);
+
+				ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
+				draw->AddRectFilled(barMin, barMax, color);
+			}
+
+			ImGui::Dummy(canvasSize);
+			ImGui::End();
+		}
+#else
+		void DrawAudioVisualizerUI() {}
+#endif
+#endif
+
+#ifndef FE_EXCLUDE_IMGUI
 		void DrawNetworkDebugUI() {
 			ImGui::Begin("Multiplayer");
 			{
@@ -200,8 +284,6 @@ namespace fe {
 				}
 			}
 			ImGui::End();
-
-		
 
 			ImGui::Begin("Chat");
 			{
@@ -242,43 +324,13 @@ namespace fe {
 				ImGui::SetKeyboardFocusHere(-1);
 				}
 			}
-		}
-		ImGui::End();
-		}
-
-	#ifdef USE_VISUALIZER
-		void DrawAudioVisualizerUI() {
-			ImGui::SetNextWindowSize(ImVec2(440, 240), ImGuiCond_FirstUseEver);
-			ImGui::Begin("Audio Spectrum");
-
-			ImVec2 canvasPos  = ImGui::GetCursorScreenPos();
-			ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-			canvasSize.y = std::max(canvasSize.y, 80.0f);
-
-			ImDrawList* draw = ImGui::GetWindowDrawList();
-			draw->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), IM_COL32(18, 18, 18, 255));
-
-			float barGap   = 2.0f;
-			float barWidth = (canvasSize.x - barGap * (NUM_BARS - 1)) / NUM_BARS;
-
-			for (int i = 0; i < NUM_BARS; ++i) {
-				float ah = visualizer.bandMagnitudesSmoothed[i] * visualizerScale;
-				float normalized = std::clamp(ah, 0.0f, 1.0f);
-				float barHeight  = normalized * canvasSize.y;
-
-				float x0 = canvasPos.x + i * (barWidth + barGap);
-				ImVec2 barMin(x0, canvasPos.y + canvasSize.y - barHeight);
-				ImVec2 barMax(x0 + barWidth, canvasPos.y + canvasSize.y);
-
-				ImU32 color = IM_COL32(60 + (int)(195 * normalized), 140, 255 - (int)(140 * normalized), 255);
-				draw->AddRectFilled(barMin, barMax, color);
-			}
-
-			ImGui::Dummy(canvasSize);
 			ImGui::End();
 		}
-	#endif
+#else
+		void DrawNetworkDebugUI() {}
+#endif
 
+#ifndef FE_EXCLUDE_IMGUI
 		void ApplyBlackAndOrangeTheme() {
 			ImGuiStyle& style = ImGui::GetStyle();
 			ImVec4* colors = style.Colors;
@@ -364,6 +416,9 @@ namespace fe {
 			style.GrabRounding = 3.0f;
 			style.PopupRounding = 4.0f;
 		}
+#else
+		void ApplyBlackAndOrangeTheme() {}
+#endif
 	};
-  
+
 } // namespace fe
