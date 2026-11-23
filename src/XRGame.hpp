@@ -110,13 +110,13 @@ namespace fe {
 		void HandleWebXRSessionEnded();
 #endif
 
-		void DrawUI() override;
+		void drawUI() override;
 
 		void DestroyXR();
 
 		void Destroy() {
 			DestroyXR();
-			Game::Destroy();
+			Game::destroy();
 		}
 	};
 }

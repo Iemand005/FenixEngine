@@ -56,7 +56,7 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void EnableWireframe() override;
 	void DisableWireframe() override;
 	void BindFramebuffer(int bufferIndex) override;
-	void Clear() override;
+	void clear() override;
 	void SetClearColor(float r, float g, float b, float a = 1) override;
 	void Resize(int width, int height) override;
 	std::vector<const IWindow*> GetWindows() override;

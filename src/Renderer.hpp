@@ -178,9 +178,7 @@ public:
 
 	void SetClearColor(float r, float g, float b, float a = 1);
 
-	void Resize(int width, int height);
-
-	void Clear();
+	void clear();
 
 	void SetTransparentMode(bool enabled);
 
@@ -199,8 +197,8 @@ public:
 	void CheckErrors();
 	void CheckErrors(const char* label);
 
-	virtual void InitUI() {}
-	virtual void DrawUI() {}
+	virtual void initUI() {}
+	virtual void drawUI() {}
 	virtual void OnDraw() {}
 	virtual void OnPreSwap() {}
 
@@ -221,9 +219,7 @@ public:
 
 	void updateAspect(int width, int height);
 
-	bool shouldClose();
-
-	void Destroy();
+	void destroy();
 };
 
 }

@@ -398,7 +398,7 @@ void XRGame::TogglePassthrough() {
 	SetPassthroughEnabled(!IsPassthroughEnabled());
 }
 
-void XRGame::DrawUI() {
+void XRGame::drawUI() {
 #ifndef FE_EXCLUDE_IMGUI
 	#ifdef FE_INCLUDE_OPENVR
 	if (openVR && openVR->mode == OpenVR::Mode::Scene) {

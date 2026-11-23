@@ -80,7 +80,7 @@ namespace fe {
 #ifndef FE_EXCLUDE_IMGUI
 			InitImGui();
 #endif
-			InitUI();
+			initUI();
 #ifndef FE_EXCLUDE_IMGUI
 			bool themed = true;
 			if (themed) ApplyBlackAndOrangeTheme();

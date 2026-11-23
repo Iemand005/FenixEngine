@@ -277,7 +277,7 @@ void VulkanDevice::SubmitFrame() {
 
 
 
-void VulkanDevice::Clear() {
+void VulkanDevice::clear() {
 
  		vkWaitForFences(_device, 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX);
 

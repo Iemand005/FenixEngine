@@ -249,8 +249,8 @@ class Game : public Renderer {
 
 	void UpdatePhysics(double deltaTime);
 
-	virtual void InitUI() {}
-	virtual void DrawUI() {}
+	virtual void initUI() {}
+	virtual void drawUI() {}
 };
 
 }  // namespace fe

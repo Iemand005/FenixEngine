@@ -270,7 +270,7 @@ void OpenGLRenderDevice::BindFramebuffer(int bufferIndex) {
 	glBindFramebuffer(GL_FRAMEBUFFER, bufferIndex);
 }
 
-void OpenGLRenderDevice::Clear() {
+void OpenGLRenderDevice::clear() {
 	MakeCurrent();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

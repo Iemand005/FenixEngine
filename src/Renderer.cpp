@@ -116,7 +116,7 @@ void Renderer::run() {
 #else
     while (!shouldClose())
         Step();
-    Destroy();
+    destroy();
 #endif
 }
 
@@ -209,7 +209,7 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 	}
 
 	window->resizeEvent = [self](int width, int height) {
-		self->Resize(width, height);
+		self->resize(width, height);
 	};
 
 	window->onLiveMoveResize = [self]() {
@@ -218,10 +218,6 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 #ifdef _WIN32
 	window->EnableLiveResizePump();
 #endif
-
-	// window->mouseMoveEvent = [self](int x, int y) {
-	//   self->MouseMove(x, y);
-	// };
 	return std::move(window);
 }
 #endif
@@ -286,16 +282,9 @@ void Renderer::SetClearColor(float r, float g, float b, float a) {
 	for (auto& dev : renderDevices) dev->SetClearColor(r, g, b, a);
 }
 
-void Renderer::Resize(int width, int height) {
-	// glViewport(0, 0, width, height);
-	renderDevice->Resize(width, height);
-	for (auto& dev : renderDevices) dev->Resize(width, height);
-	this->updateAspect(width, height);
-}
-
-void Renderer::Clear() { 
-	renderDevice->Clear();
-	for (auto& dev : renderDevices) dev->Clear();
+void Renderer::clear() { 
+	renderDevice->clear();
+	for (auto& dev : renderDevices) dev->clear();
 }
 
 void Renderer::SetTransparentMode(bool enabled) {
@@ -465,7 +454,7 @@ void Renderer::RenderAdditionalGLWindows() {
 		d->EnableFaceCulling();
 
 		d->SetClearColor(clearColorR_, clearColorG_, clearColorB_, clearColorA_);
-		d->Clear();
+		d->clear();
 
 		glm::mat4 perWindowProj = camera->GetProjectionMatrix();
 		if (vw > 0 && vh > 0)
@@ -508,7 +497,7 @@ void Renderer::redraw() {
 	if (!scene || !camera) return;
 	if (!useVulkan && !shader) return;
 
-	Clear();
+	clear();
 
 	if (shader) {
 		shader->Use();
@@ -530,7 +519,7 @@ void Renderer::redraw() {
 
 	OnDraw();
 
-	DrawUI();
+	drawUI();
 
 	OnPreSwap();
 
@@ -596,7 +585,7 @@ void Renderer::updateAspect(int width, int height) {
 	if (this->camera) this->camera->SetAspect(width, height);
 }
 
-void Renderer::Destroy() {
+void Renderer::destroy() {
 	for (auto &window : windows)
 		window->Destroy();
 }

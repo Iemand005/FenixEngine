@@ -55,7 +55,7 @@ void Game::Init() {
 	this->scene->SetLight();
 	
 	// Renderer::Init();
-	InitUI();
+	initUI();
 }
 
 void Game::LoadModel(const std::string& path) {

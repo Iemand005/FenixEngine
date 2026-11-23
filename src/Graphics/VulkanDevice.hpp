@@ -140,7 +140,7 @@ public:
 
 	void UnregisterWindow(const IWindow* window) override;
 
-	void Clear() override;
+	void clear() override;
 
 	void Clear(const IWindow *window);
 
