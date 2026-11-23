@@ -181,8 +181,8 @@ set(SOURCE_FILES
 	src/Graphics/OpenGLRenderDevice.cpp
 	src/ImageLoader.cpp
 	src/Mesh.cpp
-	../games/common/Chunk.cpp
-	../games/common/ChunkManager.cpp
+	src/common/Chunk.cpp
+	src/common/ChunkManager.cpp
 	src/physics/BasicDebugRenderer.cpp
 	src/physics/PhysicsCharacter.cpp
 	src/physics/PhysicsFactory.cpp
