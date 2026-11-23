@@ -208,10 +208,6 @@ static std::unique_ptr<WindowT> MakeWindow(Renderer* self, std::string title, in
 		window = std::make_unique<WindowT>(title, width, height, hidden, fullscreen, WindowOptions{}, useVulkan);
 	}
 
-	window->resizeEvent = [self](int width, int height) {
-		window->resize(width, height);
-	};
-
 	window->onLiveMoveResize = [self]() {
 		self->redraw();
 	};
