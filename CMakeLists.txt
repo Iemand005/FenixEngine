@@ -45,6 +45,7 @@ option(FE_EXCLUDE_JOLT "Exclude JOLT from the build" OFF)
 option(FE_EXCLUDE_VULKAN "Exclude Vulkan from the build" OFF)
 option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
+option(FE_EXCLUDE_IMGUI "Exclude ImGui from EditableGame and XRGame UI code" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
 
 set(SDL_X11_XTEST OFF CACHE BOOL "Disable SDL X11 XTEST dependency" FORCE)
@@ -327,6 +328,10 @@ if(FE_INCLUDE_OPENVR)
 endif()
 
 add_library(Engine STATIC ${ENGINE_SOURCE_FILES})
+
+if (FE_EXCLUDE_IMGUI)
+    target_compile_definitions(Engine PRIVATE FE_EXCLUDE_IMGUI)
+endif()
 
 target_precompile_headers(Engine PRIVATE
 	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp>"
