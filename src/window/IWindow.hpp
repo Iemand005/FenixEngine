@@ -63,7 +63,7 @@ public:
 
 		IWindow(int width, int height) : width(width), height(height) {}
 
-		virtual bool ShouldClose() { return shouldClose; }
+		virtual bool shouldClose() { return shouldClose; }
 
 		virtual void PrepareClose() { shouldClose = true; }
 

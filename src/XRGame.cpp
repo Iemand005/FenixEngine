@@ -247,7 +247,7 @@ void XRGame::initOpenXR() {
 #endif
 
 	if (!binding.useVulkan) {
-		auto window = GetWindow<fe::SDLWindow>();
+		auto window = getWindow<fe::SDLWindow>();
 #ifdef _WIN32
 		binding.display = window->GetDrawingContext();
 		binding.context = window->GetOpenGLRenderingContext();
@@ -466,12 +466,12 @@ void XRGame::LaunchVR() {
 		return;
 	}
 	impl->drawVR = true;
-	GetWindow()->StopMouseCapture();
+	getWindow()->StopMouseCapture();
 	#endif
 }
 
 void XRGame::RedrawWindow(uint64_t fbo) {
-	BindFrameBuffer((int)fbo);
+	bindFrameBuffer((int)fbo);
 	CheckErrors();
 	Renderer::redraw();
 }

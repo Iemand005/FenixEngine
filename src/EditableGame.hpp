@@ -97,7 +97,7 @@ namespace fe {
 #ifndef FE_EXCLUDE_IMGUI
 		void InitImGui() {
 			auto renderer = (Renderer*)this;
-			auto window = GetWindow<SDLWindow>();
+			auto window = getWindow<SDLWindow>();
 			bool glES = true;
 			const char* glsl_version = glES ? "#version 300 es" : "#version 330 core";
 			// const char* glsl_version = ;
@@ -174,7 +174,7 @@ namespace fe {
 			{
 #endif
 				auto renderer = (Renderer*)this;
-				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
+				auto* primaryWindow = renderer->getWindow<SDLWindow>();
 				if (primaryWindow && primaryWindow->GetSDLGLContext())
 					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
 				ImGui_ImplOpenGL3_NewFrame();
@@ -199,7 +199,7 @@ namespace fe {
 			}
 			else {
 				auto renderer = (Renderer*)this;
-				auto* primaryWindow = renderer->GetWindow<SDLWindow>();
+				auto* primaryWindow = renderer->getWindow<SDLWindow>();
 				if (primaryWindow && primaryWindow->GetSDLGLContext())
 					SDL_GL_MakeCurrent(primaryWindow->GetWindow(), primaryWindow->GetSDLGLContext());
 				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

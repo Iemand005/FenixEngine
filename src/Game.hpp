@@ -57,7 +57,7 @@ class Game : public Renderer {
 
 	void refreshJoysticks() {
 		joysticks.clear();
-		auto* window = GetWindow<SDLWindow>();
+		auto* window = getWindow<SDLWindow>();
 		if (window) {
 			auto newJoysticks = window->GetJoysticks();
 			joysticks = std::move(newJoysticks);
@@ -238,7 +238,7 @@ class Game : public Renderer {
 	}
 
 	void Redraw(GLuint fbo) {
-		BindFrameBuffer(fbo);
+		bindFrameBuffer(fbo);
 		Renderer::redraw();
 	}
 

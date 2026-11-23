@@ -270,7 +270,7 @@ void fe::EditableGame::DrawDebugUI() {
 		}
 
 		if (ImGui::Checkbox("VSync", &vsyncEnabled)) {
-			SetVSync(vsyncEnabled);
+			setVSync(vsyncEnabled);
 		}
 
 		static bool wireframe = false;
@@ -410,7 +410,7 @@ void fe::EditableGame::DrawDebugUI() {
 		static float newObjectScale = 1.0f;
 
 		if (ImGui::Button("Open Model")) {
-			auto w = this->GetWindow<SDLWindow>();
+			auto w = this->getWindow<SDLWindow>();
 			w->OpenFileDialog([this](const std::string& path) { this->LoadModel(path); });
 		}
 		ImGui::SameLine();

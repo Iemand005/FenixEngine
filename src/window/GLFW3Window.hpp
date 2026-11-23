@@ -79,7 +79,7 @@ public:
 
 	void GetMousePosition(double *x, double *y);
 
-	bool ShouldClose();
+	bool shouldClose();
 	void PrepareClose();
 
 	double GetTime() override;

@@ -208,20 +208,20 @@ public:
 	void DisableWireframe();
 	void ToggleWireframe(bool enabled = false);
 
-	void SetVSync(bool enabled);
+	void setVSync(bool enabled);
 
 	template<typename WindowT = IWindow>
-	WindowT* GetWindow() {
+	WindowT* getWindow() {
 		return (WindowT*)this->windows.front().get();
 	}
 
 	double getFPS();
 
-	void BindFrameBuffer(int bufferIndex = 0);
+	void bindFrameBuffer(int bufferIndex = 0);
 
-	void UpdateAspect(int width, int height);
+	void updateAspect(int width, int height);
 
-	bool ShouldClose();
+	bool shouldClose();
 
 	void Destroy();
 };

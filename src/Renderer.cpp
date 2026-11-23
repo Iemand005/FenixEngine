@@ -114,7 +114,7 @@ void Renderer::run() {
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg(EmscriptenLoopWrapper, this, 0, 1);
 #else
-    while (!ShouldClose())
+    while (!shouldClose())
         Step();
     Destroy();
 #endif
@@ -156,7 +156,7 @@ IRenderDevice* Renderer::GetDeviceForWindow(const IWindow* w) {
 
 #ifdef FE_HAS_WINDOW
 void Renderer::ActivateScreenSaverMode(ScreenSaverMode mode, void *previewParent) {
-	auto window = GetWindow<DefaultWindow>();
+	auto window = getWindow<DefaultWindow>();
 	switch (mode) {
 		case ScreenSaverMode::Preview: {
 
@@ -290,7 +290,7 @@ void Renderer::Resize(int width, int height) {
 	// glViewport(0, 0, width, height);
 	renderDevice->Resize(width, height);
 	for (auto& dev : renderDevices) dev->Resize(width, height);
-	this->UpdateAspect(width, height);
+	this->updateAspect(width, height);
 }
 
 void Renderer::Clear() { 
@@ -473,7 +473,7 @@ void Renderer::RenderAdditionalGLWindows() {
 
 if (shader) {
 			shader->Use();
-			float elapsedTime = (float)GetWindow()->GetTime();
+			float elapsedTime = (float)getWindow()->GetTime();
 			shader->SetFloat("time", elapsedTime); // TODO: report time other way (via param?) for embeddded rendering
 
 			if (scene) UploadLights(shader.get(), scene.get());
@@ -503,7 +503,7 @@ if (shader) {
 
 void Renderer::redraw() {
 #ifdef FE_HAS_WINDOW
-	auto window = GetWindow<DefaultWindow>();
+	auto window = getWindow<DefaultWindow>();
 #endif
 	if (!scene || !camera) return;
 	if (!useVulkan && !shader) return;
@@ -578,7 +578,7 @@ void Renderer::ToggleWireframe(bool enabled) {
 	else renderDevice->DisableWireframe();
 }
 
-void Renderer::SetVSync(bool enabled) {
+void Renderer::setVSync(bool enabled) {
 	vsyncEnabled = enabled;
 	if (renderDevice) renderDevice->SetVSync(enabled);
 	for (auto& dev : renderDevices) dev->SetVSync(enabled);
@@ -588,15 +588,13 @@ double Renderer::getFPS() {
 	return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
 }
 
-void Renderer::BindFrameBuffer(int bufferIndex) {
+void Renderer::bindFrameBuffer(int bufferIndex) {
 	renderDevice->BindFramebuffer(bufferIndex);
 }
 
-void Renderer::UpdateAspect(int width, int height) {
+void Renderer::updateAspect(int width, int height) {
 	if (this->camera) this->camera->SetAspect(width, height);
 }
-
-bool Renderer::ShouldClose() { return this->GetWindow()->ShouldClose(); }
 
 void Renderer::Destroy() {
 	for (auto &window : windows)
