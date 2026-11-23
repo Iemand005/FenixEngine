@@ -73,7 +73,7 @@ namespace fe {
 	struct RendererOptions : WindowOptions {
 #ifndef __EMSCRIPTEN__
 		bool useVulkan = true;
-		#else
+#else
 		bool useVulkan = false;
 #endif
 		bool preferOpenXRDevice = false;
