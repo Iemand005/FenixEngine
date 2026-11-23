@@ -199,12 +199,12 @@ set_source_files_properties(components/Drone.cpp PROPERTIES
 )
 
 set(RENDERER_SOURCES
-	Renderer.cpp
-	window/SDLWindow.cpp
-	window/GLFW3Window.cpp
-	Graphics/VulkanRenderDevice.cpp
-	Graphics/VulkanDevice.cpp
-	ModelLoader.cpp
+	src/Renderer.cpp
+	src/window/SDLWindow.cpp
+	src/window/GLFW3Window.cpp
+	src/Graphics/VulkanRenderDevice.cpp
+	src/Graphics/VulkanDevice.cpp
+	src/ModelLoader.cpp
 )
 
 if(NOT ANDROID AND NOT EMSCRIPTEN)
