@@ -114,7 +114,7 @@ void Renderer::run() {
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg(EmscriptenLoopWrapper, this, 0, 1);
 #else
-    while (!shouldClose())
+	while (!getWindow()->shouldClose())
         Step();
     destroy();
 #endif
