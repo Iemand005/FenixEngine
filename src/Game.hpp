@@ -55,7 +55,7 @@ class Game : public Renderer {
 
 	std::vector<Joystick> joysticks;
 
-	void RefreshJoysticks() {
+	void refreshJoysticks() {
 		joysticks.clear();
 		auto* window = GetWindow<SDLWindow>();
 		if (window) {

@@ -407,7 +407,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 	ImGui::Begin("Joysticks");
 	{
-		if (ImGui::Button("Refresh")) RefreshJoysticks();
+		if (ImGui::Button("Refresh")) refreshJoysticks();
 		ImGui::SameLine();
 		ImGui::Text("%zu joystick(s)", joysticks.size());
 
