@@ -13,6 +13,7 @@
 #define XR_EXTENSION_PROTOTYPES
 #endif
 
+#ifndef FE_EXCLUDE_OPENXR
 #if defined(_WIN32)
 #define XR_USE_PLATFORM_WIN32
 #define XR_USE_GRAPHICS_API_OPENGL
@@ -38,6 +39,7 @@
 
 #if defined(XR_USE_GRAPHICS_API_VULKAN)
 #include <vulkan/vulkan.h>
+#endif
 #endif
 
 #ifndef FE_EXCLUDE_OPENXR

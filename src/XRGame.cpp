@@ -217,11 +217,11 @@ void XRGame::HandleWebXRSessionEnded() {
 }
 #endif
 
-XRGame::XRDevice& XRGame::GetOpenXR() {
+XRDevice& XRGame::GetOpenXR() {
 	return impl->input;
 }
 
-const XRGame::XRDevice& XRGame::GetOpenXR() const {
+const XRDevice& XRGame::GetOpenXR() const {
 	return impl->input;
 }
 
@@ -366,6 +366,11 @@ void XRGame::DisableVR() {
 }
 
 void XRGame::ToggleXR() {
+#ifdef FE_INCLUDE_WEBXR
+	if (impl->input.IsSessionRunning()) DestroyXR();
+	else EnableXR();
+	return;
+#endif
 	if (IsInstanceValid()) {
 		DestroyXR();
 	} else {
@@ -519,8 +524,10 @@ void XRGame::RedrawVR() {
 		return;
 	PollActionsAndUpdateMovement();
 
-	if (shader)
+	if (shader) {
+		shader->Use();
 		UploadLights(shader.get(), scene.get());
+	}
 
 	const glm::quat yaw = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 	const glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
@@ -533,12 +540,15 @@ void XRGame::RedrawVR() {
 		camera->update(worldEyePosition, worldEyeOrientation, view.fov);
 
 		renderDevice->BeginVRFrame();
+#ifdef FE_HAS_VULKAN
 		if (impl->useVulkan) {
 			const glm::mat4 vkProjection = MakeVulkanProjectionFromFov(
 				view.fov, camera->nearDist, camera->farDist);
 			renderDevice->SetVRViewProjection(camera->GetViewMatrix(),
 				camera->GetProjectionMatrix(), vkProjection);
-		} else {
+		} else
+#endif
+		{
 			renderDevice->SetMat4("view", camera->GetViewMatrix());
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 		}
