@@ -13,6 +13,10 @@
 #include <glm/gtc/quaternion.hpp>
 #include <SDL3/SDL.h>
 
+#ifdef FE_INCLUDE_WEBXR
+#include <emscripten/emscripten.h>
+#endif
+
 #ifndef FE_EXCLUDE_OPENXR
 #if defined(__linux__) || defined(__unix__)
     #include <X11/Xlib.h>
@@ -25,6 +29,52 @@
 #endif
 
 using namespace fe;
+
+#ifdef FE_INCLUDE_WEBXR
+namespace {
+	XRGame* g_webXRRGame = nullptr;
+}
+
+extern "C" {
+	void FE_WebXR_Js_CheckSupport();
+	void FE_WebXR_Js_RequestSession();
+	void FE_WebXR_Js_ExitSession();
+	void FE_WebXR_Js_SetHaptic(int hand, float amplitude, int durationMs);
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_OnSupportResult(int supported) {
+		if (g_webXRRGame) g_webXRRGame->HandleWebXRSupportResult(supported != 0);
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_OnSessionStart(int width, int height) {
+		if (g_webXRRGame) g_webXRRGame->HandleWebXRSessionStarted(
+			static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_OnFrame(float* data, int count) {
+		if (g_webXRRGame) g_webXRRGame->HandleWebXRFrame(data, count);
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_OnSessionEnd() {
+		if (g_webXRRGame) g_webXRRGame->HandleWebXRSessionEnded();
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_RequestSession() {
+		if (g_webXRRGame) g_webXRRGame->GetOpenXR().RequestSession();
+	}
+
+	EMSCRIPTEN_KEEPALIVE int FE_WebXR_IsSupported() {
+		return g_webXRRGame && g_webXRRGame->GetOpenXR().IsSupported() ? 1 : 0;
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_PauseLoop() {
+		emscripten_pause_main_loop();
+	}
+
+	EMSCRIPTEN_KEEPALIVE void FE_WebXR_ResumeLoop() {
+		emscripten_resume_main_loop();
+	}
+}
+#endif
 
 #ifndef FE_EXCLUDE_OPENXR
 namespace {
@@ -58,13 +108,19 @@ struct fe::XRGame::Impl {
 	bool useVulkan = false;
 	bool drawVR = false;
 	bool drawOpenVR = false;
-	OpenXR input;
+	XRDevice input;
 	OpenXR::SwapchainInfo swapchainInfo;
+#ifdef FE_INCLUDE_WEBXR
+	bool restoreDrawWindow = true;
+#endif
 	std::vector<std::vector<uint64_t>> framebuffers;
 	std::vector<GLuint> depthTextures;
 
 	void initSwapchain(IRenderDevice* renderDevice) {
-#ifndef FE_EXCLUDE_OPENXR
+#ifdef FE_INCLUDE_WEBXR
+		if (renderDevice)
+			input.CreateSwapchain(renderDevice->GetSwapchainFormat(), swapchainInfo);
+#elif !defined(FE_EXCLUDE_OPENXR)
 		if (!input.CreateSwapchain(renderDevice->GetSwapchainFormat(), swapchainInfo)) {
 			fe::LogWarning("Failed to create OpenXR swapchain");
 			return;
@@ -105,30 +161,75 @@ struct fe::XRGame::Impl {
 XRGame::XRGame(bool launchVR) : XRGame(0, 0, launchVR, true) {}
 
 XRGame::XRGame(int width, int height, bool launchVR, bool drawWindow, bool showWindow) : Game(width, height, false, showWindow), impl(std::make_unique<Impl>()) {
+#ifdef FE_INCLUDE_WEBXR
+	g_webXRRGame = this;
+#endif
 	this->drawWindow = drawWindow;
 	if (launchVR) LaunchVR();
 }
 
-XRGame::XRGame(GLADloadproc loadProc) : Game(loadProc), impl(std::make_unique<Impl>()) {}
+XRGame::XRGame(GLADloadproc loadProc) : Game(loadProc), impl(std::make_unique<Impl>()) {
+#ifdef FE_INCLUDE_WEBXR
+	g_webXRRGame = this;
+#endif
+}
 
 XRGame::XRGame(XRGameOptions options) : Game((RendererOptions)options), impl(std::make_unique<Impl>()) {
+#ifdef FE_INCLUDE_WEBXR
+	g_webXRRGame = this;
+#endif
 	this->drawWindow = options.drawWindow;
 	if (options.launchVR) LaunchVR();
 }
 
 XRGame::~XRGame() {
+#ifdef FE_INCLUDE_WEBXR
+	if (g_webXRRGame == this) g_webXRRGame = nullptr;
+#endif
 	Destroy();
 };
 
-OpenXR& XRGame::GetOpenXR() {
+#ifdef FE_INCLUDE_WEBXR
+void XRGame::HandleWebXRSupportResult(bool supported) {
+	impl->input.SetSupported(supported);
+}
+
+void XRGame::HandleWebXRSessionStarted(uint32_t width, uint32_t height) {
+	impl->input.SetSessionActive(true, width, height);
+	impl->restoreDrawWindow = drawWindow;
+	drawWindow = false;
+	impl->initSwapchain(renderDevice.get());
+	impl->drawVR = true;
+	if (!windows.empty()) windows.front()->StopMouseCapture();
+}
+
+void XRGame::HandleWebXRFrame(float* data, int count) {
+	impl->input.SetFrameData(data, count);
+	impl->input.PollEvents();
+	if (impl->input.IsSessionRunning()) RedrawVR();
+}
+
+void XRGame::HandleWebXRSessionEnded() {
+	impl->input.SetSessionActive(false);
+	impl->drawVR = false;
+	drawWindow = impl->restoreDrawWindow;
+	impl->swapchainInfo = OpenXR::SwapchainInfo{};
+}
+#endif
+
+XRGame::XRDevice& XRGame::GetOpenXR() {
 	return impl->input;
 }
 
-const OpenXR& XRGame::GetOpenXR() const {
+const XRGame::XRDevice& XRGame::GetOpenXR() const {
 	return impl->input;
 }
 
 void XRGame::initOpenXR() {
+#ifdef FE_INCLUDE_WEBXR
+	impl->input.Initialize({});
+	return;
+#endif
 #ifndef FE_EXCLUDE_OPENXR
 	OpenXR::GraphicsBinding binding;
 	impl->useVulkan = false;
@@ -209,9 +310,9 @@ void XRGame::initOpenXR() {
 }
 
 void XRGame::PollActionsAndUpdateMovement() {
-	#ifndef FE_EXCLUDE_OPENXR
+	#if !defined(FE_EXCLUDE_OPENXR) || defined(FE_INCLUDE_WEBXR)
 
-	const OpenXR::InputState& rawInput = impl->input.GetInputState();
+	const XRDevice::InputState& rawInput = impl->input.GetInputState();
 
 	const float lookDeadzone = 0.1f;
 	const float turnSpeed = 1.2f;
@@ -222,7 +323,7 @@ void XRGame::PollActionsAndUpdateMovement() {
 
 	glm::vec3 playerPosition = player ? player->state.position : glm::vec3(0.0f);
 	glm::quat yawQ = glm::angleAxis(playerYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	const OpenXR::InputState input = impl->input.GetWorldInputState(playerPosition + positionOffset, yawQ);
+	const XRDevice::InputState input = impl->input.GetWorldInputState(playerPosition + positionOffset, yawQ);
 
 	glm::quat viewOrientation = input.headOrientation;
 
@@ -302,7 +403,7 @@ void XRGame::DrawUI() {
 		return;
 	}
 
-	#ifndef FE_EXCLUDE_OPENXR
+	#if !defined(FE_EXCLUDE_OPENXR) || defined(FE_INCLUDE_WEBXR)
 	if (impl->drawVR) return;
 	#endif
 
@@ -344,6 +445,10 @@ void XRGame::DestroyXR() {
 }
 
 void XRGame::LaunchVR() {
+	#ifdef FE_INCLUDE_WEBXR
+	impl->input.RequestSession();
+	return;
+	#endif
 	#ifndef FE_EXCLUDE_OPENXR
 	initOpenXR();
 	if (!IsInstanceValid()) {
@@ -367,6 +472,11 @@ void XRGame::RedrawWindow(uint64_t fbo) {
 }
 
 void XRGame::EnableXR() {
+	#ifdef FE_INCLUDE_WEBXR
+	impl->input.RequestSession();
+	impl->drawVR = true;
+	return;
+	#endif
 	#ifndef FE_EXCLUDE_OPENXR
 	if (!IsInstanceValid()) LaunchVR();
 	if (IsInstanceValid()) impl->drawVR = true;
@@ -391,7 +501,7 @@ void XRGame::Redraw(uint64_t fbo) {
 		}
 		#endif
 
-		#ifndef FE_EXCLUDE_OPENXR
+		#if !defined(FE_EXCLUDE_OPENXR) || defined(FE_INCLUDE_WEBXR)
 		if (impl->drawVR) RedrawVR();
 		#endif
 		if (drawWindow) RedrawWindow(fbo);
@@ -400,11 +510,11 @@ void XRGame::Redraw(uint64_t fbo) {
 }
 
 void XRGame::RedrawVR() {
-#ifndef FE_EXCLUDE_OPENXR
+#if !defined(FE_EXCLUDE_OPENXR) || defined(FE_INCLUDE_WEBXR)
 	if (!impl->input.IsSessionRunning())
 		return;
 
-	std::vector<OpenXR::View> views;
+	std::vector<XRDevice::View> views;
 	if (!impl->input.BeginFrame(swapchainImageIndex, views))
 		return;
 	PollActionsAndUpdateMovement();
@@ -422,13 +532,6 @@ void XRGame::RedrawVR() {
 		const glm::quat worldEyeOrientation = yaw * view.orientation;
 		camera->update(worldEyePosition, worldEyeOrientation, view.fov);
 
-		if (!impl->useVulkan) {
-			const GLuint framebuffer = static_cast<GLuint>(impl->framebuffers[eye][swapchainImageIndex]);
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-				impl->depthTextures[swapchainImageIndex], 0, static_cast<GLint>(eye));
-		}
-
 		renderDevice->BeginVRFrame();
 		if (impl->useVulkan) {
 			const glm::mat4 vkProjection = MakeVulkanProjectionFromFov(
@@ -440,17 +543,38 @@ void XRGame::RedrawVR() {
 			renderDevice->SetMat4("projection", camera->GetProjectionMatrix());
 		}
 
+#ifdef FE_INCLUDE_WEBXR
+		const glm::ivec4 viewport = impl->input.GetViewport(eye);
+		renderDevice->BeginWebXRFrame(static_cast<uint32_t>(viewport.x),
+			static_cast<uint32_t>(viewport.y), static_cast<uint32_t>(viewport.z),
+			static_cast<uint32_t>(viewport.w));
+#else
+		if (!impl->useVulkan) {
+			const GLuint framebuffer = static_cast<GLuint>(impl->framebuffers[eye][swapchainImageIndex]);
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+				impl->depthTextures[swapchainImageIndex], 0, static_cast<GLint>(eye));
+		}
 		renderDevice->BeginEyeFrame(impl->framebuffers[eye][swapchainImageIndex],
 			impl->swapchainInfo.width, impl->swapchainInfo.height);
+#endif
+
 		for (auto& object : scene->GetObjects())
 			RenderObject(*object);
 		OnDraw();
+
+#ifdef FE_INCLUDE_WEBXR
+		renderDevice->EndWebXRFrame();
+#else
 		renderDevice->EndEyeFrame();
+#endif
 		renderDevice->EndVRFrame();
 	}
 
+#ifndef FE_INCLUDE_WEBXR
 	if (impl->useVulkan)
 		renderDevice->WaitForVRFrame();
+#endif
 	impl->input.EndFrame();
 #endif
 }

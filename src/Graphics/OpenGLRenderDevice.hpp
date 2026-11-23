@@ -91,6 +91,8 @@ class OpenGLRenderDevice : public IRenderDevice {
 	void BeginVRFrame() override;
 	void BeginEyeFrame(uint64_t fb, uint32_t w, uint32_t h) override;
 	void EndEyeFrame() override;
+	void BeginWebXRFrame(uint32_t x, uint32_t y, uint32_t w, uint32_t h) override;
+	void EndWebXRFrame() override;
 	void EndVRFrame() override;
 	void BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) override;
 	void EndExternalFrame() override;

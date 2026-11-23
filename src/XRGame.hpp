@@ -10,9 +10,21 @@
 namespace fe { class OpenVR; }
 #endif
 
+#ifdef FE_INCLUDE_WEBXR
+#include "vr/WebXR.hpp"
+#endif
+
 namespace fe {
 
+#ifndef FE_INCLUDE_WEBXR
 	class OpenXR;
+#endif
+
+#ifdef FE_INCLUDE_WEBXR
+	using XRDevice = WebXR;
+#else
+	using XRDevice = OpenXR;
+#endif
 
 	struct XRGameOptions : RendererOptions {
 		bool launchVR = false;
@@ -67,8 +79,8 @@ namespace fe {
 		~XRGame();
 
 		bool IsInstanceValid();
-		OpenXR& GetOpenXR();
-		const OpenXR& GetOpenXR() const;
+		XRDevice& GetOpenXR();
+		const XRDevice& GetOpenXR() const;
 
 		void initOpenXR();
 
@@ -90,6 +102,13 @@ namespace fe {
 		void RedrawWindow(uint64_t fbo = 0);
 
 		void PollActionsAndUpdateMovement();
+
+#ifdef FE_INCLUDE_WEBXR
+		void HandleWebXRSupportResult(bool supported);
+		void HandleWebXRSessionStarted(uint32_t width, uint32_t height);
+		void HandleWebXRFrame(float* data, int count);
+		void HandleWebXRSessionEnded();
+#endif
 
 		void DrawUI() override;
 

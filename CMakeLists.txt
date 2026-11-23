@@ -47,6 +47,7 @@ option(FE_EXCLUDE_OPENXR "Exclude OpenXR from the build" OFF)
 option(FE_EXCLUDE_KISSFFT "Exclude kissfft from the build" OFF)
 option(FE_EXCLUDE_IMGUI "Exclude ImGui from EditableGame and XRGame UI code" OFF)
 option(FE_INCLUDE_OPENVR "Include OpenVR in the build" OFF)
+option(FE_INCLUDE_WEBXR "Include the WebXR backend for Emscripten builds" OFF)
 
 set(SDL_X11_XTEST OFF CACHE BOOL "Disable SDL X11 XTEST dependency" FORCE)
 
@@ -61,6 +62,7 @@ if(EMSCRIPTEN)
     set(FE_EXCLUDE_OPENXR ON)
     set(FE_EXCLUDE_KISSFFT ON)
     set(FE_INCLUDE_OPENVR OFF)
+    set(FE_INCLUDE_WEBXR ON)
 
     set(SDL_WASAPI    OFF CACHE BOOL "" FORCE)
     set(SDL_GAMEINPUT OFF CACHE BOOL "" FORCE)
@@ -117,6 +119,10 @@ endif()
 
 if (EMSCRIPTEN)
     add_definitions(-DFE_EXCLUDE_OPENXR)
+endif()
+
+if (EMSCRIPTEN AND FE_INCLUDE_WEBXR)
+    add_definitions(-DFE_INCLUDE_WEBXR)
 endif()
 
 if (FE_EXCLUDE_KISSFFT)
@@ -194,6 +200,10 @@ set(SOURCE_FILES
 	src/vr/OpenXR.cpp
 	src/XRGame.cpp
 )
+
+if(EMSCRIPTEN AND FE_INCLUDE_WEBXR)
+	list(APPEND SOURCE_FILES src/vr/WebXR.cpp)
+endif()
 
 set_source_files_properties(src/components/Drone.cpp PROPERTIES
 	SKIP_UNITY_BUILD_INCLUSION ON
@@ -371,6 +381,10 @@ endif()
 
 if(FE_EXCLUDE_OPENXR)
 	target_compile_definitions(Engine PUBLIC FE_EXCLUDE_OPENXR)
+endif()
+
+if(EMSCRIPTEN AND FE_INCLUDE_WEBXR)
+	target_compile_definitions(Engine PUBLIC FE_INCLUDE_WEBXR)
 endif()
 
 target_include_directories(Engine PRIVATE

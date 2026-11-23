@@ -71,6 +71,8 @@ namespace fe {
 		virtual void BeginVRFrame() {}
 		virtual void BeginEyeFrame(uint64_t fb, uint32_t w, uint32_t h) {}
 		virtual void EndEyeFrame() {}
+		virtual void BeginWebXRFrame(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {}
+		virtual void EndWebXRFrame() {}
 		virtual void EndVRFrame() {}
 		virtual void WaitForVRFrame() {}
 

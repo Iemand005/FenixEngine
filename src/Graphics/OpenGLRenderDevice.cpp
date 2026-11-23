@@ -529,6 +529,22 @@ void OpenGLRenderDevice::EndEyeFrame() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void OpenGLRenderDevice::BeginWebXRFrame(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
+	const GLsizei ix = static_cast<GLsizei>(x);
+	const GLsizei iy = static_cast<GLsizei>(y);
+	const GLsizei iw = static_cast<GLsizei>(w);
+	const GLsizei ih = static_cast<GLsizei>(h);
+	glViewport(ix, iy, iw, ih);
+	glScissor(ix, iy, iw, ih);
+	glEnable(GL_SCISSOR_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_SCISSOR_TEST);
+}
+
+void OpenGLRenderDevice::EndWebXRFrame() {
+	glFlush();
+}
+
 void OpenGLRenderDevice::EndVRFrame() {}
 
 void OpenGLRenderDevice::BeginExternalFrame(uint64_t fb, uint32_t w, uint32_t h) {
