@@ -158,7 +158,7 @@ public:
 	virtual void Init() {}
     virtual void Step() {}
 
-	void Run();
+	void run();
 
 	void Init(GLADloadproc loadProc);
 

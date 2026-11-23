@@ -106,7 +106,7 @@ Renderer::Renderer(RendererOptions options) {
 #endif
 }
 
-void Renderer::Run() {
+void Renderer::run() {
     Init();
 
 #ifdef __EMSCRIPTEN__
