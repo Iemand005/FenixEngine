@@ -30,8 +30,8 @@ void VulkanDevice::SetShaderPaths(VertexFormat format,  const std::string& vertP
  		}
 
  		// Pipelines are normally built in Init(). Games, however, call
- 		// LoadArrayShaders/LoadFoxcraftShaders from their derived constructor,
- 		// which runs after the base Renderer constructor has already created and
+ 		// LoadShaders<VertexT>() from their derived constructor, which runs
+ 		// after the base Renderer constructor has already created and
  		// initialised the device. In that case the pipeline set for this format
  		// does not exist yet, so (re)build it now.
  		if (_device == VK_NULL_HANDLE || vertPath.empty() || fragPath.empty())

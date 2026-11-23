@@ -59,20 +59,18 @@ void Renderer::Init(GLADloadproc loadProc) {
 		std::cerr << "Failed to load OpenGL functions (GLAD)" << std::endl;
 }
 
-void Renderer::PushShaderPathsToVulkanDevice() {
-	if (!renderDevice) return;
+void Renderer::PushShaderPathsToDevice(VertexFormat format, const std::string& vertPath, const std::string& fragPath) {
 #ifdef FE_HAS_VULKAN
-	PushShaderPathsToDevice(renderDevice.get());
-#endif
-}
-
-void Renderer::PushShaderPathsToDevice(IRenderDevice* device) {
-#ifdef FE_HAS_VULKAN
-	auto* vkDev = dynamic_cast<VulkanDevice*>(device);
-	if (!vkDev) return;
-	vkDev->SetShaderPaths(VertexFormat::Standard, vertShaderPath_, fragShaderPath_);
-	vkDev->SetShaderPaths(VertexFormat::Array, vertArrayShaderPath_, fragArrayShaderPath_);
-	vkDev->SetShaderPaths(VertexFormat::Packed, vertFoxcraftShaderPath_, fragFoxcraftShaderPath_);
+	auto push = [&](IRenderDevice* device) {
+		auto* vkDev = dynamic_cast<VulkanDevice*>(device);
+		if (vkDev) vkDev->SetShaderPaths(format, vertPath, fragPath);
+	};
+	if (renderDevice) push(renderDevice.get());
+	for (auto& device : renderDevices) push(device.get());
+#else
+	(void)format;
+	(void)vertPath;
+	(void)fragPath;
 #endif
 }
 
@@ -140,7 +138,6 @@ IRenderDevice* Renderer::CreateDevice(bool useVulkan, IWindow *window) {
 #endif
 	dev = std::make_unique<OpenGLRenderDevice>();
 
-	if (useVulkan) PushShaderPathsToDevice(dev.get());
 	if (window) dev->Init(window);
 	IRenderDevice* ptr = dev.get();
 	renderDevices.push_back(std::move(dev));
@@ -254,16 +251,10 @@ void Renderer::NewWindow(int width, int height, bool hidden, bool fullscreen, bo
 			CreateRenderDevice(useVulkan);
 		}
 		device = renderDevice.get();
-		PushShaderPathsToDevice(device);
 		device->Init(window.get());
 	} else {
 		device = CreateDevice(useVulkan, window.get());
-		if (useVulkan) {
-			PushShaderPathsToDevice(device);
-			// device->RegisterWindow(window.get());
-		} else {
-			device->RegisterWindow(window.get());
-		}
+		if (!useVulkan) device->RegisterWindow(window.get());
 	}
 	windowDeviceMap[window.get()] = device;
 	windows.push_back(std::move(window));
@@ -278,44 +269,6 @@ void Renderer::LoadShaders(Shader vertexShader, Shader fragmentShader) {
 
 void Renderer::LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath) {
 	this->shader = std::make_unique<fe::ShaderProgram>(vertexShaderPath, fragmentShaderPath);
-	// Derive Vulkan SPIR-V paths from the OpenGL paths (VertexShader.glsl -> VertexShader_vk.spv)
-	auto vkPath = [](const std::string& glslPath) -> std::string {
-		std::string path = glslPath;
-		size_t dot = path.rfind('.');
-		size_t slash = path.rfind('/');
-		if (dot != std::string::npos && slash != std::string::npos && dot > slash) {
-			path.insert(dot, "_vk");
-			path.replace(dot + 3, std::string::npos, ".spv");
-		}
-		return path;
-	};
-	vertShaderPath_ = vkPath(vertexShaderPath);
-	fragShaderPath_ = vkPath(fragmentShaderPath);
-	PushShaderPathsToVulkanDevice();
-}
-
-void Renderer::LoadVulkanShaders(const std::string& vertPath, const std::string& fragPath) {
-#ifdef FE_HAS_VULKAN
-	vertShaderPath_ = vertPath;
-	fragShaderPath_ = fragPath;
-	PushShaderPathsToVulkanDevice();
-#endif
-}
-
-void Renderer::LoadArrayShaders(const std::string& vertPath, const std::string& fragPath) {
-#ifdef FE_HAS_VULKAN
-	vertArrayShaderPath_ = vertPath;
-	fragArrayShaderPath_ = fragPath;
-	PushShaderPathsToVulkanDevice();
-#endif
-}
-
-void Renderer::LoadFoxcraftShaders(const std::string& vertPath, const std::string& fragPath) {
-#ifdef FE_HAS_VULKAN
-	vertFoxcraftShaderPath_ = vertPath;
-	fragFoxcraftShaderPath_ = fragPath;
-	PushShaderPathsToVulkanDevice();
-#endif
 }
 
 bool Renderer::LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText) {

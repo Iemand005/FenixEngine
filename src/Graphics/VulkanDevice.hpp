@@ -308,8 +308,9 @@ private:
 	VkRenderPass xrRenderPass_ = VK_NULL_HANDLE;
 	VkFormat xrRenderPassFormat_ = VK_FORMAT_UNDEFINED;
 
-	std::string vertShaderPath_;
-	std::string fragShaderPath_;
+	// Default Standard pipeline; games override it with LoadShaders<VertexT>().
+	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
+	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
 	std::string vertShaderArrayPath_;
 	std::string fragShaderArrayPath_;
 	std::string vertShaderPackedPath_;

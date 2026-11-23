@@ -47,6 +47,7 @@ namespace fe {
 }
 
 #include "window/IWindow.hpp"
+#include "Graphics/IGPUBuffers.hpp"
 #include "Shader.hpp"
 #include "ScreenSaverMode.hpp"
 #include "Timer.hpp"
@@ -126,14 +127,6 @@ public:
 	bool frustumCullingEnabled = false;
 	bool vsyncEnabled = true;
 
-	// Shader paths (set via LoadShaders / LoadVulkanShaders before window init)
-	std::string vertShaderPath_ = "resources/shaders/VertexShader_vk.spv";
-	std::string fragShaderPath_ = "resources/shaders/FragmentShader_vk.spv";
-	std::string vertArrayShaderPath_;
-	std::string fragArrayShaderPath_;
-	std::string vertFoxcraftShaderPath_;
-	std::string fragFoxcraftShaderPath_;
-
 	// Out of line: the members above are unique_ptr/vector-of-unique_ptr over
 	// forward-declared types, so destruction needs the complete types, which
 	// only Renderer.cpp has.
@@ -141,8 +134,7 @@ public:
 
 	Renderer();
 
-	void PushShaderPathsToVulkanDevice();
-	void PushShaderPathsToDevice(IRenderDevice* device);
+	void PushShaderPathsToDevice(VertexFormat format, const std::string& vertPath, const std::string& fragPath);
 
 	explicit Renderer(bool useVulkan);
 
@@ -177,9 +169,10 @@ public:
 	void LoadShaders(Shader vertexShader, Shader fragmentShader);
 	void LoadShaders(std::string vertexShaderPath, std::string fragmentShaderPath);
 
-	void LoadVulkanShaders(const std::string& vertPath, const std::string& fragPath);
-	void LoadArrayShaders(const std::string& vertPath, const std::string& fragPath);
-	void LoadFoxcraftShaders(const std::string& vertPath, const std::string& fragPath);
+	template<typename VertexT>
+	void LoadShaders(const std::string& vertPath, const std::string& fragPath) {
+		PushShaderPathsToDevice(VertexFormatOf<VertexT>::value, vertPath, fragPath);
+	}
 
 	bool LoadShaderTexts(std::string vertexShaderText, std::string fragmentShaderText);
 

@@ -9,6 +9,8 @@
 #include <vulkan/vulkan.h>
 #endif
 
+#include "Graphics/IGPUBuffers.hpp"
+
 
 namespace fe {
 
@@ -121,3 +123,13 @@ struct VertexTraits<VertexArray> {
 };
 
 }
+
+template<>
+struct VertexFormatOf<fe::Vertex> {
+	static constexpr VertexFormat value = VertexFormat::Standard;
+};
+
+template<>
+struct VertexFormatOf<fe::VertexArray> {
+	static constexpr VertexFormat value = VertexFormat::Array;
+};

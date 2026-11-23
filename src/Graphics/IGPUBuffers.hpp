@@ -9,6 +9,14 @@ enum class VertexFormat {
 	Packed,    // VoxelPackedVertex: int16 xyz, uint8 normal+u+v+layer (10 bytes)
 };
 
+// Maps a vertex struct to the pipeline format its buffers are uploaded with.
+// Specialise this for custom vertex types, e.g.
+//   template<> struct VertexFormatOf<MyVertex> {
+//       static constexpr VertexFormat value = VertexFormat::Array;
+//   };
+template<typename VertexT>
+struct VertexFormatOf;
+
 class IGPUBuffers {
 public:
 	int indexCount = 0;

@@ -30,3 +30,8 @@ namespace fe {
         }
     };
 }
+
+template<>
+struct VertexFormatOf<VoxelPackedVertex> {
+    static constexpr VertexFormat value = VertexFormat::Packed;
+};
