@@ -584,7 +584,7 @@ void Renderer::SetVSync(bool enabled) {
 	for (auto& dev : renderDevices) dev->SetVSync(enabled);
 }
 
-double Renderer::GetFPS() {
+double Renderer::getFPS() {
 	return fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0;
 }
 
