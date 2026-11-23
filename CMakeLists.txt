@@ -170,28 +170,28 @@ if(MSVC)
 endif()
 
 set(SOURCE_FILES
-	accessories/Aura.cpp
-	Android.cpp
-	components/Drone.cpp
-	EditableGame.cpp
-	engine.cpp
-	Game.cpp
-	Graphics/OpenGLGPUBuffers.cpp
-	Graphics/OpenGLGPUTexture.cpp
-	Graphics/OpenGLRenderDevice.cpp
-	ImageLoader.cpp
-	Mesh.cpp
+	src/accessories/Aura.cpp
+	src/Android.cpp
+	src/components/Drone.cpp
+	src/EditableGame.cpp
+	src/engine.cpp
+	src/Game.cpp
+	src/Graphics/OpenGLGPUBuffers.cpp
+	src/Graphics/OpenGLGPUTexture.cpp
+	src/Graphics/OpenGLRenderDevice.cpp
+	src/ImageLoader.cpp
+	src/Mesh.cpp
 	../games/common/Chunk.cpp
 	../games/common/ChunkManager.cpp
-	physics/BasicDebugRenderer.cpp
-	physics/PhysicsCharacter.cpp
-	physics/PhysicsFactory.cpp
-	physics/PhysicsObject.cpp
-	physics/PhysicsVehicle.cpp
-	Scene.cpp
-	Sensors/Accelerometer.cpp
-	vr/OpenXR.cpp
-	XRGame.cpp
+	src/physics/BasicDebugRenderer.cpp
+	src/physics/PhysicsCharacter.cpp
+	src/physics/PhysicsFactory.cpp
+	src/physics/PhysicsObject.cpp
+	src/physics/PhysicsVehicle.cpp
+	src/Scene.cpp
+	src/Sensors/Accelerometer.cpp
+	src/vr/OpenXR.cpp
+	src/XRGame.cpp
 )
 
 set_source_files_properties(components/Drone.cpp PROPERTIES
