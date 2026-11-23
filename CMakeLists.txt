@@ -37,7 +37,7 @@ set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
 # add_subdirectory(external/kissfft)
 
-add_subdirectory(src/Engine)
+add_subdirectory(src)
 
 if(EMSCRIPTEN OR ANDROID)
     # When building for Emscripten/Android, only build the Engine library
@@ -67,63 +67,6 @@ set(IMGUI_SRC
     # ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
-
-add_executable(main ${SOURCE_FILES} ${IMGUI_SRC})
-
-target_precompile_headers(main PRIVATE
-	"$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/pch.hpp>"
-)
-
-set_property(TARGET main PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-# For VSCode CMake Tools specifically
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib/debug")
-else()
-    set(LIB_DIR "${CMAKE_SOURCE_DIR}/lib/release")
-endif()
-
-target_compile_definitions(main PRIVATE
-    $<$<CONFIG:Debug>:_DEBUG>
-)
-
-target_include_directories(main PRIVATE
-    include
-    src
-    external
-    external/imgui
-    external/SDL/include
-    src/Engine
-)
-
-if(FALSE)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
-target_include_directories(AudioTest PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
-target_link_libraries(AudioTest PRIVATE ${PIPEWIRE_LIBRARIES})
-target_compile_options(AudioTest PRIVATE ${PIPEWIRE_CFLAGS_OTHER})
-endif()
-
-set_property(TARGET AudioTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    
-if(MSVC)
-	target_link_options(main PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
-
-	target_link_options(AudioTest PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
-endif()
-    
-# Main game
-target_link_directories(main PRIVATE "${LIB_DIR}")
-
-target_link_libraries(main PRIVATE Engine)
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_custom_command(TARGET main POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Debug executable built at: $<TARGET_FILE:main>"
-        COMMAND ${CMAKE_COMMAND} -E echo "To debug in VSCode, set cwd to: ${CMAKE_SOURCE_DIR}"
-    )
-endif()
 
 
 

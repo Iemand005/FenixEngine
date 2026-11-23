@@ -61,7 +61,7 @@ set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 # every desktop build. The EMSCRIPTEN branch above turns them off for the web.
 
 # set(EXTERNAL_DIR "${EXTERNAL_DIR}")
-set(EXTERNAL_DIR "../../external")
+set(EXTERNAL_DIR "../external")
 
 # set(GLFW_LIBRARY_TYPE "DYNAMIC" cache STRING "" FORCE)
 set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
