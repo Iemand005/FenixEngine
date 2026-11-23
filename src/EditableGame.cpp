@@ -200,6 +200,8 @@ void fe::EditableGame::DrawDebugUI() {
 	}
 #endif
 
+	static bool showFrameTimes = true;
+
 	ImGui::Begin("Debug");
 	{
 		ImGui::Text("Hello, World!");
@@ -209,6 +211,7 @@ void fe::EditableGame::DrawDebugUI() {
 
 		ImGui::Text("FPS %.1f", fpsCounter.deltaTime > 0.0 ? 1.0 / fpsCounter.deltaTime : 0.0);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::Checkbox("Show Frame Times", &showFrameTimes);
 
 		ImGui::Text("Objects: %zu", this->scene->GetObjects().size());
 		size_t totalVertices = 0;
@@ -353,6 +356,37 @@ void fe::EditableGame::DrawDebugUI() {
 				ImGui::SliderFloat3(("Rotation##npc" + std::to_string(i)).c_str(), &this->npcs[i]->state.rotation.x, -180.0f, 180.0f);
 			}
 		}
+		ImGui::End();
+	}
+
+	if (showFrameTimes)
+	{
+		static constexpr size_t frameTimeSamples = 240;
+		static std::vector<float> frameTimesMs;
+
+		const float frameMs = fpsCounter.deltaTime > 0.0
+			? static_cast<float>(fpsCounter.deltaTime * 1000.0)
+			: 0.0f;
+		frameTimesMs.push_back(frameMs);
+		if (frameTimesMs.size() > frameTimeSamples)
+			frameTimesMs.erase(frameTimesMs.begin());
+
+		float averageMs = 0.0f;
+		float worstMs = 0.0f;
+		for (float ms : frameTimesMs)
+		{
+			averageMs += ms;
+			worstMs = std::max(worstMs, ms);
+		}
+		if (!frameTimesMs.empty())
+			averageMs /= static_cast<float>(frameTimesMs.size());
+
+		ImGui::SetNextWindowSize(ImVec2(420.0f, 180.0f), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Frame Times", &showFrameTimes);
+		ImGui::Text("Current %.2f ms  Avg %.2f ms  Worst %.2f ms", frameMs, averageMs, worstMs);
+		const float graphMax = std::max(50.0f, worstMs * 1.2f);
+		ImGui::PlotLines("##FrameTimes", frameTimesMs.data(), static_cast<int>(frameTimesMs.size()),
+			0, "Frame time (ms)", 0.0f, graphMax, ImVec2(0.0f, 110.0f));
 		ImGui::End();
 	}
 
