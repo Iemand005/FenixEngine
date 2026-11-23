@@ -457,7 +457,7 @@ bool fe::SDLWindow::LiveResizePump() {
 
 	// Once a close was requested the game is shutting down; re-rendering from
 	// inside the modal Win32 loop can touch already-released GPU resources.
-	if (shouldClose) return false;
+	if (shouldClose()) return false;
 
 	Uint64 now = SDL_GetTicks();
 	if (now - impl->lastLivePumpTick < 16) return false;

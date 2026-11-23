@@ -25,8 +25,6 @@ class SDLWindow : public IWindow {
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 
-	bool shouldClose = false;
-
 	const bool* keyboardState = nullptr;
 
 	bool capturingMouse = false;

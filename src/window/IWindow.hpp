@@ -47,7 +47,7 @@ namespace fe {
 
 	class IWindow {
 
-		bool shouldClose = false;
+		bool _shouldClose = false;
 
 public:
 
@@ -63,9 +63,9 @@ public:
 
 		IWindow(int width, int height) : width(width), height(height) {}
 
-		virtual bool shouldClose() { return shouldClose; }
+		virtual bool shouldClose() { return _shouldClose; }
 
-		virtual void PrepareClose() { shouldClose = true; }
+		virtual void PrepareClose() { _shouldClose = true; }
 
 		virtual void SetSwapInterval(int interval) = 0;
 
