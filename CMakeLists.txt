@@ -35,8 +35,6 @@ set(KISSFFT_TEST OFF CACHE BOOL "Disable KissFFT tests" FORCE)
 
 set(KISSFFT_STATIC ON CACHE BOOL "Build static library" FORCE)
 
-# add_subdirectory(external/kissfft)
-
 cmake_minimum_required(VERSION 3.15)
 project(Engine LANGUAGES CXX C)
 
