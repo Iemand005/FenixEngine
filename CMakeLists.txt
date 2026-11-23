@@ -208,15 +208,15 @@ set(RENDERER_SOURCES
 )
 
 if(NOT ANDROID AND NOT EMSCRIPTEN)
-	list(APPEND RENDERER_SOURCES glad/glad.c)
+	list(APPEND RENDERER_SOURCES src/glad/glad.c)
 endif()
 
 if(FE_EXCLUDE_GLFW OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES window/GLFW3Window.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES src/window/GLFW3Window.cpp)
 endif()
 
 if(FE_EXCLUDE_VULKAN OR EMSCRIPTEN)
-	list(REMOVE_ITEM RENDERER_SOURCES Graphics/VulkanRenderDevice.cpp Graphics/VulkanDevice.cpp)
+	list(REMOVE_ITEM RENDERER_SOURCES src/Graphics/VulkanRenderDevice.cpp Graphics/VulkanDevice.cpp)
 endif()
 
 add_library(Renderer STATIC ${RENDERER_SOURCES})
